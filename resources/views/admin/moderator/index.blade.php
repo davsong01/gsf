@@ -1,0 +1,75 @@
+@extends('layouts.dashboard')
+@section('title', 'Moderators')
+@section('active')
+<li class="breadcrumb-item">Moderators</li>
+@endsection
+@section('content')
+<div class="content-body">
+    <!-- Zero configuration table -->
+    <section id="basic-datatable">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">All Moderators</h4>
+                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new Moderator</a>
+                        @include('includes.alerts')
+                        
+                    </div>
+                    <div class="card-content">
+                        <div class="card-body card-dashboard">
+                            <div class="table-responsive">
+                                <table class="table zero-configuration">
+                                    <thead>
+                                        <tr>
+                                            <th>S/N</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Chapter</th>
+                                            <th>Phone</th>
+                                            <th>Amount Paid</th>
+                                            <th>Slots Remaining</th>
+                                            <th>Slots Filled</th>
+                                            
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($participants as $participant)
+                                        <tr>
+                                            <td>{{ $count }}</td>
+                                            <td>{{ $participant->name }}</td>
+                                            <td>{{ $participant->email }}</td>
+                                            <td>{{ $participant->chapter }}</td>
+                                            <td>{{ $participant->phone }}</td>
+                                            <td>&#8358;{{ $participant->amount_paid }}</td>
+                                            <td>{{ $participant->slots_filled }}</td>
+                                            <td>{{ $participant->slot - $participant->slots_filled }}</td>
+                                            
+                                                
+                                            <td style="padding-left: 5px;padding-right: 5px;">
+                                            <a class="actions" data-toggle="tooltip" title="View/Update Moderator details" href="{{ route('moderators.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
+                                            </a>
+                                           
+                                            <a class="actions" data-toggle="tooltip" data-placement="top" title="Switch To"
+                                                href="{{ route('switchuser', $participant->id) }}"><i
+                                                    class="fa fa-unlock actions"></i>
+                                            </a>
+                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Moderator" href="{{ route('moderators.delete', $participant->id) }}"> <i class="fa fa-trash"></i></
+                                            </a>
+                                        </tr>
+                                      
+                                        @endforeach
+                                    </tbody>
+                                    
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!--/ Zero configuration table -->         
+</div>
+@endsection

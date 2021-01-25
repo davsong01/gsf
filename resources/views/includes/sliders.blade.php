@@ -1,0 +1,32 @@
+<div class="carousel">
+
+    <div class="container-fluid">
+        <div class="owl-carousel">
+            
+                <div class="carousel-item">
+                <div class="carousel-img">
+                    <img src="{{ asset('frontend/img/sliders/slider1.jpeg') }}" alt="slider">
+                </div>
+                <div class="carousel-text">
+                    <div class="banner_text">
+                        <h2 style="color:white">GSF CONFERENCE</h2>
+                        <h3 style="color:white">theme</h3>
+                        <p> <b>DATE</b></p>
+                        
+                        <p>
+                            <a class="btn" href="#register"><i class="fa fa-link"></i>REGISTER NOW</a>
+                        </p>
+                        {{-- @if($days_left > 0)
+                            <h2>{{ $days_left }} Days</h2>
+                            
+                        @else
+                            <h2>HAPPENING TODAY!</h2>
+                        @endif --}}
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
