@@ -104,52 +104,91 @@
                     <div class="col-md-6 col-sm-12">
                         <fieldset class="form-group">
                             <label for="name">Name</label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') ?? auth()->user()->name }}" placeholder="Enter name">
+														<input type="text" class="@error('name')is-invalid @enderror form-control" id="name" name="name" value="{{ old('name') ?? auth()->user()->name }}" placeholder="Enter name">
+														@error('name')
+														<span class="invalid-feedback" role="alert">
+															<strong>{{ $message }}</strong>
+														</span>
+														@enderror
                         </fieldset>
 
                         <fieldset class="form-group">
                             <label for="email">Email</label>
-                            <input type="email" id="email" name="email" class="form-control" value="{{ old('email') ?? auth()->user()->email }}" required>
+														<input type="email" id="email" name="email" class="form-control @error('email')is-invalid @enderror" value="{{ old('email') ?? auth()->user()->email }}" required>
+														@error('email')
+														<span class="invalid-feedback" role="alert">
+															<strong>{{ $message }}</strong>
+														</span>
+														@enderror
                         </fieldset>
 
                         <fieldset class="form-group">
                             <label for="phone">Phone</label>
-                            <input type="phone" id="phone" name="phone" class="form-control" value="{{ old('phone') ?? auth()->user()->phone }}" required>
+														<input type="phone" id="phone" name="phone" class="form-control @error('phone')is-invalid @enderror" value="{{ old('phone') ?? auth()->user()->phone }}" required>
+														@error('phone')
+														<span class="invalid-feedback" role="alert">
+															<strong>{{ $message }}</strong>
+														</span>
+														@enderror
                         </fieldset>
 
                         <fieldset class="form-group">
                             <label for="sex">Sex</label>
-                            <select class="form-control" name="sex" id="sex" required>
+                            <select class="form-control @error('sex')is-invalid @enderror" name="sex" id="sex" required>
                                 <option value="">--Select Option--</option>
                                 <option value="Male" {{ auth()->user()->sex == 'Male' ? 'selected' : ''}}>Male</option>
                                 <option value="Female" {{ auth()->user()->sex == 'Female' ? 'selected' : ''}}>Female</option>
-                            </select>
+														</select>
+														@error('sex')
+														<span class="invalid-feedback" role="alert">
+															<strong>{{ $message }}</strong>
+														</span>
+														@enderror
                         </fieldset>
-                         <fieldset class="form-group">
+                         <fieldset class="form-group @error('passport')is-invalid @enderror">
                             <label for="sex">Change Image</label>
-                            <input type= "file" class="form-control" name="passport" id="passport" required>
-                               
+                            <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport" required>
+														@error('passport')
+														<span class="invalid-feedback" role="alert">
+															<strong>{{ $message }}</strong>
+														</span>
+														@enderror
                         </fieldset>
                     </div>
                     <div class="col-md-6 col-sm-12">
                         <fieldset class="form-group">
                             <label for="chapter">Campus</label>
-                            <select class="form-control" name="chapter" id="chapter" required>
+                            <select class="form-control @error('chapter')is-invalid @enderror" name="chapter" id="chapter" required>
                                 {{-- //include chapter --}}
                                 <option value="">--Select Campus--</option>
                                 @foreach($chapters as $chapter)
                                 <option value="{{ $chapter }}" {{ auth()->user()->chapter == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
                                 @endforeach
-                            </select>
+														</select>
+														@error('chapter')
+														<span class="invalid-feedback" role="alert">
+															<strong>{{ $message }}</strong>
+														</span>
+														@enderror
                         </fieldset>
 
                         <fieldset class="form-group">
                             <label for="amount">Amount Paid</label>
-                            <input type="number" id="amount" name="amount_paid" class="form-control" value="{{ old('amount_paid') ?? auth()->user()->amount_paid }}" required>
+														<input type="number" id="amount" name="amount_paid" class="form-control @error('amount_paid')is-invalid @enderror" value="{{ old('amount_paid') ?? auth()->user()->amount_paid }}" required>
+														@error('amount_paid')
+														<span class="invalid-feedback" role="alert">
+															<strong>{{ $message }}</strong>
+														</span>
+														@enderror
                         </fieldset>
                         <fieldset class="form-group">
                             <label for="payment_type">Payment Type</label>
-                            <input type="text" id="payment_type" name="payment_type" class="form-control" value="{{ old('payment_type') ?? auth()->user()->payment_type }}" required>
+														<input type="text" id="payment_type" name="payment_type" class="form-control @error('payment_type')is-invalid @enderror" value="{{ old('payment_type') ?? auth()->user()->payment_type }}" required>
+														@error('payment_type')
+														<span class="invalid-feedback" role="alert">
+															<strong>{{ $message }}</strong>
+														</span>
+														@enderror
                         </fieldset>
 
                         

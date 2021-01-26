@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 Auth::routes();
-Auth::routes(['verify' => false, 'register' => false], );
+Auth::routes(['verify' => false, 'register' => false] );
 
 Route::get('/clear', function () {
     Artisan::call('cache:clear');
@@ -36,7 +36,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('alumni', 'AlumniController');
     Route::get('alumnis/delete/{id}', 'AlumniController@destroy')->name('alumni.delete');
-    Route::patch('participants{id}', 'AccountController@update')->name('participants.update');       
+    Route::resource('participants', 'AccountController')->except([
+			'create', 'store', 'destroy', 'index', 'show'
+	]);
 
     Route::resource('hostels', 'HostelController');
 
