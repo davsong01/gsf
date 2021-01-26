@@ -124,4 +124,13 @@
                                 <button class="btn btn-primary" style="width:100%" type="submit">Update</button>
                                 </form>
                             </div>
-             
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Basic Inputs end -->          
+</div>
+@endsection
+

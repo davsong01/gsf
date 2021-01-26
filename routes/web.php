@@ -40,6 +40,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('hostels', 'HostelController');
 
+    Route::get('user/card/{id}', 'AccountController@getcard')->name('user.card');
+
     Route::get('id', function(){
         return view('card.id');
     });

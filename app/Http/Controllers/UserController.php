@@ -83,6 +83,8 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        $chapters = Chapter::all();
+
        if(auth()->user()->level == 'Admin'){
            if($user->sex == 'Female'){
                $hostels = Hostel::whereType('Female')->whereLevel('Participant')->get();
@@ -93,7 +95,7 @@ class UserController extends Controller
            }
             
             $foods = Food::all();
-            return view('admin.users.edit', compact('user', 'hostels', 'foods'));
+            return view('admin.users.edit', compact('user', 'hostels', 'foods', 'chapters'));
        }
        return abort(404);
 

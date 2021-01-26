@@ -8,7 +8,7 @@
             </ul>
         </div>
         <div class="shadow-bottom"></div>
-        <div><img style="text-align: center; width:50%; display: block; margin-left: 30px;margin-right: auto;" class="logo" src="{{ asset('frontend/img/logo.png') }}"></div>
+        <div><img style="text-align: center; width:30%; display: block; margin-left: 80px;margin-right: auto;" class="logo" src="{{ asset('frontend/img/logo.png') }}"></div>
         <br><br>
         <div class="main-menu-content">
             <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation" data-icon-style="lines">              

@@ -35,12 +35,17 @@
 
                                     @if(auth()->user()->registration_status == 'Complete')  
                                                                    
-                                    <a href="{{ route('profile.edit', auth()->user()->id) }}" onclick="return false;"  class="btn btn-primary glow"> <i class="fa fa-download" aria-hidden="true" disabled></i> Download Conference I.D. card
+                                    <a href="{{ route('user/card', $user->id) }}" onclick="return false;"  class="btn btn-primary glow"> <i class="fa fa-download" aria-hidden="true"></i> Download Conference I.D. card
                                     </a>
-                                     <a href="{{ route('profile.edit', auth()->user()->id) }}"  >
+                                     <a href=""  >
                                         <button type="button" onclick="return confirm('You are about to download your conference meal ticket?');" class="btn btn-primary glow">Download Conference Meal ticket
                                         </button>
                                     </a> 
+
+                                    <a data-toggle="tooltip" data-placement="top" title="Print E-receipt"
+                                        class="btn btn-warning" href=""><i
+                                            class="fa fa-print"></i>
+                                </a>
                                     @endif
                                    
                                 </div>
@@ -63,7 +68,7 @@
             </div>
             <div class="card-content">
                 <div class="card-body">
-                    <form action="{{ route('participants.update', auth()->user()->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('participants.update', auth()->user()->id) }}" onsubmit="return confirm('I am sure all my detailss are correct and current');" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PATCH')
                     <div class="row">
@@ -151,8 +156,6 @@
                             <label for="payment_type">Payment Type</label>
                             <input type="text" id="payment_type" name="payment_type" class="form-control" value="{{ old('payment_type') ?? auth()->user()->payment_type }}" required>
                         </fieldset>
-
-                        
                         
                         <fieldset class="form-group">
                             <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank except you want to change your password</i></small>
@@ -164,8 +167,9 @@
                 </div>
                 <div class="row">
                     <div class="col-md-12 col-sm-12">
-                        <button class="btn btn-primary" style="width:100%" type="submit">Update</button>
+                        <button class="btn btn-primary" style="width:100%" type="submit">Save</button>
                         </form>
+
                     </div>
                 </div>
             </div>
