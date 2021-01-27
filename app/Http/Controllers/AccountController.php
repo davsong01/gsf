@@ -90,7 +90,6 @@ class AccountController extends Controller
 	//Check if user->hostel_id is set(if user has hostel)
 
 	//CHECK 1
-
 	//if the user->hostel_id is set and type and level corresponds to the user current request hostel type and level, return back with success, 
 	
 	//CHECK 2
@@ -126,9 +125,26 @@ class AccountController extends Controller
 		*save hostel and exit iteration
 		*return new hostel_id
 		*/
-		
+
 	//Save user and new hostel_id
 	//End of CHECK 3
+
+	//CHECK 4
+	//Check if user->food is set(if user has foodstand), if yes do nothing... user foodstand cannot be changed(only an admin can do that), else call method: createNewFood(user_id, type)
+
+	//private method createNewFood(user_id, type)
+	/**
+	 * Get collection of all available foodstands that have has same level as this user's level
+	 * has capacity greater than allocation
+	 * Iterate through all these foodstand and assign the one with lowest allocation to this user(consider even distribution)
+	 * allocation ++ for the assigned foodstand
+	 * save foodstand and exit iteration
+	 * return new food_id
+	 */
+
+	 //Save user and new food_id
+	//End of CHECK 4
+
 
 	
 
