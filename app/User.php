@@ -4,9 +4,9 @@ namespace App;
 
 use App\Food;
 use App\Post;
-// use App\User;
 use App\Hostel;
 use App\Payout;
+use App\Chapter;
 use App\Notification;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Notifications\Notifiable;
@@ -29,17 +29,13 @@ class User extends Authenticatable implements MustVerifyEmail
         'password', 'remember_token', 'id', 'created_at', 'updated_at'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-
-
     public function hostel(){
         return $this->belongsTo(Hostel::class);
     }
 
+    public function food(){
+        return $this->belongsTo(Food::class);
+    }
     public function foodstand(){
         return $this->belongsTo(Food::class);
     }
@@ -48,6 +44,9 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(User::class, 'uploaded_by');
     }
 
+    public function campus(){
+        return $this->belongsTo(Chapter::class, 'chapter');
+    }
 
     public function payouts(){
         return $this->hasMany(Payout::class);

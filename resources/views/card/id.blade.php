@@ -160,13 +160,17 @@
 				<img style="width:20%; height:10%" src="{{ asset('frontend/img/logo.png') }}">
 				<h2 class="name" style="margin-top: 10px; margin-bottom: 10px;">GOSPEL STUDENTS' FELLOWSHIP</h2>
 				<h2 class="alias" style="margin-top: 10px; margin-bottom: 10px;">21 BI-ENNIAL NATIONAL CONFERENCE</h2>
-				<p class="date">2nd April - 4th April 2020</p><br><br>
+				<p class="date">2nd April - 4th April 2020</p><br>
 			</div>
 			<div class="photo">
 				<h1>PARTICIPANT</h1>
 				<img src="{{ asset('frontend/img/dave.png') }}">
 			</div>
-			<h2 style="font-size:30px">Oghi David</h2>
+			<h3 style="font-size:25px">Name: {{ $user->name }}</h3>
+			<h3 style="font-size:15px">Campus </h3>
+			<span><b>{{ $user->campus->name  }}</b></span>
+			<h3 style="font-size:15px"> <strong>Hostel:</strong> {{ isset($user->hostel->name) ? $user->hostel->name : 'Registration incomplete'  }}</h3>
+			<h3 style="font-size:15px"> <b>Food Stand:</b> {{ isset($user->food->name) ? $user->food->name : 'Registration incomplete'  }}</h3>
 			<div class="qr-code">
 				<img src="{{ asset('frontend/img/qr.png') }}">
 			</div>

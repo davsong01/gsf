@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'Users')
+@section('title', 'My Participants')
 @section('active')
-<li class="breadcrumb-item">Users</li>
+<li class="breadcrumb-item">My Participants</li>
 @endsection
 @section('content')
 <div class="content-body">
@@ -12,7 +12,9 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">My Participants</h4>
-                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new participant</a>
+                        @if(auth()->user()->slot >  auth()->user()->slot_filled)
+                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new participant <strong>({{ (auth()->user()->slot -  auth()->user()->slot_filled) }} slot(s) left)</strong></a>  
+                        @endif
                         @include('includes.alerts')
                         
                     </div>
@@ -39,7 +41,7 @@
                                         <tr>
                                             <td>{{ $count }}</td>
                                             <td>{{ $participant->conference_number }}</td>
-                                            <td>@if($participant->status == 'Complete'))
+                                            <td>@if($participant->registration_status == 'Complete')
                                                 <i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small> @else
                                                 <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Pending</small>
                                                 @endif
@@ -57,9 +59,15 @@
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Edit User" href="{{ route('users.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
                                             </a>
-                                            <a class="actions" data-toggle="tooltip" title=" View/download Conferene I.D" href="{{ route('users.edit', $participant->id) }}"> <i class="fa fa-print actions"></i></
+                                            
+                                            @if($participant->registration_status == 'Complete')
+                                            <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('user.card', $participant->id) }}"> <i class="fa fa-print actions"></i></
                                             </a>
                                            
+                                            <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('meal.ticket', $participant->id) }}"> <i class="icon-food actions"></i></
+                                            </a>
+                                            @endif
+                                          
                                             {{-- <a class="actions" data-toggle="tooltip" data-placement="top" title="Switch To"
                                                 href="{{ route('switchuser', $participant->id) }}"><i
                                                     class="fa fa-unlock actions"></i>

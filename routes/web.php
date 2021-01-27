@@ -42,11 +42,12 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('hostels', 'HostelController');
 
-    Route::get('user/card/{id}', 'AccountController@getcard')->name('user.card');
+    Route::get('user/card/{id}', 'AccountController@getCard')->name('user.card');
+    Route::get('user/meal/{id}', 'AccountController@getMealTicket')->name('meal.ticket');
 
-    Route::get('id', function(){
-        return view('card.id');
-    });
+    // Route::get('id', function(){
+    //     return view('card.id');
+    // });
     
     Route::get('hostels/delete/{id}', 'HostelController@destroy')->name('hostels.delete');
 

@@ -102,9 +102,9 @@ class PaymentController extends Controller
 
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '2'){
                 $data['slot'] = $data['amount'] / Setting::select('registration_fee')->first()->value('registration_fee');
-                 $ledge = 'AOP';
-                 $data['level'] = 'Moderator';
-                 $data['slot_filled'] = 1;
+                $ledge = 'AOP';
+                $data['level'] = 'Moderator';
+                $data['slot_filled'] = 1;
             }
 
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '3'){

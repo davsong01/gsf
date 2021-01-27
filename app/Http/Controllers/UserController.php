@@ -5,12 +5,15 @@ use DB;
 use App\Food;
 use App\User;
 use App\Hostel;
+use App\Chapter;
+use App\Setting;
 use App\Exports\UsersExport;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
+use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Schema;
 
 
@@ -42,44 +45,93 @@ class UserController extends Controller
 
     public function create()
     {
-        if(auth()->user()->permission == 2){
+        $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+
+        if(auth()->user()->level == 'Admin'){
             return view('admin.users.create');
-        }return back(404);
+        }else if(auth()->user()->level == 'Moderator'){
+            return view('moderator.users.create', compact('chapters'));
+        }
+        
+        return back(404);
         
     }
 
-    public function store(Request $request)
+    public function store(Request $request, User $user)
     {
-        
-        if(auth()->user()->permission == 2){
-            $data = $this->validate($request, [
-                'name' => 'nullable|min:3',
-                'username' => 'required|min:3|max:200',
-                'email' => 'required|unique:users,email',
-                'verify' => 'required',
-                'phone' => 'nullable',
-                'password' => 'required|min:8',
-                'permission' => 'required|numeric',
-            ]);
+       
+        //Validate request
+        $data = $this->validate($request, [
+            'name' => 'required|min:3',
+            'chapter' => 'required|numeric',
+            'email' => 'required|unique:users,email',
+            'phone' => 'required',
+            'sex' => 'required',
+            'passport' => 'required|max:200',
+            'password' => 'nullable',
+           
+        ]);
+
+        //Handle password
+        if($request['password']){
+            $password = Hash::make($request['password']);
+        }else $password = Hash::make($request['phone']);
+
+        //Handle Passport Upload
+        //get filename with extension
+        $imgName = $request->passport->getClientOriginalName();
+        $passport = Image::make($request->passport)->resize(500, 500);
+        $passport->save('frontend/passports'.'/'.$imgName);
+        $passportPath = 'frontend/passports'.'/'.$imgName;
+
+ 
+        //Store block for Admin
+        if(auth()->user()->level == 'Admin'){
+
+
+        }
+        else if(auth()->user()->level == 'Moderator'){
+            //Check if moderator has slots available
+            if(auth()->user()->slot_filled >= auth()->user()->slot){
+                return back()->with('warning', 'You can no longer add participants because you have used up all available slots');
+            }
+
+            //Assign hostel and food stand here
+            
 
             try{  
-                User::create([
-                'name' => $request['name'],
-                'username' => $request['username'],
-                'email' => $request['email'],
-                'email_verified_at' => $request['verify'],
-                'phone' => $request['phone'],
-                'permission' => $request['permission'],
-                'password' =>  Hash::make($request['password']),
+                $newuser = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'sex' => $data['sex'],
+                'chapter' => $data['chapter'],
+                'passport' => $passportPath,
+                'type' => 1,
+                'level' => 'Participant',
+                'uploaded_by' => auth()->user()->id,
+                'password' =>  $password,
+                 'amount_paid' => Setting::select('registration_fee')->first()->value('registration_fee'),
+                 'registration_status' => 'Complete'
                 ]);
     
-            }catch (\Illuminate\Database\QueryException $ex) {
-                $error = $ex->getMessage();        
-                return back()->with('error', $error);
+                $newuser->update([
+                'conference_number' =>'GSF-AOP-'.$newuser->id,
+                ]);
+
+                auth()->user()->update([
+                'slot_filled' => auth()->user()->slot_filled + 1,
+                ]);
+
+            }catch (\Illuminate\Database\QueryException $ex) {     
+                return back()->with('error', $ex);
             }
+
+            return back()->with('message', 'Participant successfully created, you have '.(auth()->user()->slot - auth()->user()->slot_filled). ' participant slot(s) left');
         
-            return back()->with('message', 'User successfully created');
-        }return back(404);
+        
+            
+        } return abort(404);
 
     }
     public function show($id)
@@ -110,7 +162,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        dd($request->all());
+      
         if(auth()->user()->level == 'Admin'){
         //handle password
             if($request['password']){
@@ -125,7 +177,12 @@ class UserController extends Controller
                 }
 
             return redirect()->back()->with('message', 'Update successful!');
-        }return abort(404);
+        }else if(auth()->user()->level == 'Moderator'){
+            //Moderator updates here
+            dd($user, $request->all());
+        }
+        
+        return abort(404);
 
     }
     

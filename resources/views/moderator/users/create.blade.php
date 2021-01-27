@@ -1,10 +1,10 @@
 @extends('layouts.dashboard')
-@section('title', 'Create User')
+@section('title', 'Add new participant')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('users.index') }}">Users</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('users.index') }}">Participant</a></li>
 @endsection
 @section('active')
-<li class="breadcrumb-item">Create User</li>
+<li class="breadcrumb-item">Add New Participant</li>
 @endsection
 @section('content')
 <div class="content-body">
@@ -14,63 +14,102 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Add New User</h4>
+                        <h4 class="card-title">Add New Participant</h4>
                         @include('includes.alerts')
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('users.store') }}" method="POST">
-                            @csrf
-                            <div class="col-md-12 col-sm-12">
-                                <fieldset class="form-group">
-                                    <label for="name">Name</label>
-                                    <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" placeholder="Enter name">
-                                </fieldset>
+                            <form
+                                action="{{ route('users.store') }}"
+                                onsubmit="return confirm('I am sure all my detailss are correct and current');"
+                                method="POST" enctype="multipart/form-data">
+                                @csrf
+                              
+                                <div class="row">
+                                    <div class="col-md-6 col-sm-12">
+                                        <fieldset class="form-group">
+                                            <label for="name">Name</label>
+                                            <input type="text" class="@error('name')is-invalid @enderror form-control"
+                                                id="name" name="name"
+                                                value="{{ old('name') }}"
+                                                placeholder="Enter name">
+                                        </fieldset>
 
-                                <fieldset class="form-group">
-                                    <label for="username">Username</label>
-                                    <input type="text" class="form-control" name="username" id="username" value="{{ old('username') }}" placeholder="Enter Username" required>
-                                </fieldset>
+                                        <fieldset class="form-group">
+                                            <label for="email">Email</label>
+                                            <input type="email" id="email" name="email"
+                                                class="form-control @error('email')is-invalid @enderror"
+                                                value="{{ old('email') }}"  placeholder="Enter email"
+                                                required>
+                                            </fieldset>
 
-                                <fieldset class="form-group">
-                                    <label for="email">Email</label>
-                                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter Email" value="{{ old('email') }}" required>
-                                </fieldset>
+                                        <fieldset class="form-group">
+                                            <label for="phone">Phone</label>
+                                            <input type="phone" id="phone" name="phone"
+                                                class="form-control @error('phone')is-invalid @enderror"
+                                                value="{{ old('phone') }}"  placeholder="Enter phone"
+                                                required>
+                                          
+                                        </fieldset>
 
-                                <fieldset class="form-group">
-                                    <label for="verify">Verify?</label>
-                                    <select class="form-control" name="verify" id="verify" required>
-                                        <option value="{{ now() }}" {{ old('verify') == now() ? 'selected' : '' }}>Yes</option>
-                                        <option value="NULL" {{ old('verify') == NULL ? 'selected' : '' }} >No</option>
-                                    </select>
-                                </fieldset>
-                           
-                                <fieldset class="form-group">
-                                    <label for="phone">Phone</label>
-                                    <input type="text" class="form-control" name="phone" id="username" value="{{ old('phone') }}" placeholder="Enter phone">
-                                </fieldset>
+                                        <fieldset class="form-group">
+                                            <label for="sex">Gender</label>
+                                            <select class="form-control @error('sex')is-invalid @enderror" name="sex"
+                                                id="sex" required>
+                                                <option value="">--Select Option--</option>
+                                                <option value="Male" {{ old('sex') == 'Male' ? 'selected' : '' }}>
+                                                    Male</option>
+                                                <option value="Female" {{ old('sex') == 'Female' ? 'selected' : '' }}>
+                                                    Female</option>
+                                            </select>
+                                           
+                                        </fieldset>
+                                       
+                                    </div>
+                                    <div class="col-md-6 col-sm-12">
+                                         <fieldset class="form-group @error('passport')is-invalid @enderror">
+                                            <label for="sex">Upload Passport (Only jpeg and png files of less than 200kb allowed)</label>
+                                            <input type="file" accept="image/*" class="form-control" name="passport"
+                                                id="passport" required>
+                                        </fieldset>
+                                        <fieldset class="form-group">
+                                            <label for="chapter">Campus</label>
+                                            <select class="form-control @error('chapter')is-invalid @enderror"
+                                                name="chapter" id="chapter" required>
+                                                {{-- //include chapter --}}
+                                                <option value="">--Select Campus--</option>
+                                                @foreach($chapters as $chapter)
+                                                    <option value="{{ $chapter->id }}"
+                                                        {{ old('chapter')  == $chapter->id ? 'selected' : '' }}>
+                                                        {{ $chapter->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </fieldset>
 
-                                <fieldset class="form-group">
-                                    <label for="password">Password</label>
-                                    <input type="text" class="form-control" name="password" id="username" value="{{ old('password') }}" placeholder="Enter password" required>
-                                </fieldset>
+                                      <fieldset class="form-group">
+                                            <label for="password">Password (Default password is this participant's phone number)</label><small class="text-muted"><i
+                                                    style="color:red">Leave blank except you want to change this participant's password
+                                                    password</i></small>
+                                            <input type="text" class="form-control" name="password" id="password"
+                                                value="{{ old('password') }}"
+                                                placeholder="Enter password">
+                                        </fieldset>
 
-                                <fieldset class="form-group">
-                                    <label for="verify">Permission</label>
-                                    <select class="form-control" name="permission" id="permission" required>
-                                        <option value="1" selected>User</option>
-                                        <option value="2">Admin</option>
-                                    </select>
-                                </fieldset>
-                                <button class="btn btn-primary" style="width:100%" type="submit">Submit</button>
-                                </form>
-                            </div>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <button class="btn btn-primary" style="width:100%" type="submit">Save</button>
+                            </form>
+
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
-    <!-- Basic Inputs end -->          
+</div>
+</section>
+<!-- Basic Inputs end -->
 </div>
 @endsection

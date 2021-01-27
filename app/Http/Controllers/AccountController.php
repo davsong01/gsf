@@ -13,6 +13,34 @@ use Illuminate\Support\Facades\Auth;
 
 class AccountController extends Controller
 {
+	public function getCard($id){
+		
+		$user = User::whereId($id)->first();
+
+		if(auth()->user()->level == 'Participant'){
+			$user = Auth::user();
+			if($user->registration_status != 'Complete'){
+				return back()->with('error', 'You must complete registration before viewing this resource');
+			}
+		}
+
+		if(auth()->user()->level == 'Moderator'){
+	
+			if($user->uploaded_by != auth()->user()->id ){
+				return abort(404);
+			}
+
+			if($user->registration_status != 'Complete'){
+				return back()->with('error', 'You must complete registration before viewing this resource');
+			}
+		}
+		// dd($user->food->name);
+		return view('card.id')->with('user', $user);
+		
+
+		
+	}
+
 	public function index()
 	{
         $chapters = Chapter::all();
@@ -34,13 +62,6 @@ class AccountController extends Controller
         }
 	}
 
-	/**
-	 * Update the given user.
-	 *
-	 * @param  \Illuminate\Http\Request  $request
-	 * @param  string  $id
-	 * @return \Illuminate\Http\Response
-	 */
 	public function update(Request $request, $id)
 	{
 		dd($request->all());

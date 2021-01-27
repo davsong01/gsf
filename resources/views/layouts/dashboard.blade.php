@@ -29,7 +29,7 @@
                         <p class="float-left pr-1 mb-0">@yield('previous')</p>
                         <div class="breadcrumb-wrapper col-12">
                             <ol class="breadcrumb p-0 mb-0">
-                                <li class="breadcrumb-item"><a href="/"><i class="bx bx-home-alt"></i></a>
+                                <li class="breadcrumb-item"><a href="/account"><i class="bx bx-home-alt"></i></a>
                                 </li>
                                 @yield('item')
                                 @yield('active')
