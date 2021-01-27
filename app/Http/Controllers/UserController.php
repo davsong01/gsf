@@ -30,7 +30,13 @@ class UserController extends Controller
             $participants = User::with(['hostel', 'moderator'])->whereLevel('Participant')->orwhere('level', 'Moderator')->orderBy('created_at', 'desc')->get();
             
         return view('admin.users.index', compact('participants', 'count'));
-        }return abort(404);
+        }else if(auth()->user()->level == 'Moderator'){
+             $participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'desc')->get();
+
+            return view('moderator.users.index', compact('participants', 'count'));
+        }
+        
+        return abort(404);
         
     }
 

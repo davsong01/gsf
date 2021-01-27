@@ -20,7 +20,7 @@
                 <li class="nav-item <?php echo e(Request::is('account*') ? 'active' : ''); ?>"><a href="/account"><i class="menu-livicon" data-icon="grid"></i><span class="menu-title" data-i18n="Kanban">Dashboard</span></a>
                 </li>
                 <?php if(auth::user()->level == 'Moderator'): ?>
-                <li class=" nav-item <?php echo e(Request::is('users*') ? 'active' : ''); ?>"><a href="<?php echo e(route('users.index')); ?>"><i class="menu-livicon livicon-evo-holder" data-icon="users"></i><span class="menu-title" data-i18n="User">All Participants</span></a>
+                <li class=" nav-item <?php echo e(Request::is('users*') ? 'active' : ''); ?>"><a href="<?php echo e(route('users.index')); ?>"><i class="menu-livicon livicon-evo-holder" data-icon="users"></i><span class="menu-title" data-i18n="User">My Participants</span></a>
                 </li>
                 <?php endif; ?>
                 <?php if(auth::user()->level == 'Admin'): ?>

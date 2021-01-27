@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use PDF;
 use App\User;
 use App\Chapter;
+use App\Hostel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
@@ -12,33 +13,57 @@ use Illuminate\Support\Facades\Auth;
 
 class AccountController extends Controller
 {
-    public function index()
-    {  
+	public function index()
+	{
         $chapters = Chapter::all();
-        if(auth()->user()->level == 'Admin'){
-            return view('admin.index');
-        }elseif(auth()->user()->level == 'Participant'){
-            return view('participant.index', compact('chapters'));
+        
+		if (auth()->user()->level == 'Admin') {
+			return view('admin.index');
+		} elseif (auth()->user()->level == 'Participant') {
+
+			return view('participant.index', compact('chapters'));
+		} elseif (auth()->user()->level == 'Moderator') {
+
+            $participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'desc')->get();
+
+            $pending_registration = $participants->where('pending_registration' , '=', 'Pending');
+
+            $completed_registration = $participants->where('registrationStatus', '=',' Complete');
+
+            return view('moderator.index', compact('chapters', 'pending_registration', 'completed_registration', 'participants'));
         }
+	}
 
-    }
+	/**
+	 * Update the given user.
+	 *
+	 * @param  \Illuminate\Http\Request  $request
+	 * @param  string  $id
+	 * @return \Illuminate\Http\Response
+	 */
+	public function update(Request $request, $id)
+	{
+		$this->validate($request, [
+			'name' => 'required',
+			'email' => 'required|unique:users,email,' . $id,
+			'phone' => 'required|unique:users,phone,' . $id,
+			'sex' => 'in:Male,Female',
+			'amount_paid' => 'required',
+			'payment_type' => 'required',
+			'chapter' => 'required', //|exists:chapters,id
+			'passport' => 'required|image'
+		]);
 
-    public function update($id){
-        $user = Auth::user();
-        dd($user);
-    }
+        $hostel_sorted = Hostel::orderBy('allocation', 'ASC')->get();
+        
+		$flagged = false;
+			$hostel_sorted->map(function($item, $key) use(&$flagged){
+				if($item->capacity != $item->allocation && !$flagged) {
+					$item->allocation++;
+					$flagged = true;
+					$item->save();
+				}
+			});
+	}
 
-     public function getcard($id)
-    {  
-        $user = User::find($id);
- ini_set('max_execution_time', 300);
-
-        //generate pdf from receipt view
-        $pdf = PDF::loadView('card.id', $user);
-        // $pdf = PDF::loadView('pdf.invoice', $data);
-        return $pdf->download( $user->name.'-id-card.pdf');
-   
-        return back()->with('message', 'I.D. Card hasbenn downloaded');
-
-    }
 }

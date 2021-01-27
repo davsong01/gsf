@@ -17,8 +17,13 @@ h6 {
     font-family: 'Oswald', sans-serif;
 }
 
+.slots_used{
+    color:red !important;
+}
 
-
+.slots_remaining{
+    color:green !important;
+}
 a {
     color: #454545;
     transition: .3s;

@@ -20,7 +20,7 @@
                 <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="menu-livicon" data-icon="grid"></i><span class="menu-title" data-i18n="Kanban">Dashboard</span></a>
                 </li>
                 @if(auth::user()->level == 'Moderator')
-                <li class=" nav-item {{ Request::is('users*') ? 'active' : '' }}"><a href="{{ route('users.index') }}"><i class="menu-livicon livicon-evo-holder" data-icon="users"></i><span class="menu-title" data-i18n="User">All Participants</span></a>
+                <li class=" nav-item {{ Request::is('users*') ? 'active' : '' }}"><a href="{{ route('users.index') }}"><i class="menu-livicon livicon-evo-holder" data-icon="users"></i><span class="menu-title" data-i18n="User">My Participants</span></a>
                 </li>
                 @endif
                 @if(auth::user()->level == 'Admin')

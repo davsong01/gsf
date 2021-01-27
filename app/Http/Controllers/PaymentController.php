@@ -21,6 +21,13 @@ class PaymentController extends Controller
 
     public function redirectToGateway(Request $request)
     {
+			$this->validate($request, [
+				'name' => 'required',
+				'email' => 'required|email',
+				'phone' => 'required',
+				'chapter' => 'required|exists:chapters,id'
+			]);
+			
         $type = json_decode($request['metadata'], true);
         $existing_email = TempUser::whereEmail($request->email)->first();
 
