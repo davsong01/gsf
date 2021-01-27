@@ -151,7 +151,7 @@
 														@enderror
                         </fieldset>
                          <fieldset class="form-group @error('passport')is-invalid @enderror">
-                            <label for="sex">Change Image</label>
+                            <label for="sex">Change Passport</label>
                             <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport" required>
 														@error('passport')
 														<span class="invalid-feedback" role="alert">
@@ -167,7 +167,7 @@
                                 {{-- //include chapter --}}
                                 <option value="">--Select Campus--</option>
                                 @foreach($chapters as $chapter)
-                                <option value="{{ $chapter }}" {{ auth()->user()->chapter == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
+                                <option value="{{ $chapter->id }}" {{ auth()->user()->chapter == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
                                 @endforeach
 														</select>
 														@error('chapter')
