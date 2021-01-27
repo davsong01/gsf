@@ -4,7 +4,7 @@ namespace App;
 
 use App\Food;
 use App\Post;
-use App\User;
+// use App\User;
 use App\Hostel;
 use App\Payout;
 use App\Notification;
