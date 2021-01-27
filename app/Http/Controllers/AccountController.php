@@ -53,7 +53,8 @@ class AccountController extends Controller
 			'chapter' => 'required', //|exists:chapters,id
 			'passport' => 'required|image'
 		]);
-			$user = User::findOrFail($id);
+		
+		$user = User::findOrFail($id);
 		$hostel_sorted = Hostel::where('level', $user->level?: 'Participant')
 		->where('type', $user->gender?: 'Male')
 		->orderBy('allocation', 'ASC')->get();
@@ -80,6 +81,60 @@ class AccountController extends Controller
 					$user->save();
 				}
 			});
+
 	}
+
+	//is request->sex set, if not, return back with error('Gender is required, I think the validation already takes care of this, we will retain this validation even in the excel upload) else continue
+	
+	//locate user
+	//Check if user->hostel_id is set(if user has hostel)
+
+	//CHECK 1
+
+	//if the user->hostel_id is set and type and level corresponds to the user current request hostel type and level, return back with success, 
+	
+	//CHECK 2
+	//if the user->hostel_id is NULL, call method: createNewHostel(user_id, $request->sex, level)
+
+	//private method createNewHostel(user_id, sex, level)
+		/*Get collection of all available hostels that:
+		*has same level as this user's level
+		*Has same type as this user's gender
+		*has capacity greater than allocation
+		*Iterate through all hostels and assign the one with lowest allocation to this user(consider even distribution)
+		*allocation ++ for the assigned hostel
+		*save hostel and exit iteration
+		*return new hostel_id, end of method
+		*/
+
+	//Save user and his new hostel_id
+	//End of CHECK 2
+
+	//CHECK 3
+	//if the user->hostel_id is set but hostel type(gender) DOES NOT correspond to the user current request->sex (i.e, user has hostel but is updating sex), call method updateUserHostel(user_hostel_id, $request->sex, level)
+
+	//private method updateUserHostel(user_hostel_id, sex, level)
+		/*Get user currently assigned hostel
+		*Allocation --
+		*save this hostel
+		*Get collection of all available hostels that:
+		*has same level as this user's level
+		*Has same type as this user's sex
+		*has capacity greater than allocation
+		*Iterate through all hostels and assign the one with lowest allocation to this user(consider even distribution)
+		*allocation ++ for the assigned hostel
+		*save hostel and exit iteration
+		*return new hostel_id
+		*/
+		
+	//Save user and new hostel_id
+	//End of CHECK 3
+
+	
+
+		
+
+	
+
 
 }
