@@ -53,15 +53,31 @@ class AccountController extends Controller
 			'chapter' => 'required', //|exists:chapters,id
 			'passport' => 'required|image'
 		]);
+			$user = User::findOrFail($id);
+		$hostel_sorted = Hostel::where('level', $user->level?: 'Participant')
+		->where('type', $user->gender?: 'Male')
+		->orderBy('allocation', 'ASC')->get();
 
-        $hostel_sorted = Hostel::orderBy('allocation', 'ASC')->get();
-        
 		$flagged = false;
-			$hostel_sorted->map(function($item, $key) use(&$flagged){
+			$hostel_sorted->map(function($item, $key) use(&$flagged, $user){
+
 				if($item->capacity != $item->allocation && !$flagged) {
+					// Has user been given a hostel
+					if($user->hostel_id){
+						$user->hostel->allocation--;
+						$user->hostel->save();
+					} else{
+						// $flagged = true;		
+						// $item->allocation++;
+						// $item->save();
+						// $user->hostel_id = $item->id;
+						// $user->save();
+					}
+					$flagged = true;	
 					$item->allocation++;
-					$flagged = true;
 					$item->save();
+					$user->hostel_id = $item->id;
+					$user->save();
 				}
 			});
 	}
