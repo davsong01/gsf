@@ -164,8 +164,9 @@ class AccountController extends Controller
 						$passport->destroy();
 						$user->passport = $image_path;
 					}
+					if($user->registration_status != 'Complete')
+						$user->registration_status = 'Complete';
 					$user->save(); // save the changes if any
-
 					return redirect()->route('account')->with('message', ':), updated was successful');
 				}
 				if ($item->capacity == $item->allocation && $collection->count() == $iterator) { // the last loop
