@@ -15,7 +15,7 @@
 @if(session()->get('any'))
 <div class="alert alert-warning" role="alert">
       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <strong>Whoops!</strong> {{ session()->get('any')}}
+      <strong>Whoops!</strong> {!! session()->get('any') !!}
 </div>
 @endif
 

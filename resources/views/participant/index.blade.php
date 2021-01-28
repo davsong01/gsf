@@ -145,13 +145,9 @@
 														@enderror
                         </fieldset>
                          <fieldset class="form-group @error('passport')is-invalid @enderror">
-                            <label for="sex">Change Passport</label>
-                            <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport" required>
-														@error('passport')
-														<span class="invalid-feedback" role="alert">
-															<strong>{{ $message }}</strong>
-														</span>
-														@enderror
+                            <label for="passport">Change Passport</label>
+                            <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">
+									
                         </fieldset>
                     </div>
                     <div class="col-md-6 col-sm-12">
@@ -200,7 +196,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-12 col-sm-12">
-                        <button class="btn btn-primary" style="width:100%" type="submit">Save</button>
+                        <button class="btn btn-primary" style="width:100%" type="submit">Complete Registration</button>
                         </form>
 
                     </div>

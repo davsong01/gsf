@@ -69,12 +69,12 @@ class AccountController extends Controller
 		$this->validate($request, [
 			'name' => 'required',
 			'email' => 'required|unique:users,email,' . $id,
-			'phone' => 'required|unique:users,phone,' . $id,
+			'phone' => 'required',
 			'sex' => 'in:Male,Female',
 			'amount_paid' => 'required',
 			'payment_type' => 'required',
 			'chapter' => 'required|exists:chapters,id',
-			'passport' => 'required|image'
+			'passport' => 'nullable|image'
 		]);
 
 		$user = User::findOrFail($id);
@@ -126,7 +126,7 @@ class AccountController extends Controller
 				$request
 			);
 		}
-		return redirect()->route('account')->with('error', ':( Ops, this is not you its us, looks like we could perform your request, please contact the admin, let us hope he know what to do.');
+		return redirect()->route('account')->with('error', ':( this is not you. It\'s us, looks like we could not complete your request, please contact the admin, let us hope he know what to do.');
 		// });
 	}
 
@@ -165,10 +165,10 @@ class AccountController extends Controller
 					$user->sex = $request->sex ?: $user->sex;
 					$user->save(); // save the changes if any
 
-					return redirect()->route('account')->with('message', ':) Great, updated was successful');
+					return redirect()->route('account')->with('message', ':) Great, update was successful');
 				}
 				if ($item->capacity == $item->allocation && $collection->count() == $iterator) { // the last loop
-					return redirect()->route('account')->with('error', ':( Ops, this is not you it\'s us, looks like there is no hostel available.');
+					return redirect()->route('account')->with('error', ':( Ops, this is not you it\'s us, looks like there is no hostel available at the moment.');
 				}
 			}
 		)->first(); // map always return collection array;
