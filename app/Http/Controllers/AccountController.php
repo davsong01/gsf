@@ -49,16 +49,16 @@ class AccountController extends Controller
 
 		if (auth()->user()->level == 'Admin') {
 			return view('admin.index');
-		} elseif (auth()->user()->level == 'Participant') {
+		} elseif (auth()->user()->level == 'Participant' || auth()->user()->level == 'Alumni' || auth()->user()->level == 'Nec') {
 
 			return view('participant.index', compact('chapters'));
 		} elseif (auth()->user()->level == 'Moderator') {
 
 			$participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'desc')->get();
 
-			$pending_registration = $participants->where('pending_registration', '=', 'Pending');
+			$pending_registration = $participants->where('registration_status', 'Pending');
 
-			$completed_registration = $participants->where('registrationStatus', '=', ' Complete');
+			$completed_registration = $participants->where('registration_status', 'Complete');
 
 			return view('moderator.index', compact('chapters', 'pending_registration', 'completed_registration', 'participants'));
 		}
@@ -70,7 +70,7 @@ class AccountController extends Controller
 		$this->validate($request, [
 			'name' => 'required',
 			'email' => 'required|unique:users,email,' . $id,
-			'phone' => 'required|unique:users,phone,' . $id,
+			'phone' => 'required',
 			'sex' => 'in:Male,Female',
 			'payment_type' => 'required',
 			'chapter' => 'required|exists:chapters,id',
