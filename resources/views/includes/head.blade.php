@@ -47,7 +47,6 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/tables/datatable/datatables.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/core/menu/menu-types/vertical-menu.css')}}">
     
-   
 
     <!-- END: Page CSS-->
 
@@ -61,7 +60,6 @@
     <!---Modal CSS-->
     <style>
 
- 
     .vertical-alignment-helper {
     display:table;
     height: 100%;
@@ -82,7 +80,11 @@
     height:inherit;
     /* To center horizontally */
     margin: 0 auto;
-    pointer-events:all;}
-       </style>
+    pointer-events:all;
+    }
+
+   
+    </style>
+     @yield('extra_styles')
 </head>
 <!-- END: Head-->

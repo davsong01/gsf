@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'Users')
+@section('title', 'Participants')
 @section('active')
-<li class="breadcrumb-item">Users</li>
+<li class="breadcrumb-item">Conference Participants</li>
 @endsection
 @section('content')
 <div class="content-body">
@@ -11,7 +11,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">All Users</h4>
+                        <h4 class="card-title">All Participants</h4>
                         <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
                         @include('includes.alerts')
                         

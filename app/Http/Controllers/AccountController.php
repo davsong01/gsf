@@ -35,7 +35,7 @@ class AccountController extends Controller
 				return back()->with('error', 'You must complete registration before viewing this resource');
 			}
 		}
-		// dd($user->food->name);
+
 		return view('card.id')->with('user', $user);
 		
 
@@ -74,7 +74,7 @@ class AccountController extends Controller
 			'amount_paid' => 'required',
 			'payment_type' => 'required',
 			'chapter' => 'required|exists:chapters,id',
-			'passport' => 'nullable|image'
+			'passport' => 'nullable|max:200|mimes:jpeg,jpg,png'
 		]);
 
 		$user = User::findOrFail($id);

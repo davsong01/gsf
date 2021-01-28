@@ -66,16 +66,14 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::post('postfilereplace', 'PostController@replaceFile')->name('file.replace');
 
     Route::resource('settings', 'SettingController');
-    Route::get('profile/{id}', 'SettingController@editProfile')->name('profile.edit');
+    
     Route::patch('profile', 'SettingController@saveProfile')->name('profile.save');
 
+    Route::resource('materials', 'MaterialController');
+    Route::get('material/delete/{id}', 'MaterialController@destroy')->name('materials.delete');
 
     Route::resource('payouts', 'PayoutController');
-    Route::get('payouts/restore/{id}', 'PayoutController@restore')->name('payouts.restore');
-    // Route::POST('appraise', 'AppraisalController@appraise')->name('appraise');
-    // Route::POST('update_profile/{id}', 'UserController@update_profile')->name('update_profile');
-    // Route::get('appraisal/{appraisee_id}/{allocation_id}', 'AppraisalController@appraisal')->name('appraisals');
-    // Route::POST('appraisal/submit', 'AppraisalController@handleAppraisalSubmit')->name('submit_appraisal');
+  
 });
 
 // Route::get('/switch/{id}', 'SwitchUserController@index')->name('switchuser')->middleware('SwitchUser');

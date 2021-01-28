@@ -8,79 +8,64 @@ use App\Http\Controllers\Controller;
 
 class MaterialController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        //
+        $count = 1;
+        if(auth()->user()->level == 'Admin'){
+            $materials = Material::all();
+            return view('admin.materials.index', compact('materials', 'count'));
+
+        }else if(auth()->user()->level == 'Participant' || auth()->user()->level == 'Moderator' || auth()->user()->level == 'Alumni' || auth()->user()->level == 'Nec'){
+            $materials = Material::all();
+        }else { return abort(404); }
+
+       
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view('admin.materials.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
+        $this->validate($request, [
+            'file*' => 'required|max:5000',
+        ]);
+
+        if(auth()->user()->level == 'Admin'){
+            foreach($request->file('file') as $file){
+
+                $file->move('conferencematerials', $file->getClientOriginalName());  
+
+                Material::create([
+                    'name' =>$file->getClientOriginalName(),
+                    'location' => 'conferencematerials/'.$file->getClientOriginalName(),
+                ]);
+            }
+
+            return redirect(route('materials.index'))->with('message', 'Upload Successful');
+        } return abort(404);
+
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Material  $material
-     * @return \Illuminate\Http\Response
-     */
+   
     public function show(Material $material)
     {
-        //
+        $realpath = $material->location;
+      
+        return response()->download($realpath);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Material  $material
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Material $material)
+    
+    public function destroy($id)
     {
-        //
-    }
+        $material = Material::find($id);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Material  $material
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Material $material)
-    {
-        //
-    }
+        unlink( $material->location);
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Material  $material
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Material $material)
-    {
-        //
+        $material->delete();
+        
+        return back()->with('message', 'Material deleted successfully');
     }
 }

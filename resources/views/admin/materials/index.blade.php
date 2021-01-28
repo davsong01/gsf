@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'Payout')
+@section('title', 'Materials')
 @section('active')
-<li class="breadcrumb-item">My Payments</li>
+<li class="breadcrumb-item">Conference Materials</li>
 @endsection
 @section('content')
 <div class="content-body">
@@ -11,8 +11,10 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Payout History</h4>
+                        <h4 class="card-title">All materials</h4>
+                        <a href="{{ route('materials.create') }}" class="btn btn-primary mt-1">Upload new material</a>
                         @include('includes.alerts')
+                        
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -21,22 +23,23 @@
                                     <thead>
                                         <tr>
                                             <th>S/N</th>
-                                            <th>Amount Requested</th>
-                                            <th>Date Requested</th>
-                                            <th>Status</th>
-                                            <th>Date Paid</th>
-                                             <th>Amount Paid</th>
+                                            <th>Name</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($payouts as $payout)
+                                        @foreach($materials as $material)
                                         <tr>
-                                            <td>{{ $i ++ }}</td>
-                                            <td>{!! $setting->default_currency !!} {{ $payout->amount_requested }}</td>
-                                            <td>{{ $payout->created_at }}</td>
-                                            <td><a href="#" class="btn btn-primary mt-1">{{ $payout->status }}</a></td>
-                                            <td>{{ $payout->paid_at }}</td>
-                                            <td>{!! $setting->default_currency !!} {{ $payout->amount_paid }}</td>
+                                            <td>{{ $count }}</td>
+                                            
+                                            <td>{{ $material->name }}</td>                                           
+                                            <td>
+                                                 <a class="actions" data-toggle="tooltip" title="Download Material" href="{{ route('materials.show', $material->id) }}"> <i class="bx bxs-download actions"></i>
+                                                </a>
+                                           
+                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete material" href="{{ route('materials.delete', $material->id) }}"> <i class="fa fa-trash"></i></
+                                            </a>
+                                            </td>
                                         </tr>
                                       
                                         @endforeach

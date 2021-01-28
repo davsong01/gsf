@@ -14,9 +14,15 @@ class PayoutController extends Controller
     public function index()
     {
         $i = 1;
-        if(auth()->user()->permission == 1){
+        if(auth()->user()->level == 'Participant'){
 
-            $payouts = Payout::whereUserId(auth()->user()->id)->orderBy('created_at', 'DESC')->get();
+            return view('participant.payout', compact('i'));
+
+        }
+
+        if(auth()->user()->level == 'Admin'){
+
+            $payouts = User::whereUserId(auth()->user()->id)->orderBy('created_at', 'DESC')->get();
 
             return view('user.payout', compact('i', 'payouts'));
         }
