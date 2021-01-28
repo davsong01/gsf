@@ -9,7 +9,7 @@ class Chapter extends Model
 {
     protected $guarded = [];
     
-    public function user(){
+    public function users(){
         return $this->hasMany(User::class);
     }
 }

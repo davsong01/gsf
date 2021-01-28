@@ -6,7 +6,6 @@
 @section('content')
 <div class="content-body">
     @include('includes.alerts')
-    @if(auth()->user()->wallet >= $setting->min_payout_amount)
     <!-- Dashboard Ecommerce Starts -->
     <section id="dashboard-ecommerce">
         <div class="row">
@@ -37,15 +36,11 @@
                                                                    
                                     <a href="{{ route('user/card', $user->id) }}" onclick="return false;"  class="btn btn-primary glow"> <i class="fa fa-download" aria-hidden="true"></i> Download Conference I.D. card
                                     </a>
-                                     <a href=""  >
+                                     <a href="{{ route('meal.ticket', $user->id) }}"  >
                                         <button type="button" onclick="return confirm('You are about to download your conference meal ticket?');" class="btn btn-primary glow">Download Conference Meal ticket
                                         </button>
                                     </a> 
 
-                                    <a data-toggle="tooltip" data-placement="top" title="Print E-receipt"
-                                        class="btn btn-warning" href=""><i
-                                            class="fa fa-print"></i>
-                                </a>
                                     @endif
                                    
                                 </div>
@@ -169,31 +164,31 @@
                                 @foreach($chapters as $chapter)
                                 <option value="{{ $chapter->id }}" {{ auth()->user()->chapter == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
                                 @endforeach
-														</select>
-														@error('chapter')
-														<span class="invalid-feedback" role="alert">
-															<strong>{{ $message }}</strong>
-														</span>
-														@enderror
+                                </select>
+                                @error('chapter')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                                @enderror
                         </fieldset>
 
                         <fieldset class="form-group">
                             <label for="amount">Amount Paid</label>
-														<input type="number" id="amount" name="amount_paid" class="form-control @error('amount_paid')is-invalid @enderror" value="{{ old('amount_paid') ?? auth()->user()->amount_paid }}" required>
-														@error('amount_paid')
-														<span class="invalid-feedback" role="alert">
-															<strong>{{ $message }}</strong>
-														</span>
-														@enderror
+                            <input type="number" id="amount" name="amount_paid" class="form-control @error('amount_paid')is-invalid @enderror" value="{{ old('amount_paid') ?? auth()->user()->amount_paid }}" required>
+                            @error('amount_paid')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                            @enderror
                         </fieldset>
                         <fieldset class="form-group">
                             <label for="payment_type">Payment Type</label>
-														<input type="text" id="payment_type" name="payment_type" class="form-control @error('payment_type')is-invalid @enderror" value="{{ old('payment_type') ?? auth()->user()->payment_type }}" required>
-														@error('payment_type')
-														<span class="invalid-feedback" role="alert">
-															<strong>{{ $message }}</strong>
-														</span>
-														@enderror
+                            <input type="text" id="payment_type" name="payment_type" class="form-control @error('payment_type')is-invalid @enderror" value="{{ old('payment_type') ?? auth()->user()->payment_type }}" required>
+                            @error('payment_type')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                            @enderror
                         </fieldset>
                         
                         <fieldset class="form-group">
