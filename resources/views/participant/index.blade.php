@@ -52,7 +52,6 @@
             </div>               
         </div>
     </section>
-    @endif
 </div>
 <div class="content-body">
     <!-- Basic Inputs start -->
