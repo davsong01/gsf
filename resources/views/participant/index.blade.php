@@ -136,8 +136,8 @@
                             <label for="sex">Sex</label>
                             <select class="form-control @error('sex')is-invalid @enderror" name="sex" id="sex" required>
                                 <option value="">--Select Option--</option>
-                                <option value="Male" {{ auth()->user()->sex == 'Male' ? 'selected' : ''}}>Male</option>
-                                <option value="Female" {{ auth()->user()->sex == 'Female' ? 'selected' : ''}}>Female</option>
+                                <option value="Male" {{ (auth()->user()->sex == 'Male' || old('sex') == 'Male') ? 'selected' : ''}}>Male</option>
+                                <option value="Female" {{ (auth()->user()->sex == 'Female' || old('sex') == 'Female') ? 'selected' : ''}}>Female</option>
 														</select>
 														@error('sex')
 														<span class="invalid-feedback" role="alert">
