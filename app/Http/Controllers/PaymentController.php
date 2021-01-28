@@ -7,6 +7,7 @@ use App\User;
 use Paystack;
 use App\Setting;
 use App\TempUser;
+use Carbon\Carbon;
 use App\Mail\AdminMail;
 use App\Mail\Welcomemail;
 use Illuminate\Http\Request;
@@ -21,24 +22,33 @@ class PaymentController extends Controller
 
     public function redirectToGateway(Request $request)
     {
+        $setting = Setting::first();
+        if($setting->close_registration < now()){
+            return redirect(url('/#register'))->with('warning', 'Registration for this program has closed');
+        }
+
 			$this->validate($request, [
-				'name' => 'required',
+				'name' => 'required|',
 				'email' => 'required|email',
 				'phone' => 'required',
-				'chapter' => 'required|exists:chapters,id'
+				'chapter' => 'nullable'
 			]);
 			
         $type = json_decode($request['metadata'], true);
+            
         $existing_email = TempUser::whereEmail($request->email)->first();
 
         if(!$existing_email){
+            
             //Create new details in temp users
             TempUser::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'type' => $type['type'],
-                'chapter' => $request->chapter
+                'chapter' => $request->chapter ? $request->chapter : NULL,
+                'state' => $request->state ? $request->state : NULL,
+
             ]);
         }
         
@@ -61,17 +71,24 @@ class PaymentController extends Controller
 
         //Validate Alumni Registration
         if(isset($type['type']) && $type['type'] == '3'){
-            
+
             //check amount
-            if($request->amount <> (Setting::select('alumni_fee')->first()->value('alumni_fee') * 100)){
-                return redirect(url('/#register'))->with('error', 'Invalid amount');
+            if($request->amount < (Setting::select('alumni_fee')->first()->value('alumni_fee'))){
+                return back()->with('error', 'You cannot pay less than '. Setting::select('alumni_fee')->first()->value('alumni_fee') * 100);
             }
+
+            try{
+            return Paystack::getAuthorizationUrl()->redirectNow();
+        }catch(\Exception $e) {
+            return back()->with('error', 'Transaction token has expired or details not correct. Please refresh the page and try again');
+        }  
         }
+
 
         try{
             return Paystack::getAuthorizationUrl()->redirectNow();
         }catch(\Exception $e) {
-            return redirect(url('/#register'))->with('error','Transaction token has expired or details not correct. Please refresh the page and try again');
+            return redirect(url('/#register'))->with('error',$e.'Transaction token has expired or details not correct. Please refresh the page and try again');
         }        
     }
 
@@ -114,7 +131,6 @@ class PaymentController extends Controller
                 $data['slot_filled'] = 1;
             }
 
-
             try{
             // Create new user
             $user = User::Create([
@@ -129,18 +145,17 @@ class PaymentController extends Controller
                 'amount_paid' => $data['amount'],
                 'password' => $password,
                 'payment_type' => $data['payment_type'],
-                'transid' => $data['transid'],
+                'transid' => $data['transid']
             ]);
-         
+        
             $user->update([
-                 'conference_number' =>'GSF-'.$ledge.'-'.$user->id,
+                'conference_number' =>'GSF-'.$ledge.'-'.$user->id,
             ]);
 
             }catch (\Illuminate\Database\QueryException $ex) {
                 return redirect(route('index'))->with('error', $ex);
             }            
 
-            
             $data['conference_number'] = $user->conference_number;
 
             //delete temp user
@@ -154,7 +169,9 @@ class PaymentController extends Controller
             Mail::to(Setting::select('official_email')->first()->value('official_email'))->send(new AdminMail($data));
        
             //include thankyou page
-            return view('thankyou', compact('data'));
+            $setting = Setting::first();
+            $conference_year = Carbon::parse($setting->start_date)->year;
+            return view('thankyou', compact('data', 'conference_year'));
 
         }else {
             dd('Transaction failed! We have not received any money from you.');

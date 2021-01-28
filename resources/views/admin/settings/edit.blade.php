@@ -82,7 +82,15 @@
                                     </fieldset>
                                 </div>
                                 
-                                
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="close_registration">Registration Close date</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="date" class="form-control" name="close_registration" value="{{ old('close_registration') ?? $setting->close_registration }}" id="close_registration">
+                                       <div class="form-control-position">
+                                            &#128197;
+                                        </div>
+                                    </fieldset>
+                                </div>
                                 
                                 <div class="col-sm-12 col-md-12">
                                     <label for="conference_overview">Conference Overview</label><small> You can use html tags here</small>

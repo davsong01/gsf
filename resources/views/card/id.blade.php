@@ -158,8 +158,8 @@
 		<div class="id-card">
 			<div class="header">
 				<img style="width:20%; height:10%" src="{{ asset('frontend/img/logo.png') }}">
-				<h2 class="name" style="margin-top: 10px; margin-bottom: 10px;">GOSPEL STUDENTS' FELLOWSHIP</h2>
-				<h2 class="alias" style="margin-top: 10px; margin-bottom: 10px;">21 BI-ENNIAL NATIONAL CONFERENCE</h2>
+				<h2 class="name" style="margin-top: 10px; margin-bottom: 10px;">GOFAMINT STUDENTS' FELLOWSHIP</h2>
+				<h2 class="alias" style="margin-top: 10px; margin-bottom: 10px;">19th Biennial National Conference</h2>
 				<p class="date">2nd April - 4th April 2020</p><br>
 			</div>
 			<div class="photo">

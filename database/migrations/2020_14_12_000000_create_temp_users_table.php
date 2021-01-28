@@ -20,6 +20,7 @@ class CreateTempUsersTable extends Migration
             $table->string('phone');
             $table->string('type');
             $table->string('chapter')->nullable();
+            $table->string('state')->nullable();
             
             $table->timestamps();
         });

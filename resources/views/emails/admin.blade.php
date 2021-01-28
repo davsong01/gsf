@@ -2,11 +2,11 @@
 
 Dear Admin,
 @if ($data['level'] == 'Moderator' || $data['level'] == 'Participant')
-A participant has just registered for the GSF Conference, Please find details below:
+A participant has just registered for the GSF National Conference, Please find details below:
 @endif
 
 @if ($data['level'] == 'Alumni')
-An Alumni has just registered for the GSF Conference, Please find details below:
+An Alumni has just registered for the GSF National Conference, Please find details below:
 @endif
 
 <strong>Name: </strong> {{ $data['name'] }} <br>

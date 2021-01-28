@@ -19,6 +19,7 @@ Route::get('/tac', function () {
 })->name('tac');
 
 Route::get('/', 'HomeController@index')->name('index');
+Route::get('/nec/registration/portal/pay', 'HomeController@necRegistration')->name('nec.registration');
 Route::post('/pay', 'PaymentController@redirectToGateway')->name('pay');
 Route::get('/payment/callback', 'PaymentController@handleGatewayCallback');
 

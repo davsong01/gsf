@@ -9,22 +9,17 @@
             <div class="row align-items-center">
                 <div class="col-md-12">
                     <div class="section-header">
-                        {{-- <p>GSF History</p> --}}
-                        <h2>Title of the conference</h2>
+                        <h2>{{ $setting->conference_theme }}</h2>
                     </div>
                     <div class="about-text">
                         <div >
-                            <img class="center" src="{{ asset('frontend/img/yvonne.jpeg') }}" alt="Image" style=" border-radius: 50%; display: block; margin-left: auto; margin-right: auto; width: 20%;">
+                            <img class="" src="{{ asset('frontend/img/banner.jpg') }}" alt="Image" style=" border-radius: 5%; display: block; margin-left: auto; margin-right: auto; width: 60%;"><br>
                         </div> 
                         <p>
-                        Arising from the continuous growth in key service industries of financial services and telecommunications sectors of the West Africa economies, in 2014, key customer service professionals from the region with background in service delivery in banking and telecommunications started a
-                        network of like minds educating and imparting customer service skills and training in this spheres.<br> <br> 
-                            
-                        This network combined education and best practices translating to grooming of service officers and operating systems for organizations. While Nigeria
-                            and Ghana network of professionals pioneered this frontier, the network also attracted customer service practitioners from Cote D&rsquo;Ivore, The Gambia and Senegal.
+                            {!! $setting->conference_overview!!}
                         </p>
                     
-                        <a class="btn submit" href="https://theGSF.com/english/history" style="width:100%" target="_blank">Read more</a>
+                        {{-- <a class="btn submit" href="https://theGSF.com/english/history" style="width:100%" target="_blank">Read more</a> --}}
                     </div>
                 </div>
             
@@ -44,9 +39,12 @@
             <div class="row align-items-center">
             
                 <div class="col-md-12">
-                    <p style="text-align:center">There are 3 categories of registration</p>
+                    <img class="center" src="{{ asset('frontend/img/register.jpg') }}" alt="Image" style=" border-radius: 10%; display: block; margin-left: auto; margin-right: auto; width: 20%;">
+                    <br>
+                    <p style="text-align:center">Toggle corresponding button below to register as an individual, register in bulk for your fellowship or register as an alumni. You will be required to make this payment online click proceed to payment</p>
                     @include('includes.falerts')
                 </div>
+                 @if($setting->close_registration >= date('Y-m-d'))
                 <div class="col-md-4 col-sm-6" id="individualregbutton">
                     <a class="btn submit" onclick="myFunction()" id="individualregbutton" data-toggle="tooltip" data-placement="top"
                         title="Individual registration" style="width:100%">Individual</a>
@@ -59,7 +57,11 @@
                     <a class="btn submit" onclick="myFunction3()" id="alumniregbutton" data-toggle="tooltip" data-placement="top"
                         title="Register as an alumni"  style="width:100%">Alumni</a>
                 </div>               
-               
+                @else
+                <div class="col-md-12 col-sm-12">
+                <h2 style="text-align: center;">REGISTRATION HAS NOW CLOSED!!!</h2>
+                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -85,7 +87,7 @@
                     </div>
                     <div class="about-text">
                         <div >
-                            <img class="center" src="{{ asset('frontend/img/network.jpeg') }}" alt="Image" style=" border-radius: 10%; display: block; margin-left: auto; margin-right: auto; width: 40%;"> <br>
+                            <img class="center" src="{{ asset('frontend/img/sponsor.jpg') }}" alt="Image" style=" border-radius: 10%; display: block; margin-left: auto; margin-right: auto; width: 60%;"> <br>
 
                         </div> 
                         <p style="text-align:center">Are you led to sponsor the conference, no amount is too small nor big. Please click button below to donate

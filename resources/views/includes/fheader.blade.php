@@ -1,6 +1,6 @@
 <head>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>GSF - The Gospel Student's Fellowship</title>
+        <title>GSF - Gofamint Student's Fellowship</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta property="og:title" content="GSF - 2021 Conference"> 

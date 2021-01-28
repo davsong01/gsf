@@ -1,91 +1,80 @@
-<div class="container">
-    <div class="row align-items-center">
-        <div class="col-md-12">
+ @if($setting->close_registration >= date('Y-m-d'))
+                            {{-- Include form --}}
+                            <div class="about">
+                                <div class="container">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-12">
+                                            <hr>
+                                            <div class="contact-form">
+                                                <div id="success">
+                                                    <h6 style="color:green">Kindly fill the form below and click process
+                                                        donation
+                                                    </h6>
+                                                </div>
+                                                <form action="{{ route('pay') }}" method="POST">
+                                                    @csrf
+                                                    <div class="control-group">
+                                                        <label>Full Name</label>
+                                                        <input type="text" class="form-control" id="name" name="name"
+                                                            placeholder="Enter your full name" required="required">
+                                                    </div>
 
-            <div class="contact-form">
-                <div id="success"></div>
-                <form action="" method="POST">
-                    @csrf
-                    <div class="control-group">
-                        <label>Membership ID</label>
-                        <input type="text" class="form-control" id="membership_id" name="membership_id"
-                            placeholder="Enter Your GSF membership ID" required="required"
-                            data-validation-required-message="Please enter your GSF membership ID" />
+                                                    <div class="control-group">
+                                                        <label>Email</label>
+                                                        <input type="email" class="form-control" id="email" name="email"
+                                                            placeholder="Enter your email" required="required">
+                                                    </div>
+                                                    <div class="control-group">
+                                                        <label>State</label>
+                                                        <input type="text" class="form-control" id="state" name="state"
+                                                            placeholder="Your Location" required="required">
+                                                    </div>
+                                                    <div class="control-group">
+                                                        <label>Phone</label>
+                                                        <input type="text" class="form-control" id="phone" name="phone"
+                                                            placeholder="Enter your phone number" required="required">
+                                                    </div>
 
-                        @if($errors->has('any'))
-                            <span class="help-block">
-                                <i style="color:red">{{ $errors->first('any') }}</i>
-                            </span>
-                        @endif
-                    </div>
+                                                    <div class="control-group">
+                                                        <label>Enter amount</label>
+                                                        <input type="number" class="form-control" id="donations"
+                                                            name="donations"
+                                                            value="{{ old('donations') }}"
+                                                            placeholder="Amount you want to donate" min="1000"
+                                                            required="required">
+                                                    </div>
 
-                    <div class="control-group">
-                        <label>Location of training</label>
-                        <select name="location" id="location" class="form-control" required>
-                            <option value="">-- Select Option --</option>
-                            <option value="Online"
-                                {{ old('location') == 'Online' ? 'selected' : '' }}>
-                                Online</option>
-                            <option value="Ikeja"
-                                {{ old('location') == 'Ikeja' ? 'selected' : '' }}>
-                                Ikeja</option>
-                            <option value="Lekki"
-                                {{ old('location') == 'Lekki' ? 'selected' : '' }}>
-                                Lekki</option>
-                            <option value="Abuja"
-                                {{ old('location') == 'Abuja' ? 'selected' : '' }}>
-                                Abuja</option>
-                            <option value="PHC"
-                                {{ old('location') == 'PHC' ? 'selected' : '' }}>
-                                PHC</option>
-                            <option value="Accra"
-                                {{ old('location') == 'Accra' ? 'selected' : '' }}>
-                                Accra</option>
-                            <option value="Banjul"
-                                {{ old('location') == 'Banjul' ? 'selected' : '' }}>
-                                Banjul</option>
-                            <option value="Freetown"
-                                {{ old('location') == 'Freetown' ? 'selected' : '' }}>
-                                Freetown</option>
-                            <option value="Monrovia "
-                                {{ old('location') == 'Monrovia ' ? 'selected' : '' }}>
-                                Monrovia </option>
-                        </select>
-                        @if($errors->has('location'))
-                            <span class="help-block">
-                                <i style="color:red">{{ $errors->first('location') }}</i>
-                            </span>
+                                                    <br>
+                                                    {{-- <input type="hidden" name="orderID" value="345"> --}}
+                                                    <input type="hidden" name="amount" id="amount" >
+                                                    {{-- required in kobo --}}
+                                                    <input type="hidden" name="quantity" value="1">
+                                                    <input type="hidden" name="currency" value="NGN">
+                                                    <input type="hidden" name="metadata"
+                                                        value="{{ json_encode($array = ['type' => '4',]) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                    <script>
+                                                        var donations = document.getElementById('donations');
+                                                        var amount = document.getElementById('amount');
+
+                                                        donation.addEventListener('input', function () {
+                                                            amount.value = 'iiii';
+                                                        });
+                                                    </script>
+
+                                                    <div class="control-group">
+                                                        <button class="btn submitregistration" type="submit"
+                                                            style="width:100%">Process donation </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <hr>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="col-md-12 col-sm-12">
+                                <h2 style="text-align: center;">REGISTRATION HAS NOW CLOSED!!!</h2>
+                            </div>
                         @endif
-                    </div>
-                    <div class="control-group">
-                        <label>Diet</label>
-                        <select name="diet" id="diet" class="form-control" required>
-                            <option value="">-- Select Option --</option>
-                            <option value="2019 1st diet [May-June]"
-                                {{ old('diet') == '2019 1st diet [May-June]' ? 'selected' : '' }}>
-                                2019 1st diet [May - June]</option>
-                            <option value="2019 -2nd diet [Oct - Nov]"
-                                {{ old('diet') == '2019 -2nd diet [Oct - Nov]' ? 'selected' : '' }}>
-                                2019 -2nd diet [Oct - Nov]</option>
-                            <option value="2020 - 1st Diet [June-July]"
-                                {{ old('diet') == '2020 - 1st Diet [June-July]' ? 'selected' : '' }}>
-                                2020 - 1st Diet [June - July]</option>
-                            <option value="2020- 2nd diet [Oct-Nov]"
-                                {{ old('diet') == '2020- 2nd diet [Oct-Nov]' ? 'selected' : '' }}>
-                                2020 - 2nd diet [Oct - Nov]</option>
-                        </select>
-                        @if($errors->has('diet'))
-                            <span class="help-block">
-                                <i style="color:red">{{ $errors->first('diet') }}</i>
-                            </span>
-                        @endif
-                    </div>
-                    <br>
-                    <div class="control-group">
-                        <button class="btn" type="submit" style="width:100%">Submit Application</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>

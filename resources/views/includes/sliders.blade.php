@@ -5,23 +5,26 @@
             
                 <div class="carousel-item">
                 <div class="carousel-img">
-                    <img src="{{ asset('frontend/img/sliders/slider1.jpeg') }}" alt="slider">
+                    <img src="{{ asset('frontend/img/sliders/slider1.jpg') }}" alt="slider">
+                    <img src="{{ asset('frontend/img/sliders/slider2.jpg') }}" alt="slider">
                 </div>
                 <div class="carousel-text">
                     <div class="banner_text">
-                        <h2 style="color:white">GSF CONFERENCE</h2>
-                        <h3 style="color:white">theme</h3>
-                        <p> <b>DATE</b></p>
+                        <h2 style="color:white">19TH BIENNIAL NATIONAL CONFERENCE, {{ $conference_year}}</h2><br>
+                        <h3 style="color:white"> <strong> "{{ $setting->conference_theme }}"</strong></h3>
+                        <p style="color: yellow !important; font-weight: normal;"> <b>DATE:</b> {{ $setting->start_date }} to  {{ $setting->end_date }}
+                        </p>
                         
                         <p>
-                            <a class="btn" href="#register"><i class="fa fa-link"></i>REGISTER NOW</a>
-                        </p>
-                        {{-- @if($days_left > 0)
-                            <h2>{{ $days_left }} Days</h2>
+                            @if($setting->close_registration >= date('Y-m-d'))
+                                <a class="btn" href="#register"><i class="fa fa-link"></i>REGISTER NOW</a>
+                            @else
+                                <a class="btn" disabled><i class="fa fa-link"></i>REGISTER HAS CLOSED!</a>
+                            @endif
                             
-                        @else
-                            <h2>HAPPENING TODAY!</h2>
-                        @endif --}}
+                           
+                        </p>
+            
                     </div>
                 </div>
             </div>

@@ -18,6 +18,7 @@ class CreateSettingsTable extends Migration
             $table->integer('registration_fee')->default(0);
             $table->string('official_email');
             $table->integer('alumni_fee');
+            $table->date('close_registration');
             $table->date('start_date');
             $table->date('end_date');
             $table->string('conference_theme');

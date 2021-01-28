@@ -26,6 +26,7 @@ class genericSeeder extends Seeder
             'alumni_fee' => 2500,
             'start_date' => now(),
             'end_date' => now(),
+            'close_registration' => '2021-02-23 21:24:34',
             'conference_theme' => 'ABOVE ONLY',
             'conference_overview' => '<p>Arising from the continuous growth in key service industries of financial services and telecommunications sectors of the West Africa economies, in 2014, key customer service professionals from the region with background in service delivery in banking and telecommunications started a network of like minds educating and imparting customer service skills and training in this spheres.</p><br>
 
