@@ -32,7 +32,7 @@ class CreateUsersTable extends Migration
             $table->string('payment_type')->nullable();
             $table->string('transid')->nullable();
             $table->string('uploaded_by')->nullable();
-            $table->string('registration_status')->default('Pending');//Pending or Complete
+            $table->enum('registration_status', ['Pending', 'Complete'])->default('Pending');//Pending or Complete
             $table->string('password');
 
             $table->rememberToken();
