@@ -21,7 +21,7 @@
                         <div class="card-body">
                             <form
                                 action="{{ route('users.store') }}"
-                                onsubmit="return confirm('I am sure all my detailss are correct and current');"
+                                onsubmit="return confirm('I am sure all my details are correct and current');"
                                 method="POST" enctype="multipart/form-data">
                                 @csrf
                               
@@ -79,9 +79,8 @@
                                                 {{-- //include chapter --}}
                                                 <option value="">--Select Campus--</option>
                                                 @foreach($chapters as $chapter)
-                                                    <option value="{{ $chapter->id }}"
-                                                        {{ old('chapter')  == $chapter->id ? 'selected' : '' }}>
-                                                        {{ $chapter->name }}</option>
+                                                <option value="{{ old('chapter') ?? $chapter->id }}" {{ auth()->user()->chapter == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
+                                                   
                                                 @endforeach
                                             </select>
                                         </fieldset>

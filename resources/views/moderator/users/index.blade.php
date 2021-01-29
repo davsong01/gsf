@@ -13,7 +13,7 @@
                     <div class="card-header">
                         <h4 class="card-title">My Participants</h4>
                         @if(auth()->user()->slot >  auth()->user()->slot_filled)
-                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new participant <strong>({{ (auth()->user()->slot -  auth()->user()->slot_filled) }} slot(s) left)</strong></a>  
+                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new participant <strong>({{ (auth()->user()->slot -  (auth()->user()->slot_filled )) }} slot(s) left)</strong></a>  
                         @endif
                         @include('includes.alerts')
                         
@@ -25,6 +25,7 @@
                                     <thead>
                                         <tr>
                                             <th>S/N</th>
+                                            <th>Passport</th>
                                             <th>Conference ID</th>
                                             <th>Status</th>
                                             <th>Name</th>
@@ -39,7 +40,10 @@
                                     <tbody>
                                         @foreach($participants as $participant)
                                         <tr>
-                                            <td>{{ $count }}</td>
+                                            <td>{{ $count ++}}</td>
+                                            <td>
+                                                <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->passport ? '/'.$participant->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
+                                            </td>
                                             <td>{{ $participant->conference_number }}</td>
                                             <td>@if($participant->registration_status == 'Complete')
                                                 <i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small> @else
@@ -57,7 +61,7 @@
                                             
                                                 
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                            <a class="actions" data-toggle="tooltip" title="View/Edit User" href="{{ route('users.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
+                                            <a class="actions" data-toggle="tooltip" title="View/Edit Participant" href="{{ route('users.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
                                             </a>
                                             
                                             @if($participant->registration_status == 'Complete')
@@ -67,15 +71,10 @@
                                             <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('meal.ticket', $participant->id) }}"> <i class="icon-food actions"></i></
                                             </a>
                                             @endif
-                                          
-                                            {{-- <a class="actions" data-toggle="tooltip" data-placement="top" title="Switch To"
-                                                href="{{ route('switchuser', $participant->id) }}"><i
-                                                    class="fa fa-unlock actions"></i>
-                                            </a> --}}
-
-                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete User" href="{{ route('users.delete', $participant->id) }}"> <i class="fa fa-trash"></i></
+                                            @if(auth()->user()->id != $participant->id)
+                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Participant" href="{{ route('users.delete', $participant->id) }}"> <i class="fa fa-trash"></i></
                                             </a>
-
+                                            @endif
                                         </tr>
                                       
                                         @endforeach

@@ -34,9 +34,8 @@
                                     <fieldset class="form-group">
                                         <label for="type">Type</label>
                                         <select class="form-control" name="type" id="type" required>
-                                        
-                                         <option value="Male" {{ $hostel->level == 'Male' ? 'selected' : ''}}>Male</option>
-                                        <option value="Female" {{ $hostel->level == 'Female' ? 'selected' : ''}}>Female</option>
+                                            <option value="Male" {{ $hostel->level == 'Male' ? 'selected' : ''}}>Male</option>
+                                            <option value="Female" {{ $hostel->level == 'Female' ? 'selected' : ''}}>Female</option>
                                         </select>
                                     </fieldset>
                                     
@@ -47,6 +46,9 @@
                                         <select class="form-control" name="level" id="level" required>
                                             <option value="Alumni" {{ $hostel->level == 'Admin' ? 'selected' : ''}}>Alumni</option>
                                             <option value="Participant" {{ $hostel->level == 'Participant' ? 'selected' : ''}}>Participant</option>
+                                            <option value="Choir" {{ $hostel->level == 'Choir' ? 'selected' : ''}}>Choir</option>
+                                            <option value="Official" {{ $hostel->level == 'Official' ? 'selected' : ''}}>Official</option>
+                                            <option value="Medical" {{ $hostel->level == 'Medical' ? 'selected' : ''}}>Medical</option>
                                             <option value="Nec" {{ $hostel->level == 'Nec' ? 'selected' : ''}}>Nec</option>
                                         </select>
                                     </fieldset>

@@ -69,11 +69,9 @@ class AccountController extends Controller
 
 		$this->validate($request, [
 			'name' => 'required',
-			'email' => 'required|unique:users,email,' . $id,
 			'phone' => 'required',
 			'sex' => 'in:Male,Female',
-			'payment_type' => 'required',
-			'chapter' => 'required|exists:chapters,id',
+			'chapter' => 'nullable',
 			'passport' => 'nullable|max:200|mimes:jpeg,jpg,png'
 		]);
 
@@ -81,18 +79,19 @@ class AccountController extends Controller
 		$hostels = Hostel::orderBy('allocation', 'ASC')->get();
 
 		//if the user->hostel_id is set and type and level corresponds to the user current request hostel type and level, return back with success,
+		// dd($request->all(), $user);
 		if (
 			$user->hostel_id &&
 			$user->sex == $request->sex &&
 			$user->chapter == $request->chapter &&
 			$user->phone == $request->phone &&
-			$user->email == $request->email &&
 			$user->name == $request->name &&
 			!$request->hasFile('passport')
 		) {
+
 			return redirect()->route('account')->with('message', ':) Great, looks like you didnt make any changes.');
-		} else if (!$user->hostel_id) { // first time users
-			$this->createNewFood($user); // it doesnt matter where you place this, it excutes once
+		} else if (!$user->hostel_id) { // first time users - PERFECT
+			$this->createNewFood($user); // it doesnt matter where you place this, it excutes once - CORRECT
 			return $this->createOrUpdateHostel(
 				$user,
 				$request->level ?: $user->level, // the user might be changing levels 

@@ -23,6 +23,7 @@
                                     <thead>
                                         <tr>
                                             <th>S/N</th>
+                                            <th>Passport</th>
                                             <th>Conference ID</th>
                                             <th>Status</th>
                                             <th>Name</th>
@@ -37,9 +38,10 @@
                                     <tbody>
                                         @foreach($participants as $participant)
                                         <tr>
-                                            <td>{{ $count }}</td>
+                                            <td>{{ $count++ }}</td>
+                                            <td><img class="mr-1" style="border-radius:50%" src="{{ asset($participant->passport ? '/'.$participant->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40"></td>
                                             <td>{{ $participant->conference_number }}</td>
-                                            <td>@if($participant->status == 'Complete'))
+                                            <td>@if($participant->registration_status == 'Complete')
                                                 <i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small> @else
                                                 <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Pending</small>
                                                 @endif

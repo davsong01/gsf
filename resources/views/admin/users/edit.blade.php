@@ -23,7 +23,11 @@
                             @csrf
                             @method('PATCH')
                          <div class="row">
-                            <div class="col-md-12">
+                             <div class="col-md-3">
+                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="{{ (auth()->user()->passport ? auth()->user()->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
+                                </div>
+                            </div>
+                            <div class="col-md-9">
                                 <fieldset class="form-group">
                                     <label for="conference_id">Conference ID</label>
                                     <input type="text" class="form-control" name="conference_id" id="conference_id" value="{{ $user->conference_number }}" disabled required>
@@ -53,7 +57,7 @@
                                 </fieldset>
 
                                 <fieldset class="form-group">
-                                    <label for="sex">Sex</label>
+                                    <label for="sex">Gender</label>
                                     <select class="form-control" name="sex" id="sex" required>
                                         <option value="Male" {{ $user->sex == 'Male' ? 'selected' : ''}}>Male</option>
                                         <option value="Female" {{ $user->sex == 'Female' ? 'selected' : ''}}>Female</option>
@@ -66,37 +70,33 @@
                                 {{-- //include chapter --}}
                                 <option value="">--Select Campus--</option>
                                 @foreach($chapters as $chapter)
-                                <option value="{{ $chapter ?? old('chapter')}}" {{ $user->chapter == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
+                                <option value="{{ $chapter->id ?? old('chapter')}}" {{ $user->chapter == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
                                 @endforeach
                             </select>
-                        </fieldset>
+                            </fieldset>
 
-                                <fieldset class="form-group">
-                                    <label for="amount">Amount Paid</label>
-                                    <input type="number" id="amount" name="amount_paid" class="form-control" value="{{ old('amount_paid') ?? $user->amount_paid }}" required>
-                                </fieldset>
+                            <fieldset class="form-group @error('passport')is-invalid @enderror">
+                                <label for="passport">Change Passport</label>
+                                <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">	
+                            </fieldset>           
+                                
                             </div>
-                            <div class="col-md-6 col-sm-12">
+                            <div class="col-md-6 col-sm-12">                               
                                 <fieldset class="form-group">
                                     <label for="payment_type">Payment Type</label>
                                     <input type="text" id="payment_type" name="payment_type" class="form-control" value="{{ old('payment_type') ?? $user->payment_type }}" required>
-                                </fieldset>
-
+                                </fieldset> 
                                 <fieldset class="form-group">
                                     <label for="transid">Transaction ID</label>
                                     <input type="text" id="transid" name="transid" class="form-control" value="{{ old('transid') ?? $user->transid }}" required>
                                 </fieldset>
-
-                                <fieldset class="form-group">
-                                    <label for="uploaded_by">Uploaded by</label>
-                                    <input type="text" id="uploaded_by" name="uploaded_by" class="form-control" value="{{ old('uploaded_by') ?? $user->moderator->name }}" disabled required>
-                                </fieldset>
-
                                 <fieldset class="form-group">
                                     <label for="hostel_id">Hostel</label>
                                     <select class="form-control" name="hostel_id" id="hostel_id" required>
                                         @foreach($hostels as $hostel)
-                                        <option value="{{ old('hostel_id') ?? $user->hostel_id }}" {{ $user->hostel_id == $hostel->id ? 'selected' : '' }}>{{ $hostel->name }}</option>
+                                        @if($hostel->capacity > $hostel->allocation)
+                                        <option value="{{ old('hostel_id') ?? $user->hostel_id }}" {{ $user->hostel_id == $hostel->id ? 'selected' : '' }}>{{ $hostel->name. ' ('.($hostel->capacity - $hostel->allocation). ' participant(s) left) | '.$hostel->type. ' | '.$hostel->level}}</option>
+                                        @endif
                                         @endforeach
                                     </select>
                                 </fieldset>
@@ -116,6 +116,14 @@
                                     <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
                                 </fieldset>
 
+                                <fieldset class="form-group">
+                                    <label for="amount">Amount Paid</label>
+                                    <input type="number" id="amount" disabled class="form-control" value="{{ old('amount_paid') ?? $user->amount_paid }}" required>
+                                </fieldset>
+                                <fieldset class="form-group">
+                                    <label for="uploaded_by">Uploaded by</label>
+                                    <input type="text" id="uploaded_by" name="uploaded_by" class="form-control" value="{{ old('uploaded_by') ?? $user->moderator->name }}" disabled required>
+                                </fieldset>
                             </div>
                             
                         </div>

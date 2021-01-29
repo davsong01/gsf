@@ -30,6 +30,11 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     //Admin Only
     Route::resource('users', 'UserController');
     Route::get('users/delete/{id}', 'UserController@destroy')->name('users.delete');
+    Route::get('medical', 'UserController@getMedical')->name('user.medical');
+    Route::get('choir', 'UserController@getChoir')->name('user.choir');
+    Route::get('official', 'UserController@getOfficial')->name('user.official');
+    Route::get('nec', 'UserController@getNec')->name('user.nec');
+    
     Route::get('/switch/{id}', 'SwitchUserController@index')->name('switchuser');
     Route::get('/stopswitching', 'SwitchUserController@stopSwitching')->name('stop.switchuser');
     Route::resource('moderators', 'ModeratorController');
