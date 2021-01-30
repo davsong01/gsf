@@ -1,4 +1,4 @@
-@extends('dashboard')
+@extends('layouts.dashboard')
 @section('content')
 <div class="income-order-visit-user-area mg-t-40">
     <div class="container">
@@ -21,7 +21,7 @@
                         </div>
                         <div class="sparkline7-graph">
                             <div class="row">
-															<a class="btn btn-primary" href="{{ route('export') }}"><i class="fa fa-download"></i> Download sample</a>
+															<a class="btn btn-primary" href="{{ route('users.export') }}"><i class="fa fa-download"></i> Download sample</a>
                                 <div class="card-header">
                                     <p>Select an excel file to upload, please pay attention to the following: </p>
                                         <ul>
@@ -35,7 +35,7 @@
                              
                                 </div>
 
-                                <form action="{{ url('importusers') }}" method="POST" name="importform"
+                                <form action="{{ route('users.import') }}" method="POST" name="importform"
                                     enctype="multipart/form-data" class="@if($errors->any()) has-error @endif">
                                     @csrf
                                     <input type="file" name="file" class="form-control" accept=".csv, .xlsv, .xls, .xlsx" required>

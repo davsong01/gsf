@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use DB;
+
 use App\Food;
 use App\User;
 use App\Hostel;
@@ -345,7 +345,7 @@ class UserController extends Controller
                 'phone' => $data['phone'],
                 'sex' => $data['sex'],
                 'chapter' => $data['chapter'],
-                'passport' => $passportPath,
+                'passport' => $passport,
                 'type' => 1,
                 'level' => 'Participant',
                 'uploaded_by' => auth()->user()->id,
@@ -480,17 +480,41 @@ class UserController extends Controller
     }
 
 		public function export(){
-			
 			$user = new User();
-			$tableColumns = Schema::getColumnListing('users');
+		$tableColumns = Schema::getColumnListing('users');
+		$columnsForeign = [
+			'hostel_id' => 'hostel_name',
+			'food_id' => 'food_name',
+			'chapter' => 'chapter'
+		];
 
-			foreach($user->getHidden() as $key => $value){
-				if(($k = array_search($value, $tableColumns)) !== false){
+		foreach ($user->getHidden() as $key => $value) {
+			if (($k = array_search($value, $tableColumns)) !== false) {
 				unset($tableColumns[$k]);
+			}
+		}
+		foreach($columnsForeign as $key => $value){
+				if(in_array($key, $tableColumns)){
+					$tableColumns[array_search($key, $tableColumns)] = $value;
 				}
 			}
-			
-			return Excel::download(new UsersExport($tableColumns), 'users_exported.xlsx');
+		return Excel::download(new UsersExport($tableColumns), 'users_exported.xlsx');
+	}
+
+	public function import(Request $request)
+	{
+		$data = $this->validate($request, [
+			'file' => 'required|mimes:xlsx,csv',
+		]);
+
+
+		try {
+			// Excel::import(new ImportAllocations, request()->file('file'));
+		} catch (\Illuminate\Database\QueryException $ex) {
+			$error = $ex->getMessage();
+			return back()->with('error', $error);
 		}
-    
+		return redirect(route('allocation.index'))->with('message', 'Data has been imported succesfully');
+	}
+
 }

@@ -16,19 +16,26 @@ class UsersExport implements FromCollection, WithHeadings
 		$this->tables = $tables;
 	}
 
-    /**
-    * @return \Illuminate\Support\Collection
-    */
-    public function collection()
-    {
-        return User::all();
-		}
-		
+	/**
+	 * @return \Illuminate\Support\Collection
+	 */
+	public function collection()
+	{
+		return User::where('users.id', '>', 0)
+			->foreign(
+				['food_id', 'hostel_id', 'chapter'],
+				['food', 'hostels', 'chapters'],
+				['id', 'id', 'id'],
+				['name', 'name', 'name']
+			)->get();
+	}
 
-		/**
-		 * 
-		 */
-		public function headings(): array {
-			return $this->tables;
-		}
+
+	/**
+	 * 
+	 */
+	public function headings(): array
+	{
+		return $this->tables;
+	}
 }
