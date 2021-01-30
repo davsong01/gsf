@@ -27,7 +27,12 @@ Route::get('/payment/callback', 'PaymentController@handleGatewayCallback');
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', 'AccountController@index')->name('account');
 
-    //Admin Only
+		//Admin Only
+		Route::group([], function(){
+			Route::get('/users/import-export', 'UserController@importExport')->name('users.import-export');
+			Route::get('/users/export', 'UserController@export')->name('users.export');
+			Route::post('/users/import', 'UserController@import')->name('users.import');
+		});
     Route::resource('users', 'UserController');
     Route::get('users/delete/{id}', 'UserController@destroy')->name('users.delete');
     Route::get('/switch/{id}', 'SwitchUserController@index')->name('switchuser');
