@@ -11,14 +11,16 @@ class MaterialController extends Controller
     public function index()
     {
         $count = 1;
+        $materials = Material::all();
+
         if(auth()->user()->level == 'Admin'){
-            $materials = Material::all();
+           
             return view('admin.materials.index', compact('materials', 'count'));
 
-        }else if(auth()->user()->level == 'Participant' || auth()->user()->level == 'Moderator' || auth()->user()->level == 'Alumni' || auth()->user()->level == 'Nec'){
-            $materials = Material::all();
-        }else { return abort(404); }
-
+        }
+        if(auth()->user()->level == 'Participant' || auth()->user()->level == 'Moderator' || auth()->user()->level == 'Alumni' || auth()->user()->level == 'Nec'){
+           return view('participant.materials', compact('materials', 'count'));
+        }
        
     }
 

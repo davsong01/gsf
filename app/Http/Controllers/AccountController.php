@@ -49,16 +49,16 @@ class AccountController extends Controller
 
 		if (auth()->user()->level == 'Admin') {
 			return view('admin.index');
-		} elseif (auth()->user()->level == 'Participant') {
+		} elseif (auth()->user()->level == 'Participant' || auth()->user()->level == 'Alumni' || auth()->user()->level == 'Nec') {
 
 			return view('participant.index', compact('chapters'));
 		} elseif (auth()->user()->level == 'Moderator') {
 
 			$participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'desc')->get();
 
-			$pending_registration = $participants->where('pending_registration', '=', 'Pending');
+			$pending_registration = $participants->where('registration_status', 'Pending');
 
-			$completed_registration = $participants->where('registrationStatus', '=', ' Complete');
+			$completed_registration = $participants->where('registration_status', 'Complete');
 
 			return view('moderator.index', compact('chapters', 'pending_registration', 'completed_registration', 'participants'));
 		}
@@ -69,11 +69,9 @@ class AccountController extends Controller
 
 		$this->validate($request, [
 			'name' => 'required',
-			'email' => 'required|unique:users,email,' . $id,
-			'phone' => 'required|unique:users,phone,' . $id,
+			'phone' => 'required',
 			'sex' => 'in:Male,Female',
-			'payment_type' => 'required',
-			'chapter' => 'required|exists:chapters,id',
+			'chapter' => 'nullable',
 			'passport' => 'nullable|max:200|mimes:jpeg,jpg,png'
 		]);
 
@@ -81,18 +79,19 @@ class AccountController extends Controller
 		$hostels = Hostel::orderBy('allocation', 'ASC')->get();
 
 		//if the user->hostel_id is set and type and level corresponds to the user current request hostel type and level, return back with success,
+		// dd($request->all(), $user);
 		if (
 			$user->hostel_id &&
 			$user->sex == $request->sex &&
 			$user->chapter == $request->chapter &&
 			$user->phone == $request->phone &&
-			$user->email == $request->email &&
 			$user->name == $request->name &&
 			!$request->hasFile('passport')
 		) {
+
 			return redirect()->route('account')->with('message', ':) Great, looks like you didnt make any changes.');
-		} else if (!$user->hostel_id) { // first time users
-			$this->createNewFood($user); // it doesnt matter where you place this, it excutes once
+		} else if (!$user->hostel_id) { // first time users - PERFECT
+			$this->createNewFood($user); // it doesnt matter where you place this, it excutes once - CORRECT
 			return $this->createOrUpdateHostel(
 				$user,
 				$request->level ?: $user->level, // the user might be changing levels 

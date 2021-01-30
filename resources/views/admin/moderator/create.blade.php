@@ -14,7 +14,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Add New User</h4>
+                        <h4 class="card-title">Add New Participant</h4>
                         @include('includes.alerts')
                     </div>
                     <div class="card-content">

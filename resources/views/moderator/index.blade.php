@@ -18,7 +18,7 @@
                             <div class="d-flex justify-content-around align-items-center flex-wrap">
                                 <div class="user-analytics">
                                     <i class="bx bx-user mr-25 align-middle"></i>
-                                    <span class="align-middle text-muted">{{ auth()->user()->slot }} Slots avalailable paid</span>
+                                    <span class="align-middle text-muted">{{ auth()->user()->slot  }} Slot(s) paid for</span>
                                     <div class="d-flex">
                                         <div id="radial-success-chart"></div>
                                         <h3 class="mt-1 ml-50"></h3>
@@ -26,7 +26,7 @@
                                 </div>
                                 <div class="sessions-analytics">
                                     <i class="bx bx-trending-down align-middle mr-25" style="color:red"></i>
-                                    <span class="align-middle text-muted">{{ auth()->user()->slot_filled }} Slots used</span>
+                                    <span class="align-middle text-muted">{{ auth()->user()->slot_filled }} Slot(s) used</span>
                                     <div class="d-flex">
                                         <div id="radial-warning-chart-down"></div>
                                         <h3 class="mt-1 ml-50"></h3>
@@ -34,7 +34,7 @@
                                 </div>
                                 <div class="sessions-analytics">
                                     <i class="bx bx-trending-up align-middle mr-25" style="color:green"></i>
-                                    <span class="align-middle text-muted">{{ auth()->user()->slot - auth()->user()->slot_filled }} Slots remaining</span>
+                                    <span class="align-middle text-muted">{{ auth()->user()->slot - auth()->user()->slot_filled }} Slot(s) remaining</span>
                                     <div class="d-flex">
                                         <div id="radial-warning-chart"></div>
                                         <h3 class="mt-1 ml-50"></h3>

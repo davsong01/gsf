@@ -12,14 +12,13 @@
                     </div>
                     <ul class="nav navbar-nav float-right">
             
-                        <li class="dropdown dropdown-user nav-item"><a class="dropdown-toggle nav-link dropdown-user-link" href="#" data-toggle="dropdown">
+                        <li class="dropdown dropdown-user nav-item"><a class="dropdown-toggle nav-link dropdown-user-link" data-toggle="dropdown">
                             <div class="d-flex justify-content-between cursor-pointer">
-                                        <div class="media d-flex align-items-center px-50 py-75">
-                                            <div class="media-left pr-0"><img class="mr-1" src="{{ (auth()->user()->passport ? auth()->user()->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="39" width="39"></div>
-                                           
-                                            
-                                        </div>
-                                    </div>    
+                                <div class="media d-flex align-items-center px-50 py-75">
+                                    <div class="media-left pr-0"><img class="mr-1" src="{{ (auth()->user()->passport ? auth()->user()->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="39" width="39"></div>
+                                    
+                                </div>
+                            </div>    
                             <div class="user-nav d-sm-flex"><span class="user-name">Hi, {{ auth()->user()->name }}</span><span class="user-status text-muted"></span></div>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right pb-0">

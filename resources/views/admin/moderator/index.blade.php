@@ -12,7 +12,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All Moderators</h4>
-                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new Moderator</a>
+                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
                         @include('includes.alerts')
                         
                     </div>

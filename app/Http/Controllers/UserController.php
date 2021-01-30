@@ -20,178 +20,450 @@ use Illuminate\Support\Facades\Schema;
 class UserController extends Controller
 {
 
-	public function importExport()
-	{
-		return view('admin.users.import');
-	}
+    public function importExport()
+    {
+       return view('admin.users.import');
+    }
+    
+    
+    public function index()
+    { 
+        $count = 1;
+        if(auth()->user()->level == 'Admin'){
+            $participants = User::with(['hostel', 'moderator'])->whereLevel('Participant')->orwhere('level', 'Moderator')->orwhere('level', 'Official')->orderBy('created_at', 'desc')->get();
+            
+        return view('admin.users.index', compact('participants', 'count'));
+        }else if(auth()->user()->level == 'Moderator'){
+             $participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'asc')->get();
+
+            return view('moderator.users.index', compact('participants', 'count'));
+        }
+        
+        return abort(404);
+        
+    }
+
+     public function getChoir()
+    { 
+        $count = 1;
+        if(auth()->user()->level == 'Admin'){
+            $participants = User::with(['hostel', 'moderator'])->whereLevel('Choir')->orderBy('created_at', 'desc')->get();
+            
+        return view('admin.users.index', compact('participants', 'count'));
+        }
+        
+        return abort(404);
+        
+    }
+
+     public function getMedical()
+    { 
+        $count = 1;
+        if(auth()->user()->level == 'Admin'){
+            $participants = User::with(['hostel', 'moderator'])->whereLevel('Medical')->orderBy('created_at', 'desc')->get();
+            
+        return view('admin.users.index', compact('participants', 'count'));
+        }
+        
+        return abort(404);
+        
+    }
+
+     public function getNec()
+    { 
+        $count = 1;
+        if(auth()->user()->level == 'Admin'){
+            $participants = User::with(['hostel', 'moderator'])->whereLevel('Nec')->orderBy('created_at', 'desc')->get();
+            
+        return view('admin.users.index', compact('participants', 'count'));
+        }
+        
+        return abort(404);
+        
+    }
+
+    public function getOfficial()
+    { 
+        $count = 1;
+        if(auth()->user()->level == 'Admin'){
+            $participants = User::with(['hostel', 'moderator'])->whereLevel('Official')->orderBy('created_at', 'desc')->get();
+            
+        return view('admin.users.index', compact('participants', 'count'));
+        }
+        
+        return abort(404);
+        
+    }
 
 
-	public function index()
-	{
-		$count = 1;
-		if (auth()->user()->level == 'Admin') {
-			$participants = User::with(['hostel', 'moderator'])->whereLevel('Participant')->orwhere('level', 'Moderator')->orderBy('created_at', 'desc')->get();
+    public function create()
+    {
+        $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+        $hostels = Hostel::all();
+        $foods = Food::all();
+        $moderators = User::whereLevel('Moderator')->get();
 
-			return view('admin.users.index', compact('participants', 'count'));
-		} else if (auth()->user()->level == 'Moderator') {
-			$participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'desc')->get();
+        if(auth()->user()->level == 'Admin'){
+            return view('admin.users.create', compact('chapters', 'hostels', 'foods', 'moderators'));
+        }else if(auth()->user()->level == 'Moderator'){
+            if(auth()->user()->slot_filled == auth()->user()->slot){
+                return back()->with('error', 'You have reached the maximum number of slots you can add');
+            }
+            return view('moderator.users.create', compact('chapters'));
+        }
+        
+        return back(404);
+        
+    }
 
-			return view('moderator.users.index', compact('participants', 'count'));
-		}
+    public function store(Request $request, User $user)
+    {
+        
+        //Handle password
+        if($request['password']){
+            $password = Hash::make($request['password']);
+        }else{ 
+            $password = Hash::make($request['phone']);
+        }
 
-		return abort(404);
-	}
+        //Handle Passport Upload
+        //get filename with extension
+        $imgName = $request->passport->getClientOriginalName();
+        $passport = Image::make($request->passport)->resize(500, 500);
+        $passport->save('frontend/passports'.'/'.$imgName);
+        $passport = 'frontend/passports/'. date('Y-m-d-His') . $imgName;
 
-	public function create()
-	{
-		$chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+ 
+        //Store block for Admin
+        if(auth()->user()->level == 'Admin'){
+            $data = $this->validate($request, [
+                'name' => 'required|min:3',
+                'email' => 'required|unique:users,email',
+                'phone' => 'required',
+                'amount_paid' => 'required',
+                'sex' => 'required',
+                'chapter' => 'required|numeric',
+                'passport' => 'required|max:200',
+                'payment_type' => 'required',
+                'transid' => 'required',
+                'hostel_id' => 'required|numeric',
+                'password' => 'nullable',
+                'payment_type' => 'required',
+                'food_id' => 'required',
+            ]);
 
-		if (auth()->user()->level == 'Admin') {
-			return view('admin.users.create');
-		} else if (auth()->user()->level == 'Moderator') {
-			return view('moderator.users.create', compact('chapters'));
-		}
+          
+            $setting = Setting::first();
+            $data['password'] = $password;
+            $hostel = Hostel::whereId($request->hostel_id)->first();
+            $food = Food::whereId($request->food_id)->first();
 
-		return back(404);
-	}
+            // Make sure the right people are in the right hostel
+            if($request->level == 'Participant' || $request->level == 'Alumni' || $request->level == 'Nec'){
+            
+                if($hostel->type <> $request->sex || $hostel->level <> $request->level){
+                    return back()->with('error', 'NOT SAVED. Please check the hostel you are trying to assign to this participant');
+                }
+            }
 
-	public function store(Request $request, User $user)
-	{
+            if($request->level == 'Participant' || $request->level == 'Alumni'  || $request->level == 'Medical'  || $request->level == 'Nec' || $request->level == 'Choir' ){
+            
+                if($food->level <> $request->level || $food->level <> $request->level){
 
-		//Validate request
-		$data = $this->validate($request, [
-			'name' => 'required|min:3',
-			'chapter' => 'required|numeric',
-			'email' => 'required|unique:users,email',
+                    return back()->with('error', 'NOT SAVED. Please check the food stand you are trying to assign to this participant');
+                }
+               
+            }
+
+            if($request->level == 'Official' || $request->level == 'Medical' || $request->level == 'Official'){
+
+                if($hostel->level <> $request->level){
+                    return back()->with('error', 'NOT SAVED. Please check the hostel you are trying to assign to this participant');
+                }
+               
+            }
+
+            //Fill slot, slot filled, type, others for participant
+            if($request->level == 'Participant'){
+                $prefix = 'AOP';
+                $data['slot'] = 1;
+                $data['level'] = 'Participant';
+                $data['slot_filled'] = 1;
+                $data['type'] = 1;
+
+                if($request->amount_paid < $setting->registration_fee){
+                    return back()->with('error', 'Participant cannot pay less than registration fee');
+                }
+
+                $data['amount_paid'] = $request->amount_paid;
+                
+            }
+
+            //Fill slot, slot filled, type, others for moderator
+            if($request->level == 'Moderator'){
+
+                if($request->amount_paid < $setting->registration_fee){
+                    return back()->with('error', 'Moderator cannot pay less than registration fee');
+                }
+
+                $prefix = 'AOP';
+                $data['slot'] = $request->amount_paid / $setting->registration_fee;
+                $data['level'] = 'Moderator';
+                $data['slot_filled'] = 1;
+                $data['type'] = 2;
+                $data['amount_paid'] = $request->amount_paid;
+                
+            }
+
+            if($request->level == 'Alumni'){
+
+                if($request->amount_paid < $setting->alumni_fee){
+                    return back()->with('error', 'Alumni cannot pay less than alumni minimum fee');
+                }
+
+                $prefix = 'AOA';
+                $data['slot'] = 1;
+                $data['level'] = 'Alumni';
+                $data['slot_filled'] = 1;
+                $data['type'] = 3;
+                $data['amount_paid'] = $request->amount_paid;
+                
+            }
+               
+            if($request->level == 'Nec'){
+
+                if($request->amount_paid < $setting->alumni_fee){
+                    return back()->with('error', 'Nec cannot pay less than alumni minimum fee');
+                }
+
+                $prefix = 'AON';
+                $data['slot'] = 1;
+                $data['level'] = 'Nec';
+                $data['slot_filled'] = 1;
+                $data['type'] = 4;
+                $data['amount_paid'] = $request->amount_paid;
+                
+            }
+
+            if($request->level == 'Choir'){
+
+                if($request->amount_paid < $setting->registration_fee){
+                    return back()->with('error', 'Nec cannot pay less than registration fee');
+                }
+
+                $prefix = 'AOC';
+                $data['slot'] = 1;
+                $data['level'] = 'Choir';
+                $data['slot_filled'] = 1;
+                $data['type'] = 5;
+                $data['amount_paid'] = $request->amount_paid;
+                
+            }
+            
+          
+            if($request->level == 'Medical'){
+
+                if($request->amount_paid < $setting->registration_fee){
+                    return back()->with('error', 'Medical personnel cannot pay less than registration fee');
+                }
+
+                $prefix = 'AOP';
+                $data['slot'] = 1;
+                $data['level'] = 'Medical';
+                $data['slot_filled'] = 1;
+                $data['type'] = 1;
+                $data['amount_paid'] = $request->amount_paid;
+                
+            }
+
+            if($request->level == 'Official'){
+
+                if($request->amount_paid < $setting->registration_fee){
+                    return back()->with('error', 'Official personnel cannot pay less than registration fee');
+                }
+
+                $prefix = 'AOP';
+                $data['slot'] = 1;
+                $data['level'] = 'Official';
+                $data['slot_filled'] = 1;
+                $data['type'] = 1;
+                $data['amount_paid'] = $request->amount_paid;
+                
+            }
+           $data['passport'] = $passport;
+           $data['registration_status'] = 'Complete';
+   
+            try{  
+                $newuser =  User::create($data);
+                
+                $newuser->update([
+                'conference_number' =>'GSF-'.$prefix.'-'.$newuser->id,
+                ]);
+
+                //increase hostel allocation
+                $hostel->allocation += 1;
+                $hostel->save();
+
+                //increase foodstand allocation
+                $food->allocation += 1;
+                $food->save();
+
+            }catch (\Illuminate\Database\QueryException $ex) {     
+                return back()->with('error', $ex);
+            }
+dd($newuser);
+            return back()->with('message', 'Participant successfully created');
+
+
+        }
+        else if(auth()->user()->level == 'Moderator'){
+            $data = $this->validate($request, [
+                'name' => 'required|min:3',
+                'chapter' => 'required|numeric',
+                'email' => 'required|unique:users,email',
+                'phone' => 'required',
+                'sex' => 'required',
+                'passport' => 'required|max:200',
+                'password' => 'nullable',
+                'payment_type' => 'required',
+                'transid' => 'required',
+            ]);
+
+            //Check if moderator has slots available
+            if(auth()->user()->slot_filled >= auth()->user()->slot){
+                return back()->with('warning', 'You can no longer add participants because you have used up all available slots');
+            }
+
+            //Assign hostel and food stand here
+            
+
+            try{  
+                $newuser = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'sex' => $data['sex'],
+                'chapter' => $data['chapter'],
+                'passport' => $passport,
+                'type' => 1,
+                'level' => 'Participant',
+                'uploaded_by' => auth()->user()->id,
+                'password' =>  $password,
+                'amount_paid' => Setting::select('registration_fee')->first()->value('registration_fee'),
+                'registration_status' => 'Complete'
+                ]);
+    
+                $newuser->update([
+                'conference_number' =>'GSF-AOP-'.$newuser->id,
+                ]);
+
+                auth()->user()->update([
+                'slot_filled' => auth()->user()->slot_filled + 1,
+                ]);
+
+            }catch (\Illuminate\Database\QueryException $ex) {     
+                return back()->with('error', $ex);
+            }
+
+            return back()->with('message', 'Participant successfully created, you have '.(auth()->user()->slot - auth()->user()->slot_filled). ' participant slot(s) left');
+        
+            
+        } return abort(404);
+
+    }
+    public function show($id)
+    {
+        //
+    }
+
+    public function edit(User $user)
+    {
+        $chapters = Chapter::all();
+        
+        $hostels = Hostel::all();
+        $foods = Food::all();
+
+       if(auth()->user()->level == 'Admin'){         
+            return view('admin.users.edit', compact('user', 'hostels', 'foods', 'chapters'));
+       }
+
+       if(auth()->user()->level == 'Moderator'){
+           if($user->sex == 'Female'){
+               $hostels = $hostels->where('type', 'Female');;
+           }
+
+           if($user->sex == 'Male'){
+               $hostels = $hostels->where('type', 'Male');
+           }
+           
+            return view('moderator.users.edit', compact('user', 'hostels', 'foods', 'chapters'));
+       }
+       return abort(404);
+
+        
+    }
+
+    public function update(Request $request, User $user)
+    {
+        dd($request->all());
+        $this->validate($request, [
+			'name' => 'required',
 			'phone' => 'required',
-			'sex' => 'required',
-			'passport' => 'required|max:200',
-			'password' => 'nullable',
+			'sex' => 'in:Male,Female',
+			'chapter' => 'required|exists:chapters,id',
+			'passport' => 'nullable|max:200|mimes:jpeg,jpg,png'
+        ]);
+        
+        if(auth()->user()->level == 'Admin'){
+        //handle password
+            if($request['password']){
+                $request['password'] = Hash::make($request['password']);
+            }else $request['password'] = $user->password;
 
-		]);
+            try{
+                $user->update($request->all());
+            }catch (\Illuminate\Database\QueryException $ex) {
+                    $error = $ex->getMessage();        
+                    return back()->with('error', $ex);
+                }
 
-		//Handle password
-		if ($request['password']) {
-			$password = Hash::make($request['password']);
-		} else $password = Hash::make($request['phone']);
+            return redirect()->back()->with('message', 'Update successful!');
+        }else if(auth()->user()->level == 'Moderator'){
+            //Moderator updates here
+            //Handle Password
+            //Handle Passport
+            //Assign hostel
+            //Assign Food stand
+            //Save other user details
+        }
+        
+        return abort(404);
 
-		//Handle Passport Upload
-		//get filename with extension
-		$imgName = $request->passport->getClientOriginalName();
-		$passport = Image::make($request->passport)->resize(500, 500);
-		$passport->save('frontend/passports' . '/' . $imgName);
-		$passportPath = 'frontend/passports' . '/' . $imgName;
+    }
+    
+    
+    public function destroy($id)
+    {
+        //stop from accidentally deleted self
+        if(auth()->user()->id == $id){
+            return back()->with('warning', 'I\'m sorry but You cannot delete your self');
+        }
+        $user= User::findOrFail($id);
 
+        if(isset($user->passport)){
+            unlink( $user->passport);
+        }
 
-		//Store block for Admin
-		if (auth()->user()->level == 'Admin') {
-		} else if (auth()->user()->level == 'Moderator') {
-			//Check if moderator has slots available
-			if (auth()->user()->slot_filled >= auth()->user()->slot) {
-				return back()->with('warning', 'You can no longer add participants because you have used up all available slots');
-			}
+        $user->delete();
 
-			//Assign hostel and food stand here
+        auth()->user()->slot_filled -= 1;
+        auth()->user()->save();
 
+        return back()->with('message', 'Record has been deleted forever!');
+    }
 
-			try {
-				$newuser = User::create([
-					'name' => $data['name'],
-					'email' => $data['email'],
-					'phone' => $data['phone'],
-					'sex' => $data['sex'],
-					'chapter' => $data['chapter'],
-					'passport' => $passportPath,
-					'type' => 1,
-					'level' => 'Participant',
-					'uploaded_by' => auth()->user()->id,
-					'password' =>  $password,
-					'amount_paid' => Setting::select('registration_fee')->first()->value('registration_fee'),
-					'registration_status' => 'Complete'
-				]);
-
-				$newuser->update([
-					'conference_number' => 'GSF-AOP-' . $newuser->id,
-				]);
-
-				auth()->user()->update([
-					'slot_filled' => auth()->user()->slot_filled + 1,
-				]);
-			} catch (\Illuminate\Database\QueryException $ex) {
-				return back()->with('error', $ex);
-			}
-
-			return back()->with('message', 'Participant successfully created, you have ' . (auth()->user()->slot - auth()->user()->slot_filled) . ' participant slot(s) left');
-		}
-		return abort(404);
-	}
-	public function show($id)
-	{
-		//
-	}
-
-	public function edit(User $user)
-	{
-		$chapters = Chapter::all();
-
-		if (auth()->user()->level == 'Admin') {
-			if ($user->sex == 'Female') {
-				$hostels = Hostel::whereType('Female')->whereLevel('Participant')->get();
-			}
-
-			if ($user->sex == 'Male') {
-				$hostels = Hostel::whereType('Male')->whereLevel('Participant')->get();
-			}
-
-			$foods = Food::all();
-			return view('admin.users.edit', compact('user', 'hostels', 'foods', 'chapters'));
-		}
-		return abort(404);
-	}
-
-	public function update(Request $request, User $user)
-	{
-
-		if (auth()->user()->level == 'Admin') {
-			//handle password
-			if ($request['password']) {
-				$request['password'] = Hash::make($request['password']);
-			} else $request['password'] = $user->password;
-
-			try {
-				$user->update($request->all());
-			} catch (\Illuminate\Database\QueryException $ex) {
-				$error = $ex->getMessage();
-				return back()->with('error', $ex);
-			}
-
-			return redirect()->back()->with('message', 'Update successful!');
-		} else if (auth()->user()->level == 'Moderator') {
-			//Moderator updates here
-			dd($user, $request->all());
-		}
-
-		return abort(404);
-	}
-
-
-	public function destroy($id)
-	{
-		$user = User::findOrFail($id);
-
-		$user->delete();
-
-		return back()->with('message', 'Record has been deleted forever!');
-	}
-
-	/**
-	 * Download tables from storage
-	 * @return Excel::download
-	 */
-	public function export()
-	{
-
-		$user = new User();
+		public function export(){
+			$user = new User();
 		$tableColumns = Schema::getColumnListing('users');
 		$columnsForeign = [
 			'hostel_id' => 'hostel_name',
