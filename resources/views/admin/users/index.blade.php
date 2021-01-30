@@ -14,7 +14,8 @@
                         <h4 class="card-title">All Participants</h4>
                         <div class="">
                             <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
-                            <a href="{{ route('users.import-export') }}" class="btn btn-primary mt-1">Import/Export</a>
+                            <a href="{{ route('users.import.index') }}" class="btn btn-primary mt-1">Import</a>
+                            <a href="{{ route('users.export') }}" class="btn btn-primary mt-1">Export</a>
                         </div>
                         @include('includes.alerts')
                         

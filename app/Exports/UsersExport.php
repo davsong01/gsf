@@ -21,7 +21,7 @@ class UsersExport implements FromCollection, WithHeadings
 	 */
 	public function collection()
 	{
-		return User::where('users.id', '>', 0)
+		return User::where('users.level', '!=', 'Admin')
 			->foreign(
 				['food_id', 'hostel_id', 'chapter'],
 				['food', 'hostels', 'chapters'],

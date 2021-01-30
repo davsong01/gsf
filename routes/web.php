@@ -29,7 +29,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
 		//Admin Only
 		Route::group([], function(){
-			Route::get('/users/import-export', 'UserController@importExport')->name('users.import-export');
+			Route::get('/users/import/index', 'UserController@importIndex')->name('users.import.index');
 			Route::get('/users/export', 'UserController@export')->name('users.export');
 			Route::post('/users/import', 'UserController@import')->name('users.import');
 		});
