@@ -30,8 +30,9 @@ class UserController extends Controller
     { 
         $count = 1;
         if(auth()->user()->level == 'Admin'){
-            $participants = User::with(['hostel', 'moderator'])->whereLevel('Participant')->orwhere('level', 'Moderator')->orwhere('level', 'Official')->orderBy('created_at', 'desc')->get();
+            $participants = User::with(['hostel', 'moderator'])->where("level", "=", "Participant")->orderBy('created_at', 'desc')->get();
             
+            dd($participants);
         return view('admin.users.index', compact('participants', 'count'));
         }else if(auth()->user()->level == 'Moderator'){
              $participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'asc')->get();
@@ -127,7 +128,7 @@ class UserController extends Controller
         }
 
         //Handle Passport Upload
-        //get filename with extension
+        //get filename with extensionz 
         $imgName = $request->passport->getClientOriginalName();
         $passport = Image::make($request->passport)->resize(500, 500);
         $passport->save('frontend/passports'.'/'.$imgName);
@@ -311,7 +312,7 @@ class UserController extends Controller
             }catch (\Illuminate\Database\QueryException $ex) {     
                 return back()->with('error', $ex);
             }
-dd($newuser);
+
             return back()->with('message', 'Participant successfully created');
 
 
@@ -378,6 +379,7 @@ dd($newuser);
 
     public function edit(User $user)
     {
+     
         $chapters = Chapter::all();
         
         $hostels = Hostel::all();
@@ -444,12 +446,27 @@ dd($newuser);
     
     public function destroy($id)
     {
+        $hostel = Hostel::all();
+        $foodstand = Food::all();
         //stop from accidentally deleted self
         if(auth()->user()->id == $id){
             return back()->with('warning', 'I\'m sorry but You cannot delete your self');
         }
         $user= User::findOrFail($id);
+        //Get user hostel
+        if($user->hostel){
+            $hostel = $hostel->where('id', $user->hostel->id)->first();
+            $hostel->allocation -= 1;
+            $hostel->save();
+        };
 
+        //Get user foodstand
+        if($user->food){
+            $food = $foodstand->where('id', $user->food->id)->first();
+            $food->allocation -= 1;
+            $food->save();
+        };
+       
         if(isset($user->passport)){
             unlink( $user->passport);
         }

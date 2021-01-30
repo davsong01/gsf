@@ -24,7 +24,7 @@
                             @method('PATCH')
                          <div class="row">
                              <div class="col-md-3">
-                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="{{ (auth()->user()->passport ? auth()->user()->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
+                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="/{{ ($user->passport ? $user->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
                                 </div>
                             </div>
                             <div class="col-md-9">
@@ -64,7 +64,7 @@
                                     </select>
                                 </fieldset>
                             
-                                <fieldset class="form-group">
+                            <fieldset class="form-group">
                             <label for="chapter">Campus</label>
                             <select class="form-control" name="chapter" id="chapter" required>
                                 {{-- //include chapter --}}
@@ -101,7 +101,7 @@
                                     </select>
                                 </fieldset>
 
-                                <fieldset class="form-group">
+                                {{-- <fieldset class="form-group">
                                     <label for="hostel">Food Stand</label>
                                     <select class="form-control" name="food_id" id="food_id" required>
                                         @foreach($foods as $food)
@@ -110,7 +110,7 @@
                                         </select>
                                     </select>
                                 </fieldset>
-                                
+                                 --}}
                                 <fieldset class="form-group">
                                     <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank except you want to reset participant's password</i></small>
                                     <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
@@ -120,10 +120,10 @@
                                     <label for="amount">Amount Paid</label>
                                     <input type="number" id="amount" disabled class="form-control" value="{{ old('amount_paid') ?? $user->amount_paid }}" required>
                                 </fieldset>
-                                <fieldset class="form-group">
+                                {{-- <fieldset class="form-group">
                                     <label for="uploaded_by">Uploaded by</label>
                                     <input type="text" id="uploaded_by" name="uploaded_by" class="form-control" value="{{ old('uploaded_by') ?? $user->moderator->name }}" disabled required>
-                                </fieldset>
+                                </fieldset> --}}
                             </div>
                             
                         </div>

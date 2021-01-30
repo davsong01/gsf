@@ -48,7 +48,8 @@ class AccountController extends Controller
 		$chapters = Chapter::all();
 
 		if (auth()->user()->level == 'Admin') {
-			return view('admin.index');
+			$registered_participants = User::where('level', '<>', 'Admin')->count();
+			return view('admin.index', compact('registered_participants'));
 		} elseif (auth()->user()->level == 'Participant' || auth()->user()->level == 'Alumni' || auth()->user()->level == 'Nec') {
 
 			return view('participant.index', compact('chapters'));

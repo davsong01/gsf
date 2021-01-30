@@ -31,12 +31,12 @@
 
                                 <fieldset class="form-group">
                                     <label for="email">Email</label>
-                                    <input type="email" id="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                                    <input type="email" id="email" name="email" placeholder="Enter email" class="form-control" value="{{ old('email') }}" required>
                                 </fieldset>
 
                                 <fieldset class="form-group">
                                     <label for="phone">Phone</label>
-                                    <input type="phone" id="phone" name="phone" class="form-control" value="{{ old('phone') }}" required>
+                                    <input type="phone" id="phone" placeholder="Enter phone number" name="phone" class="form-control" value="{{ old('phone') }}" required>
                                 </fieldset>
 
                                 <fieldset class="form-group">
@@ -83,11 +83,11 @@
                             <div class="col-md-6 col-sm-12">                               
                                 <fieldset class="form-group">
                                     <label for="payment_type">Payment Type</label>
-                                    <input type="text" id="payment_type" name="payment_type" class="form-control" value="{{ old('payment_type') }}" required>
+                                    <input type="text" id="payment_type" placeholder="Online or Bank" name="payment_type" class="form-control" value="{{ old('payment_type') }}" required>
                                 </fieldset> 
                                 <fieldset class="form-group">
                                     <label for="transid">Transaction ID</label>
-                                    <input type="text" id="transid" name="transid" class="form-control" value="{{ old('transid') }}" required>
+                                    <input type="text" id="transid" name="transid" placeholder="Enter Transaction Id or Bank name " class="form-control" value="{{ old('transid') }}" required>
                                 </fieldset>
                                 <fieldset class="form-group">
                                     <label for="hostel_id">Hostel</label>
@@ -121,7 +121,7 @@
 
                                 <fieldset class="form-group">
                                     <label for="amount_paid">Amount Paid</label>
-                                    <input type="number" name="amount_paid" id="amount_paid" class="form-control" value="{{ old('amount_paid') }}" required>
+                                    <input type="number" name="amount_paid" id="amount_paid" placeholder="Enter amount paid" class="form-control" value="{{ old('amount_paid') }}" required>
                                 </fieldset>
                                 <fieldset class="form-group">
                                     <label for="uploaded_by">Food Stand</label>

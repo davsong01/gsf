@@ -66,4 +66,6 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return Session::has('switchuser');
     }  
+
+    
 }
