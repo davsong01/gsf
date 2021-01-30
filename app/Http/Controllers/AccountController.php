@@ -81,6 +81,7 @@ class AccountController extends Controller
 
 		//if the user->hostel_id is set and type and level corresponds to the user current request hostel type and level, return back with success,
 		// dd($request->all(), $user);
+
 		if (
 			$user->hostel_id &&
 			$user->sex == $request->sex &&
@@ -89,10 +90,8 @@ class AccountController extends Controller
 			$user->name == $request->name &&
 			!$request->hasFile('passport')
 		) {
-
 			return redirect()->route('account')->with('message', ':) Great, looks like you didnt make any changes.');
 		} else if (!$user->hostel_id) { // first time users - PERFECT
-			$this->createNewFood($user); // it doesnt matter where you place this, it excutes once - CORRECT
 			return $this->createOrUpdateHostel(
 				$user,
 				$request->level ?: $user->level, // the user might be changing levels 
@@ -127,11 +126,14 @@ class AccountController extends Controller
 	{
 		$collection = $hostel_collection->where('level', $level)->where('type', $gender)
 			->sortBy('allocation'); // sort by the lowest allocation
+		$message = ['key' => 'error', 'value' => ':(, this is not you it\'s us, looks like there is no hostel available.'];
 
+		$this->createNewFood($user); // it doesnt matter where you place this, it excutes once - CORRECT
+	
 		// Iterate through the collection
 		$iterator = 0;
-		return $collection->map(
-			function ($item, $key) use ($user, $hostel_collection, $collection, $request, $iterator) {
+		$collection->each(
+			function ($item, $key) use ($user, $hostel_collection, $collection, $request, &$iterator, &$message) {
 				$iterator++;
 				if ($item->capacity != $item->allocation) {
 					// check if user has an associated hostel
@@ -141,7 +143,6 @@ class AccountController extends Controller
 						? $user_hostel->allocation-- : null; // , this is the only way to reduce the allocation effectively
 					$user_hostel ? $user_hostel->save() : null; // and reduce by one
 
-					$flagged = true; // This is flagged to break outta loop on time if we made changes ealy enough
 					$item->allocation++; // increase the numbers of allocation in the corresponding hostel
 					$item->save(); // remember to save the hostel 
 
@@ -164,16 +165,22 @@ class AccountController extends Controller
 						$passport->destroy();
 						$user->passport = $image_path;
 					}
-					if($user->registration_status != 'Complete')
+					if ($user->registration_status != 'Complete')
 						$user->registration_status = 'Complete';
+
 					$user->save(); // save the changes if any
-					return redirect()->route('account')->with('message', ':), updated was successful');
+					$message['key'] = 'message';
+					$message['value'] = ':), updated was successful';
+					return false;
 				}
 				if ($item->capacity == $item->allocation && $collection->count() == $iterator) { // the last loop
-					return redirect()->route('account')->with('error', ':(, this is not you it\'s us, looks like there is no hostel available.');
+					$message['key'] = 'error';
+					$message['value'] = ':(, this is not you it\'s us, looks like there is no hostel available.';
+					return false;
 				}
 			}
-		)->first(); // map always return collection array;
+		);
+		return redirect()->route('account')->with($message['key'], $message['value']);
 	}
 
 	/**
@@ -202,5 +209,4 @@ class AccountController extends Controller
 				}
 			});
 	}
-
 }
