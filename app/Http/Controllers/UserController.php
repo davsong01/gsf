@@ -32,7 +32,7 @@ class UserController extends Controller
         if(auth()->user()->level == 'Admin'){
             $participants = User::with(['hostel', 'moderator'])->where("level", "=", "Participant")->orderBy('created_at', 'desc')->get();
             
-            dd($participants);
+            // dd($participants);
         return view('admin.users.index', compact('participants', 'count'));
         }else if(auth()->user()->level == 'Moderator'){
              $participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'asc')->get();
