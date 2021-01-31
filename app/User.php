@@ -27,8 +27,8 @@ class User extends Authenticatable implements MustVerifyEmail
 	 * @var array
 	 */
     protected $hidden = [
-				'password', 'remember_token', 'id', 'created_at', 'updated_at', 'delete_at'
-				, 'passport'
+		'password', 'remember_token', 'id', 'created_at', 'updated_at', 'delete_at'
+		, 'passport'
     ];
 
     public function hostel(){

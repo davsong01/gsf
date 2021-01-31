@@ -456,7 +456,7 @@ class UserController extends Controller
 
 	public function update(Request $request, User $user)
 	{
-		dd($request->all());
+		 
 		$this->validate($request, [
 			'name' => 'required',
 			'phone' => 'required',
@@ -489,10 +489,42 @@ class UserController extends Controller
             }
 
             //Decrease allocation in previous hostel
-            if($request->hostel_id != $user->hostel_id){
+            $hostel = Hostel::all();
+            $food = Food::all();
+
+            $old_hostel = $hostel->where('id', $user->hostel_id)->first();
+            $old_food = $food->where('id', $user->food_id)->first();
+                      
+            if($request->hostel_id !== $user->hostel_id ){
+                if(isset($user->hostel_id)){
+                    $old_hostel->allocation = $old_hostel->allocation - 1;
+                    $old_hostel->save();
+
+                }
+              
+                //Update new hostel
+                $user->hostel_id = $request->hostel_id;
+                $new_hostel = $hostel->where('id', $request->hostel_id)->first();
+                $new_hostel->allocation = $new_hostel->allocation + 1;
+                $new_hostel->save();
+                $user->save();
 
             }
-            //Decrease allocation in previous foodstand
+          
+            if($request->food_id !== $user->food_id){
+                if(isset($user->food_id)){
+                    $old_food->allocation = $old_food->allocation - 1;
+                    $old_food->save();
+                }
+                //Update new hostel
+                $user->food_id = $request->food_id;
+                $new_food = $food->where('id', $request->food_id)->first();
+                $new_food->allocation = $new_food->allocation + 1;
+                $new_food->save();
+                $user->save();
+
+            }
+
             try{
                 $user->name = $request->name;
                 $user->email = $request->email;
@@ -501,9 +533,9 @@ class UserController extends Controller
                 $user->chapter = $request->chapter;
                 $user->payment_type = $request->payment_type;
                 $user->transid = $request->transid;
-                $user->hostel_id = $request->hostel_id;
                 $user->password = $password;
                 $user->passport = $passport;
+                $user->registration_status = 'Complete';
                 $user->save();
                
             }catch (\Illuminate\Database\QueryException $ex) {
@@ -545,8 +577,7 @@ class UserController extends Controller
                 return back()->with('message', 'Participant has been deleted forever');
             
             } else {
-                
-                
+                         
                 //Get user hostel
                 if($user->hostel){
                     $hostel = $hostel->where('id', $user->hostel->id)->first();
@@ -571,7 +602,7 @@ class UserController extends Controller
         }
 
 		public function export(){
-			$user = new User();
+		$user = new User();
 		$tableColumns = Schema::getColumnListing('users');
 		$columnsForeign = [
 			'hostel_id' => 'hostel_name',

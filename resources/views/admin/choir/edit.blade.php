@@ -1,10 +1,10 @@
 @extends('layouts.dashboard')
-@section('title', 'Update Chorister')
+@section('title', 'Update Choir')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('user.choir') }}">Choristers</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('users.index') }}">Participants</a></li>
 @endsection
 @section('active')
-<li class="breadcrumb-item">Update Chorister</li>
+<li class="breadcrumb-item">Update Participant</li>
 @endsection
 @section('content')
 <div class="content-body">
@@ -24,7 +24,7 @@
                             @method('PATCH')
                          <div class="row">
                              <div class="col-md-3">
-                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="/{{ ($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
+                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="{{ asset($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
                                 </div>
                             </div>
                             <div class="col-md-9">
@@ -95,22 +95,22 @@
                                     <select class="form-control" name="hostel_id" id="hostel_id" required>
                                         @foreach($hostels as $hostel)
                                         @if($hostel->capacity > $hostel->allocation)
-                                        <option value="{{ old('hostel_id') ?? $user->hostel_id }}" {{ $user->hostel_id == $hostel->id ? 'selected' : '' }}>{{ $hostel->name. ' ('.($hostel->capacity - $hostel->allocation). ' participant(s) left) | '.$hostel->type. ' | '.$hostel->level}}</option>
+                                        <option value="{{ $hostel->id ?? $user->hostel_id }}" {{ $user->hostel_id == $hostel->id ? 'selected' : '' }}>{{ $hostel->name. ' ('.($hostel->capacity - $hostel->allocation). ' participant(s) left) | '.$hostel->type. ' | '.$hostel->level}}</option>
                                         @endif
                                         @endforeach
                                     </select>
                                 </fieldset>
 
-                                {{-- <fieldset class="form-group">
+                                <fieldset class="form-group">
                                     <label for="hostel">Food Stand</label>
                                     <select class="form-control" name="food_id" id="food_id" required>
                                         @foreach($foods as $food)
-                                            <option value="{{ old('food_id') ?? $user->food_id }}" {{ $user->food_id == $food->id ? 'selected' : '' }}>{{ $food->name }}</option>
+                                            <option value="{{ $food->id ?? $user->food_id }}" {{ $user->food_id == $food->id ? 'selected' : '' }}>{{ $food->name. ' ('.($food->capacity - $food->allocation). ' participant(s) left) | '.$food->level }}</option>
                                             @endforeach
                                         </select>
                                     </select>
                                 </fieldset>
-                                 --}}
+                                
                                 <fieldset class="form-group">
                                     <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank except you want to reset participant's password</i></small>
                                     <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">

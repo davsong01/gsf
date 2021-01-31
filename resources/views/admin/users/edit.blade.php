@@ -95,22 +95,22 @@
                                     <select class="form-control" name="hostel_id" id="hostel_id" required>
                                         @foreach($hostels as $hostel)
                                         @if($hostel->capacity > $hostel->allocation)
-                                        <option value="{{ old('hostel_id') ?? $user->hostel_id }}" {{ $user->hostel_id == $hostel->id ? 'selected' : '' }}>{{ $hostel->name. ' ('.($hostel->capacity - $hostel->allocation). ' participant(s) left) | '.$hostel->type. ' | '.$hostel->level}}</option>
+                                        <option value="{{ $hostel->id ?? $user->hostel_id }}" {{ $user->hostel_id == $hostel->id ? 'selected' : '' }}>{{ $hostel->name. ' ('.($hostel->capacity - $hostel->allocation). ' participant(s) left) | '.$hostel->type. ' | '.$hostel->level}}</option>
                                         @endif
                                         @endforeach
                                     </select>
                                 </fieldset>
 
-                                {{-- <fieldset class="form-group">
+                                <fieldset class="form-group">
                                     <label for="hostel">Food Stand</label>
                                     <select class="form-control" name="food_id" id="food_id" required>
                                         @foreach($foods as $food)
-                                            <option value="{{ old('food_id') ?? $user->food_id }}" {{ $user->food_id == $food->id ? 'selected' : '' }}>{{ $food->name }}</option>
+                                            <option value="{{ $food->id ?? $user->food_id }}" {{ $user->food_id == $food->id ? 'selected' : '' }}>{{ $food->name. ' ('.($food->capacity - $food->allocation). ' participant(s) left) | '.$food->level }}</option>
                                             @endforeach
                                         </select>
                                     </select>
                                 </fieldset>
-                                 --}}
+                                
                                 <fieldset class="form-group">
                                     <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank except you want to reset participant's password</i></small>
                                     <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
