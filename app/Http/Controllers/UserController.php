@@ -713,4 +713,43 @@ class UserController extends Controller
 		}
 		return redirect(route('moderator.index'))->with('message', 'Data has been imported succesfully');
 	}
+
+	public function alumnisExport()
+	{
+		$user = new User();
+		$tableColumns = Schema::getColumnListing('users');
+		$columnsForeign = [
+			'hostel_id' => 'hostel_name',
+			'food_id' => 'food_name',
+			'chapter' => 'chapter'
+		];
+
+		foreach ($user->getHidden() as $key => $value) {
+			if (($k = array_search($value, $tableColumns)) !== false) {
+				unset($tableColumns[$k]);
+			}
+		}
+		foreach ($columnsForeign as $key => $value) {
+			if (in_array($key, $tableColumns)) {
+				$tableColumns[array_search($key, $tableColumns)] = $value;
+			}
+		}
+
+		return  (new UsersExport($tableColumns))->level('Alumni')->download('alumnis_exported.xlsx');
+	}
+
+	public function alumnisImport(Request $request)
+	{
+		$data = $this->validate($request, [
+			'file' => 'required|mimes:xlsx,csv',
+		]);
+
+		try {
+			Excel::import(new UsersImport, request()->file('file'));
+		} catch (\Illuminate\Database\QueryException $ex) {
+			$error = $ex->getMessage();
+			return back()->with('error', $error);
+		}
+		return redirect(route('alumnis.index'))->with('message', 'Data has been imported succesfully');
+	}
 }
