@@ -29,6 +29,13 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     //Admin Only
     Route::group([], function(){
+        Route::get('/medical/import/index', 'UserController@medicalImportIndex')->name('medical.import.index');
+        Route::get('/medical/export', 'UserController@medicalExport')->name('medical.export');
+        Route::post('/medical/import', 'UserController@medicalImport')->name('medical.import');
+		});
+		
+    //Admin Only
+    Route::group([], function(){
         Route::get('/choir/import/index', 'UserController@choirImportIndex')->name('choir.import.index');
         Route::get('/choir/export', 'UserController@choirExport')->name('choir.export');
         Route::post('/choir/import', 'UserController@choirImport')->name('choir.import');
