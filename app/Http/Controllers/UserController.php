@@ -26,6 +26,11 @@ class UserController extends Controller
 		return view('admin.users.import');
 	}
 
+	public function choirImportIndex()
+	{
+		return view('admin.choir.import');
+	}
+
 
 	public function index()
 	{
@@ -580,5 +585,50 @@ class UserController extends Controller
 			return back()->with('error', $error);
 		}
 		return redirect(route('users.index'))->with('message', 'Data has been imported succesfully');
+	}
+
+	public function choirExport()
+	{
+		$user = new User();
+		$tableColumns = Schema::getColumnListing('users');
+		$columnsForeign = [
+			'hostel_id' => 'hostel_name',
+			'food_id' => 'food_name',
+			'chapter' => 'chapter'
+		];
+
+		foreach ($user->getHidden() as $key => $value) {
+			if (($k = array_search($value, $tableColumns)) !== false) {
+				unset($tableColumns[$k]);
+			}
+		}
+		foreach ($columnsForeign as $key => $value) {
+			if (in_array($key, $tableColumns)) {
+				$tableColumns[array_search($key, $tableColumns)] = $value;
+			}
+		}
+		$choir = User::where('users.level', 'Choir')->foreign(
+			['food_id', 'hostel_id', 'chapter'],
+			['food', 'hostels', 'chapters'],
+			['id', 'id', 'id'],
+			['name', 'name', 'name']
+		)->get();
+
+		return  (new UsersExport($tableColumns))->level('Choir')->download('choir_exported.xlsx');
+	}
+
+	public function choirImport(Request $request)
+	{
+		$data = $this->validate($request, [
+			'file' => 'required|mimes:xlsx,csv',
+		]);
+
+		try {
+			Excel::import(new UsersImport, request()->file('file'));
+		} catch (\Illuminate\Database\QueryException $ex) {
+			$error = $ex->getMessage();
+			return back()->with('error', $error);
+		}
+		return redirect(route('choir.index'))->with('message', 'Data has been imported succesfully');
 	}
 }

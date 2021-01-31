@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 @section('title', 'Choristers')
 @section('active')
-<li class="breadcrumb-item">Conference Participants</li>
+<li class="breadcrumb-item">Conference Choiristers</li>
 @endsection
 @section('content')
 <div class="content-body">
@@ -14,7 +14,8 @@
                         <h4 class="card-title">All Choristers</h4>
                         <div class="">
                             <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
-                            <a href="{{ route('users.import-export') }}" class="btn btn-primary mt-1">Import/Export</a>
+                            <a href="{{ route('choir.import.index') }}" class="btn btn-primary mt-1">Import</a>
+                            <a href="{{ route('choir.export') }}" class="btn btn-primary mt-1">Export</a>
                         </div>
                         @include('includes.alerts')
                         

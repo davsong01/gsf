@@ -100,6 +100,7 @@ class User extends Authenticatable implements MustVerifyEmail
 			...$columns
 		);
 	}
+	
 	public function scopeForeign($query, $foreignKeys, $tables, $localKeys, $foreignColumns)
 	{
 		$foreignKeys = (array) $foreignKeys;

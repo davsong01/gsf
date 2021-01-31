@@ -29,9 +29,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     //Admin Only
     Route::group([], function(){
-        Route::get('/users/import-export', 'UserController@importExport')->name('users.import-export');
-        Route::get('/users/export', 'UserController@export')->name('users.export');
-        Route::post('/users/import', 'UserController@import')->name('users.import');
+        Route::get('/choir/import/index', 'UserController@choirImportIndex')->name('choir.import.index');
+        Route::get('/choir/export', 'UserController@choirExport')->name('choir.export');
+        Route::post('/choir/import', 'UserController@choirImport')->name('choir.import');
     });
 		//Admin Only
 		Route::group([], function(){
