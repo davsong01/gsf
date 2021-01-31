@@ -27,18 +27,25 @@ Route::get('/payment/callback', 'PaymentController@handleGatewayCallback');
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', 'AccountController@index')->name('account');
 
-		//Admin Only
-		Route::group([], function(){
-			Route::get('/users/import-export', 'UserController@importExport')->name('users.import-export');
-			Route::get('/users/export', 'UserController@export')->name('users.export');
-			Route::post('/users/import', 'UserController@import')->name('users.import');
-		});
+    //Admin Only
+    Route::group([], function(){
+        Route::get('/users/import-export', 'UserController@importExport')->name('users.import-export');
+        Route::get('/users/export', 'UserController@export')->name('users.export');
+        Route::post('/users/import', 'UserController@import')->name('users.import');
+    });
     Route::resource('users', 'UserController');
     Route::get('users/delete/{id}', 'UserController@destroy')->name('users.delete');
+    Route::get('trashed/users', 'UserController@trashed')->name('users.trashed');
+    Route::get('restore/users', 'UserController@trashed')->name('users.restore');
+
     Route::get('medical', 'UserController@getMedical')->name('user.medical');
     Route::get('choir', 'UserController@getChoir')->name('user.choir');
+    Route::get('choir/{id}/edit', 'UserController@editChoir')->name('choir.edit');
+    Route::get('medic/{id}/edit', 'UserController@editMedic')->name('medic.edit');
     Route::get('official', 'UserController@getOfficial')->name('user.official');
     Route::get('nec', 'UserController@getNec')->name('user.nec');
+    Route::get('nec/{id}/edit', 'UserController@editNec')->name('nec.edit');
+    Route::get('nec/{id}/edit', 'UserController@editOfficial')->name('official.edit');
     
     Route::get('/switch/{id}', 'SwitchUserController@index')->name('switchuser');
     Route::get('/stopswitching', 'SwitchUserController@stopSwitching')->name('stop.switchuser');

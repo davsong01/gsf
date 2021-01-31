@@ -11,11 +11,13 @@ class SwitchUser
 {
     public function handle($request, Closure $next)
     {
-       
-        if(Auth::user()->permission == 2){
+      
+        if(Auth::user()->level == 'Admin'){
+ 
             if($request->session()->has('switchuser'))
             {
                $d = Auth::onceUsingId($request->session()->get('switchuser'));
+              
             }
         }
       

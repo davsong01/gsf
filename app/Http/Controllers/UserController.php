@@ -30,9 +30,9 @@ class UserController extends Controller
     { 
         $count = 1;
         if(auth()->user()->level == 'Admin'){
-            $participants = User::with(['hostel', 'moderator'])->where("level", "=", "Participant")->orderBy('created_at', 'desc')->get();
+
+            $participants = User::where('level', '<>', 'Admin')->orderBy('created_at', 'desc')->get();
             
-            // dd($participants);
         return view('admin.users.index', compact('participants', 'count'));
         }else if(auth()->user()->level == 'Moderator'){
              $participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'asc')->get();
@@ -41,7 +41,15 @@ class UserController extends Controller
         }
         
         return abort(404);
-        
+    }
+
+    public function trashed(){
+        $count = 1;
+        if(auth()->user()->level == 'Admin'){
+            $participants = User::onlyTrashed()->where('level', '<>', 'Admin')->orderBy('created_at', 'desc')->get();
+            
+        return view('admin.users.trashed', compact('participants', 'count'));
+        }
     }
 
      public function getChoir()
@@ -50,7 +58,7 @@ class UserController extends Controller
         if(auth()->user()->level == 'Admin'){
             $participants = User::with(['hostel', 'moderator'])->whereLevel('Choir')->orderBy('created_at', 'desc')->get();
             
-        return view('admin.users.index', compact('participants', 'count'));
+        return view('admin.choir.index', compact('participants', 'count'));
         }
         
         return abort(404);
@@ -63,7 +71,7 @@ class UserController extends Controller
         if(auth()->user()->level == 'Admin'){
             $participants = User::with(['hostel', 'moderator'])->whereLevel('Medical')->orderBy('created_at', 'desc')->get();
             
-        return view('admin.users.index', compact('participants', 'count'));
+        return view('admin.medic.index', compact('participants', 'count'));
         }
         
         return abort(404);
@@ -76,7 +84,7 @@ class UserController extends Controller
         if(auth()->user()->level == 'Admin'){
             $participants = User::with(['hostel', 'moderator'])->whereLevel('Nec')->orderBy('created_at', 'desc')->get();
             
-        return view('admin.users.index', compact('participants', 'count'));
+        return view('admin.nec.index', compact('participants', 'count'));
         }
         
         return abort(404);
@@ -89,7 +97,7 @@ class UserController extends Controller
         if(auth()->user()->level == 'Admin'){
             $participants = User::with(['hostel', 'moderator'])->whereLevel('Official')->orderBy('created_at', 'desc')->get();
             
-        return view('admin.users.index', compact('participants', 'count'));
+        return view('admin.official.index', compact('participants', 'count'));
         }
         
         return abort(404);
@@ -129,10 +137,10 @@ class UserController extends Controller
 
         //Handle Passport Upload
         //get filename with extensionz 
-        $imgName = $request->passport->getClientOriginalName();
+        $imgName = date('Y-m-d-His') . $request->passport->getClientOriginalName();
         $passport = Image::make($request->passport)->resize(500, 500);
         $passport->save('frontend/passports'.'/'.$imgName);
-        $passport = 'frontend/passports/'. date('Y-m-d-His') . $imgName;
+        $passport = 'frontend/passports/'. $imgName;
 
  
         //Store block for Admin
@@ -402,28 +410,100 @@ class UserController extends Controller
        }
        return abort(404);
 
-        
+    }
+
+    public function editChoir($id)
+    {
+        $user = User::findorfail($id);
+
+        $chapters = Chapter::all();
+        $hostels = Hostel::all();
+        $foods = Food::all();
+
+       if(auth()->user()->level == 'Admin'){         
+            return view('admin.choir.edit', compact('user', 'hostels', 'foods', 'chapters'));
+       }
+    }
+
+    public function editMedic($id)
+    {
+        $user = User::findorfail($id);
+
+        $chapters = Chapter::all();
+        $hostels = Hostel::all();
+        $foods = Food::all();
+
+       if(auth()->user()->level == 'Admin'){         
+            return view('admin.medic.edit', compact('user', 'hostels', 'foods', 'chapters'));
+       }
+    }
+
+
+    public function editAlumni($id)
+    {
+        $user = User::findorfail($id);
+
+        $chapters = Chapter::all();
+        $hostels = Hostel::all();
+        $foods = Food::all();
+
+       if(auth()->user()->level == 'Admin'){         
+            return view('admin.alumni.edit', compact('user', 'hostels', 'foods', 'chapters'));
+       }
     }
 
     public function update(Request $request, User $user)
     {
-        dd($request->all());
+    
         $this->validate($request, [
 			'name' => 'required',
 			'phone' => 'required',
 			'sex' => 'in:Male,Female',
 			'chapter' => 'required|exists:chapters,id',
-			'passport' => 'nullable|max:200|mimes:jpeg,jpg,png'
+			'passport' => 'nullable|max:200'
         ]);
         
+        if($request->has('passport')){
+            if(isset($user->passport)){
+                unlink( $user->passport);
+            }
+
+            $imgName = date('Y-m-d-His') . $request->passport->getClientOriginalName();
+           
+            $passport = Image::make($request->passport)->resize(500, 500);
+            $passport->save('frontend/passports'.'/'.$imgName);               
+            $passport = 'frontend/passports/'.$imgName;
+            
+        }else{
+             $passport  = $user->passport;
+        }
+       
         if(auth()->user()->level == 'Admin'){
         //handle password
             if($request['password']){
-                $request['password'] = Hash::make($request['password']);
-            }else $request['password'] = $user->password;
+                $password = Hash::make($request['password']);
+            }else {
+                $password = $user->password;
+            }
 
+            //Decrease allocation in previous hostel
+            if($request->hostel_id != $user->hostel_id){
+
+            }
+            //Decrease allocation in previous foodstand
             try{
-                $user->update($request->all());
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->phone = $request->phone;
+                $user->sex = $request->sex;
+                $user->chapter = $request->chapter;
+                $user->payment_type = $request->payment_type;
+                $user->transid = $request->transid;
+                $user->hostel_id = $request->hostel_id;
+                $user->password = $password;
+                $user->passport = $passport;
+                $user->save();
+               
             }catch (\Illuminate\Database\QueryException $ex) {
                     $error = $ex->getMessage();        
                     return back()->with('error', $ex);
@@ -444,40 +524,49 @@ class UserController extends Controller
     }
     
     
-    public function destroy($id)
-    {
-        $hostel = Hostel::all();
-        $foodstand = Food::all();
-        //stop from accidentally deleted self
-        if(auth()->user()->id == $id){
-            return back()->with('warning', 'I\'m sorry but You cannot delete your self');
+        public function destroy($id)
+        {
+            //stop from accidentally deleted self
+            if(auth()->user()->id == $id){
+                return back()->with('warning', 'I\'m sorry but You cannot delete your self');
+            }
+            $hostel = Hostel::all();
+            $foodstand = Food::all();
+            $user= User::withTrashed()->where('id', $id)->firstOrFail();
+
+            if($user->trashed()){
+                if(isset($user->passport)){
+                    unlink( $user->passport);
+                }
+                $user->forceDelete();
+
+                return back()->with('message', 'Participant has been deleted forever');
+            
+            } else {
+                
+                
+                //Get user hostel
+                if($user->hostel){
+                    $hostel = $hostel->where('id', $user->hostel->id)->first();
+                    $hostel->allocation -= 1;
+                    $hostel->save();
+                };
+
+                //Get user foodstand
+                if($user->food){
+                    $food = $foodstand->where('id', $user->food->id)->first();
+                    $food->allocation -= 1;
+                    $food->save();
+                };
+
+                $user->delete();
+
+                auth()->user()->slot_filled -= 1;
+                auth()->user()->save();
+
+                return back()->with('message', 'Record has been deleted!');
+            }
         }
-        $user= User::findOrFail($id);
-        //Get user hostel
-        if($user->hostel){
-            $hostel = $hostel->where('id', $user->hostel->id)->first();
-            $hostel->allocation -= 1;
-            $hostel->save();
-        };
-
-        //Get user foodstand
-        if($user->food){
-            $food = $foodstand->where('id', $user->food->id)->first();
-            $food->allocation -= 1;
-            $food->save();
-        };
-       
-        if(isset($user->passport)){
-            unlink( $user->passport);
-        }
-
-        $user->delete();
-
-        auth()->user()->slot_filled -= 1;
-        auth()->user()->save();
-
-        return back()->with('message', 'Record has been deleted forever!');
-    }
 
 		public function export(){
 			$user = new User();

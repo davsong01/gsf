@@ -14,8 +14,16 @@
                     @if($setting->close_registration >= date('Y-m-d'))
                         <a href="#register" class="nav-item nav-link">REGISTER</a>
                     @endif
-                    
-                    <a href="/login" class="nav-item nav-link">LOGIN</a>
+                    @auth
+                     <a class="nav-item nav-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="bx bx-power-off mr-50"></i>{{ __('Logout') }}</a> 
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>  
+                    @endauth
+                    @guest
+                         <a href="/login" class="nav-item nav-link">LOGIN</a>
+                    @endguest
+                   
                     
                 </div>
             </div>

@@ -1,10 +1,10 @@
 @extends('layouts.dashboard')
-@section('title', 'Update Participant')
+@section('title', 'Update Medic')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('users.index') }}">Participants</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('user.medical') }}">Medics</a></li>
 @endsection
 @section('active')
-<li class="breadcrumb-item">Update Participant</li>
+<li class="breadcrumb-item">Update Medic</li>
 @endsection
 @section('content')
 <div class="content-body">
@@ -24,7 +24,7 @@
                             @method('PATCH')
                          <div class="row">
                              <div class="col-md-3">
-                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="{{ asset($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
+                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="/{{ ($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
                                 </div>
                             </div>
                             <div class="col-md-9">

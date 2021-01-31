@@ -6,6 +6,7 @@ use App\Food;
 use App\User;
 use App\Alumni;
 use App\Hostel;
+use App\Chapter;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -22,38 +23,11 @@ class AlumniController extends Controller
         }return abort(404);
     }
 
-    
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Alumni  $alumni
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Alumni $alumni)
-    {
-        //
-    }
 
    
     public function edit($id)
     {
-      
+
         if(auth()->user()->level == 'Admin'){
 
             $user = User::findorFail($id);
@@ -65,10 +39,10 @@ class AlumniController extends Controller
            if($user->sex == 'Male'){
                $hostels = Hostel::whereType('Male')->whereLevel('Alumni')->get();
            }
-            
+            $chapters = Chapter::all();
             $foods = Food::all();
             
-            return view('admin.alumni.edit', compact('user', 'hostels', 'foods'));
+            return view('admin.alumni.edit', compact('user', 'hostels', 'foods', 'chapters'));
        }
        return abort(404);
     }
