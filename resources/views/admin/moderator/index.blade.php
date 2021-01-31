@@ -12,7 +12,11 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All Moderators</h4>
-                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
+                        <div class="">
+													<a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
+													<a href="{{ route('moderators.import.index') }}" class="btn btn-primary mt-1">Import</a>
+													<a href="{{ route('moderators.export') }}" class="btn btn-primary mt-1">Export</a>
+											</div>
                         @include('includes.alerts')
                         
                     </div>

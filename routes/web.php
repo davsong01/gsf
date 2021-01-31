@@ -27,17 +27,38 @@ Route::get('/payment/callback', 'PaymentController@handleGatewayCallback');
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', 'AccountController@index')->name('account');
 
+    // Moderators
+    Route::group([], function(){
+        Route::get('/alumnis/import/index', 'UserController@alumnisImportIndex')->name('alumnis.import.index');
+        Route::get('/alumnis/export', 'UserController@alumnisExport')->name('alumnis.export');
+        Route::post('/alumnis/import', 'UserController@alumnisImport')->name('alumnis.import');
+		});
+
+    // Moderators
+    Route::group([], function(){
+        Route::get('/moderators/import/index', 'UserController@moderatorsImportIndex')->name('moderators.import.index');
+        Route::get('/moderators/export', 'UserController@moderatorsExport')->name('moderators.export');
+        Route::post('/moderators/import', 'UserController@moderatorsImport')->name('moderators.import');
+		});
+		
     //Admin Only
     Route::group([], function(){
-        Route::get('/users/import-export', 'UserController@importExport')->name('users.import-export');
-        Route::get('/users/export', 'UserController@export')->name('users.export');
-        Route::post('/users/import', 'UserController@import')->name('users.import');
+        Route::get('/medical/import/index', 'UserController@medicalImportIndex')->name('medical.import.index');
+        Route::get('/medical/export', 'UserController@medicalExport')->name('medical.export');
+        Route::post('/medical/import', 'UserController@medicalImport')->name('medical.import');
+		});
+		
+    //Admin Only
+    Route::group([], function(){
+        Route::get('/choir/import/index', 'UserController@choirImportIndex')->name('choir.import.index');
+        Route::get('/choir/export', 'UserController@choirExport')->name('choir.export');
+        Route::post('/choir/import', 'UserController@choirImport')->name('choir.import');
     });
 		//Admin Only
 		Route::group([], function(){
-			Route::get('/users/import/index', 'UserController@importIndex')->name('users.import.index');
-			Route::get('/users/export', 'UserController@export')->name('users.export');
-			Route::post('/users/import', 'UserController@import')->name('users.import');
+			Route::get('/users/import/index', 'UserController@usersImportIndex')->name('users.import.index');
+			Route::get('/users/export', 'UserController@usersExport')->name('users.export');
+			Route::post('/users/import', 'UserController@usersImport')->name('users.import');
 		});
     Route::resource('users', 'UserController');
     Route::get('users/delete/{id}', 'UserController@destroy')->name('users.delete');
