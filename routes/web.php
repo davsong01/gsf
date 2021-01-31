@@ -27,6 +27,13 @@ Route::get('/payment/callback', 'PaymentController@handleGatewayCallback');
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', 'AccountController@index')->name('account');
 
+    // Moderators
+    Route::group([], function(){
+        Route::get('/moderators/import/index', 'UserController@moderatorsImportIndex')->name('moderators.import.index');
+        Route::get('/moderators/export', 'UserController@moderatorsExport')->name('moderators.export');
+        Route::post('/moderators/import', 'UserController@moderatorsImport')->name('moderators.import');
+		});
+		
     //Admin Only
     Route::group([], function(){
         Route::get('/medical/import/index', 'UserController@medicalImportIndex')->name('medical.import.index');
