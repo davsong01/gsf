@@ -10,6 +10,7 @@ use App\Setting;
 use App\Exports\UsersExport;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Imports\UsersImport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
@@ -452,10 +453,11 @@ class UserController extends Controller
        }
     }
 
-    public function update(Request $request, User $user)
-    {
-    
-        $this->validate($request, [
+
+	public function update(Request $request, User $user)
+	{
+		dd($request->all());
+		$this->validate($request, [
 			'name' => 'required',
 			'phone' => 'required',
 			'sex' => 'in:Male,Female',
@@ -582,11 +584,11 @@ class UserController extends Controller
 				unset($tableColumns[$k]);
 			}
 		}
-		foreach($columnsForeign as $key => $value){
-				if(in_array($key, $tableColumns)){
-					$tableColumns[array_search($key, $tableColumns)] = $value;
-				}
+		foreach ($columnsForeign as $key => $value) {
+			if (in_array($key, $tableColumns)) {
+				$tableColumns[array_search($key, $tableColumns)] = $value;
 			}
+		}
 		return Excel::download(new UsersExport($tableColumns), 'users_exported.xlsx');
 	}
 
@@ -596,14 +598,12 @@ class UserController extends Controller
 			'file' => 'required|mimes:xlsx,csv',
 		]);
 
-
 		try {
-			// Excel::import(new ImportAllocations, request()->file('file'));
+			Excel::import(new UsersImport, request()->file('file'));
 		} catch (\Illuminate\Database\QueryException $ex) {
 			$error = $ex->getMessage();
 			return back()->with('error', $error);
 		}
-		return redirect(route('allocation.index'))->with('message', 'Data has been imported succesfully');
+		return redirect(route('users.index'))->with('message', 'Data has been imported succesfully');
 	}
-
 }
