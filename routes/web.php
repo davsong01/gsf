@@ -35,9 +35,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     });
 		//Admin Only
 		Route::group([], function(){
-			Route::get('/users/import/index', 'UserController@importIndex')->name('users.import.index');
-			Route::get('/users/export', 'UserController@export')->name('users.export');
-			Route::post('/users/import', 'UserController@import')->name('users.import');
+			Route::get('/users/import/index', 'UserController@usersImportIndex')->name('users.import.index');
+			Route::get('/users/export', 'UserController@usersExport')->name('users.export');
+			Route::post('/users/import', 'UserController@usersImport')->name('users.import');
 		});
     Route::resource('users', 'UserController');
     Route::get('users/delete/{id}', 'UserController@destroy')->name('users.delete');
