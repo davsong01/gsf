@@ -94,7 +94,7 @@
                                     <label for="hostel_id">Hostel</label>
                                     <select class="form-control" name="hostel_id" id="hostel_id" required>
                                         @foreach($hostels as $hostel)
-                                        @if($hostel->capacity > $hostel->allocation)
+                                        @if($hostel->capacity > $hostel->allocation || $hostel->id == $user->hostel_id)
                                         <option value="{{ $hostel->id ?? $user->hostel_id }}" {{ $user->hostel_id == $hostel->id ? 'selected' : '' }}>{{ $hostel->name. ' ('.($hostel->capacity - $hostel->allocation). ' participant(s) left) | '.$hostel->type. ' | '.$hostel->level}}</option>
                                         @endif
                                         @endforeach
@@ -105,8 +105,11 @@
                                     <label for="hostel">Food Stand</label>
                                     <select class="form-control" name="food_id" id="food_id" required>
                                         @foreach($foods as $food)
+                                            @if($food->capacity > $food->allocation || $food->id == $user->food_id)
                                             <option value="{{ $food->id ?? $user->food_id }}" {{ $user->food_id == $food->id ? 'selected' : '' }}>{{ $food->name. ' ('.($food->capacity - $food->allocation). ' participant(s) left) | '.$food->level }}</option>
-                                            @endforeach
+                                            
+                                            @endif
+                                        @endforeach
                                         </select>
                                     </select>
                                 </fieldset>

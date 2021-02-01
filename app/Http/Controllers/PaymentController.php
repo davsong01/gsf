@@ -107,7 +107,7 @@ class PaymentController extends Controller
             $data['amount'] = $paymentDetails['data']['amount']/100;
             $data['transid'] = $paymentDetails['data']['reference'];
             $data['payment_type'] = "PAYSTACK";
-            $data['chapter'] = $participant->chapter;
+            $data['chapter'] = $participant->campus->name;
             
 
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '1'){

@@ -161,13 +161,23 @@
 												<p class="date">2nd April - 4th April 2020</p><br>
 											</div>
 											<div class="photo">
-												<h1>PARTICIPANT</h1>
-												<img src="{{ asset('frontend/img/dave.png') }}">
+												<h1>@if($user->level == 'Participant' || $user->level == 'Alumni')PARTICIPANT
+													@elseif($user->level == 'Moderator')PARTICIPANT
+													@elseif($user->level == 'Official' || $user->level == 'Nec')OFFICIAL
+													@elseif($user->level == 'Choir')CHOIR
+													@elseif($user->level == 'Medical')MEDICAL PERSONNEL
+												
+													@endif
+													
+												</h1>
+												<img src="{{ asset($user->passport ? '/'.$user->passport : '/frontend/passports/avatar.jpg') }}">
 											</div>
 											<div>
 												<h3 style="font-size:25px">Name: {{ $user->name }}</h3>
+												@if(isset($user->campus))
 												<h3 style="font-size:15px">Campus </h3>
 												<span><b>{{ $user->campus->name  }}</b></span>
+												@endif
 												<h3 style="font-size:15px"> <strong>Hostel:</strong> {{ isset($user->hostel->name) ? $user->hostel->name : 'Registration incomplete'  }}</h3>
 												<h3 style="font-size:15px"> <b>Food Stand:</b> {{ isset($user->food->name) ? $user->food->name : 'Registration incomplete'  }}</h3>
 												<div class="qr-code">

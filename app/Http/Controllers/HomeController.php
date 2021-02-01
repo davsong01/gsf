@@ -7,6 +7,7 @@ use App\User;
 use App\Payout;
 use App\Chapter;
 use App\Setting;
+use App\TempUser;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,10 @@ class HomeController extends Controller
         return view('necregistration');
     }
 
-  
+    public function temp(){
+        $t = TempUser::with('campus')->get();
+
+        dd($t);
+    }
 
 }

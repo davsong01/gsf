@@ -71,6 +71,13 @@
                                                     href="{{ route('switchuser', $participant->id) }}"><i
                                                         class="fa fa-unlock actions"></i>
                                                 </a>
+                                                 @if($participant->registration_status == 'Complete')
+                                                <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('user.card', $participant->id) }}"> <i class="fa fa-print actions"></i></
+                                                </a>
+                                            
+                                                <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('meal.ticket', $participant->id) }}"> <i class="icon-food actions"></i></
+                                                </a>
+                                                @endif
                                                 <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete User" href="{{ route('users.delete', $participant->id) }}"> <i class="fa fa-recycle"></i></
                                                 </a>
                                             </td>
