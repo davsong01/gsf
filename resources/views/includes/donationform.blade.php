@@ -51,14 +51,15 @@
                                                     <input type="hidden" name="quantity" value="1">
                                                     <input type="hidden" name="currency" value="NGN">
                                                     <input type="hidden" name="metadata"
-                                                        value="{{ json_encode($array = ['type' => '4',]) }}">
+                                                        value="{{ json_encode($array = ['type' => '5',]) }}">
                                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                                     <script>
+                                                        alert(document.getElementById('donations');
                                                         var donations = document.getElementById('donations');
                                                         var amount = document.getElementById('amount');
 
-                                                        donation.addEventListener('input', function () {
-                                                            amount.value = 'iiii';
+                                                        donations.addEventListener('input', function () {
+                                                            amount.value = this.value * 100;
                                                         });
                                                     </script>
 

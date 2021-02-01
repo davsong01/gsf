@@ -61,7 +61,7 @@
                                         <input type="hidden" name="quantity" value="1">
                                         <input type="hidden" name="currency" value="NGN">
                                         <input type="hidden" name="metadata"
-                                            value="{{ json_encode($array = ['type' => '3',]) }}">
+                                            value="{{ json_encode($array = ['type' => '4',]) }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                         <script>
                                             var participants = document.getElementById('participants');

@@ -22,6 +22,7 @@ class PaymentController extends Controller
 
     public function redirectToGateway(Request $request)
     {
+        dd($request->all());
         $setting = Setting::first();
         if($setting->close_registration < now()){
             return redirect(url('/#register'))->with('warning', 'Registration for this program has closed');
@@ -107,7 +108,7 @@ class PaymentController extends Controller
             $data['amount'] = $paymentDetails['data']['amount']/100;
             $data['transid'] = $paymentDetails['data']['reference'];
             $data['payment_type'] = "PAYSTACK";
-            $data['chapter'] = $participant->campus->name;
+            $data['chapter'] = $participant->chapter;
             
 
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '1'){
@@ -122,6 +123,7 @@ class PaymentController extends Controller
                 $ledge = 'AOP';
                 $data['level'] = 'Moderator';
                 $data['slot_filled'] = 1;
+             
             }
 
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '3'){
@@ -131,7 +133,47 @@ class PaymentController extends Controller
                 $data['slot_filled'] = 1;
             }
 
-            try{
+            if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '4'){
+                $data['slot'] = 1;
+                $ledge = 'AON';
+                $data['level'] = 'Nec';
+                $data['slot_filled'] = 1;
+            }
+
+            //Donations
+            if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '5'){
+
+                //copy details to donations table
+                $donation = Donation::create([
+                    $participant = TempUser::whereEmail($paymentDetails['data']['customer']['email'])->first();
+                    $data['name'] = $participant->name;
+                    $data['phone'] = $participant->phone;
+                    $data['type'] = $paymentDetails['data']['metadata']['type'];
+                    $data['email'] = $paymentDetails['data']['customer']['email'];
+                    $password = bcrypt($participant->phone);
+                    $data['amount'] = $paymentDetails['data']['amount']/100;
+                    $data['transid'] = $paymentDetails['data']['reference'];
+                    $data['payment_type'] = "PAYSTACK";
+                    $data['chapter'] = $participant->chapter;
+                ]);
+
+                 //send email to official email
+                Mail::to(Setting::select('official_email')->first()->value('official_email'))->send(new AdminMail($data));
+        
+                //include thankyou page
+                $setting = Setting::first();
+                $conference_year = Carbon::parse($setting->start_date)->year;
+                return view('thankyou', compact('data', 'conference_year'));
+
+                $data['slot'] = 1;
+                $ledge = 'AON';
+                $data['level'] = 'Nec';
+                $data['slot_filled'] = 1;
+            }
+
+       
+            // try{
+                    
             // Create new user
             $user = User::Create([
                 'name' => $data['name'],
@@ -147,21 +189,22 @@ class PaymentController extends Controller
                 'payment_type' => $data['payment_type'],
                 'transid' => $data['transid']
             ]);
-        
+            
             $user->update([
                 'conference_number' =>'GSF-'.$ledge.'-'.$user->id,
             ]);
 
-            }catch (\Illuminate\Database\QueryException $ex) {
-                return redirect(route('index'))->with('error', $ex);
-            }            
+            // }catch (\Illuminate\Database\QueryException $ex) {
+            //     return redirect(url('/#register'))->with('warning', $ex);
+            // }            
 
             $data['conference_number'] = $user->conference_number;
-
+            $data['chapter'] = isset($participant->campus->name) ? $participant->campus->name: '';
+         
             //delete temp user
             $participant->delete();
             
-           
+
             //send email to participant
             Mail::to($data['email'])->send(new WelcomeMail($data));
            

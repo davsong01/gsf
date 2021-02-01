@@ -14,7 +14,7 @@ An Alumni has just registered for the GSF National Conference, Please find detai
 <strong>Phone: </strong> {{ $data['phone'] }} <br>
 <strong>Conference ID: </strong>{{ $data['conference_number'] }} <br>
 <strong>Amount Paid: </strong> &#8358;{{ $data['amount'] }} <br>
-<strong>Chapter: </strong> {{ $data['chapter'] }} <br>
+<strong>Campus: </strong> {{ $data['chapter'] }} <br>
 
 
 You can also login to the portal to view and manage registrations
