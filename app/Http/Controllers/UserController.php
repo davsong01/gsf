@@ -33,12 +33,27 @@ class UserController extends Controller
 
 	public function medicalImportIndex()
 	{
-		return view('admin.medical.import');
+		return view('admin.medic.import');
 	}
 
-	public function moderatorImportIndex()
+	public function moderatorsImportIndex()
 	{
 		return view('admin.moderator.import');
+	}
+
+	public function alumnisImportIndex()
+	{
+		return view('admin.alumni.import');
+	}
+    
+	public function necsImportIndex()
+	{
+		return view('admin.nec.import');
+	}
+
+	public function officialsImportIndex()
+	{
+		return view('admin.official.import');
 	}
     
     
