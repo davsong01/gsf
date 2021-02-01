@@ -27,6 +27,13 @@ Route::get('/payment/callback', 'PaymentController@handleGatewayCallback');
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', 'AccountController@index')->name('account');
 
+    // Official
+    Route::group([], function(){
+        Route::get('/official/import/index', 'UserController@officialsImportIndex')->name('officials.import.index');
+        Route::get('/official/export', 'UserController@officialsExport')->name('officials.export');
+        Route::post('/official/import', 'UserController@officialsImport')->name('officials.import');
+		});
+
     // nec
     Route::group([], function(){
         Route::get('/nec/import/index', 'UserController@necsImportIndex')->name('necs.import.index');
