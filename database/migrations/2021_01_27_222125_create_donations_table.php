@@ -18,8 +18,7 @@ class CreateDonationsTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('phone');
-            $table->string('type');
-            $table->string('chapter')->nullable();
+            $table->integer('amount');
             $table->string('state')->nullable();
             $table->timestamps();
         });

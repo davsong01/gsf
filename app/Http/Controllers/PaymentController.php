@@ -145,30 +145,27 @@ class PaymentController extends Controller
 
                 //copy details to donations table
                 $donation = Donation::create([
-                    $participant = TempUser::whereEmail($paymentDetails['data']['customer']['email'])->first();
-                    $data['name'] = $participant->name;
-                    $data['phone'] = $participant->phone;
-                    $data['type'] = $paymentDetails['data']['metadata']['type'];
-                    $data['email'] = $paymentDetails['data']['customer']['email'];
-                    $password = bcrypt($participant->phone);
-                    $data['amount'] = $paymentDetails['data']['amount']/100;
-                    $data['transid'] = $paymentDetails['data']['reference'];
-                    $data['payment_type'] = "PAYSTACK";
-                    $data['chapter'] = $participant->chapter;
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'name' => $data['name'],
+                    'phone' => $data['phone'],
+                    'amount' => $data['amount'],
+                    'amount' => $data['amount'],
                 ]);
 
-                 //send email to official email
+                $data['chapter'] = 'N/A';
+
+                //send email to official email
                 Mail::to(Setting::select('official_email')->first()->value('official_email'))->send(new AdminMail($data));
         
-                //include thankyou page
+                //delete temp user
+                $participant->delete();
+
+                //redirect to thankyou page
                 $setting = Setting::first();
                 $conference_year = Carbon::parse($setting->start_date)->year;
-                return view('thankyou', compact('data', 'conference_year'));
+                return view('donationthankyou', compact('data', 'conference_year'));
 
-                $data['slot'] = 1;
-                $ledge = 'AON';
-                $data['level'] = 'Nec';
-                $data['slot_filled'] = 1;
             }
 
        
