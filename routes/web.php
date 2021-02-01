@@ -27,7 +27,14 @@ Route::get('/payment/callback', 'PaymentController@handleGatewayCallback');
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', 'AccountController@index')->name('account');
 
-    // Moderators
+    // nec
+    Route::group([], function(){
+        Route::get('/nec/import/index', 'UserController@necsImportIndex')->name('necs.import.index');
+        Route::get('/nec/export', 'UserController@necsExport')->name('necs.export');
+        Route::post('/nec/import', 'UserController@necsImport')->name('necs.import');
+		});
+
+    // Alumni
     Route::group([], function(){
         Route::get('/alumnis/import/index', 'UserController@alumnisImportIndex')->name('alumnis.import.index');
         Route::get('/alumnis/export', 'UserController@alumnisExport')->name('alumnis.export');
