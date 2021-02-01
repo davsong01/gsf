@@ -56,7 +56,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::post('/moderators/import', 'UserController@moderatorsImport')->name('moderators.import');
 		});
 		
-    //Admin Only
+    // Medical
     Route::group([], function(){
         Route::get('/medical/import/index', 'UserController@medicalImportIndex')->name('medical.import.index');
         Route::get('/medical/export', 'UserController@medicalExport')->name('medical.export');

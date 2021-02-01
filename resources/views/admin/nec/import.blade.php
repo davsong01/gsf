@@ -1,4 +1,5 @@
 @extends('layouts.dashboard')
+@section('title', 'Necs Import')
 @section('content')
 <div class="income-order-visit-user-area mg-t-40">
     <div class="container">
