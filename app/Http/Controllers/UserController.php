@@ -660,7 +660,36 @@ class UserController extends Controller
 			return redirect()->back()->with('message', 'Update successful!');
 		} else if (auth()->user()->level == 'Moderator') {
 			
-			//Assign/Update hostel and foodstand	
+			$user = User::findOrFail($user->id);
+			$hostels = Hostel::orderBy('allocation', 'ASC')->get();
+	
+			if (
+				$user->hostel_id &&
+				$user->sex == $request->sex &&
+				$user->chapter == $request->chapter &&
+				$user->phone == $request->phone &&
+				$user->name == $request->name &&
+				!$request->hasFile('passport')
+			) {
+				return redirect()->route('account')->with('message', ':) Great, looks like you didnt make any changes.');
+			} else if (!$user->hostel_id) { // first time users - PERFECT
+				return $this->createOrUpdateHostel(
+					$user,
+					$request->level ?: $user->level, // the user might be changing levels 
+					$request->sex ?: $user->sex, //the user might be changing gender
+					$hostels, // use the same collection for efficiency
+					$request
+				);
+			} else if ($user->hostel_id) { // user is set but is updating something[hostel, gender, level]
+				return $this->createOrUpdateHostel(
+					$user,
+					$request->level ?: $user->level, // the user might be changing levels 
+					$request->sex ?: $user->sex, //the user might be changing gender
+					$hostels, // use the same collection for efficiency
+					$request
+				);
+			}
+			return redirect()->route('account')->with('error', ':( this is not you. It\'s us, looks like we could not complete your request, please contact the admin, let us hope he know what to do.');	
 			
 		}
 
