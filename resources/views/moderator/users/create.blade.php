@@ -72,18 +72,7 @@
                                             <input type="file" accept="image/*" class="form-control" name="passport"
                                                 id="passport" required>
                                         </fieldset>
-                                        <fieldset class="form-group">
-                                            <label for="chapter">Campus</label>
-                                            <select class="form-control @error('chapter')is-invalid @enderror"
-                                                name="chapter" id="chapter" required>
-                                                {{-- //include chapter --}}
-                                                <option value="">--Select Campus--</option>
-                                                @foreach($chapters as $chapter)
-                                                <option value="{{ old('chapter') ?? $chapter->id }}" {{ auth()->user()->chapter == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
-                                                   
-                                                @endforeach
-                                            </select>
-                                        </fieldset>
+                                        
 
                                       <fieldset class="form-group">
                                             <label for="password">Password (Default password is this participant's phone number)</label><small class="text-muted"><i

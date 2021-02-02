@@ -2,14 +2,15 @@
 
 namespace App\Imports;
 
+use auth;
 use App\User;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 class UsersImport implements ToModel, WithHeadingRow
 {
@@ -93,12 +94,12 @@ class UsersImport implements ToModel, WithHeadingRow
 			: null;
 		$sex = isset($row['sex']) ? $row['sex'] : null;
 		$registration_status = isset($row['registration_status']) ? $row['registration_status'] : 'Pending';
-		$slot = isset($row['slot']) ? $row['slot'] : 0;
-		$slot_filled = isset($row['slot_filled']) ? $row['slot_filled'] : 0;
-		$amount_paid = isset($row['amount_paid']) ? $row['amount_paid'] : null;
+		$slot = isset($row['slot']) ? $row['slot'] : 1;
+		$slot_filled = isset($row['slot_filled']) ? $row['slot_filled'] : 1;
+		$amount_paid = isset($row['amount_paid']) ? $row['amount_paid'] : 0;
 		$payment_type = isset($row['payment_type']) ? $row['payment_type'] : null;
 		$transid = isset($row['transid']) ? $row['transid'] : null;
-		$uploaded_by = isset($row['uploaded_by']) ? $row['uploaded_by'] : null;
+		$uploaded_by = isset($row['uploaded_by']) ? $row['uploaded_by'] : auth::user()->name;
 
 		//Create new user
 		return new User([

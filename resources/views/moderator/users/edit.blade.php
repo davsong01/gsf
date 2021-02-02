@@ -23,17 +23,24 @@
                         @csrf
                         @method('PATCH')
                         <div class="row">
-                            <div class="col-md-6 col-sm-12">
+                             <div class="col-md-3">
+                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="{{ asset($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
+                                </div>
+                            </div>
+                            <div class="col-md-9">
                                 <fieldset class="form-group">
                                     <label for="conference_id">Conference ID</label>
                                     <input type="text" class="form-control" name="conference_id" id="conference_id" value="{{ $user->conference_number }}" disabled required>
                                 </fieldset>
-
-                                <fieldset class="form-group">
+                            <fieldset class="form-group">
                                 <label for="registration_status">Registration Status</label>
                                 <input type="text" class="form-control" name="registration_status" id="registration_status" value="{{ $user->registration_status }}" disabled required>
                                 </fieldset>
-
+                            </div>
+                        </div>
+                        <div class="row"> 
+                            <div class="col-md-6 col-sm-12">
+                                
                                     <fieldset class="form-group">
                                     <label for="uploaded_by">Registered by</label>
                                     <input type="text" id="uploaded_by" name="uploaded_by" class="form-control" value="{{ ($user->moderator === NULL) ? 'N/A' : $user->moderator->name }}" disabled required>
@@ -99,17 +106,7 @@
                         <div class="col-md-6 col-sm-12">
                             <fieldset class="form-group">
                                 <label for="chapter">Campus</label>
-                                <select class="form-control @error('chapter')is-invalid @enderror" name="chapter" id="chapter" required>
-                                    {{-- //include chapter --}}
-                                    @foreach($chapters as $chapter)
-                                    <option value="{{ $chapter->id }}" {{ $user->chapter == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
-                                    @endforeach
-                                    </select>
-                                    @error('chapter')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                    @enderror
+                                <input type="text" disabled class="form-control" value="{{ $user->campus->name }}">
                             </fieldset>
                             
                             <fieldset class="form-group @error('passport')is-invalid @enderror">

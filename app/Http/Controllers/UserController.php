@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Collection;
 
 
 class UserController extends Controller
@@ -323,31 +324,27 @@ class UserController extends Controller
 		} else if (auth()->user()->level == 'Moderator') {
 			$data = $this->validate($request, [
 				'name' => 'required|min:3',
-				'chapter' => 'required|numeric',
 				'email' => 'required|unique:users,email',
 				'phone' => 'required',
 				'sex' => 'required',
 				'passport' => 'required|max:200',
 				'password' => 'nullable',
-				'payment_type' => 'required',
-				'transid' => 'required',
+				'payment_type' => 'nullable',
+				'transid' => 'nullable',
 			]);
 
 			//Check if moderator has slots available
 			if (auth()->user()->slot_filled >= auth()->user()->slot) {
 				return back()->with('warning', 'You can no longer add participants because you have used up all available slots');
 			}
-
-			//Assign hostel and food stand here
-
-
+						
 			try {
 				$newuser = User::create([
 					'name' => $data['name'],
 					'email' => $data['email'],
 					'phone' => $data['phone'],
 					'sex' => $data['sex'],
-					'chapter' => $data['chapter'],
+					'chapter' => auth()->user()->chapter,
 					'passport' => $passport,
 					'type' => 1,
 					'level' => 'Participant',
@@ -364,13 +361,121 @@ class UserController extends Controller
 				auth()->user()->update([
 					'slot_filled' => auth()->user()->slot_filled + 1,
 				]);
+
+
 			} catch (\Illuminate\Database\QueryException $ex) {
 				return back()->with('error', $ex);
 			}
 
-			return back()->with('message', 'Participant successfully created, you have ' . (auth()->user()->slot - auth()->user()->slot_filled) . ' participant slot(s) left');
+			$user = $newuser;
+			$request->level = 'Participant';
+			$hostels = Hostel::orderBy('allocation', 'ASC')->get();
+				
+				//Algorithm to assign hostel and food stand here
+				$this->createOrUpdateHostel(
+					$user,
+					$request->level ?: $user->level, // the user might be changing levels 
+					$request->sex ?: $user->sex, //the user might be changing gender
+					$hostels, // use the same collection for efficiency
+					$request
+				);
+
+			//If user has foodstand and hostel, mark as complete else return to pending
+			// dd($user, $user->hostel_id);
+			if($user->hostel_id == NULL){
+				$user->registration_status = 'Pending';
+				$user->save();
+
+				return redirect(route('users.index'))->with('error', 'Participant successfully added but NO hostel is available at the moment. Edit the new participant with CONFERENCE ID: '. $user->conference_number. ' to try and auto assign an hostel. Alternatively, contact an admin.');
+			}
+
+			if($user->food_id == NULL){
+				$user->registration_status = 'Pending';
+				$user->save();
+				
+
+				return redirect(route('users.index'))->with('error', 'Participant successfully added but NO Foodstand is available at the moment. Edit the new participant with CONFERENCE ID: '. $user->conference_number. ' to try and auto assign a foodstand. Alternatively, contact an admin.');
+			}
+
+			return redirect(route('users.index'))->with('message', 'Participant successfully created, you have ' . (auth()->user()->slot - auth()->user()->slot_filled) . ' participant slot(s) left');
 		}
 		return abort(404);
+	}
+
+	private function createOrUpdateHostel($user, string $level, string $gender, Collection $hostel_collection, Request $request)
+	{
+		
+		$collection = $hostel_collection->where('level', $level)->where('type', $gender)
+			->sortBy('allocation'); // sort by the lowest allocation
+		$message = ['key' => 'error', 'value' => ':(, this is not you it\'s us, looks like there is no hostel available.'];
+
+		$this->createNewFood($user); // it doesnt matter where you place this, it excutes once - CORRECT
+	
+		// Iterate through the collection
+		$iterator = 0;
+		$collection->each(
+			function ($item, $key) use ($user, $hostel_collection, $collection, $request, &$iterator, &$message) {
+				$iterator++;
+				if ($item->capacity != $item->allocation) {
+					// check if user has an associated hostel
+					$user_hostel = $hostel_collection
+						->where('id', $user->hostel_id)->first(); // you want to make sure you are querying the global as you can get
+					$user_hostel // find the hostel from the sorted
+						? $user_hostel->allocation-- : null; // , this is the only way to reduce the allocation effectively
+					$user_hostel ? $user_hostel->save() : null; // and reduce by one
+
+					$item->allocation++; // increase the numbers of allocation in the corresponding hostel
+					$item->save(); // remember to save the hostel 
+
+					$user->hostel_id = $item->id; // update the user hostel_id if required
+					$user->sex = $request->sex ?: $user->sex; // gender
+					$user->name = $request->name ?: $user->name; // name
+					$user->phone = $request->phone ?: $user->phone; // phone
+					$user->password = $request->password ? Hash::make($request->password) : $user->password; // password
+
+					// Handle passport upload
+					
+					if ($user->registration_status != 'Complete')
+						$user->registration_status = 'Complete';
+
+					$user->save(); // save the changes if any
+					
+				}
+				if ($item->capacity == $item->allocation && $collection->count() == $iterator) { // the last loop
+					$message['key'] = 'error';
+					$message['value'] = ':(, this is not you it\'s us, looks like there is no hostel available.';
+					return false;
+				}
+			}
+		);
+		
+	}
+
+	/**
+	 * Allocate the next avialable food to the $user
+	 * @param App\User $user the user needing the allocation **NOTE** [$user eloguent object it passed, to implement the save method]
+	 */
+	private function createNewFood(User $user)
+	{
+		$collection = Food::where('level', $user->level)
+			->orderBy('allocation', 'ASC')->get(); // sort by the lowest allocation
+		// Iterate through the collection
+		$iterator = 0;
+
+		if (!$user->food_id)
+			$collection->each(function ($item) use (&$iterator, $user, $collection) {
+				$iterator++;
+				if ($item->capacity != $item->allocation) {
+					$user->food_id = $item->id;
+					$user->save();
+
+					$item->allocation++;
+					$item->save();
+					return false; // break outta each
+				} else if ($item->capacity == $item->allocation && $collection->count() == $iterator) { // the last loop
+					return false; // breaks outta each
+				}
+			});
 	}
 	public function show($id)
 	{
@@ -416,33 +521,6 @@ class UserController extends Controller
 		}
 	}
 
-	// public function editMedic($id)
-	// {
-	//     $user = User::findorfail($id);
-
-	//     $chapters = Chapter::all();
-	//     $hostels = Hostel::all();
-	//     $foods = Food::all();
-
-	//    if(auth()->user()->level == 'Admin'){         
-	//         return view('admin.medic.edit', compact('user', 'hostels', 'foods', 'chapters'));
-	//    }
-	// }
-
-
-	// public function editAlumni($id)
-	// {
-	//     $user = User::findorfail($id);
-
-	//     $chapters = Chapter::all();
-	//     $hostels = Hostel::all();
-	//     $foods = Food::all();
-
-	//    if(auth()->user()->level == 'Admin'){         
-	//         return view('admin.alumni.edit', compact('user', 'hostels', 'foods', 'chapters'));
-	//    }
-	// }
-
 	public function necImportIndex()
 	{
 		return view('admin.nec.import');
@@ -467,285 +545,6 @@ class UserController extends Controller
 		return back(404);
 	}
 
-	// public function store(Request $request, User $user)
-	// {
-
-	// 	//Handle password
-	// 	if ($request['password']) {
-	// 		$password = Hash::make($request['password']);
-	// 	} else {
-	// 		$password = Hash::make($request['phone']);
-	// 	}
-
-	// 	//Handle Passport Upload
-	// 	//get filename with extensionz 
-	// 	$imgName = date('Y-m-d-His') . $request->passport->getClientOriginalName();
-	// 	$passport = Image::make($request->passport)->resize(500, 500);
-	// 	$passport->save('frontend/passports' . '/' . $imgName);
-	// 	$passport = 'frontend/passports/' . $imgName;
-
-
-	// 	//Store block for Admin
-	// 	if (auth()->user()->level == 'Admin') {
-	// 		$data = $this->validate($request, [
-	// 			'name' => 'required|min:3',
-	// 			'email' => 'required|unique:users,email',
-	// 			'phone' => 'required',
-	// 			'amount_paid' => 'required',
-	// 			'sex' => 'required',
-	// 			'chapter' => 'required|numeric',
-	// 			'passport' => 'required|max:200',
-	// 			'payment_type' => 'required',
-	// 			'transid' => 'required',
-	// 			'hostel_id' => 'required|numeric',
-	// 			'password' => 'nullable',
-	// 			'payment_type' => 'required',
-	// 			'food_id' => 'required',
-	// 		]);
-
-
-	// 		$setting = Setting::first();
-	// 		$data['password'] = $password;
-	// 		$hostel = Hostel::whereId($request->hostel_id)->first();
-	// 		$food = Food::whereId($request->food_id)->first();
-
-	// 		// Make sure the right people are in the right hostel
-	// 		if ($request->level == 'Participant' || $request->level == 'Alumni' || $request->level == 'Nec') {
-
-	// 			if ($hostel->type <> $request->sex || $hostel->level <> $request->level) {
-	// 				return back()->with('error', 'NOT SAVED. Please check the hostel you are trying to assign to this participant');
-	// 			}
-	// 		}
-
-	// 		if ($request->level == 'Participant' || $request->level == 'Alumni'  || $request->level == 'Medical'  || $request->level == 'Nec' || $request->level == 'Choir') {
-
-	// 			if ($food->level <> $request->level || $food->level <> $request->level) {
-
-	// 				return back()->with('error', 'NOT SAVED. Please check the food stand you are trying to assign to this participant');
-	// 			}
-	// 		}
-
-	// 		if ($request->level == 'Official' || $request->level == 'Medical' || $request->level == 'Official') {
-
-	// 			if ($hostel->level <> $request->level) {
-	// 				return back()->with('error', 'NOT SAVED. Please check the hostel you are trying to assign to this participant');
-	// 			}
-	// 		}
-
-	// 		//Fill slot, slot filled, type, others for participant
-	// 		if ($request->level == 'Participant') {
-	// 			$prefix = 'AOP';
-	// 			$data['slot'] = 1;
-	// 			$data['level'] = 'Participant';
-	// 			$data['slot_filled'] = 1;
-	// 			$data['type'] = 1;
-
-	// 			if ($request->amount_paid < $setting->registration_fee) {
-	// 				return back()->with('error', 'Participant cannot pay less than registration fee');
-	// 			}
-
-	// 			$data['amount_paid'] = $request->amount_paid;
-	// 		}
-
-	// 		//Fill slot, slot filled, type, others for moderator
-	// 		if ($request->level == 'Moderator') {
-
-	// 			if ($request->amount_paid < $setting->registration_fee) {
-	// 				return back()->with('error', 'Moderator cannot pay less than registration fee');
-	// 			}
-
-	// 			$prefix = 'AOP';
-	// 			$data['slot'] = $request->amount_paid / $setting->registration_fee;
-	// 			$data['level'] = 'Moderator';
-	// 			$data['slot_filled'] = 1;
-	// 			$data['type'] = 2;
-	// 			$data['amount_paid'] = $request->amount_paid;
-	// 		}
-
-	// 		if ($request->level == 'Alumni') {
-
-	// 			if ($request->amount_paid < $setting->alumni_fee) {
-	// 				return back()->with('error', 'Alumni cannot pay less than alumni minimum fee');
-	// 			}
-
-	// 			$prefix = 'AOA';
-	// 			$data['slot'] = 1;
-	// 			$data['level'] = 'Alumni';
-	// 			$data['slot_filled'] = 1;
-	// 			$data['type'] = 3;
-	// 			$data['amount_paid'] = $request->amount_paid;
-	// 		}
-
-	// 		if ($request->level == 'Nec') {
-
-	// 			if ($request->amount_paid < $setting->alumni_fee) {
-	// 				return back()->with('error', 'Nec cannot pay less than alumni minimum fee');
-	// 			}
-
-	// 			$prefix = 'AON';
-	// 			$data['slot'] = 1;
-	// 			$data['level'] = 'Nec';
-	// 			$data['slot_filled'] = 1;
-	// 			$data['type'] = 4;
-	// 			$data['amount_paid'] = $request->amount_paid;
-	// 		}
-
-	// 		if ($request->level == 'Choir') {
-
-	// 			if ($request->amount_paid < $setting->registration_fee) {
-	// 				return back()->with('error', 'Nec cannot pay less than registration fee');
-	// 			}
-
-	// 			$prefix = 'AOC';
-	// 			$data['slot'] = 1;
-	// 			$data['level'] = 'Choir';
-	// 			$data['slot_filled'] = 1;
-	// 			$data['type'] = 5;
-	// 			$data['amount_paid'] = $request->amount_paid;
-	// 		}
-
-
-	// 		if ($request->level == 'Medical') {
-
-	// 			if ($request->amount_paid < $setting->registration_fee) {
-	// 				return back()->with('error', 'Medical personnel cannot pay less than registration fee');
-	// 			}
-
-	// 			$prefix = 'AOP';
-	// 			$data['slot'] = 1;
-	// 			$data['level'] = 'Medical';
-	// 			$data['slot_filled'] = 1;
-	// 			$data['type'] = 1;
-	// 			$data['amount_paid'] = $request->amount_paid;
-	// 		}
-
-	// 		if ($request->level == 'Official') {
-
-	// 			if ($request->amount_paid < $setting->registration_fee) {
-	// 				return back()->with('error', 'Official personnel cannot pay less than registration fee');
-	// 			}
-
-	// 			$prefix = 'AOP';
-	// 			$data['slot'] = 1;
-	// 			$data['level'] = 'Official';
-	// 			$data['slot_filled'] = 1;
-	// 			$data['type'] = 1;
-	// 			$data['amount_paid'] = $request->amount_paid;
-	// 		}
-	// 		$data['passport'] = $passport;
-	// 		$data['registration_status'] = 'Complete';
-
-	// 		try {
-	// 			$newuser =  User::create($data);
-
-	// 			$newuser->update([
-	// 				'conference_number' => 'GSF-' . $prefix . '-' . $newuser->id,
-	// 			]);
-
-	// 			//increase hostel allocation
-	// 			$hostel->allocation += 1;
-	// 			$hostel->save();
-
-	// 			//increase foodstand allocation
-	// 			$food->allocation += 1;
-	// 			$food->save();
-	// 		} catch (\Illuminate\Database\QueryException $ex) {
-	// 			return back()->with('error', $ex);
-	// 		}
-
-	// 		return back()->with('message', 'Participant successfully created');
-	// 	} else if (auth()->user()->level == 'Moderator') {
-	// 		$data = $this->validate($request, [
-	// 			'name' => 'required|min:3',
-	// 			'chapter' => 'required|numeric',
-	// 			'email' => 'required|unique:users,email',
-	// 			'phone' => 'required',
-	// 			'sex' => 'required',
-	// 			'passport' => 'required|max:200',
-	// 			'password' => 'nullable',
-	// 			'payment_type' => 'required',
-	// 			'transid' => 'required',
-	// 		]);
-
-	// 		//Check if moderator has slots available
-	// 		if (auth()->user()->slot_filled >= auth()->user()->slot) {
-	// 			return back()->with('warning', 'You can no longer add participants because you have used up all available slots');
-	// 		}
-
-	// 		//Assign hostel and food stand here
-
-
-	// 		try {
-	// 			$newuser = User::create([
-	// 				'name' => $data['name'],
-	// 				'email' => $data['email'],
-	// 				'phone' => $data['phone'],
-	// 				'sex' => $data['sex'],
-	// 				'chapter' => $data['chapter'],
-	// 				'passport' => $passport,
-	// 				'type' => 1,
-	// 				'level' => 'Participant',
-	// 				'uploaded_by' => auth()->user()->id,
-	// 				'password' =>  $password,
-	// 				'amount_paid' => Setting::select('registration_fee')->first()->value('registration_fee'),
-	// 				'registration_status' => 'Complete'
-	// 			]);
-
-	// 			$newuser->update([
-	// 				'conference_number' => 'GSF-AOP-' . $newuser->id,
-	// 			]);
-
-	// 			auth()->user()->update([
-	// 				'slot_filled' => auth()->user()->slot_filled + 1,
-	// 			]);
-	// 		} catch (\Illuminate\Database\QueryException $ex) {
-	// 			return back()->with('error', $ex);
-	// 		}
-
-	// 		return back()->with('message', 'Participant successfully created, you have ' . (auth()->user()->slot - auth()->user()->slot_filled) . ' participant slot(s) left');
-	// 	}
-	// 	return abort(404);
-	// }
-
-	// public function edit(User $user)
-	// {
-
-	// 	$chapters = Chapter::all();
-
-	// 	$hostels = Hostel::all();
-	// 	$foods = Food::all();
-
-	// 	if (auth()->user()->level == 'Admin') {
-	// 		return view('admin.users.edit', compact('user', 'hostels', 'foods', 'chapters'));
-	// 	}
-
-	// 	if (auth()->user()->level == 'Moderator') {
-	// 		if ($user->sex == 'Female') {
-	// 			$hostels = $hostels->where('type', 'Female');;
-	// 		}
-
-	// 		if ($user->sex == 'Male') {
-	// 			$hostels = $hostels->where('type', 'Male');
-	// 		}
-
-	// 		return view('moderator.users.edit', compact('user', 'hostels', 'foods', 'chapters'));
-	// 	}
-	// 	return abort(404);
-	// }
-
-	// public function editChoir($id)
-	// {
-	// 	$user = User::findorfail($id);
-
-	// 	$chapters = Chapter::all();
-	// 	$hostels = Hostel::all();
-	// 	$foods = Food::all();
-
-	// 	if (auth()->user()->level == 'Admin') {
-	// 		return view('admin.choir.edit', compact('user', 'hostels', 'foods', 'chapters'));
-	// 	}
-	// }
-
 	public function editMedic($id)
 	{
 		$user = User::findorfail($id);
@@ -758,7 +557,6 @@ class UserController extends Controller
 			return view('admin.medic.edit', compact('user', 'hostels', 'foods', 'chapters'));
 		}
 	}
-
 
 	public function editAlumni($id)
 	{
@@ -777,11 +575,11 @@ class UserController extends Controller
 	public function update(Request $request, User $user)
 	{
 
-		$this->validate($request, [
+		$data = $this->validate($request, [
 			'name' => 'required',
 			'phone' => 'required',
 			'sex' => 'in:Male,Female',
-			'chapter' => 'required|exists:chapters,id',
+			'chapter' => 'nullable',
 			'passport' => 'nullable|max:200'
 		]);
 
@@ -799,14 +597,15 @@ class UserController extends Controller
 			$passport  = $user->passport;
 		}
 
-		if (auth()->user()->level == 'Admin') {
-			//handle password
-			if ($request['password']) {
-				$password = Hash::make($request['password']);
-			} else {
-				$password = $user->password;
-			}
+		//handle password
+		if ($request['password']) {
+			$password = Hash::make($request['password']);
+		} else {
+			$password = $user->password;
+		}
 
+		if (auth()->user()->level == 'Admin') {
+		
 			//Decrease allocation in previous hostel
 			$hostel = Hostel::all();
 			$food = Food::all();
@@ -860,12 +659,9 @@ class UserController extends Controller
 
 			return redirect()->back()->with('message', 'Update successful!');
 		} else if (auth()->user()->level == 'Moderator') {
-			//Moderator updates here
-			//Handle Password
-			//Handle Passport
-			//Assign hostel
-			//Assign Food stand
-			//Save other user details
+			
+			//Assign/Update hostel and foodstand	
+			
 		}
 
 		return abort(404);
