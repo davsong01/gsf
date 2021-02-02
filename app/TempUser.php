@@ -9,6 +9,8 @@ class TempUser extends Model
 {
     protected $guarded = [];
 
+    protected $table = 'temp_users';
+    
      public function campus(){
         return $this->belongsTo(Chapter::class, 'chapter');
     }

@@ -30,7 +30,11 @@ class HomeController extends Controller
 
      public function  necRegistration()
     {  
-        return view('necregistration');
+        $chapters = Chapter::orderBy('name')->get(); 
+        $setting = Setting::first();
+        $conference_year = Carbon::parse($setting->start_date)->year;
+
+        return view('necregistration', compact('conference_year'));
     }
 
     public function temp(){
