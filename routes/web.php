@@ -32,48 +32,48 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::group([], function(){
         Route::get('/official/import/index', 'UserController@officialsImportIndex')->name('officials.import.index');
         Route::get('/official/export', 'UserController@officialsExport')->name('officials.export');
-        Route::post('/official/import', 'UserController@officialsImport')->name('officials.import');
+        Route::post('/official/import', 'UserController@import')->name('officials.import');
 		});
 
     // nec
     Route::group([], function(){
         Route::get('/nec/import/index', 'UserController@necsImportIndex')->name('necs.import.index');
         Route::get('/nec/export', 'UserController@necsExport')->name('necs.export');
-        Route::post('/nec/import', 'UserController@necsImport')->name('necs.import');
+        Route::post('/nec/import', 'UserController@import')->name('necs.import');
 		});
 
     // Alumni
     Route::group([], function(){
         Route::get('/alumnis/import/index', 'UserController@alumnisImportIndex')->name('alumnis.import.index');
         Route::get('/alumnis/export', 'UserController@alumnisExport')->name('alumnis.export');
-        Route::post('/alumnis/import', 'UserController@alumnisImport')->name('alumnis.import');
+        Route::post('/alumnis/import', 'UserController@import')->name('alumnis.import');
 		});
 
     // Moderators
     Route::group([], function(){
         Route::get('/moderators/import/index', 'UserController@moderatorsImportIndex')->name('moderators.import.index');
         Route::get('/moderators/export', 'UserController@moderatorsExport')->name('moderators.export');
-        Route::post('/moderators/import', 'UserController@moderatorsImport')->name('moderators.import');
+        Route::post('/moderators/import', 'UserController@import')->name('moderators.import');
 		});
 		
     // Medical
     Route::group([], function(){
         Route::get('/medical/import/index', 'UserController@medicalImportIndex')->name('medical.import.index');
         Route::get('/medical/export', 'UserController@medicalExport')->name('medical.export');
-        Route::post('/medical/import', 'UserController@medicalImport')->name('medical.import');
+        Route::post('/medical/import', 'UserController@import')->name('medical.import');
 		});
 		
     //Admin Only
     Route::group([], function(){
         Route::get('/choir/import/index', 'UserController@choirImportIndex')->name('choir.import.index');
         Route::get('/choir/export', 'UserController@choirExport')->name('choir.export');
-        Route::post('/choir/import', 'UserController@choirImport')->name('choir.import');
+        Route::post('/choir/import', 'UserController@import')->name('choir.import');
     });
 		//Admin Only
 		Route::group([], function(){
 			Route::get('/users/import/index', 'UserController@usersImportIndex')->name('users.import.index');
 			Route::get('/users/export', 'UserController@usersExport')->name('users.export');
-			Route::post('/users/import', 'UserController@usersImport')->name('users.import');
+			Route::post('/users/import', 'UserController@import')->name('users.import');
 		});
     Route::resource('users', 'UserController');
     Route::get('users/delete/{id}', 'UserController@destroy')->name('users.delete');

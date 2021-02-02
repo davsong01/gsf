@@ -39,7 +39,8 @@
                                 <form action="{{ route('users.import') }}" method="POST" name="importform"
                                     enctype="multipart/form-data" class="@if($errors->any()) has-error @endif">
                                     @csrf
-                                    <input type="file" name="file" class="form-control" accept=".csv, .xlsv, .xls, .xlsx" required>
+																		<input type="file" name="file" class="form-control" accept=".csv, .xlsv, .xls, .xlsx" required>
+																		<input type="hidden" value="Official" required>
                                     <br>
                                     @error('file')	
                                     <div class="alert alert-danger" role="alert">

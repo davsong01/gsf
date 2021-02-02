@@ -15,37 +15,59 @@ class UsersImport implements ToModel, WithHeadingRow
 {
 	use Importable;
 
+	private $import_level = null;
+
+	public function __construct(string $import_level)
+	{
+		$this->import_level = $import_level;
+	}
+
 	public function model(array $row)
 	{
+		$validation_rule = [
+			// Nullables
+			'conference_number' => 'nullable|unique:users,conference_number',
+			'hostel_name' => 'nullable|exists:hostels,name',
+			'food_name' => 'nullable|exists:food,name',
+			'registration_status' => 'nullable|in:Pending,Complete',
+			'chapter' => 'nullable|exists:chapters,name',
+
+			// Required
+			'name' => 'required|min:3|max:200',
+			'email' => 'required|unique:users,email',
+			'phone' => 'required|unique:users,phone',
+			// 'type' => 'required',
+			'level' => $this->import_level,
+		];
+
+		switch ($this->import_level) {
+			case 'Participant':
+				$validation_rule['sex'] = 'required|in:Male,Female';
+				break;
+			case 'Choir':
+				break;
+			default:
+				break;
+		}
+
 		Validator::make(
 			$row,
+			$validation_rule,
 			[
-				'name' => 'required|min:3|max:200',
-				'conference_number' => 'nullable|unique:users,conference_number',
-				'hostel_name' => 'nullable|exists:hostels,name',
-				'food_name' => 'nullable|exists:food,name',
-				'email' => 'required|unique:users,email',
-				'phone' => 'required|unique:users,phone',
-				'sex' => 'nullable|in:Male,Female',
-				'chapter' => 'nullable|exists:chapters,name',
-				'type' => 'required',
-				'level' => 'required|in:Participant,Moderator,Nec,Admin,Alumni',
-				'registration_status' => 'nullable|in:Pending,Complete'
-			],
-			[
-				'name.required' => 'One or more users do not have a name, please check the name field and try again',
-				'name.min' => 'One or more users name is too short minimum is 3, please check the name field and try again',
-				'name.max' => 'One or more users  name is too long maximum is 200, please check the name field and try again',
+				'name.required' => "One or more $this->import_level do not have a name, please check the name field and try again",
+				'name.min' => "One or more $this->import_level name is too short minimum is 3, please check the name field and try again",
+				'name.max' => "One or more $this->import_level name is too long maximum is 200, please check the name field and try again",
 
 				'conference_number.unique' => 'One or more conference number already exists, please check the conference number field and try again',
 
-				'hostel_name.exists' => 'One or more users is using a non existing hostel, please check the hostel name field and try again',
-				'food_name.exists' => 'One or more users is using a non existing food stand, please check the food name field and try again',
+				'hostel_name.exists' => "One or more $this->import_level is using a non existing hostel, please check the hostel name field and try again",
+				'food_name.exists' => "One or more $this->import_level is using a non existing food stand, please check the food name field and try again",
 
 				'email.unique' => 'One or more email already exists, please check the email field and try again',
 				'phone.unique' => 'One or more phone number already exists, please check the phone number field and try again',
 
 				'sex.in' => 'One or more sex/gender is wrong, try Male/Female, please check the sex field and try again',
+				'sex.required' => 'One or more sex/gender is wrong, try Male/Female, please check the sex field and try again',
 				'chapter.exists' => 'One or more chapter is using a non existing chapter, please check the chapter field and try again',
 				'registration_status.in' => 'One or more registration status is wrong, try Pending/Complete, please check the registration status field and try again',
 			]
@@ -54,8 +76,8 @@ class UsersImport implements ToModel, WithHeadingRow
 		$name = trim($row['name']);
 		$email = trim($row['email']);
 		$phone = trim($row['phone']);
-		$level = trim($row['level']);
-		$type = trim($row['type']);
+		$level = trim($this->import_level);
+		$type = trim('1');
 		$password = Hash::make(trim($row['phone']));
 
 		//take care of nullable fields
@@ -69,15 +91,14 @@ class UsersImport implements ToModel, WithHeadingRow
 		$chapter = isset($row['chapter']) ?
 			DB::table('chapters')->whereName(trim($row['chapter']))->pluck('id')->first()
 			: null;
-		$sex = $row['sex'] ?: null;
-		$sex = $row['sex'] ?: null;
-		$registration_status = $row['registration_status'] ?: null;
-		$slot = $row['slot'] ?: 0;
-		$slot_filled = $row['slot_filled'] ?: 0;
-		$amount_paid = $row['amount_paid'] ?: null;
-		$payment_type = $row['payment_type'] ?: null;
-		$transid = $row['transid'] ?: null;
-		$uploaded_by = $row['uploaded_by'] ?: null;
+		$sex = isset($row['sex']) ? $row['sex'] : null;
+		$registration_status = isset($row['registration_status']) ? $row['registration_status'] : 'Pending';
+		$slot = isset($row['slot']) ? $row['slot'] : 0;
+		$slot_filled = isset($row['slot_filled']) ? $row['slot_filled'] : 0;
+		$amount_paid = isset($row['amount_paid']) ? $row['amount_paid'] : null;
+		$payment_type = isset($row['payment_type']) ? $row['payment_type'] : null;
+		$transid = isset($row['transid']) ? $row['transid'] : null;
+		$uploaded_by = isset($row['uploaded_by']) ? $row['uploaded_by'] : null;
 
 		//Create new user
 		return new User([
