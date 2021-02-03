@@ -72,7 +72,6 @@ class AccountController extends Controller
 			'name' => 'required',
 			'phone' => 'required',
 			'sex' => 'in:Male,Female',
-			'chapter' => 'nullable|exists:chapters,id',
 			'passport' => 'nullable|max:200|mimes:jpeg,jpg,png'
 		]);
 
@@ -82,7 +81,6 @@ class AccountController extends Controller
 		if (
 			$user->hostel_id &&
 			$user->sex == $request->sex &&
-			$user->chapter == $request->chapter &&
 			$user->phone == $request->phone &&
 			$user->name == $request->name &&
 			$user->food_id &&
@@ -148,7 +146,6 @@ class AccountController extends Controller
 					$user->sex = $request->sex ?: $user->sex; // gender
 					$user->name = $request->name ?: $user->name; // name
 					$user->phone = $request->phone ?: $user->phone; // phone
-					$user->chapter = $request->chapter ?: $user->chapter; // chapter
 					$user->password = $request->password ? Hash::make($request->password) : $user->password; // password
 
 					// Handle passport upload
