@@ -22,6 +22,7 @@ class PaymentController extends Controller
 
     public function redirectToGateway(Request $request)
     {
+			dd($request);
         $setting = Setting::first();
         if($setting->close_registration < now()){
             return redirect(url('/#register'))->with('warning', 'Registration for this program has closed');
