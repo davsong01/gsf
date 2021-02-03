@@ -136,6 +136,12 @@
             }
         }
     });
-    
+		
+		//Select2
+		$(document).ready(function() {
+			$('.select2').select2({
+			width: '100%' // need to override the changed default
+	});
+	});
 })(jQuery);
 

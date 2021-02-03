@@ -14,8 +14,8 @@
 
         <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
 
-        <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+				<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+				<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <!-- JavaScript Libraries -->
 
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>

@@ -24,7 +24,7 @@
                     </div>
                     <div class="control-group">
                         <label for="chapter">GSF Campus</label><br>
-                        <select name="chapter" class="form-control" id="chapterind" class="chapter" required>
+                        <select name="chapter" class="form-control select2" id="chapterind" class="chapter" required>
                             <option value="">--Select Campus</option>
                             @foreach($chapters as $chapter)
                                 <option value="{{ $chapter->id }}" {{ old('chapter') == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>  
