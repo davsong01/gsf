@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 	<meta name="description" content="@yield('description')">
 	<meta name="keywords" content="">
-	<meta name="author" content="PIXINVENT">
+	<meta name="author" content="GSF">
 	<title>@yield('title')</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 	<link rel="apple-touch-icon" href="{{ asset('frontend/img/logo.png') }}">

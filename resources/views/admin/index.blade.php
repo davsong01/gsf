@@ -41,7 +41,7 @@
                                                 <div class="badge-circle badge-circle-lg badge-circle-light-success mx-auto mb-50">
                                                     <i class="bx bx-briefcase-alt font-medium-5"></i>
                                                 </div>
-                                                <div class="text-muted line-ellipsis">Pending Payouts</div>
+                                                <div class="text-muted line-ellipsis">Number of Male Participants , Female participants, Choir, Nec, Officials</div>
                                                 <h3 class="mb-0"></h3>
                                             </div>
                                         </div>

@@ -38,9 +38,8 @@ class HomeController extends Controller
     }
 
     public function temp(){
-        $t = TempUser::with('campus')->get();
-
-        dd($t);
+        
+       dd('sdsd');
     }
 
 }

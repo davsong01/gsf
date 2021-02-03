@@ -22,7 +22,6 @@ class PaymentController extends Controller
 
     public function redirectToGateway(Request $request)
     {
-        dd($request->all());
         $setting = Setting::first();
         if($setting->close_registration < now()){
             return redirect(url('/#register'))->with('warning', 'Registration for this program has closed');
@@ -167,8 +166,6 @@ class PaymentController extends Controller
                 return view('donationthankyou', compact('data', 'conference_year'));
 
             }
-
-       
             // try{
                     
             // Create new user
@@ -191,6 +188,11 @@ class PaymentController extends Controller
                 'conference_number' =>'GSF-'.$ledge.'-'.$user->id,
             ]);
 
+            if($user->level == 'Moderator'){
+                $user->update([
+                'uploaded_by' => $user->id,
+            ]); 
+            }
             // }catch (\Illuminate\Database\QueryException $ex) {
             //     return redirect(url('/#register'))->with('warning', $ex);
             // }            

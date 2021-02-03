@@ -15,6 +15,7 @@
                         <a href="#register" class="nav-item nav-link">REGISTER</a>
                     @endif
                     @auth
+                    <a href="/account" class="nav-item nav-link">MY ACCOUNT</a>
                      <a class="nav-item nav-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="bx bx-power-off mr-50"></i>{{ __('Logout') }}</a> 
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                             @csrf
