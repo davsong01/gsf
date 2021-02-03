@@ -40,7 +40,7 @@
 					</div>
 					<div class="control-group">
 						<label for="chapter">GSF Campus</label><br>
-						<select name="chapter" class="form-control select2 @error('chapter')is-invalid @enderror" id="chapterind"
+						<select name="chapter" class="select2 form-control @error('chapter')is-invalid @enderror" id="chapterind"
 							class="chapter" required>
 							<option value="">--Select Campus</option>
 							@foreach($chapters as $chapter)

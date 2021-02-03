@@ -79,15 +79,13 @@ class AccountController extends Controller
 		$user = User::findOrFail($id);
 		$hostels = Hostel::orderBy('allocation', 'ASC')->get();
 
-		//if the user->hostel_id is set and type and level corresponds to the user current request hostel type and level, return back with success,
-		// dd($request->all(), $user);
-
 		if (
 			$user->hostel_id &&
 			$user->sex == $request->sex &&
 			$user->chapter == $request->chapter &&
 			$user->phone == $request->phone &&
 			$user->name == $request->name &&
+			$user->food_id &&
 			!$request->hasFile('passport')
 		) {
 			return redirect()->route('account')->with('message', ':) Great, looks like you didnt make any changes.');
@@ -124,7 +122,7 @@ class AccountController extends Controller
 
 	private function createOrUpdateHostel(User $user, string $level, string $gender, Collection $hostel_collection, Request $request)
 	{
-		$collection = $hostel_collection->where('level', $level)->where('type', $gender)
+		$collection = $hostel_collection->where('level', $level == 'Moderator' ?'Participant':$level)->where('type', $gender)
 			->sortBy('allocation'); // sort by the lowest allocation
 		$message = ['key' => 'error', 'value' => ':(, this is not you it\'s us, looks like there is no hostel available.'];
 
@@ -189,7 +187,7 @@ class AccountController extends Controller
 	 */
 	private function createNewFood(User $user)
 	{
-		$collection = Food::where('level', $user->level)
+		$collection = Food::where('level', $user->level == 'Moderator'? 'Participant': $user->level)
 			->orderBy('allocation', 'ASC')->get(); // sort by the lowest allocation
 		// Iterate through the collection
 		$iterator = 0;
