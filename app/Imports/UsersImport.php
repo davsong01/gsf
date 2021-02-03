@@ -44,10 +44,22 @@ class UsersImport implements ToModel, WithHeadingRow
 		switch ($this->import_level) {
 			case 'Participant':
 				$validation_rule['sex'] = 'required|in:Male,Female';
+				$type = 1;
 				break;
 			case 'Choir':
+				$type = 5;
 				break;
-			default:
+			case 'Moderator':
+				$type = 2;
+				break;
+			case 'Alumni':
+				$type = 3;
+				break;
+			case 'Nec':
+				$type = 4;
+				break;
+				default:
+				$type = 1;
 				break;
 		}
 
@@ -78,7 +90,6 @@ class UsersImport implements ToModel, WithHeadingRow
 		$email = trim($row['email']);
 		$phone = trim($row['phone']);
 		$level = trim($this->import_level);
-		$type = trim('1');
 		$password = Hash::make(trim($row['phone']));
 
 		//take care of nullable fields
