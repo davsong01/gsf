@@ -441,6 +441,7 @@ class UserController extends Controller
 					$user->name = $request->name ?: $user->name; // name
 					$user->phone = $request->phone ?: $user->phone; // phone
 					$user->password = $request->password ? Hash::make($request->password) : $user->password; // password
+					$user->chapter = $request->chapter ?: $user->chapter; // chapter
 
 					// Handle passport upload
 					if ($request->hasFile('passport') && $request->file('passport')->isValid()) {
@@ -601,7 +602,7 @@ class UserController extends Controller
 			'name' => 'required',
 			'phone' => 'required',
 			'sex' => 'in:Male,Female',
-			'chapter' => 'nullable',
+			'chapter' => 'nullable|exists:chapters,id',
 			'passport' => 'nullable|max:200'
 		]);
 
