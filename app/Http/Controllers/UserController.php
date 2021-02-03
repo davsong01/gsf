@@ -402,10 +402,19 @@ class UserController extends Controller
 		return abort(404);
 	}
 
-	private function createOrUpdateHostel($user, string $level, string $gender, Collection $hostel_collection, Request $request)
+	/**
+	 * Allocate the next avialable hostel to the $user
+	 * @param App\User $user the user needing the allocation **NOTE** [$user eloguent object it passed, to implement the save method]
+	 * @param string $level the level of the user to query or the $request->new_level and sort the hostel by level
+	 * @param string $gender the gender of the user to query or the $request->new_gender and sort the hostel by gender
+	 * @param Illuminate\Support\Collection $hostel_collection for eager loading already queried hostel is passed
+	 * @param  \Illuminate\Http\Request  $request
+	 * @return \Illuminate\Http\Response
+	 */
+
+	private function createOrUpdateHostel(User $user, string $level, string $gender, Collection $hostel_collection, Request $request)
 	{
-		
-		$collection = $hostel_collection->where('level', $level)->where('type', $gender)
+		$collection = $hostel_collection->where('level', $level == 'Moderator' ?'Participant':$level)->where('type', $gender)
 			->sortBy('allocation'); // sort by the lowest allocation
 		$message = ['key' => 'error', 'value' => ':(, this is not you it\'s us, looks like there is no hostel available.'];
 
@@ -434,12 +443,25 @@ class UserController extends Controller
 					$user->password = $request->password ? Hash::make($request->password) : $user->password; // password
 
 					// Handle passport upload
-					
+					if ($request->hasFile('passport') && $request->file('passport')->isValid()) {
+						$imgName = $request->passport->getClientOriginalName();
+						$passport = Image::make($request->passport)->resize(500, 500);
+						$passport->save('frontend/passports/' . date('Y-m-d-His') . $imgName);
+						$image_path = $passport->dirname . '/' . $passport->basename;
+
+						if (file_exists($user->passport))
+							unlink($user->passport);
+
+						$passport->destroy();
+						$user->passport = $image_path;
+					}
 					if ($user->registration_status != 'Complete')
 						$user->registration_status = 'Complete';
 
 					$user->save(); // save the changes if any
-					
+					$message['key'] = 'message';
+					$message['value'] = ':), updated was successful';
+					return false;
 				}
 				if ($item->capacity == $item->allocation && $collection->count() == $iterator) { // the last loop
 					$message['key'] = 'error';
@@ -448,7 +470,7 @@ class UserController extends Controller
 				}
 			}
 		);
-		
+		return redirect()->route('account')->with($message['key'], $message['value']);
 	}
 
 	/**
@@ -457,7 +479,7 @@ class UserController extends Controller
 	 */
 	private function createNewFood(User $user)
 	{
-		$collection = Food::where('level', $user->level)
+		$collection = Food::where('level', $user->level == 'Moderator'? 'Participant': $user->level)
 			->orderBy('allocation', 'ASC')->get(); // sort by the lowest allocation
 		// Iterate through the collection
 		$iterator = 0;
@@ -659,10 +681,9 @@ class UserController extends Controller
 
 			return redirect()->back()->with('message', 'Update successful!');
 		} else if (auth()->user()->level == 'Moderator') {
-			
 			$user = User::findOrFail($user->id);
 			$hostels = Hostel::orderBy('allocation', 'ASC')->get();
-	
+		
 			if (
 				$user->hostel_id &&
 				$user->sex == $request->sex &&
@@ -671,7 +692,7 @@ class UserController extends Controller
 				$user->name == $request->name &&
 				!$request->hasFile('passport')
 			) {
-				return redirect()->route('account')->with('message', ':) Great, looks like you didnt make any changes.');
+				return back()->with('message', ':) Great, looks like you didnt make any changes.');
 			} else if (!$user->hostel_id) { // first time users - PERFECT
 				return $this->createOrUpdateHostel(
 					$user,
@@ -689,7 +710,7 @@ class UserController extends Controller
 					$request
 				);
 			}
-			return redirect()->route('account')->with('error', ':( this is not you. It\'s us, looks like we could not complete your request, please contact the admin, let us hope he know what to do.');	
+			return back()->with('error', ':( this is not you. It\'s us, looks like we could not complete your request, please contact the admin, let us hope he know what to do.');	
 			
 		}
 
