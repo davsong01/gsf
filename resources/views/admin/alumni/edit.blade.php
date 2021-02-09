@@ -77,7 +77,7 @@
 
                             <fieldset class="form-group @error('passport')is-invalid @enderror">
                                 <label for="passport">Change Passport</label>
-                                <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">	
+                                <input type= "file" accept="image/*" class="form-control" name="passport" id="passport">	
                             </fieldset>           
                                 
                             </div>

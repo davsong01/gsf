@@ -69,12 +69,14 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('/choir/export', 'UserController@choirExport')->name('choir.export');
         Route::post('/choir/import', 'UserController@import')->name('choir.import');
     });
-		//Admin Only
-		Route::group([], function(){
-			Route::get('/users/import/index', 'UserController@usersImportIndex')->name('users.import.index');
-			Route::get('/users/export', 'UserController@usersExport')->name('users.export');
-			Route::post('/users/import', 'UserController@import')->name('users.import');
-		});
+    //Admin Only
+    Route::group([], function(){
+        Route::get('/users/import/index', 'UserController@usersImportIndex')->name('users.import.index');
+        Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.users.import.index');
+        Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.users.import.index');
+        Route::get('/users/export', 'UserController@usersExport')->name('users.export');
+        Route::post('/users/import', 'UserController@import')->name('users.import');
+    });
     Route::resource('users', 'UserController');
     Route::get('users/delete/{id}', 'UserController@destroy')->name('users.delete');
     Route::get('trashed/users', 'UserController@trashed')->name('users.trashed');
@@ -97,17 +99,13 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('alumni', 'AlumniController');
     Route::get('alumnis/delete/{id}', 'AlumniController@destroy')->name('alumni.delete');
     Route::resource('participants', 'AccountController')->except([
-			'create', 'store', 'destroy', 'index', 'show'
+        'create', 'store', 'destroy', 'index', 'show'
 	]);
 
     Route::resource('hostels', 'HostelController');
 
     Route::get('user/card/{id}', 'AccountController@getCard')->name('user.card');
     Route::get('user/meal/{id}', 'AccountController@getMealTicket')->name('meal.ticket');
-
-    // Route::get('id', function(){
-    //     return view('card.id');
-    // });
     
     Route::get('hostels/delete/{id}', 'HostelController@destroy')->name('hostels.delete');
 
@@ -132,6 +130,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('material/delete/{id}', 'MaterialController@destroy')->name('materials.delete');
 
     Route::resource('payouts', 'PayoutController');
+
+    // Download sample imports
+    Route::get('users-export/{type}', 'UserController@getAdminParticipantSample')->name('usersexport.sample');
   
 });
 

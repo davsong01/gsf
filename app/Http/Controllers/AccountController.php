@@ -166,7 +166,7 @@ class AccountController extends Controller
 
 					$user->save(); // save the changes if any
 					$message['key'] = 'message';
-					$message['value'] = ':), updated was successful';
+					$message['value'] = ':), update was successful';
 					return false;
 				}
 				if ($item->capacity == $item->allocation && $collection->count() == $iterator) { // the last loop

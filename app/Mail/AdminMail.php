@@ -17,17 +17,16 @@ class AdminMail extends Mailable
     {
         $this->data = $data;
     }
-
-    /**
-     * Build the message.
-     *
-     * @return $this
-     */
+    
     public function build()
     {
-
+        if($this->data['type'] == 5){
+            return $this->markdown('emails.donation')
+            ->subject('New Donation');
+        }else{
         return $this->markdown('emails.admin')
-            ->subject('New Participant Registration');
+            ->subject('New Registration');
+        }
     }
         
 }

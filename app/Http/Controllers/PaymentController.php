@@ -6,6 +6,7 @@ use PDF;
 use App\User;
 use Paystack;
 use App\Setting;
+use App\Donation;
 use App\TempUser;
 use Carbon\Carbon;
 use App\Mail\AdminMail;
@@ -143,17 +144,19 @@ class PaymentController extends Controller
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '5'){
 
                 //copy details to donations table
-                $donation = Donation::create([
+                $donation = Donation::Updateorcreate([
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'name' => $data['name'],
                     'phone' => $data['phone'],
                     'amount' => $data['amount'],
                     'amount' => $data['amount'],
+                    'state' => $participant->state,
                 ]);
 
                 $data['chapter'] = 'N/A';
-
+                $data['type'] = $paymentDetails['data']['metadata']['type'] ;
+                
                 //send email to official email
                 Mail::to(Setting::select('official_email')->first()->value('official_email'))->send(new AdminMail($data));
         

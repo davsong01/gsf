@@ -106,7 +106,7 @@
                         <div class="col-md-6 col-sm-12">
                             <fieldset class="form-group">
                                 <label for="chapter">Campus</label>
-                                <input type="text" disabled class="form-control" value="{{ $user->campus->name }}">
+                                <input type="text" disabled class="form-control" value="{{ isset($user->campus->name) ? $user->campus->name : 'N/A' }}">
                             </fieldset>
                             
                             <fieldset class="form-group @error('passport')is-invalid @enderror">

@@ -13,10 +13,10 @@
                     <div class="card-header">
                         <h4 class="card-title">All Moderators</h4>
                         <div class="">
-													<a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
-													<a href="{{ route('moderators.import.index') }}" class="btn btn-primary mt-1">Import</a>
-													<a href="{{ route('moderators.export') }}" class="btn btn-primary mt-1">Export</a>
-											</div>
+                                <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
+                                <a href="{{ route('moderators.import.index') }}" class="btn btn-primary mt-1">Import</a>
+                                <a href="{{ route('moderators.export') }}" class="btn btn-primary mt-1">Export</a>
+                        </div>
                         @include('includes.alerts')
                         
                     </div>
@@ -32,9 +32,8 @@
                                             <th>Chapter</th>
                                             <th>Phone</th>
                                             <th>Amount Paid</th>
-                                            <th>Slots Remaining</th>
                                             <th>Slots Filled</th>
-                                            
+                                            <th>Slots Remaining</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>

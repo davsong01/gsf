@@ -57,7 +57,25 @@ class UserController extends Controller
 		return view('admin.official.import');
 	}
 
+	public function	getAdminParticipantSample($type){
+		if($type == 'Participant'){
+			$realpath = 'frontend/exportsamples/importparticipantsample.xlsx';
+		}
 
+		if($type == 'Moderator'){
+
+			$realpath = 'frontend/exportsamples/importmoderatorsample.xlsx';
+			
+		}
+
+		if($type == 'Alumni'){
+
+			$realpath = 'frontend/exportsamples/importalumnisample.xlsx';
+			
+		}
+
+        return response()->download($realpath);
+	}
 	public function index()
 	{
 		$count = 1;
@@ -460,7 +478,7 @@ class UserController extends Controller
 
 					$user->save(); // save the changes if any
 					$message['key'] = 'message';
-					$message['value'] = ':), updated was successful';
+					$message['value'] = '&#128515;, update was successful';
 					return false;
 				}
 				if ($item->capacity == $item->allocation && $collection->count() == $iterator) { // the last loop
@@ -788,6 +806,10 @@ class UserController extends Controller
 			'import_level' => 'required|in:Participant,Moderator,Nec,Admin,Alumni,Offical,Choir,Medic'
 		]);
 
+		Excel::import($request->import_level, request()->file('file')) {
+			$count = getActiveSheet()->getHighestRow();
+		}
+			
 
 		try {
 			Excel::import(new UsersImport($request->import_level), request()->file('file'));

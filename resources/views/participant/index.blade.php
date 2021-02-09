@@ -159,17 +159,17 @@
 							<div class="col-md-6 col-sm-12">
 								<fieldset class="form-group">
 									<label for="chapter">Campus</label>
+									@if (isset(auth()->user()->chapter)) 
 									@foreach($chapters as $chapter)
 									@if (auth()->user()->chapter == $chapter->id )
-									<input type="text" id="chapter" class="form-control @error('chapter')is-invalid @enderror"
+									<input type="text" id="chapter" class="form-control"
 										value="{{ $chapter->name }}" disabled required>
 									@endif
 									@endforeach
-									@error('chapter')
-									<span class="invalid-feedback" role="alert">
-										<strong>{{ $message }}</strong>
-									</span>
-									@enderror
+									@else
+									<input type="text" value = "N/A" class="form-control"
+										 disabled required>
+									@endif
 								</fieldset>
 
 								<fieldset class="form-group @error('passport')is-invalid @enderror">

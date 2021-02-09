@@ -1,5 +1,5 @@
 @extends('layouts.dashboard')
-@section('title', 'Choir Import')
+@section('title', 'Participants Import')
 @section('content')
 <div class="income-order-visit-user-area mg-t-40">
 	<div class="container">
@@ -22,8 +22,7 @@
 						</div>
 						<div class="sparkline7-graph">
 							<div class="row">
-								<a class="btn btn-primary" href="{{ route('usersexport.sample', 'Participant') }}"><i class="fa fa-download"></i> Download
-									sample</a>
+								<a class="btn btn-primary" href="{{ route('usersexport.sample', 'Moderator') }}"><i class="fa fa-download"></i> Download sample</a>
 								<div class="card-header">
 									<p>Select an excel file to upload, please pay attention to the following: </p>
 									<ul>
@@ -42,7 +41,7 @@
 									class="@if($errors->any()) has-error @endif">
 									@csrf
 									<input type="file" name="file" class="form-control" accept=".csv, .xlsv, .xls, .xlsx" required>
-									<input type="hidden" name="import_level" value="Choir" required>
+									<input type="hidden" name="import_level" value="Participant">
 									<br>
 									@error('file')
 									<div class="alert alert-danger" role="alert">

@@ -22,7 +22,7 @@
 						</div>
 						<div class="sparkline7-graph">
 							<div class="row">
-								<a class="btn btn-primary" href="{{ route('users.export') }}"><i class="fa fa-download"></i> Download
+								<a class="btn btn-primary" href="{{ route('usersexport.sample', 'Participant') }}"><i class="fa fa-download"></i> Download
 									sample</a>
 								<div class="card-header">
 									<p>Select an excel file to upload, please pay attention to the following: </p>
@@ -33,6 +33,7 @@
 										<li>
 											Name and email must be present
 										</li>
+										<li>There must be no spaces after the last line to data to be imported</li>
 									</ul>
 
 								</div>

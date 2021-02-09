@@ -2,8 +2,9 @@
 
 namespace App\Imports;
 
-use auth;
+use Auth;
 use App\User;
+use App\Setting;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -18,6 +19,8 @@ class UsersImport implements ToModel, WithHeadingRow
 
 	private $import_level = null;
 
+	private $rows = 0;
+
 	public function __construct(string $import_level)
 	{
 		$this->import_level = $import_level;
@@ -25,6 +28,7 @@ class UsersImport implements ToModel, WithHeadingRow
 
 	public function model(array $row)
 	{
+	
 		$validation_rule = [
 			// Nullables
 			'conference_number' => 'nullable|unique:users,conference_number',
@@ -45,21 +49,33 @@ class UsersImport implements ToModel, WithHeadingRow
 			case 'Participant':
 				$validation_rule['sex'] = 'required|in:Male,Female';
 				$type = 1;
+				$prefix = 'AOP';
+				$chapter = auth::user()->chapter;
 				break;
 			case 'Choir':
 				$type = 5;
+				$prefix = 'AOC';
+				$chapter = null;
 				break;
 			case 'Moderator':
 				$type = 2;
+				$prefix = 'AOP';
+				$chapter = null;
 				break;
 			case 'Alumni':
 				$type = 3;
+				$prefix = 'AOA';
+				$chapter = null;
 				break;
 			case 'Nec':
 				$type = 4;
+				$prefix = 'AON';
+				$chapter = null;
 				break;
 				default:
 				$type = 1;
+				$prefix = 'AOP';
+				$chapter = null;
 				break;
 		}
 
@@ -110,16 +126,18 @@ class UsersImport implements ToModel, WithHeadingRow
 		$amount_paid = isset($row['amount_paid']) ? $row['amount_paid'] : 0;
 		$payment_type = isset($row['payment_type']) ? $row['payment_type'] : null;
 		$transid = isset($row['transid']) ? $row['transid'] : null;
-		$uploaded_by = isset($row['uploaded_by']) ? $row['uploaded_by'] : auth::user()->name;
+		$uploaded_by = isset($row['uploaded_by']) ? $row['uploaded_by'] : auth::user()->id;
+		
+		auth::user()->update([
+			'slot_filled' => auth::user()->slot_filled + 1,
+		]);
 
-		//Create new user
-		return new User([
+		$user = User::create([
 			'name'  => $name,
 			'email' => $email,
 			'phone' => $phone,
 			'level' => $level,
 			'type' => $type,
-			'conference_number' => $conference_number,
 			'food_id' => $food_id,
 			'hostel_id' => $hostel_id,
 			'chapter' => $chapter,
@@ -127,11 +145,19 @@ class UsersImport implements ToModel, WithHeadingRow
 			'registration_status' => $registration_status,
 			'slot' => $slot,
 			'slot_filled' => $slot_filled,
-			'amount_paid' => $amount_paid,
+			'amount_paid' => Setting::select('registration_fee')->first()->value('registration_fee'),
 			'payment_type' => $payment_type,
 			'transid' => $transid,
 			'uploaded_by' => $uploaded_by,
 			'password' => $password
 		]);
+
+		$user->update([
+			'conference_number' => 'GSF-'.$prefix.'-'.$user->id,
+		]);
+
+		return $user;
+
 	}
+
 }
