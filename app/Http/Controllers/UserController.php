@@ -806,9 +806,7 @@ class UserController extends Controller
 			'import_level' => 'required|in:Participant,Moderator,Nec,Admin,Alumni,Offical,Choir,Medic'
 		]);
 
-		Excel::import($request->import_level, request()->file('file')) {
-			$count = getActiveSheet()->getHighestRow();
-		}
+		Excel::import($request->import_level, request()->file('file'));
 			
 
 		try {
