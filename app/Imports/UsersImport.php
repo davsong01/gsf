@@ -115,7 +115,7 @@ class UsersImport implements ToModel, WithHeadingRow
 			: DB::table('hostels')->whereLevel($level)->whereType($row['sex'])->whereColumn('allocation', '<', 'hostels.capacity')->pluck('id')->first();
 		$food_id = isset($row['food_name']) ?
 			DB::table('food')->whereName(trim($row['food_name']))->pluck('id')->first()
-			: null;
+			: DB::table('food')->whereLevel($level)->whereColumn('allocation', '<', 'food.capacity')->pluck('id')->first();
 		$chapter = isset($row['chapter']) ?
 			DB::table('chapters')->whereName(trim($row['chapter']))->pluck('id')->first()
 			: null;
