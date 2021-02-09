@@ -66,7 +66,10 @@
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                                 <a class="actions" data-toggle="tooltip" title="View/Edit User" href="{{ route('users.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
                                                 </a>
-                                                
+                                                <a class="actions" onclick="return confirm('You are about to resend welcome email to this participant?');" data-toggle="tooltip" data-placement="top" title="Resend welcome mail"
+                                                    href="{{ route('users.show', $participant->id) }}"><i
+                                                        class="fa fa-envelope"></i>
+                                                </a>
                                                 <a class="actions" data-toggle="tooltip" data-placement="top" title="Switch To"
                                                     href="{{ route('switchuser', $participant->id) }}"><i
                                                         class="fa fa-unlock actions"></i>

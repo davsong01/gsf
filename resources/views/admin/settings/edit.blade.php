@@ -104,9 +104,15 @@
                                 
                                 
                             </div>
-                            <button class="btn btn-primary" style="width:100%; margin-top:10px" type="submit">Submit</button>
+                            <button class="btn btn-primary" style="width:100%; margin-top:10px" type="submit">Save</button>
                         </form>
+                        <br>
+                        <div class="row" style="background-color:black !important; padding: 20px;">
+                            <h2 style="color:red">Caution: use the BUTTON below only if you know what you are doing as this will clear all data from the database!</h2> 
+                                <a  onclick="return confirm('This application will reset and everything will be deleted?');" href="{{ route('database.clear') }}" class="btn btn-danger mt-1"><i class="fa fa-warning"></i> Reset application Database</a>
+                         </div>
                     </div>
+                    
                 </div>
             </div>
         </div>

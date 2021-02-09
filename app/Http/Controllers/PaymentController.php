@@ -11,6 +11,7 @@ use App\TempUser;
 use Carbon\Carbon;
 use App\Mail\AdminMail;
 use App\Mail\Welcomemail;
+use App\Mail\WelcomeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;

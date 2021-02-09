@@ -32,7 +32,7 @@
 										<li>
 											Name and email must be present
 										</li>
-										<li>There must be no spaces after the last line to data to be imported</li>
+										<li>There must be no spaces after the last line in the excel file to be imported</li>
 									</ul>
 
 								</div>

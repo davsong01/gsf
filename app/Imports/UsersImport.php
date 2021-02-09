@@ -137,7 +137,7 @@ class UsersImport implements ToModel, WithHeadingRow
 			
 
 			if(auth::user()->slot_filled > auth::user()->slot ){
-				// return back();
+				// Create fake Validation rule
 				$validation_rule = [
 			// Nullables
 				'slot' => 'required',
