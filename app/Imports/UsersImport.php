@@ -2,6 +2,8 @@
 
 namespace App\Imports;
 
+use App\Food;
+use App\Hostel;
 use Auth;
 use App\User;
 use App\Setting;
@@ -132,6 +134,18 @@ class UsersImport implements ToModel, WithHeadingRow
 			'slot_filled' => auth::user()->slot_filled + 1,
 		]);
 
+		$hostel = Hostel::find($hostel_id);
+		$food = Food::find($food_id);
+		
+		if($hostel){
+			$hostel->allocation++;
+			$hostel->save();
+		}
+		if($food){
+			$food->allocation++;
+			$food->save();
+		}
+			
 		$user = User::create([
 			'name'  => $name,
 			'email' => $email,
