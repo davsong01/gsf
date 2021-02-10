@@ -1,4 +1,3 @@
-
 @extends('layouts.dashboard')
 @section('title', 'ID Card')
 @section('active')
@@ -133,31 +132,53 @@
 	}
 </style>
 @endsection
-@section('content')	
+@section('content')
 <div class="content-body">
-    @include('includes.alerts')
-    <!-- Dashboard Ecommerce Starts -->
-    <section id="dashboard-ecommerce">
-        <div class="row">
-            <!-- Greetings Content Starts -->
-            <div class="col-md-12 col-12 dashboard-greetings">
+	@include('includes.alerts')
+	<!-- Dashboard Ecommerce Starts -->
+	<script>
+		function PrintElem()
+	{
+			var mywindow = window.open('', 'PRINT', 'height=400,width=600');
+	
+			mywindow.document.write('<html><head><title>' + document.title  + '</title>');
+			mywindow.document.write('</head><body>');
+			mywindow.document.write('<h1>' + document.title  + '</h1>');
+			mywindow.document.write(document.getElementById('id').innerHTML);
+			mywindow.document.write('</body></html>');
+	
+			mywindow.document.close(); // necessary for IE >= 10
+			mywindow.focus(); // necessary for IE >= 10*/
+	
+			mywindow.print();
+			// mywindow.close();
+	
+			return true;
+	}
+	</script>
+	<section id="dashboard-ecommerce">
+		<div class="row">
+			<!-- Greetings Content Starts -->
+			<div class="col-md-12 col-12 dashboard-greetings">
 				<div class="card-header">
-                        <a onclick="PrintElem()" class="btn btn-primary mt-1">Print I.D.</a>
-						@include('includes.alerts')
+					<a onclick="PrintElem()" class="btn btn-primary mt-1">Print I.D.</a>
+					@include('includes.alerts')
 				</div>
 
-                <div class="card" id="id">
-                   
-                    <div class="card-content">
-                        <div class="card-body">
+				<div class="card" id="id">
+
+					<div class="card-content">
+						<div class="card-body">
 							<section id="dashboard-ecommerce">
 								<div class="row">
 									<div class="id-card-holder">
 										<div class="id-card">
 											<div class="header">
 												<img style="width:20%; height:10%" src="{{ asset('frontend/img/logo.png') }}">
-												<h2 class="name" style="margin-top: 10px; margin-bottom: 10px;">GOFAMINT STUDENTS' FELLOWSHIP</h2>
-												<h2 class="alias" style="margin-top: 10px; margin-bottom: 10px;">19th Biennial National Conference</h2>
+												<h2 class="name" style="margin-top: 10px; margin-bottom: 10px;">GOFAMINT STUDENTS' FELLOWSHIP
+												</h2>
+												<h2 class="alias" style="margin-top: 10px; margin-bottom: 10px;">19th Biennial National
+													Conference</h2>
 												<p class="date">2nd April - 4th April 2020</p><br>
 											</div>
 											<div class="photo">
@@ -166,11 +187,12 @@
 													@elseif($user->level == 'Official' || $user->level == 'Nec')OFFICIAL
 													@elseif($user->level == 'Choir')CHOIR
 													@elseif($user->level == 'Medical')MEDICAL PERSONNEL
-												
+
 													@endif
-													
+
 												</h1>
-												<img src="{{ asset($user->passport ? '/'.$user->passport : '/frontend/passports/avatar.jpg') }}">
+												<img
+													src="{{ asset($user->passport ? '/'.$user->passport : '/frontend/passports/avatar.jpg') }}">
 											</div>
 											<div>
 												<h3 style="font-size:25px">Name: {{ $user->name }}</h3>
@@ -178,8 +200,10 @@
 												<h3 style="font-size:15px">Campus </h3>
 												<span><b>{{ $user->campus->name  }}</b></span>
 												@endif
-												<h3 style="font-size:15px"> <strong>Hostel:</strong> {{ isset($user->hostel->name) ? $user->hostel->name : 'Registration incomplete'  }}</h3>
-												<h3 style="font-size:15px"> <b>Food Stand:</b> {{ isset($user->food->name) ? $user->food->name : 'Registration incomplete'  }}</h3>
+												<h3 style="font-size:15px"> <strong>Hostel:</strong>
+													{{ isset($user->hostel->name) ? $user->hostel->name : 'Registration incomplete'  }}</h3>
+												<h3 style="font-size:15px"> <b>Food Stand:</b>
+													{{ isset($user->food->name) ? $user->food->name : 'Registration incomplete'  }}</h3>
 												<div class="qr-code">
 													<img src="{{ asset('frontend/img/qr.png') }}">
 												</div>
@@ -188,7 +212,7 @@
 										</div>
 									</div>
 								</div>
-											
+
 							</section>
 						</div>
 					</div>
@@ -199,25 +223,5 @@
 </div>
 @endsection
 @section('scripts')
-<script>
-function PrintElem(#id)
-{
-    var mywindow = window.open('', 'PRINT', 'height=400,width=600');
 
-    mywindow.document.write('<html><head><title>' + document.title  + '</title>');
-    mywindow.document.write('</head><body >');
-    mywindow.document.write('<h1>' + document.title  + '</h1>');
-    mywindow.document.write(document.getElementById(elem).innerHTML);
-    mywindow.document.write('</body></html>');
-
-    mywindow.document.close(); // necessary for IE >= 10
-    mywindow.focus(); // necessary for IE >= 10*/
-
-    mywindow.print();
-    mywindow.close();
-
-    return true;
-}
-</script>
 @endsection
-
