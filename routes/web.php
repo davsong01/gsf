@@ -14,6 +14,7 @@ Route::get('/clear', function () {
     echo "<p>Fully optimized.*</p>";
 });
 
+
 Route::get('/tac', function () {
    return view('tac');
 })->name('tac');
@@ -27,6 +28,11 @@ Route::get('/payment/callback', 'PaymentController@handleGatewayCallback');
 
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', 'AccountController@index')->name('account');
+
+    Route::get('/reset', function () {
+        Artisan::call('migrate:refresh --seed');
+        return back()->with('message', 'You have successfully cleared the whole application');
+    })->name('database.clear');
 
     // Official
     Route::group([], function(){
@@ -130,6 +136,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('material/delete/{id}', 'MaterialController@destroy')->name('materials.delete');
 
     Route::resource('payouts', 'PayoutController');
+    Route::resource('donations', 'DonationController');
 
     // Download sample imports
     Route::get('users-export/{type}', 'UserController@getAdminParticipantSample')->name('usersexport.sample');

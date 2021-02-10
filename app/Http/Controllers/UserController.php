@@ -7,12 +7,14 @@ use App\User;
 use App\Hostel;
 use App\Chapter;
 use App\Setting;
+use App\Mail\WelcomeMail;
 use App\Exports\UsersExport;
+use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Imports\UsersImport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Schema;
@@ -517,9 +519,19 @@ class UserController extends Controller
 				}
 			});
 	}
-	public function show($id)
+	public function show(User $user)
 	{
-		//
+		
+		$data['conference_number'] = $user->conference_number;
+		$data['name'] =  $user->name;
+		$data['email'] =  $user->email;
+		$data['phone'] =  $user->phone;
+		$data['amount'] =  $user->amount_paid;
+
+		//send email to participant
+		Mail::to($data['email'])->send(new WelcomeMail($data));
+
+		return back()->with('message', 'Email resent successfully');
 	}
 
 	public function edit(User $user)
@@ -805,10 +817,7 @@ class UserController extends Controller
 			'file' => 'required|mimes:xlsx,csv',
 			'import_level' => 'required|in:Participant,Moderator,Nec,Admin,Alumni,Offical,Choir,Medic'
 		]);
-
-		Excel::import($request->import_level, request()->file('file'));
-			
-
+		
 		try {
 			Excel::import(new UsersImport($request->import_level), request()->file('file'));
 		} catch (\Illuminate\Database\QueryException $ex) {

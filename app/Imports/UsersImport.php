@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -20,17 +21,17 @@ class UsersImport implements ToModel, WithHeadingRow
 	use Importable;
 
 	private $import_level = null;
-
-	private $rows = 0;
+	private $count = 0;
 
 	public function __construct(string $import_level)
 	{
 		$this->import_level = $import_level;
+		
 	}
 
 	public function model(array $row)
 	{
-	
+			
 		$validation_rule = [
 			// Nullables
 			'conference_number' => 'nullable|unique:users,conference_number',
@@ -129,11 +130,33 @@ class UsersImport implements ToModel, WithHeadingRow
 		$payment_type = isset($row['payment_type']) ? $row['payment_type'] : null;
 		$transid = isset($row['transid']) ? $row['transid'] : null;
 		$uploaded_by = isset($row['uploaded_by']) ? $row['uploaded_by'] : auth::user()->id;
-		
-		auth::user()->update([
-			'slot_filled' => auth::user()->slot_filled + 1,
-		]);
+				
+		if(auth::user()->level == 'Moderator' || auth::user()->level == 'Admin' ){
+			auth::user()->update([
+				'slot_filled' => auth::user()->slot_filled + 1,
+			]);
+			
 
+			if(auth::user()->slot_filled > auth::user()->slot ){
+				// Create fake Validation rule
+				$validation_rule = [
+			// Nullables
+				'slot' => 'required',
+				];
+
+				Validator::make(
+				$row,
+				$validation_rule,
+				[
+				'slot.required' => "You cannot import more than ".auth::user()->slot. ' Participants. Check the excel file for extra rows',
+				
+				
+			]
+			)->validate();
+			}
+			
+		}
+		
 		$hostel = Hostel::find($hostel_id);
 		$food = Food::find($food_id);
 		
@@ -145,7 +168,7 @@ class UsersImport implements ToModel, WithHeadingRow
 			$food->allocation++;
 			$food->save();
 		}
-			
+
 		$user = User::create([
 			'name'  => $name,
 			'email' => $email,
