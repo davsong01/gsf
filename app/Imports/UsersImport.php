@@ -44,10 +44,10 @@ class UsersImport implements ToModel, WithHeadingRow
 			'name' => 'required|min:3|max:200',
 			'email' => 'required|unique:users,email',
 			'phone' => 'required|unique:users,phone',
-			// 'type' => 'required',
 			'level' => $this->import_level,
 		];
 
+		
 		switch ($this->import_level) {
 			case 'Participant':
 				$validation_rule['sex'] = 'required|in:Male,Female';
@@ -90,7 +90,7 @@ class UsersImport implements ToModel, WithHeadingRow
 				'name.min' => "One or more $this->import_level name is too short minimum is 3, please check the name field and try again",
 				'name.max' => "One or more $this->import_level name is too long maximum is 200, please check the name field and try again",
 
-				'conference_number.unique' => 'One or more conference number already exists, please check the conference number field and try again',
+				// 'conference_number.unique' => 'One or more conference number already exists, please check the conference number field and try again',
 
 				'hostel_name.exists' => "One or more $this->import_level is using a non existing hostel, please check the hostel name field and try again",
 				'food_name.exists' => "One or more $this->import_level is using a non existing food stand, please check the food name field and try again",
@@ -101,10 +101,11 @@ class UsersImport implements ToModel, WithHeadingRow
 				'sex.in' => 'One or more sex/gender is wrong, try Male/Female, please check the sex field and try again',
 				'sex.required' => 'One or more sex/gender is wrong, try Male/Female, please check the sex field and try again',
 				'chapter.exists' => 'One or more chapter is using a non existing chapter, please check the chapter field and try again',
-				'registration_status.in' => 'One or more registration status is wrong, try Pending/Complete, please check the registration status field and try again',
+				// 'registration_status.in' => 'One or more registration status is wrong, try Pending/Complete, please check the registration status field and try again',
 			]
 		)->validate();
 
+		
 		$name = trim($row['name']);
 		$email = trim($row['email']);
 		$phone = trim($row['phone']);
@@ -131,7 +132,8 @@ class UsersImport implements ToModel, WithHeadingRow
 		$transid = isset($row['transid']) ? $row['transid'] : null;
 		$uploaded_by = isset($row['uploaded_by']) ? $row['uploaded_by'] : auth::user()->id;
 				
-		if(auth::user()->level == 'Moderator' || auth::user()->level == 'Admin' ){
+		
+		if(auth::user()->level == 'Moderator' ){
 			auth::user()->update([
 				'slot_filled' => auth::user()->slot_filled + 1,
 			]);
@@ -150,14 +152,11 @@ class UsersImport implements ToModel, WithHeadingRow
 				[
 				'slot.required' => "You cannot import more than ".auth::user()->slot. ' Participants. Check the excel file for extra rows',
 				
-				
 			]
 			)->validate();
 			}
-			
-		}
-		
-		$hostel = Hostel::find($hostel_id);
+
+			$hostel = Hostel::find($hostel_id);
 		$food = Food::find($food_id);
 		
 		if($hostel){
@@ -169,6 +168,10 @@ class UsersImport implements ToModel, WithHeadingRow
 			$food->save();
 		}
 
+			
+		}
+		
+		
 		$user = User::create([
 			'name'  => $name,
 			'email' => $email,
@@ -192,6 +195,13 @@ class UsersImport implements ToModel, WithHeadingRow
 		$user->update([
 			'conference_number' => 'GSF-'.$prefix.'-'.$user->id,
 		]);
+
+		if(isset($user->hostel_id) && isset($user->food_id)){
+
+			$user->update([
+				'registration_status' => 'Complete'
+			]);
+		}
 
 		return $user;
 

@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use PDF;
+use App\Food;
 use App\User;
 use App\Hostel;
 use App\Chapter;
-use App\Food;
+use App\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Intervention\Image\Facades\Image;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,7 +20,7 @@ class AccountController extends Controller
 {
 	public function getCard($id)
 	{
-
+		$setting = Setting::first();
 		$user = User::whereId($id)->first();
 
 		if (auth()->user()->level == 'Participant') {
@@ -40,7 +41,7 @@ class AccountController extends Controller
 			}
 		}
 
-		return view('card.id')->with('user', $user);
+		return view('card.id')->with('user', $user)->with('setting', $setting);
 	}
 
 	public function index()

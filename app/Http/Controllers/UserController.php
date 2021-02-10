@@ -76,6 +76,12 @@ class UserController extends Controller
 			
 		}
 
+		if($type == 'Choir'){
+
+			$realpath = 'frontend/exportsamples/importchoirsample.xlsx';
+			
+		}
+
         return response()->download($realpath);
 	}
 	public function index()
@@ -813,6 +819,8 @@ class UserController extends Controller
 
 	public function import(Request $request)
 	{
+		
+
 		$data = $this->validate($request, [
 			'file' => 'required|mimes:xlsx,csv',
 			'import_level' => 'required|in:Participant,Moderator,Nec,Admin,Alumni,Offical,Choir,Medic'

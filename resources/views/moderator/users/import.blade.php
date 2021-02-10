@@ -21,7 +21,7 @@
                         </div>
                         <div class="sparkline7-graph">
                             <div class="row">
-															<a class="btn btn-primary" href="{{ route('export') }}"><i class="fa fa-download"></i> Download sample</a>
+                                <a class="btn btn-primary" href="{{ route('export') }}"><i class="fa fa-download"></i> Download sample</a>
                                 <div class="card-header">
                                     <p>Select an excel file to upload, please pay attention to the following: </p>
                                         <ul>

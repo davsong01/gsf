@@ -46,8 +46,8 @@
                                             <td>{{ $participant->chapter }}</td>
                                             <td>{{ $participant->phone }}</td>
                                             <td>&#8358;{{ $participant->amount_paid }}</td>
-                                            <td>{{ $participant->slots_filled }}</td>
-                                            <td>{{ $participant->slot - $participant->slots_filled }}</td>
+                                            <td>{{ $participant->slot_filled }}</td>
+                                            <td>{{ $participant->slot - $participant->slot_filled }}</td>
                                             
                                                 
                                             <td style="padding-left: 5px;padding-right: 5px;">
