@@ -1,4 +1,7 @@
 <div class="container">
+    <script>
+    var alumnis_amount = {!! json_encode($alumnis_amount, JSON_HEX_TAG) !!};
+    </script>
     <div class="row align-items-center">
         <div class="col-md-12">
         <hr>
@@ -22,11 +25,22 @@
                         <input type="text" class="form-control" id="phone" name="phone"
                             placeholder="Enter your phone number" required="required">
                     </div>
-                   
-                   
+
+                    <div class="control-group">
+                        <label>Old alumni/New alumni?</label>
+                        <select name="alumn_type" class="form-control" onchange="document.querySelector('#alumni_amount').value = alumnis_amount[this.value]?alumnis_amount[this.value]:''" required>
+                            <option value="">Select alumni type</option>
+                            <option value="new_alumni">New Alumni</option>
+                            <option value="old_alumni">Old Alumni</option>
+                        </select>
+                    </div>
+
+
                     <br>
                     {{-- <input type="hidden" name="orderID" value="345"> --}}
-                    <input type="hidden" name="amount" value="{{ $setting->alumni_fee * 100 }}"> {{-- required in kobo --}}
+                    <div class="control-group">
+                        <input class="form-control" type="text" name="amount" id="alumni_amount" value="{{ $setting->alumni_fee * 100 }}" disabled required> {{-- required in kobo --}}
+                    </div>
                     <input type="hidden" name="quantity" value="1">
                     <input type="hidden" name="currency" value="NGN">
                     <input type="hidden" name="metadata" value="{{ json_encode($array = ['type' => '3',]) }}" > {{-- For other necessary things you want to add to your payload. it is optional though --}}
