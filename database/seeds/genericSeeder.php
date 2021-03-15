@@ -23,14 +23,15 @@ class genericSeeder extends Seeder
         $settings = Setting::create([
             'registration_fee' => 2000,
             'official_email' => 'davedeloper@gmail.com',
-            'alumni_fee' => 2500,
+            'alumni_fee' => 1000,
             'start_date' => now(),
             'end_date' => now(),
             'close_registration' => '2021-02-23 21:24:34',
             'conference_theme' => 'ABOVE ONLY',
-            'conference_overview' => '<p>Arising from the continuous growth in key service industries of financial services and telecommunications sectors of the West Africa economies, in 2014, key customer service professionals from the region with background in service delivery in banking and telecommunications started a network of like minds educating and imparting customer service skills and training in this spheres.</p><br>
+            'conference_overview' => "<p>The earnest expectation of the world from a student is excellence. <br><br>
+            Excellence is a state of producing good quality be it in career or in business. It is important to possess the spirit of Excellence as it''s a distinguishing factor in the world. Excellence puts one in a position which is to be <b>Above Only</b>.<br><br> 
 
-            <p>This network combined education and best practices translating to grooming of service officers and operating systems for organizations. While Nigeria and Ghana network of professionals pioneered this frontier, the network also attracted customer service practitioners from Cote D’Ivore, The Gambia and Senegal. </p>'
+            'Above only'... A conference where expectations will be met for greater exploits. A place where grace will be received to go beyond limits.</p><br>"
         ]);
 
         $admin1 = User::Create([

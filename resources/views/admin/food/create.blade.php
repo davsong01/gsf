@@ -35,6 +35,9 @@
                                             <option value="">-- Select option --</option>
                                             <option value="Alumni" {{ old('level') == 'Alumni' ? 'selected' : ''}}>Alumni</option>
                                             <option value="Participant" {{ old('level')  == 'Participant' ? 'selected' : ''}}>Participant</option>
+                                            <option value="Choir" {{ old('level')  == 'Choir' ? 'selected' : ''}}>Choir</option>
+                                            <option value="Official" {{ old('level')  == 'Official' ? 'selected' : ''}}>Official</option>
+                                            <option value="Medical" {{ old('level')  == 'Medical' ? 'selected' : ''}}>Medical</option>
                                             <option value="Nec" {{ old('level')  == 'Nec' ? 'selected' : ''}}>Nec</option>
                                         </select>
                                     </fieldset>

@@ -173,7 +173,7 @@
 								</fieldset>
 
 								<fieldset class="form-group @error('passport')is-invalid @enderror">
-									<label for="passport">Change Passport</label>
+									<label for="passport">Change Passport <small>(Not more than 200kilobybte | Only jpeg,jpg,png format is accepted)</small></label>
 									<input type="file" accept="image/*" class="form-control" name="passport" id="passport">
 								</fieldset>
 

@@ -28,7 +28,7 @@ class HostelController extends Controller
     public function store(Request $request)
     {
         $data = $this->validate($request, [
-            'name' => 'required|min:5',
+            'name' => 'required|min:2',
             'type' => 'required',
             'level' => 'required',
             'capacity' => 'required',

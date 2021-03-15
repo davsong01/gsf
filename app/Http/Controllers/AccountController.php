@@ -8,6 +8,8 @@ use App\User;
 use App\Hostel;
 use App\Chapter;
 use App\Setting;
+use App\Donation;
+use App\Material;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
@@ -49,18 +51,27 @@ class AccountController extends Controller
 		$chapters = Chapter::all();
 
 		if (auth()->user()->level == 'Admin') {
-			$registered_participants = User::where('level', '<>', 'Admin')->count();
-			return view('admin.index', compact('registered_participants'));
+
+			$participants = User::where('level', '<>', 'Admin')->get();
+			$registered_participants = count($participants);
+			$pending_registration = $participants->where('registration_status', 'Pending')->count();
+			$total = $participants->sum('amount_paid');
+			$completed_registration = count($participants->where('registration_status', 'Complete'));
+			$donations = Donation::sum('amount');
+			$materials = Material::count('id');
+
+			return view('admin.index', compact('registered_participants', 'pending_registration', 'completed_registration', 'total', 'donations', 'materials'));
+			
 		} elseif (auth()->user()->level <> 'Admin' || auth()->user()->level <> 'Moderator') {
 
 			return view('participant.index', compact('chapters'));
 		} elseif (auth()->user()->level == 'Moderator') {
 
-			$participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'desc')->get();
+			$participants = User::with(['hostel', 'moderator'])->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'desc')->count();
 
-			$pending_registration = $participants->where('registration_status', 'Pending');
+			$pending_registration = $participants->where('registration_status', 'Pending')->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'desc')->count();
 
-			$completed_registration = $participants->where('registration_status', 'Complete');
+			$completed_registration = $participants->where('registration_status', 'Complete')->whereUploadedBy(auth()->user()->id)->orderBy('created_at', 'desc')->count();
 
 			return view('moderator.index', compact('chapters', 'pending_registration', 'completed_registration', 'participants'));
 		}

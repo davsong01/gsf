@@ -94,14 +94,25 @@
                                     <select class="form-control" name="hostel_id" id="hostel_id" required>
                                         <option value="">--Select Hostel--</option>
                                         @foreach($hostels as $hostel)
-                                        @if($hostel->capacity > $hostel->allocation)
-                                         
+                                        @if($hostel->capacity > $hostel->allocation)  
                                         <option value="{{ old('hostel_id') ?? $hostel->id}}" {{ old('hostel_id') == $hostel->id ? 'selected' : '' }}>{{ $hostel->name. ' ('.($hostel->capacity - $hostel->allocation). ' participant(s) left) | '.$hostel->type. ' | '.$hostel->level}}</option>
                                         @endif
                                         @endforeach
                                     </select>
                                 </fieldset>
-
+                                <fieldset class="form-group">
+                                    <label for="uploaded_by">Food Stand</label>
+                                    <select class="form-control" name="food_id" id="food_id" required>
+                                         <option value="">--Select Foodstand--</option>
+                                        @foreach($foods as $food)
+                                            @if($food->capacity > $food->allocation)
+                                            <option value="{{ old('food_id') ?? $food->id }}" {{ old('food_id') == $food->id ? 'selected' : '' }}>{{ $food->name. ' ('.($food->capacity - $food->allocation). ' participant(s) left) | '.$food->type. ' | '.$food->level}}</option>
+                                             @endif
+                                            @endforeach
+                                        </select>
+                                    </select>
+                                </fieldset>
+                               
                                 <fieldset class="form-group">
                                     <label for="uploaded_by">Uploaded by (Optional)</label>
                                     <select class="form-control" name="uploaded_by" id="uploaded_by">
@@ -123,18 +134,7 @@
                                     <label for="amount_paid">Amount Paid</label>
                                     <input type="number" name="amount_paid" id="amount_paid" placeholder="Enter amount paid" class="form-control" value="{{ old('amount_paid') }}" required>
                                 </fieldset>
-                                <fieldset class="form-group">
-                                    <label for="uploaded_by">Food Stand</label>
-                                    <select class="form-control" name="food_id" id="food_id" required>
-                                         <option value="">--Select Foodstand--</option>
-                                        @foreach($foods as $food)
-                                           
-                                            <option value="{{ old('food_id') ?? $food->id }}" {{ old('food_id') == $food->id ? 'selected' : '' }}>{{ $food->name .' | '.$food->level}}</option>
-                                            @endforeach
-                                        </select>
-                                    </select>
-                                </fieldset>
-                               
+                                
                             </div>
                             
                         </div>

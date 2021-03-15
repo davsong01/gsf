@@ -23,7 +23,7 @@
                                     <a href="{{ route('users.index') }}">
                                         <div class="card-content">
                                             <div class="card-body py-1">
-                                                <div class="badge-circle badge-circle-lg badge-circle-light-success mx-auto mb-50">
+                                                <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
                                                     {{ $registered_participants }}
                                                 </div>
                                                 <div class="text-muted line-ellipsis">Registered Participants</div>
@@ -35,13 +35,58 @@
                             </div>
                             <div class="col-sm-4 col-12 dashboard-users-success">
                                 <div class="card text-center">
-                                    <a href="{{ route('payouts.index') }}">
+                                    <a href="{{ route('users.index') }}">
+                                        <div class="card-content">
+                                            <div class="card-body py-1">
+                                                <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
+                                                    {{ $pending_registration }}
+                                                </div>
+                                                <div class="text-muted line-ellipsis">Pending Registration</div>
+                                                <h3 class="mb-0"></h3>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-sm-4 col-12 dashboard-users-success">
+                                <div class="card text-center">
+                                    
+                                        <div class="card-content">
+                                            <div class="card-body py-1">
+                                                <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
+                                                    &#8358;{{ $total }}
+                                                </div>
+                                                <div class="text-muted line-ellipsis">Total Payment</div>
+                                                <h3 class="mb-0"></h3>
+                                            </div>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-4 col-12 dashboard-users-success">
+                                <div class="card text-center">
+                                    
+                                        <div class="card-content">
+                                            <div class="card-body py-1">
+                                                <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
+                                                    &#8358;{{ $donations }}
+                                                </div>
+                                                <div class="text-muted line-ellipsis">Total Donations</div>
+                                                <h3 class="mb-0"></h3>
+                                            </div>
+                                        </div>
+
+                                </div>
+                            </div>
+                            <div class="col-sm-4 col-12 dashboard-users-success">
+                                <div class="card text-center">
+                                    <a href="{{ route('materials.index') }}">
                                         <div class="card-content">
                                             <div class="card-body py-1">
                                                 <div class="badge-circle badge-circle-lg badge-circle-light-success mx-auto mb-50">
-                                                    <i class="bx bx-briefcase-alt font-medium-5"></i>
+                                                    {{ $materials }}
                                                 </div>
-                                                <div class="text-muted line-ellipsis">Number of Male Participants , Female participants, Choir, Nec, Officials</div>
+                                                <div class="text-muted line-ellipsis">Conference Materials</div>
                                                 <h3 class="mb-0"></h3>
                                             </div>
                                         </div>

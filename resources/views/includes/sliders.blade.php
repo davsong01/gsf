@@ -5,9 +5,10 @@
             
                 <div class="carousel-item">
                 <div class="carousel-img">
-                    <img src="{{ asset('frontend/img/sliders/slider1.jpg') }}" alt="slider">
-                    <img src="{{ asset('frontend/img/sliders/slider2.jpg') }}" alt="slider">
+                    <img src="{{ asset('frontend/img/sliders/slider1.png') }}" alt="slider">
+                    
                 </div>
+                
                 <div class="carousel-text">
                     <div class="banner_text">
                         <h2 style="color:white">19TH BIENNIAL NATIONAL CONFERENCE, {{ $conference_year}}</h2><br>

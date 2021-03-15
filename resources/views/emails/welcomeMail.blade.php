@@ -22,10 +22,9 @@ Login Details are:
 
 You can login and change your password for confidential reasons
 
-@component('mail::button', ['url' => config('app.url') .'/myaccount'])
+@component('mail::button', ['url' => config('app.url') .'account'])
 Login to portal here<br><br>
 @endcomponent
-
 
 
 Thanks,<br>

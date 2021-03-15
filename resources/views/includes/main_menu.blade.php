@@ -8,7 +8,7 @@
             </ul>
         </div>
         <div class="shadow-bottom"></div>
-        <div><img style="text-align: center; width:30%; display: block; margin-left: 80px;margin-right: auto;" class="logo" src="{{ asset('frontend/img/logo.png') }}"></div>
+        <div><a class="navbar-brand" href="/"><img style="text-align: center; width:30%; display: block; margin-left: 80px;margin-right: auto;" class="logo" src="{{ asset('frontend/img/logo.png') }}"></a></div>
         <br><br>
         <div class="main-menu-content">
             <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation" data-icon-style="lines">              
@@ -17,15 +17,16 @@
                     style="color:yellow !important; font-weight:bolder" href="{{ route('stop.switchuser') }}" aria-expanded="false"><i class="fa fa-arrow-left"></i><span
                         class="hide-menu">BACK TO ADMIN</span></a></li>
                 @endif
-                <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="menu-livicon" data-icon="grid"></i><span class="menu-title" data-i18n="Kanban">Dashboard</span></a>
-                </li>
-                 <li class=" nav-item {{ Request::is('materials*') ? 'active' : '' }}"><a href="{{ route('materials.index') }}"><img width="22px" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbG5zOnN2Z2pzPSJodHRwOi8vc3ZnanMuY29tL3N2Z2pzIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeD0iMCIgeT0iMCIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTIiIHhtbDpzcGFjZT0icHJlc2VydmUiIGNsYXNzPSIiPjxnPjxnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgaWQ9IlNvbGlkIj48cGF0aCBkPSJtMjM5LjAyOSAzODQuOTdhMjQgMjQgMCAwIDAgMzMuOTQyIDBsOTAuNTA5LTkwLjUwOWEyNCAyNCAwIDAgMCAwLTMzLjk0MSAyNCAyNCAwIDAgMCAtMzMuOTQxIDBsLTQ5LjUzOSA0OS41Mzl2LTI2Mi4wNTlhMjQgMjQgMCAwIDAgLTQ4IDB2MjYyLjA1OWwtNDkuNTM5LTQ5LjUzOWEyNCAyNCAwIDAgMCAtMzMuOTQxIDAgMjQgMjQgMCAwIDAgMCAzMy45NDF6IiBmaWxsPSIjOGY5ZGFmIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIiBzdHlsZT0iIiBjbGFzcz0iIj48L3BhdGg+PHBhdGggZD0ibTQ2NCAyMzJhMjQgMjQgMCAwIDAgLTI0IDI0djE4NGgtMzY4di0xODRhMjQgMjQgMCAwIDAgLTQ4IDB2MTkyYTQwIDQwIDAgMCAwIDQwIDQwaDM4NGE0MCA0MCAwIDAgMCA0MC00MHYtMTkyYTI0IDI0IDAgMCAwIC0yNC0yNHoiIGZpbGw9IiM4ZjlkYWYiIGRhdGEtb3JpZ2luYWw9IiMwMDAwMDAiIHN0eWxlPSIiIGNsYXNzPSIiPjwvcGF0aD48L2c+PC9nPjwvc3ZnPg==" /><span>&nbsp;&nbsp;&nbsp;&nbsp;Conference Materials</span></a>
+                <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="menu-livicon" data-icon="grid"></i><span class="menu-title" data-i18n="Kanban">My Profile</span></a>
                 </li>
                 @if(auth::user()->level == 'Moderator')
                 <li class=" nav-item {{ Request::is('users*') ? 'active' : '' }}"><a href="{{ route('users.index') }}"><i class="menu-livicon livicon-evo-holder" data-icon="users"></i><span class="menu-title" data-i18n="User">My Participants</span></a>
                 </li>
                
                 @endif
+                 <li class=" nav-item {{ Request::is('materials*') ? 'active' : '' }}"><a href="{{ route('materials.index') }}"><img width="22px" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbG5zOnN2Z2pzPSJodHRwOi8vc3ZnanMuY29tL3N2Z2pzIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeD0iMCIgeT0iMCIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTIiIHhtbDpzcGFjZT0icHJlc2VydmUiIGNsYXNzPSIiPjxnPjxnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgaWQ9IlNvbGlkIj48cGF0aCBkPSJtMjM5LjAyOSAzODQuOTdhMjQgMjQgMCAwIDAgMzMuOTQyIDBsOTAuNTA5LTkwLjUwOWEyNCAyNCAwIDAgMCAwLTMzLjk0MSAyNCAyNCAwIDAgMCAtMzMuOTQxIDBsLTQ5LjUzOSA0OS41Mzl2LTI2Mi4wNTlhMjQgMjQgMCAwIDAgLTQ4IDB2MjYyLjA1OWwtNDkuNTM5LTQ5LjUzOWEyNCAyNCAwIDAgMCAtMzMuOTQxIDAgMjQgMjQgMCAwIDAgMCAzMy45NDF6IiBmaWxsPSIjOGY5ZGFmIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIiBzdHlsZT0iIiBjbGFzcz0iIj48L3BhdGg+PHBhdGggZD0ibTQ2NCAyMzJhMjQgMjQgMCAwIDAgLTI0IDI0djE4NGgtMzY4di0xODRhMjQgMjQgMCAwIDAgLTQ4IDB2MTkyYTQwIDQwIDAgMCAwIDQwIDQwaDM4NGE0MCA0MCAwIDAgMCA0MC00MHYtMTkyYTI0IDI0IDAgMCAwIC0yNC0yNHoiIGZpbGw9IiM4ZjlkYWYiIGRhdGEtb3JpZ2luYWw9IiMwMDAwMDAiIHN0eWxlPSIiIGNsYXNzPSIiPjwvcGF0aD48L2c+PC9nPjwvc3ZnPg==" /><span>&nbsp;&nbsp;&nbsp;&nbsp;Conference Materials</span></a>
+                </li>
+                
                 @if(auth::user()->level == 'Admin')
                 <li class=" nav-item {{ Request::is('users*') ? 'active' : '' }}"><a href="{{ route('users.index') }}"><i class="menu-livicon livicon-evo-holder" data-icon="users"></i><span class="menu-title" data-i18n="User">All Participants</span></a>
                 </li>

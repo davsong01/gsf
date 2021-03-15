@@ -496,7 +496,9 @@ class UserController extends Controller
 				}
 			}
 		);
-		return redirect()->route('account')->with($message['key'], $message['value']);
+		return back()->with($message['key'], $message['value']);
+	
+		// return redirect()->route('account')->with($message['key'], $message['value']);
 	}
 
 	/**
@@ -641,7 +643,7 @@ class UserController extends Controller
 		]);
 
 		if ($request->has('passport')) {
-			if (isset($user->passport)) {
+			if (isset($user->passport) && (file_exists( public_path().'/frontend/passports/'.$user->passport))) {
 				unlink($user->passport);
 			}
 
@@ -714,7 +716,7 @@ class UserController extends Controller
 				return back()->with('error', $ex);
 			}
 
-			return redirect()->back()->with('message', 'Update successful!');
+			return back()->with('message', 'Update successful!');
 		} else if (auth()->user()->level == 'Moderator') {
 			$user = User::findOrFail($user->id);
 			$hostels = Hostel::orderBy('allocation', 'ASC')->get();

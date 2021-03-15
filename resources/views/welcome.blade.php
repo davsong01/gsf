@@ -13,7 +13,7 @@
                     </div>
                     <div class="about-text">
                         <div >
-                            <img class="" src="{{ asset('frontend/img/banner.jpg') }}" alt="Image" style=" border-radius: 5%; display: block; margin-left: auto; margin-right: auto; width: 60%;"><br>
+                            <img class="" src="{{ asset('frontend/img/banner.jpeg') }}" alt="Image" style=" border-radius: 5%; display: block; margin-left: auto; margin-right: auto; width: 60%;"><br>
                         </div> 
                         <p>
                             {!! $setting->conference_overview!!}

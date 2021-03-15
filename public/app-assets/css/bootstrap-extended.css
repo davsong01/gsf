@@ -2187,8 +2187,8 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .badge-circle.badge-circle-lg {
-  height: 48px;
-  width: 48px;
+  height: 80px;
+  width: 80px;
 }
 
 /*    Nav, Navtabs and Navpills   */

@@ -19,7 +19,7 @@ An Alumni has just registered for the GSF National Conference, Please find detai
 
 You can also login to the portal to view and manage registrations
 
-@component('mail::button', ['url' => config('app.url') .'/myaccount'])
+@component('mail::button', ['url' => config('app.url') .'/account'])
 Login to portal here<br><br>
 @endcomponent
 
