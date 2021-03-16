@@ -19,7 +19,10 @@ class HomeController extends Controller
         $chapters = Chapter::orderBy('name')->get();
         $setting = Setting::first();
         $conference_year = Carbon::parse($setting->start_date)->year;
-        $alumnis_amount = ['new_alumni' => 20000, 'old_alumni' => 25000];
+        $alumnis_amount = [
+            'alumni_registration_fee' => $setting->alumni_registration_fee,
+            'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
+        ];
 
         return view('welcome', compact('chapters', 'setting', 'conference_year', 'alumnis_amount'));
     }

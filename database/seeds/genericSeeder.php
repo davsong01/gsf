@@ -19,11 +19,13 @@ class genericSeeder extends Seeder
     public function run()
     {
         $generalPassword = Hash::make('12345654321');
-        
+
         $settings = Setting::create([
             'registration_fee' => 2000,
             'official_email' => 'davedeloper@gmail.com',
             'alumni_fee' => 2500,
+            'alumni_registration_fee' => 2500,
+            'new_alumni_registration_fee' => 5500,
             'start_date' => now(),
             'end_date' => now(),
             'close_registration' => '2021-02-23 21:24:34',
@@ -81,7 +83,7 @@ class genericSeeder extends Seeder
             'name' => 'Foodstand2',
             'level' => 'Participant',
             'capacity' => 20,
-            
+
         ]);
 
          $food2 = Food::create([

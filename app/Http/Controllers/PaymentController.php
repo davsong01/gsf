@@ -74,12 +74,12 @@ class PaymentController extends Controller
         if(isset($type['type']) && $type['type'] == '3'){
 
             $this->validate($request, [
-                'alumni_type' => 'required|in:new_alumni,old_alumni'
+                'alumni_type' => 'required|in:alumni_registration_fee,new_alumni_registration_fee'
             ]);
 
             //check amount
-            if($request->amount < (Setting::select('alumni_fee')->first()->value('alumni_fee'))){
-                return back()->with('error', 'You cannot pay less than '. Setting::select('alumni_fee')->first()->value('alumni_fee') * 100);
+            if($request->amount < (Setting::select($request->alumni_type)->first()->value($request->alumni_type))){
+                return back()->with('error', 'You cannot pay less than '. Setting::select($request->alumni_type)->first()->value($request->alumni_type) * 100);
             }
 
             try{

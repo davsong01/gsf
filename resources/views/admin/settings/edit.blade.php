@@ -114,7 +114,7 @@
                                 <div class="col-sm-12 col-md-12">
                                     <label for="conference_overview">Conference Overview</label><small> You can use html tags here</small>
                                     <fieldset class="form-group position-relative has-icon-left">
-                                        <textarea class="form-control" id="conference_overview" rows="3" name="conference_overview" rows="10" cols="80">{!! old('conference_overview') ??$setting->conference_overview !!}</textarea>
+                                        <textarea class="form-control" id="conference_overview" rows="3" name="conference_overview" rows="10" cols="200">{!! old('conference_overview') ??$setting->conference_overview !!}</textarea>
                                         <div class="form-control-position">
                                            &#9745;
                                         </div>
