@@ -43,6 +43,8 @@ class PaymentController extends Controller
     public function redirectToGateway(Request $request)
 
     {
+
+        // dd($request->all());
         $setting = Setting::first();
 
         if($setting->close_registration < now()){
@@ -65,8 +67,6 @@ class PaymentController extends Controller
 
 			]);
 
-			
-
         $type = json_decode($request['metadata'], true);
 
         $existing_email = TempUser::whereEmail($request->email)->first();
@@ -74,8 +74,6 @@ class PaymentController extends Controller
 
 	
         if(!$existing_email){
-
-            
 
             //Create new details in temp users
 
@@ -93,14 +91,10 @@ class PaymentController extends Controller
 
                 'state' => $request->state ? $request->state : NULL,
 
-
-
             ]);
 
 
         }
-
-        
 
         //Validate individual registration
 
@@ -122,8 +116,6 @@ class PaymentController extends Controller
 
         if(isset($type['type']) && $type['type'] == '2'){
 
-            
-
             //check amount
 
             if($request->amount <> (Setting::select('registration_fee')->first()->value('registration_fee') * $request->participants * 100)){
@@ -140,17 +132,17 @@ class PaymentController extends Controller
 
         if(isset($type['type']) && $type['type'] == '3'){
 
-
+            $this->validate($request, [
+                'alumni_type' => 'required|in:new_alumni,old_alumni'
+            ]);
 
             //check amount
 
-            if($request->amount < (Setting::select('alumni_fee')->first()->value('alumni_fee'))){
+            if(($request->amount < (Setting::select('alumni_fee')->first()->value('alumni_fee')) || $request->amount < (Setting::select('new_alumni')->first()->value('new_alumni')))){
 
                 return back()->with('error', 'You cannot pay less than '. Setting::select('alumni_fee')->first()->value('alumni_fee') * 100);
 
             }
-
-
 
             try{
 
@@ -159,10 +151,8 @@ class PaymentController extends Controller
         }catch(\Exception $e) {
 
             return back()->with('error', 'Transaction token has expired or details not correct. Please refresh the page and try again');
-
-        }  
-
         }
+        
 
 
         try{
@@ -172,11 +162,9 @@ class PaymentController extends Controller
         }catch(\Exception $e) {
 
             return redirect(url('/#register'))->with('error',$e.'Transaction token has expired or details not correct. Please refresh the page and try again');
-
-        }        
-
+        }
     }
-
+    }
 
 
     public function handleGatewayCallback()
@@ -209,9 +197,6 @@ class PaymentController extends Controller
 
             $data['chapter'] = $participant->chapter;
 
-            
-
-
 
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '1'){
 
@@ -236,8 +221,6 @@ class PaymentController extends Controller
                 $data['level'] = 'Moderator';
 
                 $data['slot_filled'] = 1;
-
-             
 
             }
 
@@ -303,13 +286,9 @@ class PaymentController extends Controller
 
                 $data['type'] = $paymentDetails['data']['metadata']['type'] ;
 
-                
-
                 //send email to official email
 
                 Mail::to(Setting::select('official_email')->first()->value('official_email'))->send(new AdminMail($data));
-
-        
 
                 //delete temp user
 
@@ -330,8 +309,6 @@ class PaymentController extends Controller
             }
 
             // try{
-
-                    
 
             // Create new user
 
@@ -363,8 +340,6 @@ class PaymentController extends Controller
 
             ]);
 
-            
-
             $user->update([
 
                 'conference_number' =>'GSF-'.$ledge.'-'.$user->id,
@@ -378,16 +353,13 @@ class PaymentController extends Controller
                 $user->update([
 
                 'uploaded_by' => $user->id,
-
-            ]); 
-
+            ]);
             }
 
             // }catch (\Illuminate\Database\QueryException $ex) {
 
             //     return redirect(url('/#register'))->with('warning', $ex);
-
-            // }            
+            // }
 
 
 
@@ -395,13 +367,10 @@ class PaymentController extends Controller
 
             $data['chapter'] = isset($participant->campus->name) ? $participant->campus->name: '';
 
-         
-
             //delete temp user
 
             $participant->delete();
 
-            
 
 
 
@@ -409,13 +378,9 @@ class PaymentController extends Controller
 
             Mail::to($data['email'])->send(new WelcomeMail($data));
 
-           
-
             //send email to official email
 
             Mail::to(Setting::select('official_email')->first()->value('official_email'))->send(new AdminMail($data));
-
-       
 
             //include thankyou page
 
@@ -433,15 +398,11 @@ class PaymentController extends Controller
 
         }
 
-     
-
-    }     
+    }
 
 
 
     private function process($paymentDetails){
-
-        
 
     }
 
