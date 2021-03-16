@@ -18,7 +18,8 @@ class CreateSettingsTable extends Migration
             $table->integer('registration_fee')->default(0);
             $table->string('official_email');
             $table->integer('alumni_fee');
-            $table->boolean('new_alumni');
+            $table->integer('alumni_registration_fee');
+            $table->integer('new_alumni_registration_fee');
             $table->date('close_registration');
             $table->date('start_date');
             $table->date('end_date');

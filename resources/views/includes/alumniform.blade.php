@@ -28,10 +28,10 @@
 
                     <div class="control-group">
                         <label>Old alumni/New alumni?</label>
-                        <select name="alumn_type" class="form-control" onchange="document.querySelector('#alumni_amount').value = alumnis_amount[this.value]?alumnis_amount[this.value]:''" required>
+                        <select name="alumn_type" class="form-control select2" onchange="document.querySelector('#alumni_amount').value = alumnis_amount[this.value]?alumnis_amount[this.value]:''" required>
                             <option value="">Select alumni type</option>
-                            <option value="new_alumni">New Alumni</option>
-                            <option value="old_alumni">Old Alumni</option>
+                            <option value="new_alumni_registration_fee">New Alumni</option>
+                            <option value="alumni_registration_fee">Old Alumni</option>
                         </select>
                     </div>
 

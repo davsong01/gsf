@@ -21,16 +21,28 @@ class SettingController extends Controller
 
     public function update(Request $request, Setting $setting)
     {
+        $this->validate($request, [
+            'conference_theme' => 'required',
+            'registration_fee' => 'required|numeric',
+            'official_email' => 'required|email',
+            'alumni_fee' => 'required',
+            'alumni_registration_fee' => 'required|numeric',
+            'new_alumni_registration_fee' => 'required|numeric',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'close_registration' => 'required|date',
+            'conference_overview' => 'required'
+        ]);
 
         $setting->update($request->all());
-        
+
         return back()->with('message', 'Applicaion settings succesfully updated');
     }
 
     public function editProfile($id)
     {
         $user = User::findorFail($id);
-        
+
         return view('user.profile')->with('user', $user);
     }
 

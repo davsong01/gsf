@@ -8,6 +8,7 @@
 <div class="content-body">
 
 <section id="input-with-icons">
+    <script src="https://cdn.ckeditor.com/4.16.0/standard/ckeditor.js"></script>
     <div class="row match-height">
         <div class="col-12">
             <div class="card">
@@ -28,9 +29,9 @@
                                     <label for="conference_theme">Conference theme</label>
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <input type="text" class="form-control" name="conference_theme" value="{{ old('conference_theme') ?? $setting->conference_theme }}" id="conference_theme">
-                                        
+
                                         <div class="form-control-position">
-                                           &#8962; 
+                                           &#8962;
                                         </div>
                                     </fieldset>
                                 </div>
@@ -50,7 +51,7 @@
                                         <div class="form-control-position">
                                             &#128231;
                                         </div>
-                                       
+
                                     </fieldset>
                                 </div>
                                 <div class="col-sm-6 col-md-6">
@@ -63,10 +64,28 @@
                                     </fieldset>
                                 </div>
                                 <div class="col-sm-6 col-md-6">
+                                    <label for="alumni_registration_fee">Old Alumni Fee</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="number" class="form-control" name="alumni_registration_fee" value="{{ old('alumni_registration_fee') ?? $setting->alumni_registration_fee }}" id="alumni_registration_fee" required>
+                                        <div class="form-control-position">
+                                            &#8358;
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="new_alumni_registration_fee">New Alumni Fee</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="number" class="form-control" name="new_alumni_registration_fee" value="{{ old('new_alumni_registration_fee') ?? $setting->new_alumni_registration_fee }}" id="new_alumni_registration_fee" required>
+                                        <div class="form-control-position">
+                                            &#8358;
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
                                     <label for="start_date">Conference Start Date</label>
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <input type="date" class="form-control" name="start_date" value="{{ old('start_date') ?? $setting->start_date }}" id="start_date">
-                                       
+
                                        <div class="form-control-position">
                                             &#128197;
                                         </div>
@@ -81,7 +100,7 @@
                                         </div>
                                     </fieldset>
                                 </div>
-                                
+
                                 <div class="col-sm-6 col-md-6">
                                     <label for="close_registration">Registration Close date</label>
                                     <fieldset class="form-group position-relative has-icon-left">
@@ -91,32 +110,34 @@
                                         </div>
                                     </fieldset>
                                 </div>
-                                
+
                                 <div class="col-sm-12 col-md-12">
                                     <label for="conference_overview">Conference Overview</label><small> You can use html tags here</small>
                                     <fieldset class="form-group position-relative has-icon-left">
-                                        <textarea class="form-control" id="conference_overview" rows="3" name="conference_overview">{!! old('conference_overview') ??$setting->conference_overview !!}</textarea>
+                                        <textarea class="form-control" id="conference_overview" rows="3" name="conference_overview" rows="10" cols="200">{!! old('conference_overview') ??$setting->conference_overview !!}</textarea>
                                         <div class="form-control-position">
                                            &#9745;
                                         </div>
                                     </fieldset>
                                 </div>
-                                
-                                
+
+
                             </div>
                             <button class="btn btn-primary" style="width:100%; margin-top:10px" type="submit">Save</button>
                         </form>
                         <br>
                         <div class="row" style="background-color:black !important; padding: 20px;">
-                            <h2 style="color:red">Caution: use the BUTTON below only if you know what you are doing as this will clear all data from the database!</h2> 
+                            <h2 style="color:red">Caution: use the BUTTON below only if you know what you are doing as this will clear all data from the database!</h2>
                                 <a  onclick="return confirm('This application will reset and everything will be deleted?');" href="{{ route('database.clear') }}" class="btn btn-danger mt-1"><i class="fa fa-warning"></i> Reset application Database</a>
                          </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
     </div>
+     <script>
+     CKEDITOR.replace( 'conference_overview' );</script>
     <script src="https://cdn.quilljs.com/1.0.5/quill.min.js" type="text/javascript"></script>
     <script>
 
@@ -129,7 +150,7 @@
         function createEditor(selector)
         {
             let quill = new Quill(selector, { });
-            
+
             quill.on("editor-change", (eventName, ...args) =>
             {
                 currentEditor = quill;
@@ -169,12 +190,12 @@
             }
             else
             {
-                currentEditor.format("bold", true);                
+                currentEditor.format("bold", true);
             }
         }
-        
+
     </script>
-	
+
 </section>
     {{-- <section id="basic-input">
         <div class="row">
@@ -205,8 +226,8 @@
                                     <input type="text" class="form-control" name="settingname" id="settingname" value="{{ $setting->name }}" readonly required>
                                 </fieldset>
 
-                               
-                               
+
+
                                 <button class="btn btn-primary" style="width:100%" type="submit">Submit</button>
                                 </form>
                             </div>
@@ -216,7 +237,7 @@
             </div>
         </div>
     </section> --}}
-    <!-- Basic Inputs end -->          
+    <!-- Basic Inputs end -->
 </div>
 @endsection
 @endsection
