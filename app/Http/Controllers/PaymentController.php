@@ -44,7 +44,7 @@ class PaymentController extends Controller
 
     {
 
-        // dd($request->all());
+       
         $setting = Setting::first();
 
         if($setting->close_registration < now()){
@@ -53,7 +53,7 @@ class PaymentController extends Controller
 
         }
 
-
+       
 
 			$this->validate($request, [
 
@@ -71,7 +71,7 @@ class PaymentController extends Controller
 
         $existing_email = TempUser::whereEmail($request->email)->first();
 
-
+       
 	
         if(!$existing_email){
 
@@ -99,7 +99,7 @@ class PaymentController extends Controller
         //Validate individual registration
 
         if(isset($type['type']) && $type['type'] == '1'){
-
+           
             //check amount
 
             if($request->amount <> (Setting::select('registration_fee')->first()->value('registration_fee') * 100)){
@@ -150,8 +150,6 @@ class PaymentController extends Controller
             return back()->with('error', 'Transaction token has expired or details not correct. Please refresh the page and try again');
         }
         
-
-
         try{
 
             return Paystack::getAuthorizationUrl()->redirectNow();
@@ -208,7 +206,6 @@ class PaymentController extends Controller
             }
 
 
-
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '2'){
 
                 $data['slot'] = $data['amount'] / Setting::select('registration_fee')->first()->value('registration_fee');
@@ -220,7 +217,6 @@ class PaymentController extends Controller
                 $data['slot_filled'] = 1;
 
             }
-
 
 
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '3'){
@@ -235,8 +231,6 @@ class PaymentController extends Controller
 
             }
 
-
-
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '4'){
 
                 $data['slot'] = 1;
@@ -250,59 +244,36 @@ class PaymentController extends Controller
             }
 
 
-
             //Donations
-
             if(isset($paymentDetails['data']['metadata']['type']) && $paymentDetails['data']['metadata']['type'] == '5'){
 
-
-
                 //copy details to donations table
-
                 $donation = Donation::Updateorcreate([
-
                     'name' => $data['name'],
-
                     'email' => $data['email'],
-
                     'name' => $data['name'],
-
                     'phone' => $data['phone'],
-
                     'amount' => $data['amount'],
-
                     'amount' => $data['amount'],
-
                     'state' => $participant->state,
-
                 ]);
 
 
-
                 $data['chapter'] = 'N/A';
-
                 $data['type'] = $paymentDetails['data']['metadata']['type'] ;
 
                 //send email to official email
-
                 Mail::to(Setting::select('official_email')->first()->value('official_email'))->send(new AdminMail($data));
 
                 //delete temp user
-
                 $participant->delete();
 
-
-
                 //redirect to thankyou page
-
                 $setting = Setting::first();
 
                 $conference_year = Carbon::parse($setting->start_date)->year;
 
                 return view('donationthankyou', compact('data', 'conference_year'));
-
-
-
             }
 
             // try{
@@ -343,8 +314,6 @@ class PaymentController extends Controller
 
             ]);
 
-
-
             if($user->level == 'Moderator'){
 
                 $user->update([
@@ -357,9 +326,9 @@ class PaymentController extends Controller
 
             //     return redirect(url('/#register'))->with('warning', $ex);
             // }
-
-
-
+            
+            
+            
             $data['conference_number'] = $user->conference_number;
 
             $data['chapter'] = isset($participant->campus->name) ? $participant->campus->name: '';
