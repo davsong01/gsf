@@ -31,12 +31,12 @@
 
                     <div class="control-group">
                         <label>Old alumni/New alumni?</label>
-                        <select name="alumni_type" class="form-control select2 @error('alumni_type')is-invalid @enderror"
+                        <select name="alumni_type" class="form-control select2"
                             onchange="document.querySelector('#alumni_amount').value = alumnis_amount[this.value]?alumnis_amount[this.value]*100:''"
                             required>
                             <option value="">Select alumni type</option>
-                            <option value="new_alumni_registration_fee">New Alumni</option>
-                            <option value="alumni_registration_fee">Old Alumni</option>
+                            <option value="new_alumni_registration_fee">Fresh Graduate/Alumni (&#8358;{{ $setting->new_alumni_registration_fee }}) </option>
+                            <option value="alumni_registration_fee">Old Alumni (&#8358;{{ $setting->alumni_registration_fee }})</option>
                         </select>
                         @error('alumni_type')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -47,7 +47,8 @@
                     <br>
                     {{-- <input type="hidden" name="orderID" value="345"> --}}
                     <div class="control-group">
-                        <input class="form-control" type="text" name="amount" id="alumni_amount"
+                        
+                        <input class="form-control" type="hidden" name="amount" id="alumni_amount"
                             value="{{ $setting->alumni_fee * 100 }}" readonly required> {{-- required in kobo --}}
                     </div>
                     <input type="hidden" name="quantity" value="1">

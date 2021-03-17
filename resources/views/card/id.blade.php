@@ -71,7 +71,16 @@
 										<div class="photo" >
 											<h2 class="alias"  style="font-family:initial; margin-top: 5px; margin-bottom: 5px; font-size:15px">{{ $setting->conference_theme }}</h2>
 											<h1>@if($user->level == 'Participant')PARTICIPANT
-												@elseif($user->level == 'Alumni')ALUMNUS
+												@elseif($user->level == 'Alumni')ALUMNUS 
+												
+												@if ($user->amount_paid == $setting->new_alumni_registration_fee) <h4><i class="fa fa-id-badge" aria-hidden="true"></i>
+													
+												</h4> 
+												@elseif ($user->amount_paid == $setting->alumni_registration_fee) <h4><i class="fa fa-id-badge" aria-hidden="true"></i>
+													<i class="fa fa-id-badge" aria-hidden="true"></i></i>
+													
+												</h4> 
+												@endif
 												@elseif($user->level == 'Moderator')PARTICIPANT
 												@elseif($user->level == 'Official' || $user->level == 'Nec' || $user->level == 'Official')OFFICIAL
 												@elseif($user->level == 'Choir')CHOIR

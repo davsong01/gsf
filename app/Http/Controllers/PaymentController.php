@@ -95,14 +95,15 @@ class PaymentController extends Controller
 				'alumni_type' => 'required|in:alumni_registration_fee,new_alumni_registration_fee'
 			]);
 			//check amount
-			if ($request->amount != (Setting::select($request->alumni_type)->first()->value($request->alumni_type) * 100)) {
-				return back()->with('error', 'You cannot pay less than ' . Setting::select($request->alumni_type)->first()->value($request->alumni_type) * 100);
+           
+			if ($request->amount != (Setting::select($request->alumni_type)->first()->value($request->alumni_type) * 100 )) {
+				return back()->with('error', 'You cannot pay less than ' . Setting::select($request->alumni_type)->first()->value($request->alumni_type));
 			}
 
 			try {
 				return Paystack::getAuthorizationUrl()->redirectNow();
 			} catch (\Exception $e) {
-				return back()->with('error', 'Transaction token has expired or details not correct. Please refresh the page and try again');
+				return redirect(url('/#register'))->with('error', 'Transaction token has expired or details not correct. Please refresh the page and try again');
 			}
 		}
 

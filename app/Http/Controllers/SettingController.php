@@ -25,7 +25,6 @@ class SettingController extends Controller
             'conference_theme' => 'required',
             'registration_fee' => 'required|numeric',
             'official_email' => 'required|email',
-            'alumni_fee' => 'required',
             'alumni_registration_fee' => 'required|numeric',
             'new_alumni_registration_fee' => 'required|numeric',
             'start_date' => 'required|date',

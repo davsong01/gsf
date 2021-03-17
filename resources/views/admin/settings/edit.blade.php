@@ -25,6 +25,8 @@
                                 <div class="col-12">
                                     <p>You can set Application variables here</p>
                                 </div>
+                            </div>
+                            <div class="row">
                                 <div class="col-sm-6 col-md-6">
                                     <label for="conference_theme">Conference theme</label>
                                     <fieldset class="form-group position-relative has-icon-left">
@@ -55,24 +57,6 @@
                                     </fieldset>
                                 </div>
                                 <div class="col-sm-6 col-md-6">
-                                    <label for="alumni_fee">Alumni Fee</label>
-                                    <fieldset class="form-group position-relative has-icon-left">
-                                        <input type="number" class="form-control" name="alumni_fee" value="{{ old('alumni_fee') ?? $setting->alumni_fee }}" id="alumni_fee">
-                                        <div class="form-control-position">
-                                            &#8358;
-                                        </div>
-                                    </fieldset>
-                                </div>
-                                <div class="col-sm-6 col-md-6">
-                                    <label for="alumni_registration_fee">Old Alumni Fee</label>
-                                    <fieldset class="form-group position-relative has-icon-left">
-                                        <input type="number" class="form-control" name="alumni_registration_fee" value="{{ old('alumni_registration_fee') ?? $setting->alumni_registration_fee }}" id="alumni_registration_fee" required>
-                                        <div class="form-control-position">
-                                            &#8358;
-                                        </div>
-                                    </fieldset>
-                                </div>
-                                <div class="col-sm-6 col-md-6">
                                     <label for="new_alumni_registration_fee">New Alumni Fee</label>
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <input type="number" class="form-control" name="new_alumni_registration_fee" value="{{ old('new_alumni_registration_fee') ?? $setting->new_alumni_registration_fee }}" id="new_alumni_registration_fee" required>
@@ -91,6 +75,17 @@
                                         </div>
                                     </fieldset>
                                 </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="alumni_registration_fee">Old Alumni Fee</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="number" class="form-control" name="alumni_registration_fee" value="{{ old('alumni_registration_fee') ?? $setting->alumni_registration_fee }}" id="alumni_registration_fee" required>
+                                        <div class="form-control-position">
+                                            &#8358;
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                
+                               
                                  <div class="col-sm-6 col-md-6">
                                     <label for="end_date">Conference End Date</label>
                                     <fieldset class="form-group position-relative has-icon-left">

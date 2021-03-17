@@ -41,8 +41,9 @@
 										<tr>
 											<td>{{ $count }}</td>
 											<td>{{ $participant->conference_number }}</td>
-											<td>@if($participant->status == 'Complete'))
-												<i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small> @else
+											<td>@if($participant->registration_status == 'Complete')
+												<i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small> 
+												@else
 												<i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Pending</small>
 												@endif
 											</td>
