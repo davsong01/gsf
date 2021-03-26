@@ -639,7 +639,8 @@ class UserController extends Controller
 			'name' => 'required',
 			'phone' => 'required',
 			'sex' => 'in:Male,Female',
-			'passport' => 'nullable|max:200'
+			'passport' => 'nullable|max:200',
+			'level' => 'required'
 		]);
 
 		if ($request->has('passport')) {
@@ -704,6 +705,7 @@ class UserController extends Controller
 				$user->email = $request->email;
 				$user->phone = $request->phone;
 				$user->sex = $request->sex;
+				$user->level = $request->level;
 				$user->chapter = $request->chapter;
 				$user->payment_type = $request->payment_type;
 				$user->transid = $request->transid;
@@ -735,6 +737,7 @@ class UserController extends Controller
 					$request->level ?: $user->level, // the user might be changing levels 
 					$request->sex ?: $user->sex, //the user might be changing gender
 					$hostels, // use the same collection for efficiency
+					
 					$request
 				);
 			} else if ($user->hostel_id) { // user is set but is updating something[hostel, gender, level]

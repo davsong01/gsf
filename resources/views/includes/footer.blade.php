@@ -1,16 +1,4 @@
-{{-- <div class="footer-copyright-area">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="footer-copy-right">
-                    <p>Copyright &#169; {{  date('Y') }}. All rights reserved.<a href="#">Built by H. Pierson
-	Associates I.T. Team</a>.</p>
-{{-- Build Credit: David Oghi, Abraham Ajiboye and Kehinde S. --}}
-{{-- </div> --}}
-{{-- </div> --}}
-{{-- </div> --}}
-{{-- </div> --}}
-{{-- </div> --}}
+
 <footer class="footer footer-static footer-light">
 	<p class="clearfix mb-0"><span class="float-left d-inline-block"></span><span
 			class="float-right d-sm-inline-block d-none">&copy; {{ date('Y') }} GSF | Built by<a class="text-uppercase"
@@ -38,9 +26,7 @@
 <script src="{{ asset('app-assets/vendors/js/tables/datatable/buttons.bootstrap.min.js') }}"></script>
 <script src="{{ asset('app-assets/vendors/js/tables/datatable/pdfmake.min.js') }}"></script>
 <script src="{{ asset('app-assets/vendors/js/tables/datatable/vfs_fonts.js') }}"></script>
-{{-- <script src="{{ asset('app-assets/vendors/js/editors/quill/katex.min.js') }}"></script>
-<script src="{{ asset('app-assets/vendors/js/editors/quill/highlight.min.js') }}"></script>
-<script src="{{ asset('app-assets/vendors/js/editors/quill/quill.min.js') }}"></script> --}}
+
 <script src="{{ asset('app-assets/vendors/js/extensions/jquery.steps.min.js') }}"></script>
 <script src="{{ asset('app-assets/vendors/js/forms/validation/jquery.validate.min.js') }}"></script>
 

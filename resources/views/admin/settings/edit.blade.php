@@ -192,46 +192,6 @@
     </script>
 
 </section>
-    {{-- <section id="basic-input">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4 class="card-title">Settings</h4>
-                        @include('includes.alerts')
-                    </div>
-                    <div class="card-content">
-                        <div class="card-body">
-                            <form action="{{ route('settings.update', $setting->id) }}" method="POST">
-                            @csrf
-                            @method('PATCH')
-                            <div class="col-md-12 col-sm-12">
-                                <fieldset class="form-group">
-                                    <label for="name">Value of Text Posts</label>
-                                    <input type="number" class="form-control" id="textpostvalue" name="textpostvalue" value="{{ old('textpostvalue') ?? $setting->text_post_value }}" placeholder="Enter name">
-                                </fieldset>
-
-                                <fieldset class="form-group">
-                                    <label for="name">Value of Image Posts</label>
-                                    <input type="number" class="form-control" id="textpostvalue" name="textpostvalue" value="{{ old('textpostvalue') ?? $setting->text_post_value }}" placeholder="Enter name">
-                                </fieldset>
-
-                                <fieldset class="form-group">
-                                    <label for="settingname">settingname</label>
-                                    <input type="text" class="form-control" name="settingname" id="settingname" value="{{ $setting->name }}" readonly required>
-                                </fieldset>
-
-
-
-                                <button class="btn btn-primary" style="width:100%" type="submit">Submit</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section> --}}
     <!-- Basic Inputs end -->
 </div>
 @endsection

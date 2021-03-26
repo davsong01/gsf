@@ -84,6 +84,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::post('/users/import', 'UserController@import')->name('users.import');
     });
     Route::resource('users', 'UserController');
+    Route::resource('tempusers', 'TempUserController');
     Route::get('users/delete/{id}', 'UserController@destroy')->name('users.delete');
     Route::get('trashed/users', 'UserController@trashed')->name('users.trashed');
     Route::get('restore/users', 'UserController@trashed')->name('users.restore');

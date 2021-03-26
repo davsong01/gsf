@@ -14,6 +14,7 @@ class TempUser extends Model
      public function campus(){
         return $this->belongsTo(Chapter::class, 'chapter');
     }
+    
 }
 
 

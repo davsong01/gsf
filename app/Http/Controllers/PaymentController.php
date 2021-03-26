@@ -82,7 +82,10 @@ class PaymentController extends Controller
 
 		//Validate Fellowship registration
 		if (isset($type['type']) && $type['type'] == '2') {
-
+			
+			if($request->participants < 2){
+				return redirect(url('/#register'))->with('error', 'You can only register minimum of 2 participants as a fellowship, kindly register as an individual');
+			}
 			//check amount
 			if ($request->amount <> (Setting::select('registration_fee')->first()->value('registration_fee') * $request->participants * 100)) {
 				return redirect(url('/#register'))->with('error', 'Invalid amount');

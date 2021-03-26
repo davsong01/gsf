@@ -6,7 +6,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="footer-contact">
-                                    <p style="text-align:center">If you are having challenges registering, whatsapp: <b> 08180010243</b> for assistance/guidance<br>
+                                    <p style="text-align:center">If you are having challenges registering, whatsapp: <b> 08025759799</b> for assistance/guidance<br>
                                          <i class="fa fa-envelope"></i>conference@gsfnational.org</p>
                                     <div style="text-align:center">
                                         <a href="#" style="color:white"><i class="fab fa-linkedin-in"></i></a>
