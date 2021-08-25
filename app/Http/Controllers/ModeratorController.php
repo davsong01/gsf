@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\User;
+use App\Chapter;
 use App\Setting;
 use App\Moderator;
 use Illuminate\Http\Request;
@@ -62,40 +63,44 @@ class ModeratorController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function edit($id)
     {
         if(auth()->user()->level == 'Admin'){
 
             $user = User::findorFail($id);
-
-            return view('admin.moderator.edit', compact('user'));
+            $chapters = Chapter::orderBy('name')->get();
+            
+            return view('admin.moderator.edit', compact('user', 'chapters'));
        }
        return abort(404);
     }
 
     public function update(Request $request, Moderator $moderator)
     {
-       
+      
         if($request->amount_paid / Setting::select('registration_fee')->first()->value('registration_fee') <> $request->slot){
             return back ()->with('error', 'Amount paid must correspond with number of slot for this moderator!');
         }
          //handle password
         if($request['password']){
-            $request['password'] = Hash::make($request['password']);
-        }else $request['password'] = $moderator->password;
+            $request->password = Hash::make($request['password']);
+        }else $request->password = $moderator->password;
 
-        try{
-            $moderator->update($request->all());
-        }catch (\Illuminate\Database\QueryException $ex) {
-                $error = $ex->getMessage();        
-                return back()->with('error', $ex);
-            }
+        // dd($request->all());
+            $moderator->name = $request->name;
+            $moderator->sex = $request->sex;
+            $moderator->email = $request->email;
+            $moderator->phone = $request->phone;
+            $moderator->chapter = $request->chapter;
+            $moderator->amount_paid = $request->amount_paid;
+            $moderator->slot = $request->slot;
+            $moderator->payment_type = $request->payment_type;
+            $moderator->transid = $request->transid;
+            $moderator->password = 
+
+            $moderator->save();
+            
 
         return back()->with('message', 'Update successful!');
     }

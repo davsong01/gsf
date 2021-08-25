@@ -345,7 +345,7 @@ pre code {
 label {
   color: #4d91ea;
   font-size: 0.8rem;
-  text-transform: uppercase;
+  text-transform: capitalize;
   font-weight: 500;
 }
 

@@ -1,0 +1,82 @@
+@extends('layouts.stakeholderdashboard')
+@section('title', 'Reports')
+@section('active')
+<li class="breadcrumb-item">Reports</li>
+@endsection
+@section('content')
+<div class="content-body">
+    <!-- Zero configuration table -->
+    <section id="basic-datatable">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">My Reports</h4>
+                        @if(Auth::guard('stakeholder')->user()->role == 'President')
+                        <a href="{{ route('reports.create') }}" class="btn btn-primary mt-1">Add this month's report <strong></strong></a>
+                        @endif
+                        @include('includes.alerts')
+                    </div>
+                    <div class="card-content">
+                        <div class="card-body card-dashboard">
+                            <div class="table-responsive">
+                                <table class="table zero-configuration">
+                                    <thead>
+                                        <tr>
+                                            <th>S/N</th>
+                                            @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' || Auth::guard('stakeholder')->user()->role == 'Secretariat')
+                                            <th>Chapter</th>
+                                            @endif
+                                            <th>Month/Year</th>
+                                            <th>Approval Status</th>
+                                            <th>Academic Session</th>
+                                            <th>Created on</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($reports as $report)
+                                        <tr>
+                                            <td>{{ $count ++}}</td>
+                                            @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' || Auth::guard('stakeholder')->user()->role == 'Secretariat')
+                                            <td>{{ $report->chapter->name }}</td>
+                                            @endif
+                                            <td>{{ date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year }}'s report</td>
+                                            <td>
+                                                <i class="{{ ($report->zone_status == 0) ? 'bx bxs-circle danger font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>Zone Approval</small><br>
+                                                <i class="{{ ($report->field_status == 0) ? 'bx bxs-circle danger font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>Field Approval</small><br>
+                                                <i class="{{ ($report->status_complete == 0) ? 'bx bxs-circle danger font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>Report Complete</small>
+                                            </td>
+                                            <td>{{ $report->session }}</td>
+                                            
+                                            <td>{{ $report->created_at->format('d-m-Y:h-m-s') }}</td>
+                                            
+                                            <td style="padding-left: 5px;padding-right: 5px;">
+                                                <a class="actions" data-toggle="tooltip" title="View Report" href="{{ route('reports.show', $report->id) }}"> <i class="fa fa-eye actions"></i></
+                                                </a>
+                                                @if((Auth::guard('stakeholder')->user()->role == 'Field Pastor' && $report->field_status == 0 ) || Auth::guard('stakeholder')->user()->role == 'Secretariat' || (Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'  && $report->zone_status == 0))
+
+                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Edit/Approve Report" href="{{ route('reports.edit', $report->id) }}"> <i class="fa fa-pencil"></i></
+                                                </a>
+                                                @endif
+                                                @if(Auth::guard('stakeholder')->user()->role == 'Secretariat')
+                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Report" href="{{ route('reports.delete', $report->id) }}"> <i class="fa fa-trash"></i></
+                                                </a>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                      
+                                        @endforeach
+                                    </tbody>
+                                    
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!--/ Zero configuration table -->         
+</div>
+@endsection

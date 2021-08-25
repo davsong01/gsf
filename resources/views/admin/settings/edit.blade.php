@@ -57,6 +57,16 @@
                                     </fieldset>
                                 </div>
                                 <div class="col-sm-6 col-md-6">
+                                    <label for="official_reports_email">Official Reports Email</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="text" class="form-control" name="official_reports_email" value="{{ old('official_email') ?? $setting->official_email }}" id="official_reports_email">
+                                        <div class="form-control-position">
+                                            &#128231;
+                                        </div>
+
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
                                     <label for="new_alumni_registration_fee">New Alumni Fee</label>
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <input type="number" class="form-control" name="new_alumni_registration_fee" value="{{ old('new_alumni_registration_fee') ?? $setting->new_alumni_registration_fee }}" id="new_alumni_registration_fee" required>

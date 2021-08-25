@@ -19,7 +19,7 @@
                                     <div class="card-header pb-1">
                                         <div class="card-title mb-2">
                                             <div style="text-align: center;"><img style="width: 50%;"
-                                                        src="{{ asset('app-assets/images/logo/logo.png') }}">
+                                                        src="{{ asset('frontend/img/logo.png') }}">
                                                 </div>
                                             <h5 class="text-center mb-2 mt-2">Reset your Password</h5>
                                         </div>
@@ -53,7 +53,7 @@
                             </div>
                             <!-- right section image -->
                             <div class="col-md-6 d-md-block d-none text-center align-self-center p-3">
-                                <img class="img-fluid" src="{{ asset('app-assets/images/pages/reset-password.png') }}" alt="branding logo">
+                                <img class="img-fluid" src="{{ asset('frontend/img/logo.png') }}" alt="branding logo">
                             </div>
                         </div>
                     </div>

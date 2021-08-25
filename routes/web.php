@@ -4,6 +4,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
+
+Route::get('/token', 'ChapterController@generate')->name('token');
+
+Route::get('/campus', 'ChapterController@campusUpdate')->name('campus.update');
+Route::post('/campus', 'ChapterController@campusView')->name('campus.view');
+Route::post('/campus/{id}', 'ChapterController@campussave')->name('campus.save');
 Auth::routes();
 Auth::routes(['verify' => false, 'register' => false] );
 
@@ -15,13 +21,32 @@ Route::get('/clear', function () {
     echo "<p>Fully optimized.*</p>";
 });
 
+Route::get('/runcron', 'HomeController@cron');
 
-Route::get('/tac', function () {
-   return view('tac');
-})->name('tac');
+Route::get('/', function(){
+    echo('We are working on something cool here');
+});
 
-Route::get('/test', 'HomeController@temp')->name('temp');
-Route::get('/', 'HomeController@index')->name('index');
+//Stakeholder Account
+Route::get('stakeholders/login', 'StakeholderLoginController@showStakeholderLoginForm')->name('stakeholder.login');
+Route::post('stakeholders/login', 'StakeholderLoginController@stakeHolderLogin')->name('stakeholder.login');
+Route::get('/stakeholderdashboard', 'StakeholderAccountController@index')->name('stakeholder.dashboard');
+Route::get('/stakeholderprofile', 'StakeholderAccountController@profile')->name('stakeholder.profile');
+Route::post('/stakeholderprofile', 'StakeholderAccountController@saveProfile')->name('stakeholder.saveprofile');
+Route::get('/stakeholderlogout', 'StakeholderLoginController@logout')->name('stakeholder.logout');
+
+//Logged in stakeholder Account
+
+Route::middleware(['stakeholder'])->group(function(){
+    Route::resource('reports', 'ReportsController');
+    Route::get('deletereports/{id}', 'ReportsController@delete')->name('reports.delete');
+    Route::resource('stakeholderpayment', 'StakeholderPaymentController');
+    Route::get('stakeholderpaymentdelete/{id}', 'StakeholderPaymentController@delete')->name('stakeholderpayment.delete');
+    Route::get('downloadpop/{id}', 'StakeholderPaymentController@downloadPop')->name('pop.download');
+    
+});
+
+Route::get('/registration', 'HomeController@index')->name('index');
 Route::get('/nec/registration/portal/pay', 'HomeController@necRegistration')->name('nec.registration');
 Route::post('/pay', 'PaymentController@redirectToGateway')->name('pay');
 Route::get('/payment/callback', 'PaymentController@handleGatewayCallback');
@@ -82,18 +107,33 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.users.import.index');
         Route::get('/users/export', 'UserController@usersExport')->name('users.export');
         Route::post('/users/import', 'UserController@import')->name('users.import');
+        Route::resource('staff', 'StakeholderController');
+        Route::get('staffs/delete/{id}', 'StakeholderController@destroy')->name('staff.delete');
+
+        
     });
     Route::resource('users', 'UserController');
     Route::resource('tempusers', 'TempUserController');
     Route::get('users/delete/{id}', 'UserController@destroy')->name('users.delete');
     Route::get('trashed/users', 'UserController@trashed')->name('users.trashed');
-    Route::get('restore/users', 'UserController@trashed')->name('users.restore');
+    Route::get('restore/users/{id}', 'UserController@restore')->name('users.restore');
 
     Route::get('medical', 'UserController@getMedical')->name('user.medical');
     Route::get('choir', 'UserController@getChoir')->name('user.choir');
     Route::get('choir/{id}/edit', 'UserController@editChoir')->name('choir.edit');
     Route::get('medic/{id}/edit', 'UserController@editMedic')->name('medic.edit');
-    Route::get('official', 'UserController@getOfficial')->name('user.official');
+    Route::resource('officials', 'OfficialController');
+    Route::resource('chapters', 'ChapterController');
+    Route::get('newtoken/{id}', 'ChapterController@generateNewToken')->name('chapter.newtoken');
+    Route::resource('fields', 'FieldController');
+    Route::get('fields/delete/{id}', 'FieldController@destroy')->name('fields.delete');
+    Route::resource('zones', 'ZoneController');
+    Route::get('zones/delete/{id}', 'ZoneController@destroy')->name('zones.delete');
+    Route::get('chapters/delete/{chapter}', 'ChapterController@destroy')->name('chapters.delete');
+    Route::get('/chapter/exporting', 'ChapterController@chaptersExport')->name('chapters.export');
+    Route::get('officials/delete/{official}', 'OfficialController@delete')->name('officials.delete');
+    Route::get('moderators/delete/{id}', 'ModeratorController@destroy')->name('moderators.delete');
+
     Route::get('nec', 'UserController@getNec')->name('user.nec');
     Route::get('nec/{id}/edit', 'UserController@editNec')->name('nec.edit');
     Route::get('nec/{id}/edit', 'UserController@editOfficial')->name('official.edit');
@@ -101,7 +141,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/switch/{id}', 'SwitchUserController@index')->name('switchuser');
     Route::get('/stopswitching', 'SwitchUserController@stopSwitching')->name('stop.switchuser');
     Route::resource('moderators', 'ModeratorController');
-    Route::get('moderators/delete/{id}', 'ModeratorController@destroy')->name('moderators.delete');
+  
 
     Route::resource('alumni', 'AlumniController');
     Route::get('alumnis/delete/{id}', 'AlumniController@destroy')->name('alumni.delete');
@@ -141,6 +181,12 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     // Download sample imports
     Route::get('users-export/{type}', 'UserController@getAdminParticipantSample')->name('usersexport.sample');
-  
+    
+});
+
+ //Get signature Image
+ Route::get('stakeholdersignature/{image}', function($image){
+    $realpath = base_path() . '/uploads/signatures'. '/' .$image;
+        return response()->download($realpath);
 });
 

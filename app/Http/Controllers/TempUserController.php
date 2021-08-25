@@ -20,10 +20,16 @@ class TempUserController extends Controller
         return abort(404);
 	}
 
-    public function destroy($id){
-        $user = TempUser::find($id);
-        $user->force();
+    public function show(Request $request, $id){
+      
+        $tempusers = TempUser::find($id);
+
+        $tempusers->delete();
 
         return back()->with('message', 'Delete succesful');
+    }
+
+    public function destroy($id){
+       
     }
 }

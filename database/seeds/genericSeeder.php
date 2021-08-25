@@ -23,8 +23,8 @@ class genericSeeder extends Seeder
         $settings = Setting::create([
             'registration_fee' => 2000,
             'official_email' => 'davedeloper@gmail.com',
-            'alumni_fee' => 1000,
-            'new_alumni' => 2000,
+            'new_alumni_registration_fee' => 1000,
+            'alumni_registration_fee' => 2000,
             'start_date' => now(),
             'end_date' => now(),
             'close_registration' => '2021-02-23 21:24:34',
@@ -96,7 +96,6 @@ class genericSeeder extends Seeder
         ];
 
         for($a = 0; $a < count($campuses); $a++){
-            // print_r($campuses[$a]);
            Chapter::create([
                 'name' => $campuses[$a],
             ]);

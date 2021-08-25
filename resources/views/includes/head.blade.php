@@ -71,6 +71,9 @@
 			width: 100%;
 			pointer-events: none;
 		}
+		.sections{
+			color:black;
+		}
 
 		.vertical-align-center {
 			/* To center vertically */

@@ -48,6 +48,7 @@ class AccountController extends Controller
 
 	public function index()
 	{
+		
 		$chapters = Chapter::all();
 
 		if (auth()->user()->level == 'Admin') {

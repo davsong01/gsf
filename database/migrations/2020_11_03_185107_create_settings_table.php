@@ -17,6 +17,7 @@ class CreateSettingsTable extends Migration
             $table->bigIncrements('id');
             $table->integer('registration_fee')->default(0);
             $table->string('official_email');
+            $table->string('official_reports_email');
             $table->integer('new_alumni_registration_fee');
             $table->integer('alumni_registration_fee');
             $table->date('close_registration');

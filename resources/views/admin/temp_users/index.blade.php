@@ -22,12 +22,13 @@
                                 <table class="table zero-configuration">
                                     <thead>
                                         <tr>
+                                            <th>S/N</th>
                                             <th>Name</th>
                                             <th>Email</th>
                                             <th>Phone</th>
                                             <th>Type</th>
                                             <th>Chapter</th>
-                                            <th>Type</th>
+
                                             <th>Date</th>
                                             <th>Actions</th>
                                         </tr>

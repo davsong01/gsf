@@ -40,7 +40,7 @@
                                     <tbody>
                                         @foreach($participants as $participant)
                                         <tr>
-                                            <td>{{ $count }}</td>
+                                            <td>{{ $count++ }}</td>
                                             <td>{{ $participant->name }}</td>
                                             <td>{{ $participant->email }}</td>
                                             <td>{{ $participant->chapter }}</td>

@@ -84,12 +84,13 @@
                                         <option value="Alumni" {{ $user->level == 'Alumni' ? 'selected' : ''}}>Alumni</option>
                                         <option value="Choir" {{ $user->level == 'Choir' ? 'selected' : ''}}>Choir</option>
                                         <option value="Medical" {{ $user->level == 'Medical' ? 'selected' : ''}}>Medical</option>
-                                    <option value="Official" {{ $user->level== 'Official' ? 'selected' : ''}}>Official</option>
+                        
                                     <option value="Nec" {{ $user->level== 'Nec' ? 'selected' : ''}}>Nec</option>
                                     
                                 </select>
                             </fieldset>
 
+                            
                             <fieldset class="form-group @error('passport')is-invalid @enderror">
                                 <label for="passport">Change Passport</label>
                                 <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">	

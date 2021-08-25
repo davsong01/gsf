@@ -1,5 +1,7 @@
 <?php
 
+use App\Stakeholder;
+
 return [
 
     /*
@@ -41,6 +43,12 @@ return [
             'provider' => 'users',
         ],
 
+        'stakeholder' => [
+            'driver' => 'session',
+            'provider' => 'stakeholders',
+        ],
+
+
         'api' => [
             'driver' => 'token',
             'provider' => 'users',
@@ -71,6 +79,10 @@ return [
             'model' => App\User::class,
         ],
 
+        'stakeholders' => [
+            'driver' => 'eloquent',
+            'model' => App\Stakeholder::class,
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',

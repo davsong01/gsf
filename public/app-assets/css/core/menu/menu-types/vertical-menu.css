@@ -34,6 +34,7 @@ body.vertical-layout.vertical-menu-modern .main-menu {
 
 body.vertical-layout.vertical-menu-modern.menu-expanded .main-menu {
   width: 260px;
+  overflow-y: scroll;
 }
 
 body.vertical-layout.vertical-menu-modern.menu-expanded .main-menu .navigation > li > a > span.badge {

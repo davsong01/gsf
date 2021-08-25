@@ -68,12 +68,15 @@
                                 </fieldset>
                             
                                 <fieldset class="form-group">
-                                    <label for="chapter">Chapter</label>
+                                    <label for="chapter">Campus</label>
                                     <select class="form-control" name="chapter" id="chapter" required>
                                         {{-- //include chapter --}}
-                                        <option value="Male" {{ $user->chapter == 'Male' ? 'selected' : ''}}>Male</option>
+                                        <option value="">--Select Campus--</option>
+                                        @foreach($chapters as $chapter)
+                                        <option value="{{ $chapter->id ?? old('chapter')}}" {{ $user->chapter == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
+                                        @endforeach
                                     </select>
-                                </fieldset>
+                                    </fieldset>
                             </div>
 
                             <div class="col-md-6 col-sm-12">

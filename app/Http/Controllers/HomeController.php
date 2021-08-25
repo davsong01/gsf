@@ -9,8 +9,11 @@ use App\Chapter;
 use App\Setting;
 use App\TempUser;
 use Carbon\Carbon;
+use App\Stakeholder;
 use Illuminate\Http\Request;
+use App\Mail\NotificationEmail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class HomeController extends Controller
 {
@@ -32,7 +35,26 @@ class HomeController extends Controller
         return view('thankyou');
     }
 
-     public function  necRegistration()
+    public function cron(){
+        //All Notifiable emails
+        $notifiables = ['davsong16@gmail.com', 'abokiogbeni@gmail.com', 'princedamab19057@gmail.com', 'oyedepokds@gmail.com'];
+        //Get all stakeholders 
+        $stakeholders = Stakeholder::all();
+
+        foreach($stakeholders as $stakeholder){
+            if($stakeholder->day == date('d') && ($stakeholder->month == date('m'))){
+                $data['name'] = $stakeholder->name;
+                $data['type'] = 'birthdaynotification';
+                $data['portfolio'] = $stakeholder->portfolio;
+                foreach($notifiables as $notifiable){
+                    Mail::to($notifiable)->send(new NotificationEmail($data));
+                }
+            }
+        }
+       
+    }
+
+    public function  necRegistration()
     {
         $chapters = Chapter::orderBy('name')->get();
         $setting = Setting::first();

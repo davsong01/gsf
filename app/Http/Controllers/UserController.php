@@ -162,7 +162,7 @@ class UserController extends Controller
 
 	public function store(Request $request, User $user)
 	{
-
+		
 		//Handle password
 		if ($request['password']) {
 			$password = Hash::make($request['password']);
@@ -170,12 +170,18 @@ class UserController extends Controller
 			$password = Hash::make($request['phone']);
 		}
 
-		//Handle Passport Upload
-		//get filename with extensionz 
-		$imgName = date('Y-m-d-His') . $request->passport->getClientOriginalName();
-		$passport = Image::make($request->passport)->resize(500, 500);
-		$passport->save('frontend/passports' . '/' . $imgName);
-		$passport = 'frontend/passports/' . $imgName;
+			//Handle Passport Upload
+			//get filename with extensionz 
+		if ($request['passport']) {
+
+			$imgName = date('Y-m-d-His') . $request->passport->getClientOriginalName();
+			$passport = Image::make($request->passport)->resize(500, 500);
+			$passport->save('frontend/passports' . '/' . $imgName);
+			$passport = 'frontend/passports/' . $imgName;
+		
+		} else {
+			$passport = NULL;
+		}
 
 
 		//Store block for Admin
@@ -187,7 +193,7 @@ class UserController extends Controller
 				'amount_paid' => 'required',
 				'sex' => 'required',
 				'chapter' => 'required|numeric',
-				'passport' => 'required|max:200',
+				'passport' => 'nullable|max:200',
 				'payment_type' => 'required',
 				'transid' => 'required',
 				'hostel_id' => 'required|numeric',
@@ -196,6 +202,7 @@ class UserController extends Controller
 				'food_id' => 'required',
 			]);
 
+			$data['uploaded_by'] = auth()->user()->id;
 
 			$setting = Setting::first();
 			$data['password'] = $password;
@@ -206,7 +213,7 @@ class UserController extends Controller
 			if ($request->level == 'Participant' || $request->level == 'Alumni' || $request->level == 'Nec') {
 
 				if ($hostel->type <> $request->sex || $hostel->level <> $request->level) {
-					return back()->with('error', 'NOT SAVED. Please check the hostel you are trying to assign to this participant');
+					return back()->with('error', 'NOT SAVED. Gender or Hostel/foodstand level issue');
 				}
 			}
 
@@ -232,6 +239,7 @@ class UserController extends Controller
 				$data['level'] = 'Participant';
 				$data['slot_filled'] = 1;
 				$data['type'] = 1;
+
 
 				if ($request->amount_paid < $setting->registration_fee) {
 					return back()->with('error', 'Participant cannot pay less than registration fee');
@@ -589,7 +597,7 @@ class UserController extends Controller
 	public function create()
 	{
 		$chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
-		$hostels = Hostel::all();
+		$hostels = Hostel::orderBy('name')->get();
 		$foods = Food::all();
 		$moderators = User::whereLevel('Moderator')->get();
 
@@ -634,7 +642,7 @@ class UserController extends Controller
 
 	public function update(Request $request, User $user)
 	{
-
+		
 		$data = $this->validate($request, [
 			'name' => 'required',
 			'phone' => 'required',
@@ -797,6 +805,18 @@ class UserController extends Controller
 
 			return back()->with('message', 'Record has been deleted!');
 		}
+	}
+
+	public function restore($id){
+		if (auth()->user()->level == 'Admin') {
+
+			$user = User::withTrashed()->where('id', $id)->firstOrFail();
+
+        	$user->restore();
+
+       		return redirect(route('users.index'))->with('message', 'Participant has been restored');
+
+		}else return abort(404);
 	}
 
 	public function usersExport()

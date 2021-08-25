@@ -44,7 +44,7 @@ class PaymentController extends Controller
 	{
 		$setting = Setting::first();
 		if ($setting->close_registration < now()) {
-			return redirect(url('/#register'))->with('warning', 'Registration for this program has closed');
+			return redirect(url('/registration/#register'))->with('warning', 'Registration for this program has closed');
 		}
 
 		$this->validate($request, [
@@ -76,7 +76,7 @@ class PaymentController extends Controller
 		if (isset($type['type']) && $type['type'] == '1') {
 			//check amount
 			if ($request->amount <> (Setting::select('registration_fee')->first()->value('registration_fee') * 100)) {
-				return redirect(url('/#register'))->with('error', 'Invalid amount');
+				return redirect(url('/registration/#register'))->with('error', 'Invalid amount');
 			}
 		}
 
@@ -84,11 +84,11 @@ class PaymentController extends Controller
 		if (isset($type['type']) && $type['type'] == '2') {
 			
 			if($request->participants < 2){
-				return redirect(url('/#register'))->with('error', 'You can only register minimum of 2 participants as a fellowship, kindly register as an individual');
+				return redirect(url('/registration/#register'))->with('error', 'You can only register minimum of 2 participants as a fellowship, kindly register as an individual');
 			}
 			//check amount
 			if ($request->amount <> (Setting::select('registration_fee')->first()->value('registration_fee') * $request->participants * 100)) {
-				return redirect(url('/#register'))->with('error', 'Invalid amount');
+				return redirect(url('/registration/#register'))->with('error', 'Invalid amount');
 			}
 		}
 
@@ -106,14 +106,14 @@ class PaymentController extends Controller
 			try {
 				return Paystack::getAuthorizationUrl()->redirectNow();
 			} catch (\Exception $e) {
-				return redirect(url('/#register'))->with('error', 'Transaction token has expired or details not correct. Please refresh the page and try again');
+				return redirect(url('/registration/#register'))->with('error', 'Transaction token has expired or details not correct. Please refresh the page and try again');
 			}
 		}
 
 		try {
 			return Paystack::getAuthorizationUrl()->redirectNow();
 		} catch (\Exception $e) {
-			return redirect(url('/#register'))->with('error', $e . 'Transaction token has expired or details not correct. Please refresh the page and try again');
+			return redirect(url('/registration/#register'))->with('error', $e . 'Transaction token has expired or details not correct. Please refresh the page and try again');
 		}
 	}
 

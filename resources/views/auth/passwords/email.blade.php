@@ -20,7 +20,7 @@
                                         <div class="card-title">
                                             <div class="card-title mb-2">
                                                 <div style="text-align: center;"><img style="width: 50%;"
-                                                        src="{{ asset('app-assets/images/logo/logo.png') }}">
+                                                        src="{{ asset('frontend/img/logo.png') }}">
                                                 </div>
                                             </div>
                                             <h5 class="text-center mb-2">Forgot Password?</h5>
@@ -39,7 +39,7 @@
                                     <div class="card-content">
                                         <div class="card-body">
                                                 <div class="text-muted text-center mb-2"><small>Enter the email you
-                                                        used when you registered and we will send you temporary password
+                                                        used when you registered and we will send you a temporary password
                                                         link</small>
                                                 </div>
                                                 {{-- @if($errors->any()) --}}
@@ -73,7 +73,7 @@
                             <!-- right section image -->
                             <div class="col-md-6 d-md-block d-none text-center align-self-center">
                                 <img class="img-fluid"
-                                    src="{{ asset('app-assets/images/pages/forgot-password.png') }}"
+                                    src="{{ asset('frontend/img/logo.png') }}"
                                     alt="branding logo" width="300">
                             </div>
                         </div>

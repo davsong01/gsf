@@ -1,12 +1,12 @@
 <head>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>GSF - Gofamint Student's Fellowship</title>
+        <title>GSF | @yield('title', "Gofamint Students' Fellowship")</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta property="og:title" content="GSF - 2021 Conference"> 
+        <meta property="og:title" content="GSF | @yield('ogtitle', "Gofamint Students' Fellowship")"> 
           <meta property="og:image" content="{{ asset('frontend/img/logo.png') }}"/> 
 
-        <meta property="og:description" content="GSF - 2021 Conference"/>
+        <meta property="og:description" content="GSF | @yield('description', "Gofamint Student' Fellowship")"/>
         <meta property="og:site_name" content="GSF" />
 
         <!-- Favicon -->

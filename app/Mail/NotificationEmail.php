@@ -44,6 +44,16 @@ class NotificationEmail extends Mailable
             return $this->markdown('emails.notification')
             ->subject($this->data['subject']);
         }
+
+        if(isset($this->data['type']) && $this->data['type'] == 'zone'){
+            return $this->markdown('emails.notification')
+            ->subject('Report Notification');
+        }
+
+        if(isset($this->data['type']) && $this->data['type'] == 'birthdaynotification'){
+            return $this->markdown('emails.notification')
+            ->subject('Its '. $this->data['name'] . '\'s Birthday');
+        }
           
     }
 }

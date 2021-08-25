@@ -4,10 +4,8 @@
     @include('includes.navbar')
     <body>
       
-        <!-- Carousel Start -->
-    
-          @yield('sliders')
-        <!-- Carousel End -->
+        @yield('sliders')
+
         @yield('body')            
 
         @include('includes.ffooter')

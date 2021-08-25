@@ -45,7 +45,7 @@
                                         @foreach($participants as $participant)
                                         <tr>
                                             <td>{{ $count++ }}</td>
-                                            <td>{{ $participant->created_at->format('Y-m-d') }}</td>
+                                            <td>{{ $participant->created_at->format('Y-m-d : h-i-a') }}</td>
                                             <td><img class="mr-1" style="border-radius:50%" src="{{ asset($participant->passport ? $participant->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40"></td>
                                             <td>{{ $participant->conference_number }}</td>
                                             <td>{{ $participant->level }}</td>
