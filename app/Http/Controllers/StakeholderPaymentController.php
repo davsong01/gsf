@@ -34,6 +34,7 @@ class StakeholderPaymentController extends Controller
 
         if(Auth::guard('stakeholder')->user()->role == 'Financial Secretary' || Auth::guard('stakeholder')->user()->role == 'Secretariat'){
             $payments = StakeholderPayment::with('report')->orderBy('created_at', 'desc')->get();
+            
         }
        
         return view('stakeholder.proof_of_payment', compact('payments', 'count'));

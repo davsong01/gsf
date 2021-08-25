@@ -24,7 +24,7 @@
                                     <thead>
                                         <tr>
                                             <th>S/N</th>
-                                            @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Zonal Pastor')
+                                            @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' || Auth::guard('stakeholder')->user()->role == 'Financial Secretary' || Auth::guard('stakeholder')->user()->role == 'Secretariat')
                                             <th>Chapter</th>
                                             @endif
                                             <th>Month/Year</th>
@@ -37,8 +37,8 @@
                                         @foreach($payments as $payment)
                                         <tr>
                                             <td>{{ $count ++ }}</td>
-                                            @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Zonal Pastor')
-                                            <td>{{ $payment->chapter->name }}</td>
+                                            @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' || Auth::guard('stakeholder')->user()->role == 'Financial Secretary' || Auth::guard('stakeholder')->user()->role == 'Secretariat')
+                                            <td>{{ $payment->report->chapter->name }}</td>
                                             @endif
                                             <td>{{ date("F", mktime(0, 0, 0, $payment->report->month, 10)) . ' ' . $payment->report->year }}</td>
                                                                                         
