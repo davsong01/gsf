@@ -16,6 +16,7 @@ class Stakeholder
      */
     public function handle($request, Closure $next)
     {
+        if(!auth::guard('stakeholder')->check())return redirect(route('stakeholder.login'));
 
         if (!Auth::guard('stakeholder')->user()) {
             return redirect(route('stakeholder.login'));

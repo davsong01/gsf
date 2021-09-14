@@ -1,4 +1,5 @@
 @component('mail::message')
+
 @if($data['type'] == 'zone' || $data['type'] == 'field' || $data['type'] == 'secretariat')
 Dear {{ $data['addressee'] }},
 
@@ -69,6 +70,77 @@ Kindly design birthday fyler.
 
 @endif
 
+@if($data['type'] == 'nationalRejection')
+Dear {{ $data['addressee'] }},
+
+<strong>{{ $data['chapter'] }}'s </strong> report for <strong>{{ $data['date'] }}</strong> has been rejected.
+<hr>
+<strong> Below is the comment sent: </strong> <br>
+{!! $data['comment'] !!}
+<hr>
+You can also login to your dashboard, click the blue info icon next to the report rejected to view the National Gen Sec's comment; Then click the pencil icon to the left of your dashboard to edit and resend report
+@component('mail::button', ['url' => config('app.url') . 'stakeholderdashboard'])
+    Login here
+@endcomponent
+
+@endif
+
+@if($data['type'] == 'fieldRejection')
+Dear {{ $data['addressee'] }},
+
+<strong>{{ $data['chapter'] }}'s </strong> report for <strong>{{ $data['date'] }}</strong> has been rejected.
+<hr>
+<strong> Below is the comment sent: </strong><br>
+{!! $data['comment'] !!}
+<hr>
+You can also login to your dashboard, click the blue info icon next to the report rejected to view the Field Pastor's comment; Then click the pencil icon to the left of your dashboard to edit and resend report
+
+@component('mail::button', ['url' => config('app.url') . 'stakeholderdashboard'])
+    Login here
+@endcomponent
+
+@endif
+@if($data['type'] == 'zonalRejection')
+Dear {{ $data['addressee'] }},
+
+<strong>{{ $data['chapter'] }}'s </strong> report for <strong>{{ $data['date'] }}</strong> has been rejected.
+<hr>
+<strong> Below is the comment sent: </strong><br>
+{!! $data['comment'] !!}
+<hr>
+You can also login to your dashboard, click the blue info icon next to the report rejected to view the Zonal Pastor's comment; Then click the pencil icon to the left of your dashboard to edit and resend report
+
+@component('mail::button', ['url' => config('app.url') . 'stakeholderdashboard'])
+    Login here
+@endcomponent
+
+@endif
+
+@if($data['type'] == 'resend')
+Dear {{ $data['addressee'] }},
+
+<strong>{{ $data['chapter'] }}'s </strong> has resent report for <strong>{{ $data['date'] }}</strong>.
+<hr>
+
+Please login to approve!
+@component('mail::button', ['url' => config('app.url') . 'stakeholderdashboard'])
+    Login here
+@endcomponent
+
+@endif
+
+@if($data['type'] == 'pop')
+Dear {{ $data['addressee'] }},
+
+<strong>{{ $data['chapter'] }}'s </strong> has sent payment report of <strong> &#8358;{{ $data['amount'] }} </strong>for <strong>{{ $data['date'] }}</strong>.
+<hr>
+
+Please login to download report!
+@component('mail::button', ['url' => config('app.url') . 'stakeholderdashboard'])
+    Login here
+@endcomponent
+
+@endif
 Thanks,<br>
 {{ config('app.name') }}
 @endcomponent

@@ -36,6 +36,13 @@
                                 </div>
                                 <div class="col-md-12 col-sm-12">
                                     <fieldset class="form-group">
+                                        <label for="image">Amount</label>
+                                        <input type="number" value="{{ old('amount') }}" class="form-control" name="amount" step=".01"
+                                        id="amount">
+                                    </fieldset>
+                                </div>
+                                <div class="col-md-12 col-sm-12">
+                                    <fieldset class="form-group">
                                             <label for="image">Upload proof of payment</label>
                                             <input type="file" value="{{ old('image') }}" class="form-control" name="image"
                                             id="image">

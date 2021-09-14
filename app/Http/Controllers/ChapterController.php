@@ -12,6 +12,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ChapterController extends Controller
 {
+    use Exportable;
     
     public function chaptersExport()
 	{		

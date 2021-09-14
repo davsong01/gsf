@@ -19,7 +19,10 @@ class CreateStakeholderPaymentsTable extends Migration
             $table->integer('chapter_id');
             $table->integer('zone_id');
             $table->integer('field_id');
+            $table->double('amount');
             $table->string('image');
+            $table->string('month');
+            $table->string('year');
             $table->timestamps();
         });
     }

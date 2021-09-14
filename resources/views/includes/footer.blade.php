@@ -48,12 +48,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-	$(document).ready(function() {
-    $('select').select2({
-    width: '100%' // need to override the changed default
+$(document).ready(function() {
+
+	$('select').select2({
+	width: '100%' // need to override the changed default
+	});
+
+
 });
-});
+
 </script>
+@yield('extra_scripts')
 {{-- <script src="{{ asset('app-assets/js/scripts/editors/editor-quill.js') }}"></script> --}}
 <!-- END: Page JS-->
 <!-- END: Footer-->

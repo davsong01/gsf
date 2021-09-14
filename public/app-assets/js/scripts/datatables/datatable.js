@@ -113,7 +113,7 @@ $(document).ready(function() {
 
                     $.fn.dataTable.fileSave(
                         new Blob( [ JSON.stringify( data ) ] ),
-                        'Export.json'
+                        'Export.xlsx'
                     );
                 }
             },

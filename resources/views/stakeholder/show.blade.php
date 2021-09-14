@@ -1,674 +1,563 @@
-@extends('layouts.stakeholderdashboard')
-@section('title', 'Add new report')
-@section('content')
-<div class="content-body">
-    <!-- Basic Inputs start -->
-    <section id="basic-input">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-content">
-                        <div class="card-body"> 
-                            <div class="row">
-                                <div class="col-md-2 col-sm-4">
-                                    <img style="text-align: center; width:100%; display: block; margin-left: 20px;margin-right: auto;" class="logo" src="{{ asset('frontend/img/logo.png') }}">
-                                </div>
-                                <div class="col-md-10 col-sm-8">
-                                    <div style="text-align:center">
-                                        <h2>GOFAMINT STUDENTS’ FELLOWSHIP</h2>
-                                         <strong>GOFAMINT International Headquarters, Aseese, Ogun State, Nigeria</strong>
-                                        <p><strong><h6>MONTHLY REPORT for </h6>{{ $report->chapter->name }} for {{ date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year }}</strong> </p>
-                                    </div>
-                                    
-                                </div>
-                            </div>  
-                            <hr style="border-top: 1px solid red;">                           
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>Section 1: <br>Report Period </h6></label>
-                                </div>
-                                <div class="col-md-3 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="session">Academic Session</label>
-                                        <p>{{ $report->session }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-3 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="semester">Semester</label>
-                                        <p>{{ $report->semester }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-3 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="day">Day</label>
-                                        <p>{{ $report->day }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-3 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="month">Month</label>
-                                        <p>{{ date("F", mktime(0, 0, 0, $report->month, 10)) }}</p>
-                                    </fieldset>
-                                </div>
-                                
-                            </div>
-                            <hr style="border-top: 1px solid red;">
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>Section 2:<br> CHAPTER DETAILS </h6></label>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="president_name">Name of President</label>
-                                        <p>{{ $report->president_name }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="president_number">Number of President</label>
-                                        <p>{{ $report->president_number }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="gen_sec_name">Name of General Secretary</label>
-                                        <p>{{ $report->gen_sec_name }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="gen_sec_number">Number of General Secretary</label>
-                                        <p>{{ $report->gen_sec_number }}</p>
-                                    </fieldset>
-                                </div>
-                                
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="evang_sec_name">Name of Evangelism Secretary</label>
-                                        <p>{{ $report->evang_sec_name }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="evang_sec_number">Number of Evangelism Secretary</label>
-                                        <p>{{ $report->evang_sec_number }}</p> 
-                                        
-                                    </fieldset>
-                                </div>
 
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="fin_sec_name">Name of Financial Secretary</label>
-                                        <p>{{ $report->fin_sec_name }}</p>     
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="fin_sec_number">Number of Financial Secretary</label>
-                                        <p>{{ $report->fin_sec_number }}</p>
-                                    </fieldset>
-                                </div>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 
-                            </div>
-                            <hr style="border-top: 1px solid red;">
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>Section 3: <br>WEEKLY PROGRAMS - Bible Study </h6></label>
-                                </div>                        
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="bible_study_venue">Bible study Venue</label>
-                                        <p>{{ $report->bible_study_venue }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="bible_study_time">Bible study Time</label>
-                                        <p>{{ $report->bible_study_time }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="bible_study_highest_attendance">Bible study Highest attendance</label>
-                                        <p>{{ $report->bible_study_highest_attendance }}</p>
-                    
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="bible_study_lowest_attendance">Bible study lowest attendance</label>
-                                        <p>{{ $report->bible_study_lowest_attendance }}</p>
-                                            
-                                    </fieldset>
-                                </div>
+<head>
+    <title>GSF - {{ $report->chapter->name }} Report for {{ date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year }}</title>
+    <style type="text/css">
+        .fil {
+            background-color: #9F9;
+            color: #000;
+        }
 
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>WEEKLY PROGRAMS - Prayer Meeting</h6></label>
-                                </div> 
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="prayer_meeting_venue">Prayer meeting Venue</label>
-                                        <p>{{ $report->prayer_meeting_venue }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="prayer_meeting_time">Prayer Meeting Time</label>
-                                        <p>{{ $report->prayer_meeting_time }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="prayer_meeting_highest_attendance">Prayer Meeting Highest attendance</label>
-                                        <p>{{ $report->prayer_meeting_highest_attendance }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="prayer_meeting_lowest_attendance">Prayer meeting lowest attendance</label>
-                                        <p>{{ $report->prayer_meeting_lowest_attendance }}</p>
-                                    </fieldset>
-                                </div>
-                            </div>
-                                
-                            <hr style="border-top: 1px solid red;">
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>WEEKLY PROGRAMS - BELIEVER'S FOUNDATION CLASS </h6></label>
-                                </div>                        
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="believer_foundation_class_venue">Believer's foundation class Venue</label>
-                                        <p>{{ $report->believer_foundation_class_venue }}</p>
-                                            
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="believer_foundation_class_time">Believer's foundation cass Time</label>
-                                        <p>{{ $report->believer_foundation_class_time }}</p>
-                                            
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="believer_foundation_class_highest_attendance">Believer's foundation Highest attendance</label>
-                                        <p>{{ $report->believer_foundation_class_highest_attendance }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="believer_foundation_class_lowest_attendance">Beliver foundation class lowest attendance</label>
-                                        <p>{{ $report->believer_foundation_class_lowest_attendance }}</p>
-                                            
-                                    </fieldset>
-                                </div>
+        .fil2 {
+            background-color: #FF6;
+            color: #000;
+        }
 
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>WEEKLY PROGRAMS - Sunday School</h6></label>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="sunday_school_highest_attendance">Sunday school Highest attendance</label>
-                                        <p>{{ $report->sunday_school_highest_attendance }}</p>
-                                            
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="sunday_school_lowest_attendance">Sunday School lowest attendance</label>
-                                        <p>{{ $report->sunday_school_lowest_attendance }}</p>
-                                
-                                    </fieldset>
-                                </div>
+        table {
+            width: 100%;
+        }
 
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>WEEKLY PROGRAMS - Sunday Worship Service</h6></label>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="sunday_highest_attendance">Sunday Worship Highest attendance</label>
-                                        <p>{{ $report->sunday_highest_attendance }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="sunday_lowest_attendance">Sunday lowest attendance</label>
-                                        <p>{{ $report->sunday_lowest_attendance }}</p>
-                                    </fieldset>
-                                </div>
-                                
-                            </div>
-                            
-                            <hr style="border-top: 1px solid red;">
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>Section 4: <br>VISIT TO GOFAMINT ASSEMBLY </h6></label>
-                                </div>                        
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="visit_to_assembly_venue">Venue</label>
-                                        <p>{{ $report->visit_to_assembly_venue }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="visit_to_assembly_time">Time</label>
-                                        <p>{{ $report->visit_to_assembly_time }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-12 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="visit_to_assembly_fellowship_attendance">Fellowship attendance</label>
-                                        <p>{{ $report->visit_to_assembly_fellowship_attendance }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-12 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="visit_to_assembly_fellowship_activity">Fellowship's activity in the assembly</label><br>
-                                        <p class="report-details">{{ $report->visit_to_assembly_fellowship_activity }}</p>
-                                    </fieldset>
-                                </div>
-                            </div>
+        .style1 {
+            border-style: none;
+            border-color: inherit;
+            border-width: medium;
+            width: 100%;
+            height: 100px;
+        }
 
-                            <hr style="border-top: 1px solid red;">
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>Section 5: <br>SPECIAL PROGRAMS </h6></label>
-                                </div>                        
-                                <div class="col-md-12 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="special_programs">Name & Objectives - List each on a new line with Date/Venue/Time/Attendance</label><br>
-                                        <p class="report-details">{{ $report->special_programs }}</p>
-                                    </fieldset>
-                                </div>
-                            </div>
+        .style2 {
+            font-weight: bold;
+            border: NONE;
+        }
 
-                            <hr style="border-top: 1px solid red;">
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>Section 6: <br>HOLY COMMUNION SERVICE</h6></label>
-                                </div>  
-                                <div class="col-md-12 col-sm-12">
-                                    <label for="">Any Holy communion service conducted?</label>
-                                    <p class="report-details">{{ $report->communion }}</p>
-                                    
-                                </div>
-                                <div class="communion-details">                      
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="holy_communion_minister">Name of minister</label><br>
-                                            <p class="report-details">{{ $report->holy_communion_minister }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="holy_communion_minister_rank">Rank of minister</label><br>
-                                            <p class="report-details">{{ $report->holy_communion_minister_rank }}</p>
-                                        </fieldset>
-                                    </div>
-                                
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="holy_communion_attendance">Holy Communion Attendance</label><br>
-                                            <p class="report-details">{{ $report->holy_communion_attendance }}</p>
-                                        </fieldset>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <hr style="border-top: 1px solid red;">
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <label class="sections"><h6>Section 7: <br>EVANGELISM</h6></label>
-                                </div>  
-                                <div class="col-md-12 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="">Give a brief report of the fellowship corporate evangelism this month</label><br>
-                                        <p class="report-details">{{ $report->details }}</p>
-                                    </fieldset>
-                                </div>
-                                
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="evangelism_number_of_souls">No of souls won</label><br>
-                                        <p class="report-details">{{ $report->evangelism_number_of_souls }}</p>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="evangelism_number_of_souls_who_joined_fellowship">No of souls who joined the fellowship</label><br>
-                                        <p class="report-details">{{ $report->evangelism_number_of_souls_who_joined_fellowship }}</p>
-                                    </fieldset>
-                                </div>
-                                
-                                <div class="col-md-6 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="evangelism_number_of_converts_baptized">No of converts baptize</label><br>
-                                        <p class="report-details">{{ $report->evangelism_number_of_converts_baptized }}</p>
-                                        
-                                    </fieldset>
-                                </div>
-                            </div>
-                                {{-- Offering --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 8: <br>OFFERING</h6></label>
-                                    </div>  
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="bible_study_offering">Total Bible Study Offering for the Month (&#8358;)</label>
-                                            <p class="report-details">{{ $report->bible_study_offering }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="prayer_meeting_offering">Total Prayer Meeting Offering for the Month (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->prayer_meeting_offering }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="special_program_offering">Total Special Programme Offering (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->special_program_offering }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_special_program_offering">Other Special Programme Offering (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->other_special_program_offering }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="thanksgiving_offering">Thanksgiving Offering (First Sunday Service) for the Month (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->thanksgiving_offering }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="total_sunday_worship_offering">Total Sunday worship offering (excluding First Sunday) (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->total_sunday_worship_offering }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="grand_total_offering">Grand Total Offering (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->grand_total_offering }}</p>
-                                        </fieldset>
-                                    </div>
-                                </div>
+        td.datacellone {
+            border: NONE;
+            background-color: #FFC;
+            color: black;
+        }
 
-                                {{-- Tithe --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 9: <br>TITHE</h6></label>
-                                    </div>  
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="president_tithe">President's Tithe (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->president_tithe }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="total_executive_tithe">Total Executive Tithe (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->total_executive_tithe }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="total_workers_tithe">Total Workers Tithe (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->total_workers_tithe }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="total_members_tithe">Total Members Tithe (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->total_members_tithe }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="grand_total_tithe">Grand Total Tithe (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->grand_total_tithe }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="grand_total_tithe">Tithe of Tithe (to be remitted to National Secretariat) (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->grand_total_tithe }}</p>
-                                        </fieldset>
-                                    </div>
-                                </div>
+        td.datacelltwo {
+            border: NONE;
+            background-color: #fff;
+            color: black;
+        }
 
-                                {{-- Other Chapter levies --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 10: <br>OTHER CHAPTER LEVIES/CONTRIBUTION</h6></label>
-                                    </div>  
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_purpose">Purpose</label><br>
-                                            <p class="report-details">{{ $report->other_levies_purpose }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_projection">Projection</label><br>
-                                            <p class="report-details">{{ $report->other_levies_projection }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_period_of_collection">Period of Collection</label><br>
-                                            <p class="report-details">{{ $report->other_levies_period_of_collection }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_total_amount">Total Amount collected this Month (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->other_levies_total_amount }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_total_accumulation">Total Accumulation since Program began (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->other_levies_total_accumulation }}</p>
-                                        </fieldset>
-                                    </div>
-                                </div>
+        .style3 {
+            width: 72%;
+        }
+        .logo{
+            float:left;
+            margin-right: -100px;
+            width:100px;
+        }
+        .beside-logo{
+            text-align: center;
+            line-height: 0.7;
+        }
+        .head{
+            width:1200px; 
+            height :auto;
+            padding: 20px;
+            border-bottom: none;
+        }
+        .content-row{
+            width:860px; 
+        }
+        .section-head{
+            text-align: left;
+            padding : 5px 0 5px 0
+        }
+        .section{
+            width:1200px; 
+            height :auto;
+            border-bottom:none;
+        }  
+        .sub-section{
+            width:900px; 
+            text-align: left;
+            padding : 5px 0 5px 0;
+            font-weight:bold
+        }
+        .table-row{
+            background-color:#000;
+            color: white; 
+            border:1px solid #000; 
+            font-weight:bold;
+        }
+        .half-content{
+            width: 50%;
+        }
+        .data-heading{
+            font-weight:bold;
+        }
+        .signatures{
+            width:120px;
+        }
+    </style>
+</head>
 
-                                {{-- Expenses --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 11: <br>EXPENSES</h6></label>
-                                    </div>  
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="capital_projects">Capital Projects (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->capital_projects }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="recurrent_expenses">Recurrent Expenses (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->recurrent_expenses }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="maintenance">Maintenance (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->maintenance }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="misc">Miscellaneous (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->misc }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="expenses_grand_total">Grand Total (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->expenses_grand_total }}</p>
-                                        </fieldset>
-                                    </div>
-                                    
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_total_accumulation">Total Accumulation since Program began (&#8358;)</label><br>
-                                            <p class="report-details">{{ $report->other_levies_total_accumulation }}</p>
-                                        </fieldset>
-                                    </div>
-                                </div>
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 12: <br>SUMMARY</h6></label>
-                                    </div>  
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="spiritual_state">Give a brief summary of the spiritual state of the fellowship (may include outstanding testimonies) in the month</label><br>
-                                            <p class="report-details">{{ $report->spiritual_state }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="challenges">Any Challenge(s) or development which you want the NCP to be aware of </label><br>
-                                            <p class="report-details">{{ $report->challenges }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="proposed_capital_project">Any proposed Capital Project </label><br>
-                                            <p class="report-details">{{ $report->proposed_capital_project }}</p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="completed_capital_project">Any completed Capital Project:  </label><br>
-                                            <p class="report-details">{{ $report->completed_capital_project }}</p>
-                                        </fieldset>
-                                    </div>
-                                </div>
-
-                                {{-- Signatures and Dates --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 13: <br>SIGNATURES AND DATES</h6></label>
-                                    </div>  
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label>President's Signature</label><br>
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->signature }}" style="width:60px" alt="">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label>Gen Sec's Signature</label><br>
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->gen_sec_signature }}" style="width:60px" alt="">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label>Fin Sec's Signature</label><br>
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->fin_sec_signature }}" style="width:60px" alt="">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label>Evang Sec's Signature</label><br>
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->evang_sec_signature }}" style="width:60px" alt="">
-                                        </fieldset>
-                                    </div>
-
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>ZONAL PASTOR APPROVAL</h6></label>
-                                    </div>  
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="zonal_pastor_approval">I </label>
-                                            <input type="text" name="zonal_pastor_approval" readonly value="{{  $report->zonal_pastor_approval }}"> strongly affirm that the above information is true and agrees with my own records. 
-                                        </fieldset>
-                                    </div>
-                                   
-                                </div>
-
-                                {{-- Official use only --}}
-                              
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 14: <br>OFFICIAL USE</h6></label>
-                                    </div>  
-                                   
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="field_pastor_comment">FIELD PASTOR COMMENT</label>
-                                            <p class="report-details">{{ $report->field_pastor_comment }}</p>
-                                        </fieldset>
-                                    </div>
-                                    
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="ncp_comment">NCP's COMMENT</label>
-                                            <p class="report-details">{{ $report->ncp_comment }}</p>
-
-                                        </fieldset>
-                                    </div>
-                                    
-                                </div>
-                          
-                            </div>
-                        
-                           
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <a class="btn btn-primary" href="/stakeholderdashboard" style="width:100%" type="submit"> <i class="fa fa-print"></i>
-                                        PRINT</a>
-                                </div>
-                            </div>
-                            </form>
-
+<body>
+    <div class="container-fluid" style="border: solid 1px; width:1200px; padding: 10px;">
+        <div class="card">
+            <div class="card-body">
+                <div class="head">
+                    <div class="head-content">
+                        <img class="logo" src="{{ asset('frontend/img/logo.png') }}">
+                        <div class="beside-logo">
+                            <h1>GOFAMINT STUDENTS’ FELLOWSHIP</h2>
+                                <strong>GOFAMINT International Headquarters, Aseese, Ogun State, Nigeria</strong>
+                                <p>MONTHLY REPORT for <strong>{{ $report->chapter->name }}</strong> for <strong>{{ date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year }}</strong> </p>
                         </div>
                     </div>
+                    <div>
                 </div>
             </div>
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table cellpadding='1' class="table">
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 1 - REPORT PERIOD</th>
+                        </tr>                               
+                    </table>
+                    
+                </div>
+                <div class="section-body">
+                    <table cellpadding='3' cellspacing='2'>
+                        <tr style="font-weight:bold;text-align: left;">
+                            <th>MONTH : {{ date("F", mktime(0, 0, 0, $report->month, 10)) }}</th>
+                            <th>YEAR : {{ $report->session }}</th>
+                            <th>ACADEMIC SESSION : {{ $report->semester }}</th>
+                            
+                            <th>SEMESTER : {{ $report->semester }}</th>
+                            <th>DATE SUBMITTED: {{ $report->created_at }}</th> 
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 2 - CHAPTER DETAILS</th>
+                        </tr>                               
+                    </table>
+                    
+                </div>
+                <div class="section-body">
+                    <table>
+                        <tr>
+                            <td><span class="data-heading">Name of President </span> : {{ $report->president_name }}</td>
+                        </tr>
+                        <tr><td><span class="data-heading">Number of President</span> : {{ $report->president_number }}</td></tr>
+                        <tr><td><span class="data-heading">Name of General Secretary</span> : {{ $report->gen_sec_name }}</td></tr>
+                        <tr><td><span class="data-heading">Number of General Secretary</span> : {{ $report->gen_sec_bumber }}</td></tr>
+                        <tr><td><span class="data-heading">Name of Evangelism Secretary</span> : {{ $report->evang_sec_name }}</td></tr>
+                        <tr><td><span class="data-heading">Number of Evangelism Secretary</span> : {{ $report->evang_sec_number }}</td></tr>
+                        <tr><td><span class="data-heading">Name of Financial Secretary</span> : {{ $report->fin_sec_name }}</td></tr>
+                        <tr><td><span class="data-heading">Number of Financial Secretary</span> : {{ $report->fin_sec_number }}</td></tr>
+                    </table>
+                </div>
+
+            </div>
+            
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 3 - WEEKLY PROGRAMS - Bible Study </th>
+                        </tr>                               
+                    </table>
+                </div>
+                <div class="section-body">
+                    <table>
+                        <tr>
+                           <td><span class="data-heading">Bible study Venue </span> : {{ $report->bible_study_venue }}</td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Bible study Time </span> : {{ $report->bible_study_time }}</td>
+                            <td class="half-content"><span class="data-heading">Bible study Highest attendance </span> : {{ $report->bible_study_highest_attendance }}</td>
+                        </tr>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Bible study lowest attendance </span> : {{ $report->bible_study_lowest_attendance }}</td>
+                            <td class="half-content"><span class="data-heading">Bible study lowest attendance </span> : {{ $report->bible_study_lowest_attendance }}</td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr><th class="sub-section">PRAYER MEETINGS </th></tr> 
+                    </table>
+                    <table>
+                        <tr><td><span class="data-heading">Prayer Meeting venue </span>: {{ $report->prayer_meeting_venue }}</td></tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Prayer Meeting time </span> : {{ $report->prayer_meeting_time }}</td>
+                            <td class="half-content"><span class="data-heading">Prayer Meeting highest attendance </span> : {{ $report->prayer_meeting_highest_attendance }}</td>
+                        </tr>
+                      
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Prayer Meeting lowest attendance </span> : {{ $report->prayer_meeting_lowest_attendance }}</td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr><th class="sub-section">BELIEVER'S FOUNDATION CLASS</th></tr>     
+                        <tr><td>
+                        <span class="data-heading">Believer's foundation class Venue </span> : {{ $report->believer_foundation_class_venue }}</td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Believer's foundation class time </span> : {{ $report->believer_foundation_class_time }}</td>
+                            <td class="half-content"><span class="data-heading">Believer's foundation highest attendance </span> : {{ $report->believer_foundation_highest_attendance }}</td>
+                        </tr>
+                      
+                        <tr><td class="half-content"><span class="data-heading">Believer's foundation lowest attendance </span> : {{ $report->believer_foundation_lowest_attendance }}</td></tr>
+
+                        <tr ><th class="sub-section">SUNDAY SCHOOL</th></tr>     
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Sunday school highest attendance </span> : {{ $report->sunday_school_highest_attendance }}</td>
+                            <td class="half-content"><span class="data-heading">Sunday school lowest attendance </span> : {{ $report->sunday_school_lowest_attendance }}</td>
+                        </tr>
+                       
+                        <tr><th class="sub-section">SUNDAY WORDHIP SERVICE</th></tr>     
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Sunday worship highest attendance </span> : {{ $report->sunday_highest_attendance }}</td>
+                            <td class="half-content"><span class="data-heading">Sunday worship lowest attendance </span> : {{ $report->sunday_lowest_attendance }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+          
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 4 - VISIT TO GOFAMINT ASSEMBLY </th>
+                        </tr>                               
+                    </table>
+                    
+                </div>
+                <div class="section-body">
+                    <table>
+                        <tr><td><span class="data-heading">Venue </span> : {{ $report->visit_to_assembly_venue }}</td></tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Time </span> : {{ $report->visit_to_assembly_time }}</td>
+                            <td class="half-content"><span class="data-heading">Fellowship attendance </span> :  {{ $report->visit_to_assembly_fellowship_attendance }}</td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr><td><span class="data-heading">Fellowship's activity in the assembly </span> : {{ $report->visit_to_assembly_fellowship_activity }}</td></tr>
+                        
+                    </table>
+                </div>
+            </div>
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 5 - SPECIAL PROGRAMS </th>
+                        </tr>                               
+                    </table>
+                    
+                </div>
+                <div class="section-body">
+                    <table>
+                        <tr><td><span class="data-heading">Name & Objectives - List each on a new line with Date/Venue/Time/Attendance </span> : {{ $report->special_programs }}</td>
+                        </tr>
+                    </table>
+                   
+                </div>
+            </div>
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 6 - HOLY COMMUNION SERVICE </th>
+                        </tr>                               
+                    </table>
+                    
+                </div>
+                <div class="section-body">
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Any Holy communion service conducted? </span> : {{ !is_null($report->holy_communion) ? 'YES' : 'NO' }}</td>
+                            <td class="half-content"><span class="data-heading">Name of minister </span> : {{ $report->holy_communion_minister }}</td>
+                        </tr>
+                        <tr>
+                            
+                            <td class="half-content"><span class="data-heading">Rank of minister </span> :  {{ $report->holy_communion_minister_rank }}</td>
+                            <td class="half-content"><span class="data-heading">Holy communion attendance </span> :  {{ $report->holy_communion_attendance }}</td>
+                        </tr>
+                    </table>
+                   
+                </div>
+            </div>
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 7 - EVANGELISM </th>
+                        </tr>                               
+                    </table>
+                    
+                </div>
+                <div class="section-body">
+                    <table>
+                        <tr>
+                            <td><span class="data-heading">Give a brief report of the fellowship corporate evangelism this month </span> : {{ $report->details }}</td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">No of souls won </span> : {{ $report->evangelism_number_of_souls }}</td>
+                            <td class="half-content"><span class="data-heading">No of souls who joined the fellowship </span> :  {{ $report->evangelism_number_of_souls_who_joined_fellowship }}</td>
+                        </tr>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Number of converts baptized </span> :  {{ $report->evangelism_number_of_converts_baptized }}</td>
+                        </tr>
+                    </table>
+                   
+                </div>
+            </div>
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 8 - OFFERING </th>
+                        </tr>                               
+                    </table>
+                    
+                </div>
+                <div class="section-body">
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Total Bible Study Offering for the Month  </span> : &#8358;{{ $report->bible_study_offering }}</td>
+                            <td class="half-content"><span class="data-heading">Total Prayer Meeting Offering for the Month </span> : &#8358; {{ $report->prayer_meeting_offering }}</td>
+                        </tr>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Total Special Programme Offering </span> :  &#8358;{{ $report->special_program_offering }}</td>
+                            <td class="half-content"><span class="data-heading">Other Special Programme Offering  </span> :  &#8358;{{ $report->other_special_program_offering }}</td>
+                        </tr>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Thanksgiving Offering (First Sunday Service) for the Month </span> :  &#8358;{{ $report->thanksgiving_offering }}</td>
+                            <td class="half-content"><span class="data-heading">Total Sunday worship offering (excluding First Sunday)  </span> :  &#8358;{{ $report->total_sunday_worship_offering }}</td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Grand Total Offering </span> :  &#8358;{{ $report->grand_total_offering }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 9 - TITHE </th>
+                        </tr>                               
+                    </table>
+                    
+                </div>
+                <div class="section-body">
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">President's Tithe</span> : &#8358;{{ $report->president_tithe }}</td>
+                            <td class="half-content"><span class="data-heading">Total Executive Tithe </span> : &#8358; {{ $report->total_executive_tithe }}</td>
+                        </tr>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Total Workers Tithe </span> :  &#8358;{{ $report->total_workers_tithe }}</td>
+                            <td class="half-content"><span class="data-heading">Total Members Tithe </span> :  &#8358;{{ $report->total_members_tithe }}</td>
+                        </tr>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Grand Total Tithe </span> :  &#8358;{{ $report->grand_total_tithe }}</td>
+                            <td class="half-content"><span class="data-heading">Tithe of Tithe (to be remitted to National Secretariat) </span> :  &#8358;{{ $report->grand_total_tithe }}</td>
+                        </tr>
+                    </table>
+                   
+                </div>
+            </div>
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 10 - OTHER CHAPTER LEVIES/CONTRIBUTION </th>
+                        </tr>                               
+                    </table>
+                    
+                </div>
+                <div class="section-body">
+                    <table>
+                        <tr>
+                            <td><span class="data-heading">Purpose</span> : &#8358;{{ $report->other_levies_purpose }}</td>
+                    </table>
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Projection</span> : &#8358;{{ $report->other_levies_projection }}</td>
+                            <td class="half-content"><span class="data-heading">Period of collection </span> : &#8358;{{ $report->other_levies_period_of_collection }}</td>
+                        </tr>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Total amount collected this month </span> :  &#8358;{{ $report->other_levies_total_amount }}</td>
+                            <td class="half-content"><span class="data-heading">Total Accumulation since program began </span> :  &#8358;{{ $report->other_levies_total_accumulation }}</td>
+                        </tr>
+                       
+                    </table>
+                   
+                </div>
+            </div>
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 11 - EXPENSES </th>
+                        </tr>                               
+                    </table>
+                </div>
+                <div class="section-body">
+                   
+                    <table>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Capital Projects</span> : &#8358;{{ $report->capital_projects }}</td>
+                            <td class="half-content"><span class="data-heading">Recurrent Expenses </span> : &#8358;{{ $report->recurrent_expenses }}</td>
+                        </tr>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Maintenance </span> :  &#8358;{{ $report->maintenance }}</td>
+                            <td class="half-content"><span class="data-heading">Miscellaneous </span> :  &#8358;{{ $report->misc }}</td>
+                        </tr>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Grand Total </span> :  &#8358;{{ $report->expenses_grand_total }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 12 - SUMMARY </th>
+                        </tr>                               
+                    </table>
+                </div>
+                <div class="section-body">
+                   
+                    <table>
+                        <tr>
+                            <td><span class="data-heading">Give a brief summary of the spiritual state of the fellowship (may include outstanding testimonies) in the month</span> : {{ $report->spiritual_state }}</td>
+                        </tr>
+                        <tr>
+                            <td><span class="data-heading">Any Challenge(s) or development which you want the NCP to be aware of?</span> : {{ $report->spiritual_state }}</td>
+                        </tr>
+                        <tr>
+                            <td><span class="data-heading">Any proposed Capital Project </span> :  {{ $report->proposed_capital_project }}</td>
+                        </tr>
+                        <tr>
+                            <td><span class="data-heading">Any completed Capital Project: </span> :  {{ $report->completed_capital_project }}</td>
+                        </tr>
+                        
+                    </table>
+                </div>
+            </div>
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="section-head">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 13 - SIGNATURES AND DATES </th>
+                        </tr>                               
+                    </table>
+                </div>
+                <div class="section-body">
+                   
+                    <table>
+                       
+                        <tr>
+                            <td class="half-content"><span class="data-heading">President's Signature</span><br>
+                                <img class="signatures" src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->signature }}" alt="">
+                            </td>
+                            <td class="half-content"><span class="data-heading">Gen Sec's signature</span> <br>
+                                <img class="signatures" src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->gen_sec_signature }}" alt="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="half-content"><span class="data-heading">Fin Sec's Signature</span><br>
+                                <img class="signatures" src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->fin_sec_signature }}" alt="">
+                            </td>
+                            <td class="half-content"><span class="data-heading">Evang Sec's signature</span> <br>
+                                <img class="signatures" src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->evang_sec_signature }}"  alt="">
+                            </td>
+                        </tr>
+                        <tr ><th class="sub-section">ZONAL PASTOR'S APPROVAL</th></tr>     
+                        <tr>
+                            <td class="half-content"><span class="data-heading">I, {{  $report->zonal_pastor_approval }} </td>
+                            <td class="half-content"><span class="data-heading">strongly affirm that the above information is true and agrees with my own records. </span> : {{ $report->sunday_school_lowest_attendance }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+
+
+            <div class="section">
+                <span id="Lblcontent1">
+                <div class="sub-section">
+                    <table>
+                        <tr class="table-row">
+                            <th style="padding: 10px 0 10px 5px">SECTION 14: OFFICIAL</th>
+                        </tr>                               
+                    </table>
+                </div>
+                <div class="section-body">
+                    <table>
+                        <tr>
+                            <td><span class="data-heading">Field Pastor comment</span><br>
+                                {{ $report->field_pastor_comment }}
+                            </td>
+                        </tr><br>
+                        <tr>
+                            <td><span class="data-heading">NCP's comment</span><br>
+                                {{ $report->ncp_comment }}
+                            </td>
+                        </tr>                      
+                        
+                    </table>
+                </div>
+            </div>
+            
         </div>
-</div>
-</section>
-<!-- Basic Inputs end -->
-</div>
-<script> 
-$(document).ready(function(){
-    var value = $('#communion').find(':selected');
-    console.log(value);
-    alert(value);
-});
-})
+        <div style="padding:20px">
+            <center>
+                <a class="buttons" id="lnkclose" href="{{ route('stakeholder.dashboard') }}">BACK</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a onclick="javascript:window.print();" id="LinkButton1" href="javascript:__doPostBack(&#39;LinkButton1&#39;,&#39;&#39;)">PRINT</a>
+            </center>
+        </div>
+    </div>
+</body>
 
-
-    $('#communion').on('change', function(){
-        alert('as');
-        console.log($('#communion').val());
-           
-            if($('#communion').val()=='Yes'){
-                $('.communion-details').css('display','block');
-               
-            }else if($('#communion').val()=='No'){
-                $('.communion-details').css('display','none');
-               
-            }
-    }); 
-    
-
-</script>
-
-@endsection
+</html>

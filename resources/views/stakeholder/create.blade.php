@@ -541,12 +541,7 @@
                                         </fieldset>
                                     </div>
                                     
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_total_accumulation">Total Accumulation since Program began (&#8358;)</label><br>
-                                            <input type="number" step=".01" min="1" class="form-control" name="other_levies_total_accumulation" id="other_levies_total_accumulation" value="{{ old('other_levies_total_accumulation') }}">
-                                        </fieldset>
-                                    </div>
+        
                                 </div>
 
                                 {{-- Summary --}}

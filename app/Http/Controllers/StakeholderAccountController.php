@@ -20,7 +20,9 @@ class StakeholderAccountController extends Controller
     public function index()
     {
         $count = 1;
-
+        // return redirect(route('stakeholder.login'));
+        if(!auth::guard('stakeholder')->check())return redirect(route('stakeholder.login'));
+        
 		if (Auth::guard('stakeholder')->user()->role == 'President') {
             $reports = Reports::whereChapterId(Auth::guard('stakeholder')->user()->chapter_id)->orderBy('created_at', 'desc')->get();
             			

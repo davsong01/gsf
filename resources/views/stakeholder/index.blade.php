@@ -35,6 +35,10 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <h6>Status Legend: </h6>
+                                            <i class="bx bxs-circle warning font-small-1 mr-50"></i>Pending Approval
+                                            <i class="bx bxs-circle success font-small-1 mr-50"></i>Approved
+                                            <i class="bx bxs-circle danger font-small-1 mr-50"></i>Rejected
                                         @foreach($reports as $report)
                                         <tr>
                                             <td>{{ $count ++}}</td>
@@ -43,25 +47,49 @@
                                             @endif
                                             <td>{{ date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year }}'s report</td>
                                             <td>
-                                                <i class="{{ ($report->zone_status == 0) ? 'bx bxs-circle danger font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>Zone Approval</small><br>
-                                                <i class="{{ ($report->field_status == 0) ? 'bx bxs-circle danger font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>Field Approval</small><br>
-                                                <i class="{{ ($report->status_complete == 0) ? 'bx bxs-circle danger font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>Report Complete</small>
+                                                @if(!is_null($report->zone_reject_comment))
+                                                <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Zone <a data-target="#zoneRejection{{ $report->id }}" data-toggle="modal" title="Veiw comment"  href="#zoneRejection{{ $report->id }}"><span class="info">&#9432;</span></small></a>
+                                                @include('stakeholder.modals.zone_rejection_comment')
+                                                @endif
+                                                @if(is_null($report->zone_reject_comment))
+                                                <i class="{{ ($report->zone_status == 0) ? 'bx bxs-circle warning font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>Zone</small><br>
+                                                @endif
+
+                                                @if(!is_null($report->field_reject_comment))
+                                                <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Field <a data-target="#fieldRejection{{ $report->id }}" data-toggle="modal" title="Veiw comment"  href="#fieldRejection{{ $report->id }}"><span  class="info">&#9432;</span></small></a>
+                                                @include('stakeholder.modals.field_rejection_comment')
+                                                @endif
+                                                @if(is_null($report->field_reject_comment))
+                                                <i class="{{ ($report->field_status == 0) ? 'bx bxs-circle warning font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>Field</small><br>
+                                                @endif
+
+                                                @if(!is_null($report->status_complete_reject_comment))
+                                               <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>National <a data-target="#secretariatRejection{{ $report->id }}" data-toggle="modal" title="Veiw comment"  href="#secretariatRejection{{ $report->id }}"><span  class="info">&#9432;</span></small></a>
+                                                @include('stakeholder.modals.secretariat_rejection_comment')
+                                                @endif
+                                                @if(is_null($report->status_complete_reject_comment))
+                                                <i class="{{ ($report->field_status == 0) ? 'bx bxs-circle warning font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>National</small><br>
+                                                @endif
                                             </td>
                                             <td>{{ $report->session }}</td>
                                             
                                             <td>{{ $report->created_at->format('d-m-Y:h-m-s') }}</td>
                                             
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                                <a class="actions" data-toggle="tooltip" title="View Report" href="{{ route('reports.show', $report->id) }}"> <i class="fa fa-eye actions"></i></
-                                                </a>
-                                                @if((Auth::guard('stakeholder')->user()->role == 'Field Pastor' && $report->field_status == 0 ) || Auth::guard('stakeholder')->user()->role == 'Secretariat' || (Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'  && $report->zone_status == 0))
+                                                <a class="actions" data-toggle="tooltip" title="View Report" href="{{ route('reports.show', $report->id) }}"> <i class="fa fa-eye actions"></i></a>
+                                               
+                                                {{-- @if(Auth::guard('stakeholder')->user()->role == 'President' && ($report->field_status == 0 || $report->zone_status == 0 || $report->status_complete == 0)) --}}
+                                                 {{-- <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Edit/Approve Report" href="{{ route('reports.edit', $report->id) }}"> <i class="fa fa-pencil"></i></a> --}}
 
-                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Edit/Approve Report" href="{{ route('reports.edit', $report->id) }}"> <i class="fa fa-pencil"></i></
-                                                </a>
+                                                {{-- @endif --}}
+
+                                                @if((Auth::guard('stakeholder')->user()->role == 'Field Pastor' && $report->field_status == 0) || (Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' && $report->zone_status == 0) || (Auth::guard('stakeholder')->user()->role == 'President' && $report->zone_status == 0) || Auth::guard('stakeholder')->user()->role == 'Secretariat' )
+                                             
+                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Edit Report" href="{{ route('reports.edit', $report->id) }}"> <i class="fa fa-pencil"></i></a>
+
                                                 @endif
                                                 @if(Auth::guard('stakeholder')->user()->role == 'Secretariat')
-                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Report" href="{{ route('reports.delete', $report->id) }}"> <i class="fa fa-trash"></i></
-                                                </a>
+                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Report" href="{{ route('reports.delete', $report->id) }}"> <i class="fa fa-trash"></i></a>
                                                 @endif
                                             </td>
                                         </tr>

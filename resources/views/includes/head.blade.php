@@ -65,6 +65,7 @@
 
 	<!---Modal CSS-->
 	<style>
+		
 		.vertical-alignment-helper {
 			display: table;
 			height: 100%;
@@ -82,17 +83,38 @@
 			pointer-events: none;
 		}
 
-		.modal-content {
-			/* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
-			width: inherit;
-			max-width: inherit;
-			/* For Bootstrap 4 - to avoid the modal window stretching 
-    full width */
-			height: inherit;
-			/* To center horizontally */
-			margin: 0 auto;
-			pointer-events: all;
+		.info{
+			font-weight: 900; 
+			font-size: 18px;
+			color: blue !important;
 		}
+
+		.modal-lg, .modal-xl {
+		max-width: 800px;
+		top: 0;
+		left: 0;
+		transform: translate(-50%, -50%);
+		display: contents;
+		overflow: hidden;
+		} 
+
+		/* .modal-content {
+			position: absolute;
+		} */
+		.modal-open .modal {
+			overflow-x: hidden;
+			overflow-y: hidden;
+		}
+
+		.modal {
+			margin-top: 20px;
+			left: -30px;
+			height: 100%;
+			width: 80%;
+			right: 0;
+			margin-right: 50px;
+		}
+
 	</style>
 	@yield('extra_styles')
 </head>

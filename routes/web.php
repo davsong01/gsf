@@ -28,7 +28,7 @@ Route::get('/', function(){
 });
 
 //Stakeholder Account
-Route::get('stakeholders/login', 'StakeholderLoginController@showStakeholderLoginForm')->name('stakeholder.login');
+Route::get('stakeholders/login', 'StakeholderLoginController@showStakeholderLoginForm')->name('stakeholder.loginpage');
 Route::post('stakeholders/login', 'StakeholderLoginController@stakeHolderLogin')->name('stakeholder.login');
 Route::get('/stakeholderdashboard', 'StakeholderAccountController@index')->name('stakeholder.dashboard');
 Route::get('/stakeholderprofile', 'StakeholderAccountController@profile')->name('stakeholder.profile');
@@ -40,9 +40,11 @@ Route::get('/stakeholderlogout', 'StakeholderLoginController@logout')->name('sta
 Route::middleware(['stakeholder'])->group(function(){
     Route::resource('reports', 'ReportsController');
     Route::get('deletereports/{id}', 'ReportsController@delete')->name('reports.delete');
+    Route::post('rejectreports', 'ReportsController@rejectReport')->name('report.reject');
     Route::resource('stakeholderpayment', 'StakeholderPaymentController');
     Route::get('stakeholderpaymentdelete/{id}', 'StakeholderPaymentController@delete')->name('stakeholderpayment.delete');
     Route::get('downloadpop/{id}', 'StakeholderPaymentController@downloadPop')->name('pop.download');
+    Route::post('/pop/export', 'StakeholderPaymentController@exportPop')->name('pop.export');
     
 });
 

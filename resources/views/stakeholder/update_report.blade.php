@@ -538,13 +538,7 @@
                                             <input type="number" {{ $editStatus }} class="form-control" step=".01" min="1" name="expenses_grand_total" id="expenses_grand_total" value="{{ old('expenses_grand_total') ?? $report->expenses_grand_total }}">
                                         </fieldset>
                                     </div>
-                                                                       
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_total_accumulation">Total Accumulation since Program began (&#8358;)</label><br>
-                                            <input type="number" step=".01" min="1" {{ $editStatus }} class="form-control" name="other_levies_total_accumulation" id="other_levies_total_accumulation" value="{{ old('other_levies_total_accumulation') ?? $report->other_levies_total_accumulation }}">
-                                        </fieldset>
-                                    </div>
+
                                 </div>
 
                                 {{-- Summary --}}
@@ -635,7 +629,7 @@
                                     <div class="col-md-12 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="field_pastor_comment">FIELD PASTOR COMMENT</label>
-                                            <textarea {{ $editStatus }} name="field_pastor_comment" id="field_pastor_comment" style="width:100%" rows="5" value="{{ old('field_pastor_comment') ?? $report->field_pastor_comment }}">{{ old('field_pastor_comment') }}</textarea>
+                                            <textarea {{ $editStatus }} name="field_pastor_comment" id="field_pastor_comment" style="width:100%" rows="5" value="{{ old('field_pastor_comment') ?? $report->field_pastor_comment }}">{{ old('field_pastor_comment') ?? $report->field_pastor_comment }}</textarea>
                                         </fieldset>
                                     </div>
                                     @if(Auth::guard('stakeholder')->user()->role == 'Secretariat' )
@@ -648,47 +642,74 @@
                                     @endif
                                 </div>
                                 @endif
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <button class="btn btn-primary" style="width:100%" type="submit">Approve Report</button>
+                                @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Secretariat' || Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' )
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <button class="btn btn-primary" style="width:100%" type="submit">Approve Report</button>
+                                    </div> 
                                 </div>
-                            </div>
-                            </form>
-
+                                @endif
+                                @if(Auth::guard('stakeholder')->user()->role == 'President') 
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <button class="btn btn-primary" style="width:100%" type="submit">Resend Report</button>
+                                    </div> 
+                                </div>
+                                @endif
+                           </form> 
+                           <hr>
+                            <br>
+                            
+                            @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Secretariat' || Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' )  
+                           <div class="row">
+                            <div class="col-md-12 col-sm-12">
+                                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal" style="width:25%">
+                                    Reject Report
+                                </button>
+                            </div> 
+                            @endif
+                            
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
 </div>
-</section>
-<!-- Basic Inputs end -->
+    <div class="container">
+        <!--Basic Modal -->
+        <div class="modal fade" id="myModal">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                    <h4 class="modal-title">Reject Report</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    
+                    <!-- Modal body -->
+                    
+                    <form action="{{ route('report.reject') }}" method="POST" onsubmit="return confirm('You are about to reject this report, action is irreversible');">
+                        @csrf
+                        <div class="modal-body">
+                            <p>Please enter comment for rejection of {{ date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year }}'s report from {{ $report->chapter->name }}</p>
+                            <div class="col-md-12 col-sm-12">
+                                <fieldset class="form-group">
+                                    <textarea name="comment" id="comment" style="width:100%" rows="5" value="{{ old('comment') }}" required>{{ old('comment')  }}</textarea>
+                                </fieldset>
+                            </div>
+                        
+                        </div>
+                        <input type="hidden" name="report_id" value="{{ $report->id }}" id="">
+                        <!-- Modal footer -->
+                        <div class="modal-footer">
+                            <input type="submit" class="btn btn-primary" value="Confirm Rejection"></input>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<script> 
-$(document).ready(function(){
-    var value = $('#communion').find(':selected');
-    console.log(value);
-    alert(value);
-});
-})
-
-
-    $('#communion').on('change', function(){
-        alert('as');
-        console.log($('#communion').val());
-           
-            if($('#communion').val()=='Yes'){
-                $('.communion-details').css('display','block');
-               
-            }else if($('#communion').val()=='No'){
-                $('.communion-details').css('display','none');
-               
-            }
-    }); 
-    
-
-</script>
-
 @endsection

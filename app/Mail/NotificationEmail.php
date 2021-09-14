@@ -54,6 +54,29 @@ class NotificationEmail extends Mailable
             return $this->markdown('emails.notification')
             ->subject('Its '. $this->data['name'] . '\'s Birthday');
         }
+
+        if(isset($this->data['type']) && $this->data['type'] == 'zonalRejection'){
+            return $this->markdown('emails.notification')
+            ->subject('GSF Report Rejected by Zonal Pastor!');
+        }
+        if(isset($this->data['type']) && $this->data['type'] == 'fieldRejection'){
+            return $this->markdown('emails.notification')
+            ->subject('GSF Report Rejected by Field Pastor!');
+        }
+        if(isset($this->data['type']) && $this->data['type'] == 'nationalRejection'){
+            return $this->markdown('emails.notification')
+            ->subject('GSF Report Rejected by National Secretariat');
+        }
+        if(isset($this->data['type']) && $this->data['type'] == 'resend'){
+            return $this->markdown('emails.notification')
+            ->subject('Resent Report');
+        }
+
+        if(isset($this->data['type']) && $this->data['type'] == 'pop'){
+            return $this->markdown('emails.notification')
+            ->subject('New Payment report from '. $this->data['chapter']);
+        }
+        
           
     }
 }

@@ -5,6 +5,7 @@ namespace App;
 
 use App\Field;
 use App\Chapter;
+use App\ReportRejection;
 use App\StakeholderPayment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -29,4 +30,8 @@ class Reports extends Model
     public function zone(){
         return $this->belongsTo(Zone::class);
     }
+    public function rejections(){
+        return $this->hasMany(ReportRejection::class, 'report_id');
+    }
+
 }

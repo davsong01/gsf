@@ -2,16 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use DateTime;
+use DatePeriod;
 use App\Reports;
+use DateInterval;
+use App\Stakeholder;
 use Illuminate\Http\File;
+use App\Exports\ExportPop;
 use App\StakeholderPayment;
 use Illuminate\Http\Request;
+use App\Mail\NotificationEmail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 
 class StakeholderPaymentController extends Controller
 {
+    public function exportPop(Request $request)
+	{		
+		return Excel::download(new ExportPop($request->campus, $request->year, $request->month), 'payments.xlsx');
+	}
+
     /**
      * Display a listing of the resource.
      *
@@ -20,6 +33,7 @@ class StakeholderPaymentController extends Controller
     public function index()
     {
         $count = 1;
+    
         if(Auth::guard('stakeholder')->user()->role == 'President'){
             $payments = StakeholderPayment::with('report')->whereChapterId(Auth::guard('stakeholder')->user()->chapter_id)->orderBy('created_at', 'desc')->get();
         }
@@ -34,10 +48,13 @@ class StakeholderPaymentController extends Controller
 
         if(Auth::guard('stakeholder')->user()->role == 'Financial Secretary' || Auth::guard('stakeholder')->user()->role == 'Secretariat'){
             $payments = StakeholderPayment::with('report')->orderBy('created_at', 'desc')->get();
-            
         }
+
+        $years = array_combine(range( date('Y'), date('2020')), range(date('Y'), date('2020')));
        
-        return view('stakeholder.proof_of_payment', compact('payments', 'count'));
+       $months = $this->getMonths();
+
+        return view('stakeholder.proof_of_payment', compact('payments', 'count', 'years', 'months'));
     }
 
     /**
@@ -77,6 +94,7 @@ class StakeholderPaymentController extends Controller
         $data = $this->validate($request, [
             'report' => 'required',
             'image' => 'required',
+            'amount' => 'required|numeric',
         ]);
 
         if($request->has('image')){
@@ -87,16 +105,32 @@ class StakeholderPaymentController extends Controller
             $filePath = $file . '.' . $fileextension;
         }
 
-        $report = Reports::select('chapter_id', 'zone_id', 'field_id')->whereId($data['report'])->first();
+        $report = Reports::select('chapter_id', 'zone_id', 'field_id', 'month', 'year')->whereId($data['report'])->first();
        
         $payment = StakeholderPayment::create([
             'report_id' => $data['report'],
             'chapter_id' => $report->chapter_id,
             'zone_id' => $report->zone_id,
             'field_id' => $report->field_id,
-            'image' => $filePath
+            'amount' => $request->amount,
+            'image' => $filePath,
+            'month' => $report->month,
+            'year' => $report->year,
         ]);
 
+        //Send mail to Fin Sec
+        $secretary = Stakeholder::whereRole('Financial Secretary')->whereAlias('FIn Sec')->first();
+            if($secretary){
+                $data = [
+                    'type' => 'pop',
+                    'addressee' => $secretary->name,
+                    'chapter' => $report->chapter->name,
+                    'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year,
+                    'amount' => $payment->amount,
+                ];
+
+                Mail::to($secretary->email)->send(new NotificationEmail($data));
+            }
         return redirect(route('stakeholderpayment.index'))->with('message', 'Operation Successful');
   
     }

@@ -94,22 +94,27 @@ class ReportsController extends Controller
      */
     public function edit(Reports $report)
     {
-        if(Auth::guard('stakeholder')->user()->role == 'President') return abort(404); 
-        
+       
+        if($report->zone_status == 1){
+            return abort(404);
+        }        
         $months = $this->getMonths();
-        $editStatus = '';
+        
 
-        if($report->zone_status == 1 && Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
+        if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' || Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
             $editStatus = 'readonly';
         }
 
-        if($report->field_status == 1 && Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
-            $editStatus = 'readonly';
+        if(Auth::guard('stakeholder')->user()->role == 'President'){
+
+            $editStatus = '';
         }
 
         if(Auth::guard('stakeholder')->user()->role == 'Secretariat'){
-            $editStatus = '';
+
+            $editStatus = 'readonly';
         }
+
 
         return view('stakeholder.update_report', compact('months', 'report', 'editStatus'));
     }
@@ -124,23 +129,57 @@ class ReportsController extends Controller
     public function update(Request $request, Reports $report)
     {
         
+        if(Auth::guard('stakeholder')->user()->role == 'President'){
+            $data = $this->validateRequestData($request);
+        
+            if(is_null(Auth::guard('stakeholder')->user()->signature) || is_null(Auth::guard('stakeholder')->user()->gen_sec_signature) || is_null(Auth::guard('stakeholder')->user()->fin_sec_signature) || is_null(Auth::guard('stakeholder')->user()->evang_sec_signature)){
+                return back()->with('message', 'Kindly Upload signatures first, you will only need to do this once');
+            }
+    
+            if(!is_null(Auth::guard('stakeholder')->user()->chapter_id)){
+                $data['chapter_id'] = Auth::guard('stakeholder')->user()->chapter_id;
+            }
+            
+           
+            $data['zone_reject_comment'] = null;
+            $data['field_reject_comment' ] = null;
+            $data['status_complete_reject_comment' ] = null;
+
+            $report->update($data);
+            
+            //Send Email  
+            if($report->zone->stakeholder){
+                $data = [
+                    'type' => 'resend',
+                    'addressee' => $report->zone->stakeholder->name,
+                    'chapter' => $report->chapter->name,
+                    'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year,
+                ];
+    
+                Mail::to($report->zone->stakeholder->email)->send(new NotificationEmail($data));
+            }
+        
+        }
+
         if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
             $report->zonal_pastor_affirmation = Auth::guard('stakeholder')->user()->name;
             $report->zone_status = 1;
-
         }
 
         if(Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
             $report->field_pastor_approval = Auth::guard('stakeholder')->user()->name;
             $report->field_status = 1;
-            
+            $report->zone_status = 1;
         }
 
         if(Auth::guard('stakeholder')->user()->role == 'Secretariat'){
             $report->field_pastor_approval = Auth::guard('stakeholder')->user()->name;
             $report->ncp_comment = $request->ncp_comment;
+            $report->field_status = 1;
+            $report->zone_status = 1;
             $report->status_complete = 1;
         }
+
         $report->save();
 
         $report->update($this->validateRequestData($request));
@@ -190,6 +229,49 @@ class ReportsController extends Controller
      * @param  \App\Reports  $reports
      * @return \Illuminate\Http\Response
      */
+    public function rejectReport(Request $request){
+        // dd(Auth::guard('stakeholder')->user()->role);
+        $report = Reports::whereId($request->report_id)->first();
+        if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
+            $type = 'zonalRejection';
+            $report->zone_reject_comment = $request->comment;
+            $report->zone_status = 0;
+            $report->save();
+        }
+        if(Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
+            $type = 'fieldRejection';
+            $report->field_reject_comment = $request->comment;
+            $report->field_status = 0;
+            $report->zone_status = 0;
+            $report->save();
+        }
+
+        if(Auth::guard('stakeholder')->user()->role == 'Secretariat'){
+            $type = 'nationalRejection';
+            $report->status_complete_reject_comment = $request->comment;
+            $report->status_complete = 0;
+            $report->field_status = 0;
+            $report->save();
+        }
+       
+        //Email President
+        $president = $report->chapter->stakeholder;
+            if($president){
+                $data = [
+                    'type' => $type,
+                    'comment' => $request->comment,
+                    'addressee' => $president->name,
+                    'chapter' => $report->chapter->name,
+                    'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year
+                ];
+
+                Mail::to($president->email)->send(new NotificationEmail($data));
+            }
+        
+
+        return redirect(route('stakeholder.dashboard'))->with('message', 'operation successful!');
+    }
+    
     public function destroy(Reports $reports)
     {
         //
@@ -203,25 +285,7 @@ class ReportsController extends Controller
 
         //Delete report
     }
-
-    private function getMonths(){
-        $months = [
-            'January' => 1,
-            'February' => 2,
-            'March' => 3,
-            'April' => 4,
-            'May' => 5,
-            'June' => 6,
-            'July' => 7,
-            'August' => 8,
-            'September' => 9,
-            'October' => 10,
-            'Novermber' => 11,
-            'December' => 12,
-        ];
-
-        return $months;
-    }
+   
 
     private function validateRequestData($request){
         $data = $this->validate($request, [
@@ -302,7 +366,6 @@ class ReportsController extends Controller
             'holy_communion_minister' => 'nullable',
             'holy_communion_minister_rank' => 'nullable',
             'holy_communion_attendance' => 'nullable',
-
         ]);
 
         return $data;
