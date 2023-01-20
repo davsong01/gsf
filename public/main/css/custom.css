@@ -1,0 +1,155 @@
+.pl-0{
+  padding-left: 0 !important;
+}
+.loader{
+  position: fixed;
+  top: 0;
+  left:0;
+  z-index: 9999;
+  background: lightgray;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.disappear{
+  animation: vanish 1s forwards;
+}
+
+@keyframes vanish{
+  100%{
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+.navbar {
+  min-height: 100px !important;
+}
+.nav {
+  padding-top: 30px !important;
+}
+
+.page-bread {
+  padding-top: 100px;
+}
+
+.container {
+  margin-top: 35px;
+}
+
+.navbar-header {
+  height: 100px;
+}
+
+.fullscreen-parallax.bg-parallax {
+  margin-top: 100px;
+}
+
+/* Grid pages */
+.team-content {
+  text-align: center;
+  max-height: 100px;
+}
+
+.alumni-img {
+  /* border-radius: 50% */
+}
+.events-image {
+  min-height: 300px;
+  max-height: 300px;
+  width: 100%;
+}
+.single-socials .fa {
+  font-size: 45px
+}
+
+.team-content em {
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+  overflow: clip;
+  overscroll-behavior-x: auto;
+}
+
+.team-card .team-overlay ul {
+  text-align: center;
+}
+
+.dropdown-menu {
+  max-width: 555px;
+  min-width: 555px;
+  border: solid 1px antiquewhite;
+  overflow-y: scroll;
+}
+
+
+.view-campus-details {
+  padding: 10px;
+  background: #1060a9 !important;
+}
+
+.responsive-image{
+    width: 100%;
+    height: auto;
+    min-height: 281px;
+}
+
+.event-title {
+  color:#090959;
+}
+
+.left-title::after {
+  width: 100%;
+  height: 1px !important;
+  background: #0773ba;
+}
+
+.event-details {
+    min-height: 120px;
+    max-height: 120px;
+}
+.ml-2:hover {
+  background-color: #d2d2fc !important;
+}
+
+.side {
+  max-width: initial;
+  overflow-x: clip;
+  min-width: auto;
+  border: solid 1px antiquewhite;
+  height: auto;
+  padding: 5px 10px
+}
+
+.side option {
+  color: #999;
+  padding: 7px 20px;
+  display: block;
+  clear: both;
+  font-weight: 400;
+  line-height: 1.42857143;
+  color: #333;
+  white-space: nowrap;
+}
+
+.side:hover {
+  padding: 7px 0;
+}
+.side option:hover {
+  background-color: #d2d2fc !important;
+}
+
+.footer {
+  padding-top: 0px;
+}
+
+@media (max-width: 320px) {
+  .dropdown-menu {
+    max-width: 300px;
+    min-width: 300px;
+    border: solid 1px antiquewhite;
+    overflow-y: scroll;
+  }
+}
