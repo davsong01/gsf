@@ -13,9 +13,7 @@ class ConferenceSettingController extends Controller
     public function index()
     {
         if(auth()->user()->role== 1){
-
-            $setting = Setting::first();
-
+            $setting = $this->conferenceEdition();
             return view('conference_management.admin.settings.edit', compact('setting'));
         }
     }

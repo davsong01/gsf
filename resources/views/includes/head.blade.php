@@ -16,8 +16,7 @@
 		rel="stylesheet">
 
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
-
+		
 	<!--Font Awesome--->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -26,7 +25,7 @@
 
 	<!-- BEGIN: Vendor CSS-->
 	<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/vendors.min.css') }}">
-el="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/ui/prism.min.css') }}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/ui/prism.min.css') }}">
 
 	<!-- END: Vendor CSS-->
 
@@ -42,8 +41,7 @@ el="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/ui/prism.
 	<!-- BEGIN: Page CSS-->
 	<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/core/menu/menu-types/vertical-menu.css') }}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/pages/authentication.css') }}">
-	<link rel="stylesheet" type="text/css"
-		href="{{ asset('app-assets/vendors/css/tables/datatable/datatables.min.css') }}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/tables/datatable/datatables.min.css') }}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/core/menu/menu-types/vertical-menu.css')}}">
 
 
@@ -51,9 +49,9 @@ el="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/ui/prism.
 	
 	<!-- BEGIN: Custom CSS-->
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
-
+	
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
+	@yield('extra_styles')
 	<!---Modal CSS-->
 	<style>
 		
@@ -110,6 +108,6 @@ el="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/ui/prism.
 		}
 		
 	</style>
-	@yield('extra_styles')
+	
 </head>
 <!-- END: Head-->

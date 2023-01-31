@@ -29,7 +29,7 @@ class NotificationEmail extends Mailable
             return $this->markdown('emails.notification')
             ->subject($this->data['subject']);
         }
-
+        
         if(isset($this->data['type']) && $this->data['type'] == 'payment_made'){
             return $this->markdown('emails.notification')
             ->subject($this->data['subject']);
@@ -96,6 +96,21 @@ class NotificationEmail extends Mailable
             return $this->markdown('emails.notification')
             ->subject($this->data['subject'])
             ->attach($data['banners']);
+        }
+
+        if (!isset($this->data['type']) && $this->data['type'] == 0) {
+            return $this->markdown('emails.notification')
+            ->subject($this->data['subject']);
+        }
+
+        if (isset($this->data['type']) && $this->data['type'] == 'admin_donation_notification') {
+            return $this->markdown('emails.donation')
+            ->subject('New Donation');
+        }
+
+        if (isset($this->data['type']) && $this->data['type'] == 'admin_registration_notification') {
+            return $this->markdown('emails.admin')
+            ->subject('New Registration');
         }
 
     }

@@ -1,7 +1,7 @@
 @extends('layouts.conference')
 @section('title', 'Conference Participants')
 @section('active')
-<li class="breadcrumb-item">Conference Participants</li>
+<li class="breadcrumb-item">{{ $edition->conference_theme }} Participants ({{ $type }})</li>
 @endsection
 @section('content2')
 <div class="content-body">
@@ -13,9 +13,9 @@
                     <div class="card-header">
                         <h4 class="card-title">All Participants</h4>
                         <div class="">
-                            <a href="{{ route('participants.create') }}" class="btn btn-primary mt-1">Add new</a>
-                            <a href="{{ route('conferenceusers.import.index') }}" class="btn btn-primary mt-1">Import</a>
-                            <a href="{{ route('conferenceusers.export') }}" class="btn btn-primary mt-1">Export</a>
+                            <a href="{{ route('participants.create', ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new</a>
+                            <a href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Import</a>
+                            <a href="{{ route('conferenceusers.export',  ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export</a>
                         </div>                        
                     </div>
                     <div class="card-content">
@@ -62,14 +62,14 @@
                                             </td>
                                             
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                                <a class="actions" data-toggle="tooltip" title="View/Edit User" href="{{ route('conference.participants.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
+                                                <a class="actions" data-toggle="tooltip" title="View/Edit User" href="{{ route('conference.participants.edit', ['edition'=>$edition->id,'id'=>$participant->id]) }}"> <i class="bx bxs-edit actions"></i></
                                                 </a>
                                                 <a class="actions" onclick="return confirm('You are about to resend welcome email to this participant?');" data-toggle="tooltip" data-placement="top" title="Resend welcome mail"
-                                                    href="{{ route('participants.resendmail', $participant->id) }}"><i
+                                                    href="{{ route('participants.resendmail', ['edition'=>$edition->id,'id'=>$participant->id]) }}"><i
                                                         class="fa fa-envelope"></i>
                                                 </a>
                                                 <a class="actions" data-toggle="tooltip" data-placement="top" title="Switch To"
-                                                    href="{{ route('switchuser', $participant->user->id) }}"><i
+                                                    href="{{ route('switchuser', ['edition'=>$edition->id,'id'=>$participant->user->id]) }}"><i
                                                         class="fa fa-unlock actions"></i>
                                                 </a>
                                                  @if($participant->registration_status == 'Complete')

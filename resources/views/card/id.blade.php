@@ -68,32 +68,29 @@
 											<img style="width:15%; height:10%" src="{{ asset('frontend/img/logo.png') }}">
 											<h2 class="name" style="margin-top: 10px; margin-bottom: 10px; font-size:22px">GOFAMINT STUDENTS' FELLOWSHIP
 											</h2>
-											<h2 class="alias" style="margin-top: 10px; margin-bottom: 10px; font-size:15px">19th Biennial National
+											<h2 class="alias" style="margin-top: 10px; margin-bottom: 10px; font-size:15px">20th Biennial National
 												Conference</h2>
 											<h3 style="font-size: 12px; margin: 2.5px 0;font-weight: 300;" class="date">{{ $setting->start_date .' to '. $setting->end_date }}</h3><br>
 										</div>
 										<div class="photo" >
 											<h2 class="alias"  style="font-family:initial; margin-top: 5px; margin-bottom: 5px; font-size:15px">{{ $setting->conference_theme }}</h2>
-											<h1>@if($user->level == 'Participant')PARTICIPANT
-												@elseif($user->level == 'Alumni')ALUMNUS 
-												
+											<h1>@if($payment->level == 'Participant')PARTICIPANT
+												@elseif($payment->level == 'Alumni')ALUMNUS 
 												@if ($payment->amount_paid == $setting->new_alumni_registration_fee) <h4><i class="fa fa-id-badge" aria-hidden="true"></i>
 													
 												</h4> 
 												@elseif ($payment->amount_paid == $setting->alumni_registration_fee) <h4><i class="fa fa-id-badge" aria-hidden="true"></i>
 													<i class="fa fa-id-badge" aria-hidden="true"></i></i>
-													
 												</h4> 
 												@endif
 												@elseif($payment->first()->level == 'Moderator')PARTICIPANT
 												@elseif($payment->level == 'Official' || $payment->level == 'Nec' || $payment->level == 'Official')OFFICIAL
 												@elseif($payment->level == 'Choir')CHOIR
 												@elseif($payment->level == 'Medical')MEDICAL PERSONNEL
-
 												@endif
 
 											</h1>
-											<img style="width: 150px; height: 150px; margin-top: 10px; border-radius: 50%;" src="{{ asset($user->passport ? '/'.$user->passport : '/frontend/passports/avatar.jpg') }}">
+											<img style="width: 150px; height: 150px; margin-top: 10px; border-radius: 50%;" src="{{ asset($user->passport ? '/'.$user->passport : 'https://place-hold.it/300x150?text=No%20Image&fontsize=23') }}">
 										</div>
 										<div>
 											<br>

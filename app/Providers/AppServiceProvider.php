@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Setting;
+use App\ConferenceEdition;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $setting = Setting::first();
+        $setting = ConferenceEdition::where('status','active')->first();
         if($setting){
             
             View::share('setting', $setting);

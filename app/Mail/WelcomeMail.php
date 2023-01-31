@@ -25,9 +25,7 @@ class WelcomeMail extends Mailable
      */
     public function build()
     {
-        
         return $this->markdown('emails.welcomeMail')
         ->subject('Thank you for registering');
-
     }
 }

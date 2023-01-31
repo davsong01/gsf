@@ -1,9 +1,9 @@
-@extends('layouts.dashboard')
+@extends('layouts.conference')
 @section('title', 'Donations')
 @section('active')
 <li class="breadcrumb-item">Conference Donations</li>
 @endsection
-@section('content')
+@section('content2')
 <div class="content-body">
     <!-- Zero configuration table -->
     <section id="basic-datatable">
@@ -11,10 +11,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">All Donations</h4>
-                       
-                        @include('includes.alerts')
-                        
+                        <h4 class="card-title">All Donations for {{ $edition->conference_theme }}</h4>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">

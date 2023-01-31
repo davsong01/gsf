@@ -18,7 +18,7 @@
                             <div class="d-flex justify-content-around align-items-center flex-wrap">
                                 <div class="user-analytics">
                                     <i class="bx bx-user mr-25 align-middle"></i>
-                                    <span class="align-middle text-muted">{{ auth()->user()->slot  }} Slot(s) paid for</span>
+                                    <span class="align-middle text-muted">{{ auth()->user()->payment->slot  }} Slot(s) paid for</span>
                                     <div class="d-flex">
                                         <div id="radial-success-chart"></div>
                                         <h3 class="mt-1 ml-50"></h3>
@@ -26,7 +26,7 @@
                                 </div>
                                 <div class="sessions-analytics">
                                     <i class="bx bx-trending-down align-middle mr-25" style="color:red"></i>
-                                    <span class="align-middle text-muted">{{ auth()->user()->slot_filled }} Slot(s) used</span>
+                                    <span class="align-middle text-muted">{{ auth()->user()->payment->slot_filled }} Slot(s) used</span>
                                     <div class="d-flex">
                                         <div id="radial-warning-chart-down"></div>
                                         <h3 class="mt-1 ml-50"></h3>
@@ -34,7 +34,7 @@
                                 </div>
                                 <div class="sessions-analytics">
                                     <i class="bx bx-trending-up align-middle mr-25" style="color:green"></i>
-                                    <span class="align-middle text-muted">{{ auth()->user()->slot - auth()->user()->slot_filled }} Slot(s) remaining</span>
+                                    <span class="align-middle text-muted">{{ auth()->user()->payment->slot - auth()->user()->payment->slot_filled }} Slot(s) remaining</span>
                                     <div class="d-flex">
                                         <div id="radial-warning-chart"></div>
                                         <h3 class="mt-1 ml-50"></h3>
@@ -42,7 +42,7 @@
                                 </div>
                                 <div class="bounce-rate-analytics">
                                     <i class="bx bx-pie-user align-middle mr-25"></i>
-                                    <span class="align-middle text-muted">{{ $pending_registration->count() }} Pending Registration</span>
+                                    <span class="align-middle text-muted">{{ $pending_registration }} Pending Registration</span>
                                     <div class="d-flex">
                                         <div id="radial-danger-chart"></div>
                                         <h3 class="mt-1 ml-50"></h3>
@@ -50,7 +50,7 @@
                                 </div>
                                 <div class="bounce-rate-analytics">
                                     <i class="fa fa-registered align-middle mr-25"></i>
-                                    <span class="align-middle text-muted">{{ $completed_registration->count() }} Complete Registration</span>
+                                    <span class="align-middle text-muted">{{ $completed_registration }} Complete Registration</span>
                                     <div class="d-flex">
                                         <div id="radial-danger-chart"></div>
                                         <h3 class="mt-1 ml-50"></h3>
@@ -65,68 +65,89 @@
             </div>
         </div>
     </section>
-        <!-- Dashboard Ecommerce Starts -->
-        <section id="dashboard-ecommerce">
-            <div class="row">
-                <div class="col-md-12 dashboard-users">
-                    <div class="row  ">
-                        <!-- Statistics Cards Starts -->
-                        <div class="col-12">
-                            <div class="row">
-                                <div class="col-sm-4 col-12 dashboard-users-success">
-                                    <div class="card text-center">
-                                        <a href="{{ route('payouts.index') }}">
-                                            <div class="card-content">
-                                                <div class="card-body py-1">
-                                                    <div class="badge-circle badge-circle-lg badge-circle-light-success mx-auto mb-50">
-                                                        <i class="bx bx-briefcase-alt font-medium-5"></i>
-                                                    </div>
-                                                    <div class="text-muted line-ellipsis">Pending Payouts</div>
-                                                    <h3 class="mb-0"></h3>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4 col-12 dashboard-users-danger">
-                                    <div class="card text-center">
-                                        <a href="{{ route('payouts.index') }}">
-                                            <div class="card-content">
-                                                <div class="card-body py-1">
-                                                    <div class="badge-circle badge-circle-lg badge-circle-light-warning mx-auto mb-50">
-                                                        <i class="bx bx-dollar font-medium-5"></i>
-                                                    </div>
-                                                    <div class="text-muted line-ellipsis">Completed Payouts</div>
-                                                    <h3 class="mb-0"></h3>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4 col-12 dashboard-users-danger">
-                                    <div class="card text-center">
-                                        <a href="{{ route('users.index') }}">
-                                            <div class="card-content">
-                                                <div class="card-body py-1">
-                                                    <div class="badge-circle badge-circle-lg badge-circle-light-danger mx-auto mb-50">
-                                                        <i class="bx bx-user font-medium-5"></i>
-                                                    </div>
-                                                    <div class="text-muted line-ellipsis">Eligible for Payout</div>
-                                                    <h3 class="mb-0"></h3>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
+</div>
+<section id="basic-datatable">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">My Participants</h4>
+                        @if(auth()->user()->payment->slot >  auth()->user()->payment->slot_filled)
+                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new participant <strong>({{ (auth()->user()->slot -  (auth()->user()->slot_filled )) }} slot(s) left)</strong></a>  
+                        <a href="{{ route('moderator.conference.import.index') }}" class="btn btn-primary mt-1">Import</a>
+                        @endif
+                        @include('includes.alerts')
+                        
+                    </div>
+                    <div class="card-content">
+                        <div class="card-body card-dashboard">
+                            <div class="table-responsive">
+                                <table class="table zero-configuration">
+                                    <thead>
+                                        <tr>
+                                            <th>S/N</th>
+                                            <th>Passport</th>
+                                            <th>Conference ID</th>
+                                            <th>Status</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Amount Paid</th>
+                                            <th>Uploaded by</th>
+                                            
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(isset($myParticipantsAll))
+                                        @foreach($myParticipantsAll as $participant)
+                                        <tr>
+                                            <td>{{ $count ++}}</td>
+                                            <td>
+                                                <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->passport ? '/'.$participant->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
+                                            </td>
+                                            <td>{{ $participant->conference_number }}</td>
+                                            <td>@if($participant->registration_status == 'Complete')
+                                                <i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small> @else
+                                                <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Pending</small>
+                                                @endif
+                                            </td>
+                                            
+                                            <td>{{ $participant->name }}</td>
+                                            <td>{{ $participant->email }}</td>
+                                            <td>{{ $participant->phone }}</td>
+                                            <td>&#8358;{{ $participant->amount_paid }}</td>
+                                            <td>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
+                                                @else N/A @endif
+                                            </td>
+                                            
+                                                
+                                            <td style="padding-left: 5px;padding-right: 5px;">
+                                            <a class="actions" data-toggle="tooltip" title="View/Edit Participant" href="{{ route('users.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
+                                            </a>
+                                            
+                                            @if($participant->registration_status == 'Complete')
+                                            <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('participants.card', $participant->id) }}"> <i class="fa fa-print actions"></i></
+                                            </a>
+                                           
+                                            <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('meal.ticket', $participant->id) }}"> <i class="icon-food actions"></i></
+                                            </a>
+                                            @endif
+                                            @if(auth()->user()->id != $participant->id)
+                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Participant" href="{{ route('users.delete', $participant->id) }}"> <i class="fa fa-trash"></i></
+                                            </a>
+                                            @endif
+                                        </tr>
+                                        @endforeach
+                                        @endif
+                                    </tbody>
+                                    
+                                </table>
                             </div>
                         </div>
-                        <!-- Revenue Growth Chart Starts -->
                     </div>
                 </div>
-            </div> 
-        </section>
-        <!-- Dashboard Ecommerce ends -->
-
-       
-</div>
+            </div>
+        </div>
+    </section>
 @endsection

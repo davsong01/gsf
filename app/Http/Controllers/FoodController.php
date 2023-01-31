@@ -3,42 +3,46 @@
 namespace App\Http\Controllers;
 
 use App\Food;
+use App\ConferenceEdition;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 class FoodController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-         $count = 1;
+        $count = 1;
+        $edition = ConferenceEdition::find($request->edition);
         if(auth()->user()->role == 1){
-            $foods = Food::orderBy('created_at', 'desc')->get();
+            $foods = Food::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
         
-            return view('conference_management.admin.food.index', compact('foods', 'count'));
+            return view('conference_management.admin.food.index', compact('foods', 'count','edition'));
         }return abort(404);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('conference_management.admin.food.create');
+        $edition = ConferenceEdition::find($request->edition);
+        return view('conference_management.admin.food.create',compact('edition'));
     }
-
 
     public function store(Request $request)
     {
-         $data = $this->validate($request, [
+        $data = $this->validate($request, [
             'name' => 'required|min:5',
             'level' => 'required',
             'capacity' => 'required',
+            'edition' => 'required'
         ]);
 
         Food::create([
             'name' => $data['name'],
             'level' => $data['level'],
             'capacity' => $data['capacity'],
+            'conference_edition_id' => $data['edition'],
         ]);
 
-        return redirect(route('foods.index'))->with('message', 'Food Stand succesfully created');
+        return redirect(route('foods.index',['edition'=>$request->edition]))->with('message', 'Food Stand succesfully created');
     }
 
     public function show(Food $food)
@@ -46,27 +50,27 @@ class FoodController extends Controller
         //
     }
 
-    public function edit(Food $food)
+    public function edit(Food $food,Request $request)
     {
-        return view('conference_management.admin.food.edit', compact('food'));
+        $edition = ConferenceEdition::find($request->edition);
+        
+        return view('conference_management.admin.food.edit', compact('food','edition'));
     }
 
     public function update(Request $request, Food $food)
     {
-        $food->update($request->all());
-    
-        return redirect()->back()->with('message', 'Update successful!');
+        $food->update($request->except('edition'));
+        return back()->with('message', 'Update successful!');        
     }
 
-    public function destroy($id)
+    public function destroy($id,Request $request)
     {
+        $edition = ConferenceEdition::find($request->edition);
         $food = Food::findOrFail($id);
 
-        if(auth()->user()->level == 'Admin'){
-           $food->delete();          
-            
+        if(auth()->user()->role == 1){
+            $food->delete();          
             return back()->with('message',' Delete succesful!');
-
         }return abort(404);
     }
 }

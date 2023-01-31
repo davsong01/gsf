@@ -3,25 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Hostel;
+use App\ConferenceEdition;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 class HostelController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
+        $edition = ConferenceEdition::find($request->edition);
         $count = 1;
+       
         if(auth()->user()->role == 1){
-            $hostels = Hostel::orderBy('created_at', 'desc')->get();
-        
-            return view('conference_management.admin.hostel.index', compact('hostels', 'count'));
+            $hostels = Hostel::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
+
+            return view('conference_management.admin.hostel.index', compact('hostels', 'count','edition'));
         }return abort(404);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('conference_management.admin.hostel.create');
+        $edition = ConferenceEdition::find($request->edition);
+        return view('conference_management.admin.hostel.create',compact('edition'));
     }
 
     public function store(Request $request)
@@ -31,6 +35,7 @@ class HostelController extends Controller
             'type' => 'required',
             'level' => 'required',
             'capacity' => 'required',
+            'edition' => 'required',
         ]);
 
         Hostel::create([
@@ -38,9 +43,10 @@ class HostelController extends Controller
             'type' => $data['type'],
             'level' => $data['level'],
             'capacity' => $data['capacity'],
+            'conference_edition_id' => $data['edition'],
         ]);
 
-        return redirect(route('hostels.index'))->with('message', 'Hostel succesfully created');
+        return redirect(route('hostels.index',['edition'=>$request->edition]))->with('message', 'Hostel succesfully created');
     }
 
     public function show(Hostel $hostel)
@@ -49,22 +55,21 @@ class HostelController extends Controller
     }
 
 
-    public function edit(Hostel $hostel)
+    public function edit(Hostel $hostel, Request $request)
     {
-        return view('conference_management.admin.hostel.edit', compact('hostel'));
+        $edition = ConferenceEdition::find($request->edition);
+        return view('conference_management.admin.hostel.edit', compact('hostel','edition'));
     }
 
     public function update(Request $request, Hostel $hostel)
     {
-     
-            $hostel->update($request->all());
-       
-
-        return redirect()->back()->with('message', 'Update successful!');
+        $hostel->update($request->except('edition_id'));
+        return back()->with('message', 'Update successful!');
     }
 
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
+        $edition = ConferenceEdition::find($request->edition);
         $hostel = Hostel::findOrFail($id);
 
         if(auth()->user()->role == 1){

@@ -12,7 +12,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All Hostels</h4>
-                        <a href="{{ route('hostels.create') }}" class="btn btn-primary mt-1">Add new Hostel</a>                        
+                        <a href="{{ route('hostels.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Hostel</a>                        
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -40,10 +40,10 @@
                                             <td>{{ $hostel->allocation }}</td>
                                             
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                            <a class="actions" data-toggle="tooltip" title="View/Update hostel details" href="{{ route('hostels.edit', $hostel->id) }}"> <i class="bx bxs-edit actions"></i>
+                                            <a class="actions" data-toggle="tooltip" title="View/Update hostel details" href="{{ route('hostels.edit', ['hostel'=>$hostel->id, 'edition'=>$edition->id, ]) }}"> <i class="bx bxs-edit actions"></i>
                                             </a>
                                            
-                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Hostel" href="{{ route('hostels.delete', $hostel->id) }}"> <i class="fa fa-trash"></i></
+                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Hostel" href="{{ route('hostels.delete', ['id'=>$hostel->id,'edition'=>$edition->id]) }}"> <i style="padding: 5px;" class="fa fa-trash"></i></
                                             </a>
                                         </tr>
                                       

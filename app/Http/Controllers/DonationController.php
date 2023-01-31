@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\ConferenceEdition;
 use App\Donation;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -13,11 +14,13 @@ class DonationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request, $edition="")
     {
+        $edition = ConferenceEdition::find($request->edition);
         $count = 1;
-        $donations = Donation::all();
-        return view('admin.donations.index', compact('donations', 'count'));
+        $donations = Donation::where('conference_edition_id',$edition->id)->get();
+        
+        return view('admin.donations.index', compact('donations', 'count', 'edition'));
     }
 
     /**

@@ -23,8 +23,8 @@
                             placeholder="Enter your phone number" required="required">
                     </div>
                     <div class="control-group">
-                        <label for="chapter">GSF Campus</label><br>
-                        <select name="chapter" class="form-control select2" id="chapterind" class="chapter" required>
+                        <label for="chapter">GSF Campus</label> <small style="color:blue">(Please Select "other" if you are coming from an assembly)</small><br>
+                        <select name="chapter" class="form-control select2" id="chapterfell" required>
                             <option value="">--Select Campus</option>
                             @foreach($chapters as $chapter)
                                 <option value="{{ $chapter->id }}" {{ old('chapter') == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>  

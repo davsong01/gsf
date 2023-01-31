@@ -79,7 +79,7 @@ class ModeratorController extends Controller
     public function update(Request $request, Moderator $moderator)
     {
       
-        if($request->amount_paid / Setting::select('registration_fee')->first()->value('registration_fee') <> $request->slot){
+        if($request->amount_paid / $this->conferenceEdition()->registration_fee <> $request->slot){
             return back ()->with('error', 'Amount paid must correspond with number of slot for this moderator!');
         }
          //handle password

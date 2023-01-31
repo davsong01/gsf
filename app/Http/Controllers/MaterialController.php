@@ -3,21 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Material;
+use App\ConferenceEdition;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 class MaterialController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $count = 1;
-        $materials = Material::all();
-
-        if(auth()->user()->level == 'Admin'){
-           
-            return view('admin.materials.index', compact('materials', 'count'));
-
+        $edition = ConferenceEdition::find($request->edition);
+        $materials = Material::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
+        
+        if(auth()->user()->role == 1){
+            return view('admin.materials.index', compact('materials', 'count', 'edition'));
         }
+
         if(auth()->user()->level == 'Participant' || auth()->user()->level == 'Moderator' || auth()->user()->level == 'Alumni' || auth()->user()->level == 'Nec'){
            return view('participant.materials', compact('materials', 'count'));
         }

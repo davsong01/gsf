@@ -1,9 +1,9 @@
-@extends('layouts.dashboard')
+@extends('layouts.conference')
 @section('title', 'Materials')
 @section('active')
 <li class="breadcrumb-item">Conference Materials</li>
 @endsection
-@section('content')
+@section('content2')
 <div class="content-body">
     <!-- Zero configuration table -->
     <section id="basic-datatable">
@@ -13,8 +13,6 @@
                     <div class="card-header">
                         <h4 class="card-title">All materials</h4>
                         <a href="{{ route('materials.create') }}" class="btn btn-primary mt-1">Upload new material</a>
-                        @include('includes.alerts')
-                        
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -34,14 +32,12 @@
                                             
                                             <td>{{ $material->name }}</td>                                           
                                             <td>
-                                                 <a class="actions" data-toggle="tooltip" title="Download Material" href="{{ route('materials.show', $material->id) }}"> <i class="bx bxs-download actions"></i>
+                                                <a class="actions" data-toggle="tooltip" title="Download Material" href="{{ route('materials.show', $material->id) }}"> <i class="bx bxs-download actions"></i>
                                                 </a>
-                                           
-                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete material" href="{{ route('materials.delete', $material->id) }}"> <i class="fa fa-trash"></i></
-                                            </a>
+                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete material" href="{{ route('materials.delete', $material->id) }}"> <i class="fa fa-trash"></i></
+                                                </a>
                                             </td>
                                         </tr>
-                                      
                                         @endforeach
                                     </tbody>
                                     

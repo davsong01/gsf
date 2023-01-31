@@ -56,10 +56,10 @@
 
                     <div class="col-md-12">
                         <div class="contact-text">
-                            <a class="btn submitregistration" href="/account" data-toggle="tooltip" data-placement="top" title="Click to login" style="width:100%; margin-bottom:30px">Login to complete registration</a><br><br>
+                            <a class="btn submitregistration" href="{{ route('conferencemanagement.index', ['edition'=>$data['conference_edition_id']]) }}" data-toggle="tooltip" data-placement="top" title="Click to login" style="width:100%; margin-bottom:30px">Login to access your dashboard</a><br><br>
                             <h3> <strong> Your Login Details are</strong>
                             </h3>
-                            <p>Conference Number: {{ $data['conference_number'] }}  <br>
+                            <p>Family ID: {{ $data['family_id'] }}  <br>
                             Password: {{ $data['phone'] }} 
                             </p>
                         </div>                       

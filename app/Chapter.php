@@ -33,6 +33,11 @@ class Chapter extends Model
         return $this->hasMany(Event::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function registerdParticipants()
     {
         return $this->hasManyThrough(Payment::class, User::class);

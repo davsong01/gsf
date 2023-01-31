@@ -10,20 +10,25 @@ Below are the details of your registration
 <strong>Email: </strong> {{ $data['email'] }} <br>
 <strong>Phone: </strong> {{ $data['phone'] }} <br>
 <strong>Family ID: </strong>{{ $data['family_id'] }} <br>
-<strong>Amount Paid: </strong> &#8358;{{ $data['amount'] }} <br>
+<strong>Amount Paid: </strong> &#8358;{{ $data['amount'] }}
 
+<strong>Allocation Detals:</strong> <br>
+@if(isset($data['hostel']) && !empty($data['hostel']))
+<strong>Allocated Hostel: </strong>{{ $data['hostel'] }} <br>
+@endif
+@if(isset($data['foodstand']) && !empty($data['foodstand']))
+<strong>Allocated Foodstand: </strong>{{ $data['foodstand'] }} <br>
+@endif
 
-To complete your registration and have access to hostel space, food stand, I.D. card and more, kindly login to your personalized portal and fill in your details.
-
-Login Details are:
+Kindly login to you dashboard with the following details to view your profile and print ID card:
 
 <strong>Family ID: </strong> {{ $data['family_id'] }} <br>
 <strong>Password: </strong> {{ $data['phone'] }}<br>
 
 You can login and change your password for confidential reasons
 
-@component('mail::button', ['url' => config('app.url') .'account'])
-Login to portal here<br><br>
+@component('mail::button', ['url' => url('/') .'/account'])
+Login here<br><br>
 @endcomponent
 
 

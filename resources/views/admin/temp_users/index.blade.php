@@ -1,9 +1,9 @@
-@extends('layouts.dashboard')
+@extends('layouts.conference')
 @section('title', 'Transactions')
 @section('active')
 <li class="breadcrumb-item">Attempted/Not Completed Transactions</li>
 @endsection
-@section('content')
+@section('content2')
 <div class="content-body">
     <!-- Zero configuration table -->
     <section id="basic-datatable">
@@ -12,9 +12,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All Attempted Transactions</h4>
-                       
-                        @include('includes.alerts')
-                        
+                      
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">

@@ -51,7 +51,7 @@
                                                 <small>
                                                     Students: {{ $chapter->users->where('status', 0)->count() }} <br>
                                                     Alumni: {{ $chapter->users->where('status', 1)->count() }} 
-                                                    @if(\App\Setting::first()->value('enable_conference') == 1)
+                                                    @if($setting)
                                                     <br>
                                                     Conference Participants: {{ $chapter->registerdParticipants->count() }}
                                                     @endif

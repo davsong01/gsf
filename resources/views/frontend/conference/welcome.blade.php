@@ -51,11 +51,11 @@
                 </div>
                 <div class="col-md-4 col-sm-6" id="fellowshipregbutton">
                     <a class="btn submit" onclick="myFunction2()" id="fellowshipregbutton" data-toggle="tooltip" data-placement="top"
-                        title="Register on behalf of your fellowship members" style="width:100%">Fellowship</a>
+                        title="Register on behalf of your fellowship members" style="width:100%">Fellowship/Assembly</a>
                 </div>
                 <div class="col-md-4 col-sm-6" id="alumniregbutton">
                     <a class="btn submit" onclick="myFunction3()" id="alumniregbutton" data-toggle="tooltip" data-placement="top"
-                        title="Register as an alumni"  style="width:100%">Alumni</a>
+                        title="Register as an alumni"  style="width:100%">GSF Alumni</a>
                 </div>               
                 @else
                 <div class="col-md-12 col-sm-12">

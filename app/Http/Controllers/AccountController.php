@@ -22,11 +22,8 @@ use Illuminate\Database\Eloquent\Collection;
 
 class AccountController extends Controller
 {
-	
-
 	public function index()
 	{
-
 		if(auth()->user()->isSubAdmin() && auth()->user()->isMember()){// Only sub admins who are members
 			$users = User::where('chapter_id', auth()->user()->chapter_id)
 				->where('id', '<>', auth()->user()->id)
@@ -48,7 +45,6 @@ class AccountController extends Controller
 			$chapters = Chapter::get();
 
 			return view('admin.index', compact('users', 'alumnis', 'chapters', 'fields', 'zones'));
-
 		}else{
 			$user = auth()->user();
 			$chapters = Chapter::all();
@@ -59,7 +55,7 @@ class AccountController extends Controller
 			if($president){
 				$president = $president->where('role', 'President')->first();
 			}
-	
+			
 			return view('admin.users.profile', compact('chapters', 'user', 'president', 'portfolios', 'sessions'));
 		}
 

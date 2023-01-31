@@ -1,7 +1,7 @@
 @extends('layouts.conference')
 @section('title', 'New hostel')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('hostels.index') }}">Hostels</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('hostels.index',['edition'=>$edition->id]) }}">Hostels</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Create hostel</li>
@@ -18,9 +18,8 @@
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('hostels.store') }}" method="POST">
+                            <form action="{{ route('hostels.store',['edition'=>$edition->id]) }}" method="POST">
                             @csrf
-                            
                             <div class="row">
                                 <div class="col-md-12 col-sm-12">
                                     <fieldset class="form-group">

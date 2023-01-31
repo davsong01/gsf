@@ -4,64 +4,66 @@
     @include('includes.alerts')
     <!-- Dashboard Analytics Start -->
     <section id="dashboard-analytics">
+        
         <div class="row">
             <!-- Website Analytics Starts-->
             <div class="col-md-12 col-sm-12">
                 <div class="card">
                     <div class="card-header">
+                        <h5 style="color:blue">{{ $edition->conference_theme }} Conference Edition</h5>
                         <ul class="nav nav-tabs">
-                          @if(\App\Setting::first()->value('enable_conference') == 1)
+                          @if(isset($edition))
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferencemanagement*') ? 'active' : '' }}" aria-current="page" href="{{ route('conferencemanagement.index') }}">Conference Dashboad</a>
+                              <a class="nav-link {{ Request::is('conferenceparticipants/Participant*') ? 'active' : '' }}" href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">Participants</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferenceparticipants*') ? 'active' : '' }}" href="{{ route('conference.participants') }}">Participants</a>
+                              <a class="nav-link {{ Request::is('conferenceparticipants/Moderator*') ? 'active' : '' }}" href="{{ route('conference.participants',['type'=>'Moderator', 'edition'=>$edition->id]) }}">Moderators</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferenceparticipants*') ? 'active' : '' }}" href="{{ route('conference.participants') }}">Moderators</a>
+                              <a class="nav-link {{ Request::is('conferenceparticipants/Choir*') ? 'active' : '' }}" href="{{ route('conference.participants',['type'=>'Choir', 'edition'=>$edition->id]) }}">Choristers</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferenceparticipants*') ? 'active' : '' }}" href="{{ route('conference.participants') }}">Choristers</a>
+                              <a class="nav-link {{ Request::is('conferenceparticipants/Medic*') ? 'active' : '' }}" href="{{ route('conference.participants', ['type'=>'Medical', 'edition'=>$edition->id]) }}">Medics</a>
+                            </li>
+                             <li class="nav-item">
+                              <a class="nav-link {{ Request::is('conferenceparticipants/Alumni*') ? 'active' : '' }}" href="{{ route('conference.participants', ['type'=>'Alumni', 'edition'=>$edition->id]) }}">Alumni</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferenceparticipants*') ? 'active' : '' }}" href="{{ route('conference.participants') }}">Medics</a>
+                              <a class="nav-link {{ Request::is('conferenceparticipants/Nec*') ? 'active' : '' }}" href="{{ route('conference.participants',['type'=>'Nec', 'edition'=>$edition->id]) }}">Nec</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link" href="#">Alumni</a>
+                              <a class="nav-link {{ Request::is('conferenceparticipants/Official*') ? 'active' : '' }}" href="{{ route('conference.participants', ['type'=>'Official', 'edition'=>$edition->id]) }}">Officials</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferenceparticipants*') ? 'active' : '' }}" href="{{ route('conference.participants') }}">Nec</a>
+                              <a class="nav-link {{ Request::is('tempusers*') ? 'active' : '' }}" href="{{ route('tempusers.index',['edition'=>$edition->id]) }}">Attempted Transactions</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferenceparticipants*') ? 'active' : '' }}" href="{{ route('conference.participants') }}">Officials</a>
+                              <a class="nav-link {{ Request::is('donations*') ? 'active' : '' }}" href="{{ route('donations.index',['edition'=>$edition->id]) }}">Donations</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferenceparticipants*') ? 'active' : '' }}" href="{{ route('conference.participants') }}">Attempted Transactions</a>
+                              <a class="nav-link {{ Request::is('hostels*') ? 'active' : '' }}" href="{{ route('hostels.index',['edition'=>$edition->id]) }}">Hostels</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferenceparticipants*') ? 'active' : '' }}" href="{{ route('conference.participants') }}">Donations</a>
+                              <a class="nav-link {{ Request::is('foods*') ? 'active' : '' }}" href="{{ route('foods.index',['edition'=>$edition->id]) }}">Food stands</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('hostels*') ? 'active' : '' }}" href="{{ route('hostels.index') }}">Hostels</a>
-                            </li>
-                            <li class="nav-item">
-                              <a class="nav-link {{ Request::is('foods*') ? 'active' : '' }}" href="{{ route('foods.index') }}">Food stands</a>
-                            </li>
-                            <li class="nav-item">
-                              <a class="nav-link{{ Request::is('users/trashed') ? 'active' : '' }}" href="{{ route('conferenceparticipants.trashed') }}">Trashed Participants</a>
+                              <a class="nav-link {{ Request::is('trashed*') ? 'active' : '' }}" href="{{ route('conferenceparticipants.trashed',['edition'=>$edition->id]) }}">Trashed Participants</a>
                             </li>
                             
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('emai*') ? 'active' : '' }}" href="{{ route('email.index') }}">Email Participants</a>
+                              <a class="nav-link {{ Request::is('email*') ? 'active' : '' }}" href="{{ route('email.index') }}">Email Participants</a>
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Materials</a>
+                               <a class="nav-link {{ Request::is('materials*') ? 'active' : '' }}" href="{{ route('materials.index',['edition'=>$edition->id]) }}">Materials</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link {{ Request::is('import/export*') ? 'active' : '' }}" href="{{ route('edit.conference.edition', $edition->id) }}">Import/Export</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link {{ Request::is('conferenceeditions*') ? 'active' : '' }}" href="{{ route('edit.conference.edition', $edition->id) }}">Settings</a>
                             </li>
                           @endif
-                            <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferencesettings') ? 'active' : '' }}" href="{{ route('conferencesettings.index') }}">Settings</a>
-                            </li>
                           </ul>
                     </div>
                    

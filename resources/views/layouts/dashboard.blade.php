@@ -12,8 +12,7 @@
     <!-- BEGIN: Header-->
     @include('includes.header')
     <!-- END: Header-->
-
-
+    
     <!-- BEGIN: Main Menu-->
     @include('includes.main_menu')
     <!-- END: Main Menu-->

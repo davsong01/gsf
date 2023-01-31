@@ -17,15 +17,19 @@
                 style="color:yellow !important; font-weight:bolder" href="{{ route('stop.switchuser') }}" aria-expanded="false"><i class="fa fa-arrow-left"></i><span
                     class="hide-menu">BACK TO ADMIN</span></a></li>
             @endif
-
+            
             @if(auth::user()->role == 1)
             {{-- Admin menus --}}
-            @include('includes.adminmenu')
-            @elseif(auth()->user()->isSubAdmin() && auth()->user()->isMember())
-            @include('includes.subadminmenu')
-            @else
-            @include('includes.membermenu')
+                @include('includes.adminmenu')
+            @elseif(auth::user()->role == 3)
+            {{-- Publicity sec menu --}}
+                @include('includes.subadminmenu')
             @endif
+            @if(isset($setting->status))
+            {{-- Conference menus --}}
+                @include('includes.membermenu')
+            @endif
+
             {{-- <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="fa fa-bars"></i><span class="menu-title" data-i18n="Kanban">Dashboard</span></a>
             </li>
             
@@ -47,10 +51,6 @@
             <li class=" nav-item {{ Request::is('useremails') ? 'active' : '' }}"><a href="{{ route('useremails.index') }}"><i class="fa fa-envelope"></i><span class="menu-title" >Emails</span></a>
             </li>
            
-            
-
-        
-            
             @endif --}}
         </ul> 
     </div>

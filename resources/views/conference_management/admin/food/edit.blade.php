@@ -1,7 +1,7 @@
 @extends('layouts.conference')
 @section('title', 'Update foodstand')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('foods.index') }}">Foodstands</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('foods.index',['edition'=>$edition->id]) }}">Foodstands</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Update foodstand</li>
@@ -13,13 +13,10 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
-                        {{-- <h4 class="card-title">Update: {{ $food->name }}</h4> --}}
-                        @include('includes.alerts')
-                    </div>
+                    
                     <div class="card-content">
                         <div class="card-body">
-                        <form action="{{ route('foods.update', $food->id) }}" method="POST">
+                        <form action="{{ route('foods.update',['food'=>$food->id, 'edition'=>$edition->id]) }}" method="POST">
                         @csrf
                         @method('PATCH')
                         

@@ -11,10 +11,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">All Foodstands</h4>
-                        <a href="{{ route('foods.create') }}" class="btn btn-primary mt-1">Add new Food Stand</a>
-                        @include('includes.alerts')
-                        
+                        <h4 class="card-title">All Foodstands for {{ $edition->conference_theme }}</h4>
+                        <a href="{{ route('foods.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Food Stand</a>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -40,10 +38,10 @@
                                             <td>{{ $food->allocation }}</td>
                                             
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                            <a class="actions" data-toggle="tooltip" title="View/Update food details" href="{{ route('foods.edit', $food->id) }}"> <i class="bx bxs-edit actions"></i>
+                                            <a class="actions" data-toggle="tooltip" title="View/Update food details" href="{{ route('foods.edit', ['food'=>$food->id,'edition'=>$edition->id]) }}"> <i class="bx bxs-edit actions"></i>
                                             </a>
                                            
-                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete food" href="{{ route('foods.delete', $food->id) }}"> <i class="fa fa-trash"></i></
+                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete food" href="{{ route('foods.delete', ['id'=>$food->id,'edition'=>$edition->id]) }}"> <i class="fa fa-trash"></i></
                                             </a>
                                         </tr>
                                       

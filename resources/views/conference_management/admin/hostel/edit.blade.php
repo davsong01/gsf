@@ -1,7 +1,7 @@
 @extends('layouts.conference')
 @section('title', 'Update hostel')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('hostels.index') }}">Hostels</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('hostels.index',['edition'=>$edition->id]) }}">Hostels</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Update hostel</li>
@@ -15,15 +15,14 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Update: {{ $hostel->name }}</h4>
-                        @include('includes.alerts')
+                       
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('hostels.update', $hostel->id) }}" method="POST">
+                            <form action="{{ route('hostels.update', [$hostel->id, 'edition_id'=>$edition->id]) }}" method="POST">
                             @csrf
                             @method('PATCH')
-                         
-                       
+                   
                             <div class="row">
                                 <div class="col-md-12 col-sm-12">
                                     <fieldset class="form-group">
@@ -34,13 +33,10 @@
                                     <fieldset class="form-group">
                                         <label for="type">Type</label>
                                         <select class="form-control" name="type" id="type" required>
-                                            <option value="Male" {{ $hostel->level == 'Male' ? 'selected' : ''}}>Male</option>
-                                            <option value="Female" {{ $hostel->level == 'Female' ? 'selected' : ''}}>Female</option>
+                                            <option value="Male" {{ $hostel->type == 'Male' ? 'selected' : ''}}>Male</option>
+                                            <option value="Female" {{ $hostel->type == 'Female' ? 'selected' : ''}}>Female</option>
                                         </select>
                                     </fieldset>
-                                    
-                                    
-
                                     <fieldset class="form-group">
                                         <label for="level">Level</label>
                                         <select class="form-control" name="level" id="level" required>

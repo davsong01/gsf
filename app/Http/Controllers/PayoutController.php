@@ -70,7 +70,7 @@ class PayoutController extends Controller
             ]);
                 
             //Sendmail to admin
-            $settings = Setting::first();
+            $settings = $this->conferenceEdition();
            
             $data = [
                 'type' => 'payout_notification',
@@ -102,7 +102,7 @@ class PayoutController extends Controller
             $payout->save();
 
             //Send Email to user
-            $settings = Setting::first();
+            $settings = $this->conferenceEdition();
             $data = [
                 'type' => 'payment_made',
                 'name' => $payout->user->username,

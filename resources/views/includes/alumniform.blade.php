@@ -28,7 +28,14 @@
                         <input type="text" class="form-control" id="phone" name="phone"
                             placeholder="Enter your phone number" required="required">
                     </div>
-
+                    <div class="control-group">
+						<label for="gender">Gender</label><br>
+						<select name="gender" class="form-control" id="" class="chapter" required>
+							<option value="">--Select</option>
+							<option value="Male">Male</option>
+							<option value="Female">Female</option>
+						</select>
+					</div>
                     <div class="control-group">
                         <label>Old alumni/New alumni?</label>
                         <select name="alumni_type" class="form-control select2"
@@ -48,15 +55,12 @@
                     {{-- <input type="hidden" name="orderID" value="345"> --}}
                     <div class="control-group">
                         
-                        <input class="form-control" type="hidden" name="amount" id="alumni_amount"
-                            value="{{ $setting->alumni_fee * 100 }}" readonly required> {{-- required in kobo --}}
+                    <input class="form-control" type="hidden" name="amount" id="alumni_amount" value="{{ $setting->alumni_fee * 100 }}" readonly required>
                     </div>
                     <input type="hidden" name="quantity" value="1">
                     <input type="hidden" name="currency" value="NGN">
                     <input type="hidden" name="metadata" value="{{ json_encode($array = ['type' => '3']) }}">
-                    {{-- For other necessary things you want to add to your payload. it is optional though --}}
-                    <input type="hidden" name="reference" value="{{ Paystack::genTranxRef() }}"> {{-- required --}}
-                    <input type="hidden" name="_token" value="{{ csrf_token() }}"> {{-- employ this in place of csrf_field only in laravel 5.0 --}}
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
                     <div class="control-group">
                         <button class="btn submitregistration" type="submit" style="width:100%">Proceed to
                             Payment</button>

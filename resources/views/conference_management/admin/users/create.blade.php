@@ -1,12 +1,12 @@
 @extends('layouts.conference')
 @section('title', 'Add Participant')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('participants.index') }}">Participants</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('participants.index', ['edition'=>$edition->id]) }}">Participants</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Add Participant</li>
 @endsection
-@section('content')
+@section('content2')
 <div class="content-body">
     <!-- Basic Inputs start -->
     <section id="basic-input">
@@ -15,11 +15,10 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Register new participant</h4>
-                        @include('includes.alerts')
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('participants.store') }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('participants.store', ['edition'=>$edition->id]) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                                                   
                         <div class="row">
@@ -80,14 +79,7 @@
                                 
                             </div>
                             <div class="col-md-6 col-sm-12">                               
-                                <fieldset class="form-group">
-                                    <label for="payment_type">Payment Type</label>
-                                    <input type="text" id="payment_type" placeholder="Online or Bank" name="payment_type" class="form-control" value="{{ old('payment_type') }}" required>
-                                </fieldset> 
-                                <fieldset class="form-group">
-                                    <label for="transid">Transaction ID</label>
-                                    <input type="text" id="transid" name="transid" placeholder="Enter Transaction Id or Bank name " class="form-control" value="{{ old('transid') }}" required>
-                                </fieldset>
+                               
                                 <fieldset class="form-group">
                                     <label for="hostel_id">Hostel</label>
                                     <select class="form-control" name="hostel_id" id="hostel_id" required>
@@ -124,17 +116,18 @@
                                 </fieldset>
                                 
                                 <fieldset class="form-group">
-                                    <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank to use the participant's phone number as password</i></small>
+                                    <label for="password">Password</label><small class="text-muted"><i style="color:red">(Leave blank to use the participant's phone number as password)</i></small>
                                     <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
                                 </fieldset>
-
                                 <fieldset class="form-group">
                                     <label for="amount_paid">Amount Paid</label>
                                     <input type="number" name="amount_paid" id="amount_paid" placeholder="Enter amount paid" class="form-control" value="{{ old('amount_paid') }}" required>
                                 </fieldset>
-                                
+                                <fieldset class="form-group">
+                                    <label for="transid">Transaction ID</label>
+                                    <input type="text" id="transid" name="transid" placeholder="Enter Transaction Id or Bank name " class="form-control" value="{{ old('transid') }}">
+                                </fieldset>
                             </div>
-                            
                         </div>
                         <div class="row">
                             <div class="col-md-12 col-sm-12">

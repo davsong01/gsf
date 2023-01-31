@@ -39,20 +39,24 @@
 						@enderror
 					</div>
 					<div class="control-group">
-						<label for="chapter">GSF Campus</label><br>
-						<select name="chapter" class="form-control select2 @error('chapter')is-invalid @enderror" id="chapterind"
+						<label for="gender">Gender</label><br>
+						<select name="gender" class="form-control" id=""
 							class="chapter" required>
-							<option value="">--Select Campus</option>
-							@foreach($chapters as $chapter)
-							<option value="{{ $chapter->id }}" {{ old('chapter') == $chapter->id ? 'selected' : ''}}>
-								{{ $chapter->name }}</option>
-							@endforeach
-							@error('chapter')
-							<span class="invalid-feedback" role="alert">
-								<strong>{{ $message }}</strong>
-							</span>
-							@enderror
+							<option value="">--Select</option>
+							<option value="Male">Male</option>
+							<option value="Female">Female</option>
 						</select>
+					</div>
+					<div class="control-group">
+						
+                        <label for="chapter">GSF Campus</label> <small style="color:blue">(Please Select "other" if you are coming from an assembly)</small><br>
+                        <select name="chapter" class="form-control select2 chapterind" id="chapterind" required>
+                            <option value="">--Select Campus</option>
+                            @foreach($chapters as $chapter)
+                                <option value="{{ $chapter->id }}" {{ old('chapter') == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>  
+                            @endforeach
+                        </select>
+                    </div>
 					</div>
 
 					<br>
@@ -62,7 +66,6 @@
 					<input type="hidden" name="currency" value="NGN">
 					<input type="hidden" name="metadata[]" id="metadata">
 					<input type="hidden" name="metadata" value="{{ json_encode($array = ['type' => '1',]) }}">
-					<input type="hidden" name="reference" value="{{ Paystack::genTranxRef() }}"> {{-- required --}}
 					<input type="hidden" name="_token" value="{{ csrf_token() }}">
 					{{-- employ this in place of csrf_field only in laravel 5.0 --}}
 

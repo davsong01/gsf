@@ -1,7 +1,7 @@
 @extends('layouts.conference')
 @section('title', 'Update Participant')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('conference.participants') }}">Participants</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('conference.participants', ['edition'=>$edition->id]) }}">Participants</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Edit {{ $user->user->name }}</></li>
@@ -19,7 +19,7 @@
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('conference.participants.update', $user->id) }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('conference.participants.update', ['edition'=>$edition->id,'id'=>$user->id]) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PATCH')
                          <div class="row">

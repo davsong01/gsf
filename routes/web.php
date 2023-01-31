@@ -72,6 +72,7 @@ Route::get('/stakeholderlogout', 'StakeholderLoginController@logout')->name('sta
 
 Route::get('newalumni', 'HomeController@newAlumni')->name('newalumni');
 Route::post('newalumni', 'HomeController@saveNewAlumni')->name('newalumni.save');
+
 //Logged in stakeholder Account
 Route::middleware(['stakeholder'])->group(function(){
     Route::resource('reports', 'ReportsController');
@@ -84,6 +85,7 @@ Route::middleware(['stakeholder'])->group(function(){
     
 });
 
+// Registration links
 Route::get('/registration', 'ConferenceController@index')->name('index');
 Route::get('/nec/registration/portal/pay', 'ConferenceController@necRegistration')->name('nec.registration');
 Route::post('/pay', 'PaymentController@redirectToGateway')->name('pay');
@@ -113,9 +115,28 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     
     //Conference management
     Route::resource('conferencemanagement', 'ConferenceManagementController');
-    Route::get('conferenceparticipants', 'ConferenceManagementController@participants')->name('conference.participants');
-    Route::get('conferenceparticipants/{id}/edit', 'ConferenceManagementController@edit')->name('conference.participants.edit');
-    Route::PATCH('conferenceparticipants/{id}/update', 'ConferenceManagementController@update')->name('conference.participants.update');
+    Route::resource('conferenceeditions', 'ConferenceEditionController');
+    Route::get('conferenceeditions/{id}/edit', 'ConferenceEditionController@edit')->name('edit.conference.edition');
+    Route::get('deleteedition/{id}', 'ConferenceEditionController@destroy')->name('delete.conference.edition');
+    Route::get('showedition/{id}', 'ConferenceEditionController@show')->name('show.conference.edition');
+    Route::resource('tempusers', 'TempUserController');
+
+    // Participant management
+
+    Route::resource('participants', 'ConferenceManagementController');
+    Route::get('participant/delete/{id}', 'ConferenceManagementController@destroy')->name('conferenceparticipants.delete');
+    Route::get('trashed/participants', 'ConferenceManagementController@trashed')->name('conferenceparticipants.trashed');
+
+    Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
+    Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
+    Route::get('participants/import/index', 'UserController@usersImportIndex')->name('conferenceusers.import.index');
+    Route::get('participants/export', 'UserController@usersExport')->name('conferenceusers.export');
+    Route::post('participants/import', 'UserController@import')->name('conferenceuser.import');
+    
+    
+    Route::get('conferenceparticipants/{type?}/{edition?}', 'ConferenceManagementController@participants')->name('conference.participants');
+    Route::get('edit-conferenceparticipants/{id}/edit/{edition?}', 'ConferenceManagementController@edit')->name('conference.participants.edit');
+    Route::PATCH('update-conferenceparticipants/{id}/update', 'ConferenceManagementController@update')->name('conference.participants.update');
     Route::get('resendwelcomemail/{id}/show', 'ConferenceManagementController@resendEmail')->name('participants.resendmail');
 
     Route::get('conferencecards/{id}', 'ConferenceManagementController@getCard')->name('participants.card');
@@ -132,22 +153,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('foods/delete/{id}', 'FoodController@destroy')->name('foods.delete');
 
 
-    Route::resource('participants', 'ConferenceManagementController');
-    Route::resource('tempusers', 'TempUserController');
-    Route::get('participant/delete/{id}', 'ConferenceManagementController@destroy')->name('conferenceparticipants.delete');
-    Route::get('trashed/participants', 'ConferenceManagementController@trashed')->name('conferenceparticipants.trashed');
-
-    Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
-    Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
-    Route::get('participants/import/index', 'UserController@usersImportIndex')->name('conferenceusers.import.index');
-    Route::get('participants/export', 'UserController@usersExport')->name('conferenceusers.export');
-    Route::post('participants/import', 'UserController@import')->name('conferenceuser.import');
-    
-   
-    
-    
-    
-    
     Route::group([], function(){
         Route::get('/official/import/index', 'UserController@officialsImportIndex')->name('officials.import.index');
         Route::get('/official/export', 'UserController@officialsExport')->name('officials.export');

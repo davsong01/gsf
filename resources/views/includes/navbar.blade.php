@@ -1,10 +1,8 @@
 <!-- Nav Bar Start -->
-
     <div class="navbar navbar-expand-lg bg-dark navbar-dark" >
-     
         <div class="container-fluid">
             <a href="/" class="navbar-brand"> 
-                <x-logo/>
+                 <x-logo width="auto" height="70px"/>
             </a><b>GSF NATIONAL CONFERENCE {{ $conference_year}}</b>
             <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
                 <span class="navbar-toggler-icon"></span>
