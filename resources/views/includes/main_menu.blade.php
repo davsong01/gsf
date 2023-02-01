@@ -25,9 +25,11 @@
             {{-- Publicity sec menu --}}
                 @include('includes.subadminmenu')
             @endif
-            @if(isset($setting->status))
+           
+            @if(isset($setting) && $setting->status == 'active')
             {{-- Conference menus --}}
                 @include('includes.membermenu')
+            @else
             @endif
 
             {{-- <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="fa fa-bars"></i><span class="menu-title" data-i18n="Kanban">Dashboard</span></a>

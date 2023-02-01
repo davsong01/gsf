@@ -82,10 +82,10 @@
                                     <input type="phone" id="phone" name="phone" class="form-control" value="{{ old('phone') ?? $user->phone }}" required>
                                     <input type="checkbox" id="show_phone" name="show_phone" {{ $user->show_phone == 1 ? 'checked' : '' }}><label for="show_phone">&nbsp; Make phone public</label>
                                 </fieldset>
-                                
+                               
                                 <fieldset class="form-group">
                                     <label for="sex">Gender</label>
-                                    <select class="form-control" name="sex" id="sex" required>
+                                    <select class="form-control" name="sex" id="sex" required {{ isset($setting) && $setting->status == 'active'?'disabled':'' }}>
                                         <option value="Male" {{ $user->sex == 'Male' ? 'selected' : ''}}>Male</option>
                                         <option value="Female" {{ $user->sex == 'Female' ? 'selected' : ''}}>Female</option>
                                     </select>

@@ -12,6 +12,8 @@ Route::get('/queue', function () {
 Route::get('/retry', function () {
     Artisan::call('queue:retry all');
 });
+
+Route::get('test/{data?}', 'CriticalEmailController@getContent');
 Route::get('/token', 'ChapterController@generate')->name('token');
 
 Route::get('/campus', 'ChapterController@campusUpdate')->name('campus.update');
@@ -29,7 +31,6 @@ Route::get('/clear', function () {
 });
 
 Route::get('/runcron', 'CronController@cron');
-Route::get('/test', 'TestController@index');
 
 Route::get('/conference', 'ConferenceController@index');
 Route::get('/', 'HomeController@index')->name('home.index');
@@ -122,7 +123,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('tempusers', 'TempUserController');
 
     // Participant management
-
     Route::resource('participants', 'ConferenceManagementController');
     Route::get('participant/delete/{id}', 'ConferenceManagementController@destroy')->name('conferenceparticipants.delete');
     Route::get('trashed/participants', 'ConferenceManagementController@trashed')->name('conferenceparticipants.trashed');

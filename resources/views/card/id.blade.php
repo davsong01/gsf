@@ -1,17 +1,13 @@
 @extends('layouts.dashboard')
 @section('title', 'Print ID')
 @section('item')
-<li class="breadcrumb-item"><a href="{{ route('conference.participants') }}">Conference Participants</a></li>
+<li class="breadcrumb-item"><a href="{{ route('conferencemanagement.show', ['conferencemanagement'=>$payment->id, 'edition'=>$payment->conference_edition_id]) }}">Conference Participants</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Print ID Card</li>
 @endsection
 @section('extra_styles')
 <style>
-	/* body {
-		
-	} */
-
 	h2 {
 		font-size: 15px;
 		margin: 5px 0;
@@ -25,7 +21,6 @@
 @endsection
 @section('content')
 <div class="content-body">
-	@include('includes.alerts')
 	<!-- Dashboard Ecommerce Starts -->
 	<script>
 		function PrintElem()
@@ -53,7 +48,7 @@
 			<!-- Greetings Content Starts -->
 			<div class="col-md-12 col-12 dashboard-greetings">
 				<div class="card-header">
-					<a onclick="PrintElem()" class="btn btn-primary mt-1">Print I.D.</a>
+					<a style="color:white" onclick="PrintElem()" class="btn btn-primary mt-1">Print I.D. for {{ $edition->conference_theme }}</a>
 					@include('includes.alerts')
 				</div>
 
@@ -68,18 +63,17 @@
 											<img style="width:15%; height:10%" src="{{ asset('frontend/img/logo.png') }}">
 											<h2 class="name" style="margin-top: 10px; margin-bottom: 10px; font-size:22px">GOFAMINT STUDENTS' FELLOWSHIP
 											</h2>
-											<h2 class="alias" style="margin-top: 10px; margin-bottom: 10px; font-size:15px">20th Biennial National
-												Conference</h2>
-											<h3 style="font-size: 12px; margin: 2.5px 0;font-weight: 300;" class="date">{{ $setting->start_date .' to '. $setting->end_date }}</h3><br>
+											<h2 class="alias" style="margin-top: 10px; margin-bottom: 10px; font-size:15px">{{ $edition->slug }}</h2>
+											<h3 style="font-size: 12px; margin: 2.5px 0;font-weight: 300;" class="date">{{ date("F dS, Y", strtotime($setting->start_date)) .' to '. date("F dS, Y", strtotime($setting->end_date)) }}</h3><br>
 										</div>
 										<div class="photo" >
 											<h2 class="alias"  style="font-family:initial; margin-top: 5px; margin-bottom: 5px; font-size:15px">{{ $setting->conference_theme }}</h2>
 											<h1>@if($payment->level == 'Participant')PARTICIPANT
 												@elseif($payment->level == 'Alumni')ALUMNUS 
-												@if ($payment->amount_paid == $setting->new_alumni_registration_fee) <h4><i class="fa fa-id-badge" aria-hidden="true"></i>
+												@if ($payment->amount_paid == $edition->new_alumni_registration_fee) <h4><i class="fa fa-id-badge" aria-hidden="true"></i>
 													
 												</h4> 
-												@elseif ($payment->amount_paid == $setting->alumni_registration_fee) <h4><i class="fa fa-id-badge" aria-hidden="true"></i>
+												@elseif ($payment->amount_paid == $edition->alumni_registration_fee) <h4><i class="fa fa-id-badge" aria-hidden="true"></i>
 													<i class="fa fa-id-badge" aria-hidden="true"></i></i>
 												</h4> 
 												@endif

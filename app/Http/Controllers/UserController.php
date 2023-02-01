@@ -428,7 +428,7 @@ class UserController extends Controller
 			"slug" => "nullable",
 			"phone" => "required",
 			"show_phone" => "nullable",
-			"sex" => "required|alpha",
+			"sex" => "nullable",
 			"status" => "numeric",
 			"matric_year" => "required|string",
 			"graduation_year" => "nullable|string",

@@ -178,7 +178,6 @@ class Controller extends BaseController
     public function logEmail($data)
     {
         CriticalEmail::create([
-            'recipient_name' => $data['recipient_name'],
             'recipient' => $data['recipient'],
             'type' => $data['type'],
             'subject' => $data['subject'],

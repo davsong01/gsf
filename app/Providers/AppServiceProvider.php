@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $setting = ConferenceEdition::where('status','active')->first();
+        $setting = ConferenceEdition::where('status','active')->orderBy('created_at','DESC')->first();
         if($setting){
             
             View::share('setting', $setting);

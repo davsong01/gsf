@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 use PDF;
 
 use App\User;
+use App\Chapter;
 use App\Payment;
 use App\Setting;
 use App\Donation;
@@ -80,6 +81,7 @@ class PaymentController extends Controller
 		
 		try {
 			$url = $this->queryPaystack($request->all(), $setting);
+			
 			if(isset($url) && !empty($url)){
 				return redirect()->away($url);
 			}else{
@@ -99,11 +101,11 @@ class PaymentController extends Controller
 
 		$paymentDetails = $this->verify($reference, $setting);
 
-		// $this->verify()
 		if (isset($paymentDetails) && $paymentDetails->status === 'success') {
 			//get participant details
 			$participant = TempUser::where('transid', $paymentDetails->reference)->whereStatus('initiated')->first();
 			
+			// if(isset($participant) && !empty($participant)){
 			if(isset($participant) && !empty($participant)){
 				$data['name'] = $participant->name ?? null;
 				$data['phone'] = $participant->phone ?? null;
@@ -136,29 +138,32 @@ class PaymentController extends Controller
 						'amount' => $data['amount'],
 						'amount' => $data['amount'],
 						'state' => $participant->state,
+						'conference_edition_id' => $participant->conference_edition_id,
 					]);
 
 					$data['chapter'] = 'N/A';
-					$data['type'] = $paymentDetails['data']['metadata']['type'];
+					$data['conference_theme'] = $setting->conference_theme ?? null;
+					$data['type'] = 'admin_donation_notification';
+					// $data['type'] = $paymentDetails['data']['metadata']['type'];
 					$email = [
 						'recipient_name' => $data['name'],
 						'recipient' => $setting->official_email,
-						'subject' => $data['subject'],
-						'content' => $data['content'],
+						'subject' => "New Donation",
 						'type' => 'admin_donation_notification',
+						'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
 					];
 					//send email to official email
 					$this->logEmail($email);
-					
 					//delete temp user
-					$participant->delete();
-
+					$participant->status = 'Complete';
+					$participant->save();
+					
+					
 					//Todo: make this return redirect to
 					return view('frontend.conference.donationthankyou', compact('data', 'conference_year'));
 				}
 				
 				$user = $this->createUser($data);
-				
 				$payment = $this->createPayment($data, $user);
 
 				// Assign Automatic foodstand and hostel
@@ -190,14 +195,29 @@ class PaymentController extends Controller
 				
 				//update temp user
 				$participant->update(['status'=>'Complete']);
-				
+				$data['type'] = 'welcome_mail';
 				//send email to participant
-				Mail::to($data['email'])->send(new WelcomeMail($data));
+				$email = [
+					'subject' => 'Thank you for registering',
+					'recipient_name' => $data['name'],
+					'recipient' => $data['email'],
+					'type' => $data['type'],
+					'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
+				];
+				
+				$this->logEmail($email);
+				// Mail::to($data['email'])->send(new WelcomeMail($data));
+				$email['subject'] = 'New Registration';
+				$email['type'] = 'new_registration';
+				$email['recipient'] = $setting->official_email;
+				$email['chapter'] = $data['chapter'];
 
+				$email['content'] = app('App\Http\Controllers\CriticalEmailController')->getContent($data);
 				//send email to official email
-				Mail::to($this->conferenceEdition()->official_email)->send(new AdminMail($data));
-
+				$this->logEmail($email);
+				// Mail::to($this->conferenceEdition()->official_email)->send(new AdminMail($data));
 				Auth::loginUsingId($payment->user->id);
+				$data['edition'] = $setting;
 				return $this->thankYouPage($data, $conference_year);
 			}else{
 				$payment = Payment::with('user')->where('transid', $paymentDetails->reference)->first();
@@ -212,14 +232,14 @@ class PaymentController extends Controller
 						"amount" => $payment->amount_paid,
 						"transid" => $payment->transid,
 						"payment_type" => $payment->type,
-						"chapter" => $payment->user->campus->name,
+						"chapter" => $payment->user->campus->name ?? null,
 						"slot" => $payment->slot,
 						"level" => $payment->level,
 						"slot_filled" => $payment->slot_filled,
 						"password" =>  $payment->user->phone,
 						"family_id" => $payment->user->family_id,
 						"conference_edition_id" => $payment->conference_edition_id,
-						
+						"edition"=>$setting
 					];
 					
 					// Log user in
