@@ -134,7 +134,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
     Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
     Route::get('participants/import/index', 'UserController@usersImportIndex')->name('conferenceusers.import.index');
-    Route::get('participants/export', 'UserController@usersExport')->name('conferenceusers.export');
+    //Export Conference users
+    Route::get('conferenceusers/export', 'UserController@usersExport')->name('conferenceusers.export');
     Route::post('participants/import', 'UserController@import')->name('conferenceuser.import');
     
     

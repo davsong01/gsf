@@ -9,6 +9,7 @@ use App\Chapter;
 use App\Payment;
 use App\Setting;
 use App\Mail\WelcomeMail;
+use App\ConferenceEdition;
 use Illuminate\Support\Str;
 use App\Exports\UsersExport;
 use App\Imports\UsersImport;
@@ -390,27 +391,37 @@ class UserController extends Controller
 	}
 
 
-	public function usersExport()
+	public function usersExport(Request $request)
 	{
-		$user = new User();
-		$tableColumns = Schema::getColumnListing('users');
-		$columnsForeign = [
-			'hostel_id' => 'hostel_name',
-			'food_id' => 'food_name',
-			'chapter' => 'chapter'
-		];
+		$count = 1;
+		$edition = ConferenceEdition::find($request->edition);
+		
+		if (auth()->user()->role != 1) {
+			return abort(404);
+		}
+		
+		// $user = new User();
+		// $tableColumns = Schema::getColumnListing('users');
+		// $columnsForeign = [
+		// 	'hostel_id' => 'hostel_name',
+		// 	'food_id' => 'food_name',
+		// 	'chapter' => 'chapter'
+		// ];
 
-		foreach ($user->getHidden() as $key => $value) {
-			if (($k = array_search($value, $tableColumns)) !== false) {
-				unset($tableColumns[$k]);
-			}
-		}
-		foreach ($columnsForeign as $key => $value) {
-			if (in_array($key, $tableColumns)) {
-				$tableColumns[array_search($key, $tableColumns)] = $value;
-			}
-		}
-		return Excel::download(new UsersExport($tableColumns), 'users_exported.xlsx');
+		// foreach ($user->getHidden() as $key => $value) {
+		// 	if (($k = array_search($value, $tableColumns)) !== false) {
+		// 		unset($tableColumns[$k]);
+		// 	}
+		// }
+		// foreach ($columnsForeign as $key => $value) {
+		// 	if (in_array($key, $tableColumns)) {
+		// 		$tableColumns[array_search($key, $tableColumns)] = $value;
+		// 	}
+		// }
+		$data = [
+			'edition_id' => $edition->id,
+		];
+		return Excel::download(new UsersExport($data), 'users_exported.xlsx');
 	}
 
 	public function createEmail(){

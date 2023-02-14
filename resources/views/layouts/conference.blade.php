@@ -58,7 +58,10 @@
                                <a class="nav-link {{ Request::is('materials*') ? 'active' : '' }}" href="{{ route('materials.index',['edition'=>$edition->id]) }}">Materials</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('import/export*') ? 'active' : '' }}" href="{{ route('edit.conference.edition', $edition->id) }}">Import/Export</a>
+                              <a class="nav-link {{ Request::is('import*') ? 'active' : '' }}" href="{{ route('edit.conference.edition', $edition->id) }}">Import/Export</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link {{ Request::is('conferenceusers/export*') ? 'active' : '' }}" href="{{ route('conferenceusers.export',['edition'=>$edition->id]) }}">Export</a>
                             </li>
                             <li class="nav-item">
                               <a class="nav-link {{ Request::is('conferenceeditions*') ? 'active' : '' }}" href="{{ route('edit.conference.edition', $edition->id) }}">Settings</a>
