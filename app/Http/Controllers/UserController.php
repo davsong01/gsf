@@ -137,11 +137,9 @@ class UserController extends Controller
 		}
 
 		if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
-
 			if(auth()->user()->isSubAdmin() && auth()->user()->isMember() && auth()->user()->chapter_id <> $user->chapter_id){ 
 				return abort(404);
 			}
-
 			return view('admin.users.edit', compact('user', 'chapters', 'portfolios', 'sessions', 'president'));
 		}
 		
@@ -275,7 +273,7 @@ class UserController extends Controller
 
 		//Handle Passport Upload
 		if ($request['passport']) {
-			$passport = $this->uploadImage($request->passport, 'frontend/passports/', 500, 500);
+			$passport = $this->uploadImage($request->passport, 'images/passports', 500, 500);
 			$data['passport'] = $passport;		
 		} 
 		

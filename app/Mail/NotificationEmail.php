@@ -112,6 +112,10 @@ class NotificationEmail extends Mailable
             return $this->markdown('emails.admin')
             ->subject('New Registration');
         }
+      
+        if (isset($this->data['type']) && $this->data['type'] == 'welcome_mail') {
+            return $this->markdown('emails.welcomeMail')->subject('Thank you for registering');
+        }
 
     }
 }

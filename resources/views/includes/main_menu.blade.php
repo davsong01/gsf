@@ -25,10 +25,11 @@
             {{-- Publicity sec menu --}}
                 @include('includes.subadminmenu')
             @endif
-           
+            
             @if(isset($setting) && $setting->status == 'active')
-            {{-- Conference menus --}}
-                @include('includes.membermenu')
+                @if(auth::user()->role != 1)
+                    @include('includes.membermenu')
+                @endif
             @else
             @endif
 

@@ -11,9 +11,9 @@
                 
                 <div class="carousel-text">
                     <div class="banner_text">
-                        <h2 style="color:white">19TH BIENNIAL NATIONAL CONFERENCE, {{ $conference_year}}</h2><br>
+                        <h2 style="color:white">{{ $setting->slug }}, {{ $conference_year}}</h2><br>
                         <h3 style="color:white"> <strong> "{{ $setting->conference_theme }}"</strong></h3>
-                        <p style="color: yellow !important; font-weight: normal;"> <b>DATE:</b> {{ $setting->start_date }} to  {{ $setting->end_date }}
+                        <p style="color: yellow !important; font-weight: normal;">{{ date("F dS, Y", strtotime($setting->start_date)) }} to  {{ date("F dS, Y", strtotime($setting->end_date)) }}
                         </p>
                         
                         <p>

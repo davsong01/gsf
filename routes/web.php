@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CriticalEmailController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -31,7 +32,7 @@ Route::get('/clear', function () {
 });
 
 Route::get('/runcron', 'CronController@cron');
-
+Route::get('email-cron/{pick?}', 'cronController@emailCron');
 Route::get('/conference', 'ConferenceController@index');
 Route::get('/', 'HomeController@index')->name('home.index');
 
@@ -124,6 +125,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     // Participant management
     Route::resource('participants', 'ConferenceManagementController');
+    Route::resource('criticalEmail', 'CriticalEmailController');
+    Route::get('CriticalEmail-delete/{id}','CriticalEmailController@destroy')->name('CriticalEmail.delete');
+    
     Route::get('participant/delete/{id}', 'ConferenceManagementController@destroy')->name('conferenceparticipants.delete');
     Route::get('trashed/participants', 'ConferenceManagementController@trashed')->name('conferenceparticipants.trashed');
 

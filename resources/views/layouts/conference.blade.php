@@ -49,7 +49,7 @@
                             <li class="nav-item">
                               <a class="nav-link {{ Request::is('trashed*') ? 'active' : '' }}" href="{{ route('conferenceparticipants.trashed',['edition'=>$edition->id]) }}">Trashed Participants</a>
                             </li>
-                            
+                             
                             <li class="nav-item">
                               <a class="nav-link {{ Request::is('email*') ? 'active' : '' }}" href="{{ route('email.index') }}">Email Participants</a>
                             </li>

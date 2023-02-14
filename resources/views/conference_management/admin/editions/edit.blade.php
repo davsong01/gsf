@@ -129,6 +129,28 @@
                                     </fieldset>
                                 </div>
                                 <div class="col-sm-6 col-md-6">
+                                    <label for="random_hostel">Enable Seperate Foodstand for "Other" Chapters</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <select class="form-control" name="foodstand_field_assignment" id="foodstand_field_assignment" required>
+                                            <option value="">Select...</option>
+                                            <option value="yes" {{ $edition->foodstand_field_assignment == 'yes'?'selected':'' }}>Yes</option>
+                                            <option value="no"  {{ $edition->foodstand_field_assignment == 'no'?'selected':'' }}>No</option>
+                                        </select>
+                                      
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="random_hostel">Enable mass registration</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <select class="form-control" name="mass_registration" id="mass_registration" required>
+                                            <option value="">Select...</option>
+                                            <option value="yes" {{ $edition->mass_registration == 'yes'?'selected':'' }}>Yes</option>
+                                            <option value="no"  {{ $edition->mass_registration == 'no'?'selected':'' }}>No</option>
+                                        </select>
+                                      
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
                                     <label for="reg_prefix">Registration Prefix</label>
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <input type="text" class="form-control" name="reg_prefix" value="{{ old('reg_prefix') ?? $edition->reg_prefix }}" id="reg_prefix">

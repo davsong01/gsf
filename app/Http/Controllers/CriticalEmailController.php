@@ -22,7 +22,8 @@ class CriticalEmailController extends Controller
         // ];
         switch ($data['type']) {
             case 'welcome_mail':
-                $account = "<a href=". route('conferencemanagement.index', ['edition' => $data['conference_edition_id']]).">Login</a>";
+                $account = "<a style='color: white;text-decoration: none;background-color: #29166f;padding: 7px;border-radius: 5px;' href='". route('conferencemanagement.index', ['edition' => $data['conference_edition_id']])."'>Login</a>";
+                
                 $content = "Dear ".$data['name']. ", <br><br>
                     Your registration for GSF National conference is successful. <br><br>Below are the details of your registration <br><br>
                     <strong>Name: </strong>".$data['name']."<br>
@@ -66,7 +67,6 @@ class CriticalEmailController extends Controller
                 <strong>Amount Paid: </strong> &#8358;".number_format($data['amount'])."<br>
                 <strong>Payment Mode: </strong>".$data['payment_type']."<br>
                 <strong>Transaction ID: </strong>".$data['transid']."<br><br>Thanks,<br>";
-                
                 # code...
                 break;
             default:
@@ -82,14 +82,14 @@ class CriticalEmailController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $emails = CriticalEmail::all();
+        $count = 1;
+        return view('emails.emaillog', compact('emails','count'));
     }
 
-    public function runEmailCron(){
-        
-    }
+    
     /**
      * Show the form for creating a new resource.
      *
@@ -119,7 +119,28 @@ class CriticalEmailController extends Controller
      */
     public function show(CriticalEmail $criticalEmail)
     {
-        //
+        // Resend Email
+        // $payment = Payment::with('user')->findOrFail($id);
+        // $user = $payment->user;
+
+        // $data['family_id'] = $user->family_id;
+        // $data['name'] =  $user->name;
+        // $data['email'] =  $user->email;
+        // $data['phone'] =  $user->phone;
+        // $data['amount'] =  $payment->amount_paid;
+        $data['type'] = $criticalEmail->type;
+        $data['recipient'] = $criticalEmail->recipient;
+        $data['content'] = $criticalEmail->content;
+        $data['subject'] = $criticalEmail->subject;
+        $data['attachments'] = $criticalEmail->attachments;
+
+        $res = $this->sendEmail($data);
+        if ($res['message'] && $res['message'] == 'success') {
+            return back()->with('message', 'Email resent successfully');
+        }else{
+            return back()->with('error', $res['error']);
+        }
+
     }
 
     /**
@@ -151,9 +172,11 @@ class CriticalEmailController extends Controller
      * @param  \App\CriticalEmail  $criticalEmail
      * @return \Illuminate\Http\Response
      */
-    public function destroy(CriticalEmail $criticalEmail)
+    public function destroy(CriticalEmail $criticalEmail, $id)
     {
-        //
+        $criticalEmail = CriticalEmail::find($id);
+        $criticalEmail->delete();
+        return back()->with('message', 'Delete Successful');
     }
 
 

@@ -28,7 +28,7 @@ class Payment extends Model
     }
 
     public function moderator(){
-        return $this->belongsTo(Payment::class, 'uploaded_by');
+        return $this->belongsTo(User::class, 'uploaded_by');
     }
 
     public function hostel(){

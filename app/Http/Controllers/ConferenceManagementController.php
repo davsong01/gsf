@@ -29,7 +29,6 @@ class ConferenceManagementController extends Controller
 	}
 
     public function index(Request $request){
-		
 		// Admin
 		if (auth()->user()->role == 1) {
 			$editions = ConferenceEdition::all();
@@ -37,8 +36,7 @@ class ConferenceManagementController extends Controller
 			$count = 1;
 			return view('conference_management.admin.editions.index', compact('editions','count'));
 		}else{
-			$edition = $this->edition ?? ConferenceEdition::orderBy('created_at','DESC')->first();
-
+			$edition = $this->edition ?? ConferenceEdition::where('status','active')->orderBy('created_at','DESC')->first();
 			if(auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)){
 				return view('conference_management.participant.index', compact('edition'));
 			}
@@ -74,19 +72,21 @@ class ConferenceManagementController extends Controller
 		
 		$payment = $conferencemanagement;
 		$edition = $this->edition;
-		if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->Nec($edition) || auth()->user()->Choir($edition)) {
+		if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isNec($edition) || auth()->user()->isChoir($edition)) {
 			return view('conference_management.participant.single_payment', compact('edition', 'payment','chapters'));
 		}
 		if (auth()->user()->isModerator($edition)) {
-			$allparticipants = Payment::with(['hostel', 'moderator'])->where('uploaded_by', auth()->user()->id)->orderBy('created_at', 'desc');
+			$allparticipants = Payment::with(['hostel', 'moderator'])->where(['uploaded_by'=>auth()->user()->id, 'conference_edition_id'=> $payment->conference_edition_id])->orderBy('created_at', 'desc');
+			// dd($allparticipants->get(), $payment->conference_edition_id);
 			$myParticipants = clone $allparticipants;
 			$myParticipantsAll = $myParticipants->get();
 			$participants = $allparticipants->count();
-			$pending_registration = $allparticipants->where('registration_status', 'Pending')->count();
+			
+			$pending_registration = $myParticipantsAll->where('registration_status', 'Pending')->count();
 			$completed_registration = $allparticipants->where('registration_status', 'Complete')->count();
 			$allparticipants = $allparticipants->get();
 			$count = 1;
-			return view('conference_management.moderator.index', compact('chapters', 'pending_registration', 'completed_registration', 'participants', 'myParticipantsAll', 'count'));
+			return view('conference_management.moderator.index', compact('chapters', 'pending_registration', 'completed_registration', 'participants', 'myParticipantsAll', 'count','payment','edition'));
 		}
 	}
 
@@ -216,16 +216,7 @@ class ConferenceManagementController extends Controller
 			$data['level'] = 'Participant';
 			
 			$hostels = Hostel::orderBy('allocation', 'ASC')->get();
-				
-				//Algorithm to assign hostel and food stand here
-				// $this->createOrUpdateHostel(
-				// 	$user,
-				// 	$request->level ?: $payment->level, // the user might be changing levels 
-				// 	$request->sex ?: $user->sex, //the user might be changing gender
-				// 	$hostels, // use the same collection for efficiency
-				// 	$request
-				// );
-
+			
 			//If user has foodstand and hostel, mark as complete else return to pending
 			// dd($user, $user->hostel_id);
 			if($payment->hostel_id == NULL){
@@ -272,6 +263,7 @@ class ConferenceManagementController extends Controller
 
     public function edit($id, Request $request){
         $user = Payment::with('user')->whereId($id)->first();
+		
 		$edition = ConferenceEdition::find($request->edition);
 		
         $chapters = Chapter::all();
@@ -281,19 +273,29 @@ class ConferenceManagementController extends Controller
 		if (auth()->user()->role == 1) {
 			return view('conference_management.admin.users.edit', compact('user', 'hostels', 'foods', 'chapters','edition'));
 		}
-        
-        if (auth()->user()->payment->first()->level == 'Moderator') {
-			if ($user->sex == 'Female') {
-				$hostels = $hostels->where('type', 'Female');;
+
+		$moderator = Payment::where(['user_id'=>auth()->user()->id,'level'=>'Moderator','conference_edition_id'=>$request->edition,'registration_status'=>'Complete'])->first();
+		
+		if(!$moderator){
+			return abort(404);
+		}else{
+			if ($user->user->sex == 'Female') {
+				$hostels = Hostel::where(['conference_edition_id'=>$edition->id,'level'=>'Participant','type'=>'Female'])->where('capacity','>','allocation')->orderBy('name')->get();
 			}
 			
-			if ($payment->sex == 'Male') {
-				$hostels = $hostels->where('type', 'Male');
+			if ($user->user->sex == 'Male') {
+				$hostels = Hostel::where(['conference_edition_id'=>$edition->id,'level'=>'Participant','type'=>'Male'])->where('capacity','>','allocation')->orderBy('name')->get();
 			}
 
-			return view('moderator.users.edit', compact('user', 'hostels', 'foods', 'chapters'));
-		}
+			if($edition->foodstand_field_assignment == 'yes' && in_array($moderator->user->chapter_id, [86])){
+				$foods = Food::where(['conference_edition_id'=>$edition->id,'level'=>'Participant','off_campus'=>'yes'])->where('capacity','>','allocation')->orderBy('name')->get();
+			}else{
+				$foods = Food::where(['conference_edition_id'=>$edition->id,'level'=>'Participant','off_campus'=>'no'])->where('capacity','>','allocation')->orderBy('name')->get();
+			}
 
+			return view('conference_management.moderator.users.edit', compact('user', 'hostels', 'foods', 'chapters','edition'));
+		}
+		
 		return abort(404);
     }
 
@@ -331,118 +333,63 @@ class ConferenceManagementController extends Controller
 		//handle password
 		if ($request->has('password') && !empty($request->password)) {
 			$update['password'] = Hash::make($request['password']);
-		} 
-
-		// All Participants update
-		if (auth()->user()->role != 1) {
-			
-			$user->update(Arr::except($update, ['hostel_id']));
-			$payment->update(Arr::only($update, ['hostel_id']));
 		}
 		
-		//Moderator
-		// Admin and moderator, what happens to normal participant?
-		if (auth()->user()->role == 1) {
-			//Decrease allocation in previous hostel
-			$update['hostel_id'] = ($this->assignHostel($payment->level, $request['sex']))->id ?? null;
-
-			// $hostel = Hostel::all();
-			// $food = Food::all();
-			
-			// $old_hostel = $hostel->where('id', $payment->hostel_id)->first();
-			// $old_food = $food->where('id', $payment->food_id)->first();
-			
-			// if ($request->hostel_id !== $payment->hostel_id) {
-			// 	if (isset($payment->hostel_id)) {
-			// 		$old_hostel->allocation = $old_hostel->allocation - 1;
-			// 		$old_hostel->save();
-			// 	}
-
-			// 	//Update new hostel
-			// 	$payment->hostel_id = $request->hostel_id;
-			// 	$new_hostel = $hostel->where('id', $request->hostel_id)->first();
-			// 	$new_hostel->allocation = $new_hostel->allocation + 1;
-			// 	$new_hostel->save();
-			// 	$user->save();
-			// }
-
-			if ($request->food_id !== $payment->food_id) {
-				if (isset($payment->food_id)) {
-					$old_food->allocation = $old_food->allocation - 1;
-					$old_food->save();
+		// Moderator
+		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
+		
+		if (isset($moderator) && !empty($moderator)) {
+			$edition = $this->edition;
+			// Hostel may not be set above, so set it
+			if(!isset($update['hostel'])){
+				$update['hostel_id'] = ($this->assignHostel($payment->level, $request['sex']))->id ?? null;
+				// dd($update['hostel_id'],$payment->level, $request['sex']);
+				if (!isset($update['hostel_id']) && empty($update['hostel_id'])) {
+					return back()->with('error', 'Sorry, there is no available hostel for you at the moment. Changes not saved!');
+				} else {
+					$this->reduceHostelAllocation($payment);
 				}
-				//Update new hostel
-				$payment->food_id = $request->food_id;
-				$new_food = $food->where('id', $request->food_id)->first();
-				$new_food->allocation = $new_food->allocation + 1;
-				$new_food->save();
-				$payment->save();
 			}
 			
-			try {
-				$user->name = $request->name;
-				$user->email = $request->email;
-				$user->phone = $request->phone;
-				$user->sex = $request->sex;
-				$payment->level = $request->level;
-				$user->chapter_id = $request->chapter;
-				$payment->payment_type = $request->payment_type;
-				$payment->transid = $request->transid;
-				$user->password = $password;
-				$user->passport = $passport;
-				$payment->registration_status = 'Complete';
-				
-				$user->save();
-                $payment->save();
-			} catch (\Illuminate\Database\QueryException $ex) {
-				$error = $ex->getMessage();
-				
-                return redirect(route('conference.participants.edit', $payment->id))->with('error', $error);
+			if(!isset($payment->food) && empty($payment->food)){
+				$update['food_id'] = ($this->assignFoodStand($payment->level, $user->chapter_id))->id ?? null;
+			}else{
+				$update['food_id'] = $payment->food_id;
 			}
-
-			return back()->with('message', 'Update successful!');
-
-		} else if (auth()->user()->level == 'Moderator') {
-			$user = User::findOrFail($user->id);
-			$hostels = Hostel::orderBy('allocation', 'ASC')->get();
 		
-			if (
-				$payment->hostel_id &&
-				$user->sex == $request->sex &&
-				$user->phone == $request->phone &&
-				$user->name == $request->name &&
-				!$request->hasFile('passport')
-			) {
-				return back()->with('message', ':) Great, looks like you didnt make any changes.');
-			} else if (!$payment->hostel_id) { // first time users - PERFECT
-				return $this->createOrUpdateHostel($user,$request->level ?: $payment->level,$request->sex ?: $user->sex,$hostels,$request);
-			} else if ($payment->hostel_id) { // user is set but is updating something[hostel, gender, level]
-				return $this->createOrUpdateHostel($user,$request->level ?: $payment->level,$request->sex ?: $user->sex,$hostels,$request);
-			}
-
-			return back()->with('error', ':( this is not you. It\'s us, looks like we could not complete your request, please contact an admin, let us hope he know what to do.');	
-			
 		}
+
+		$user->update(Arr::except($update, ['hostel_id','food_id']));
+		$payment->update(Arr::only($update, ['hostel_id','food_id']));
 
 		return back()->with('message','Operation succesful');
     }
 
 	public function reduceHostelAllocation($payment){
-		$current_hostel = Hostel::find($payment->hostel->id);
-
-		if($current_hostel->allocation == 0){
-			return; 
-		}else{
-			$payment->hostel->update(['allocation'=> $payment->hostel->allocation-1]);
-			return $payment->hostel;
+		if (isset($payment->hostel->id) && !empty($payment->hostel->id)) {
+			$current_hostel = Hostel::find($payment->hostel->id);
+			
+			if($current_hostel->allocation == 0){
+				return; 
+			}else{
+				$payment->hostel->update(['allocation'=> $payment->hostel->allocation-1]);
+				return $payment->hostel;
+			}
 		}
 	}
 
-	// public function reduceFoodStandAllocation($user)
-	// {
-	// 	$user->payment->food->update(['allocation' => $user->payment->food->allocation - 1]);
-	// 	return $user->payment->food;
-	// }
+	public function reduceFoodStandAllocation($payment){
+		if (isset($payment->food->id) && !empty($payment->food->id)) {
+			$current_food = Food::find($payment->food->id);
+			
+			if($current_food->allocation == 0){
+				return; 
+			}else{
+				$payment->food->update(['allocation'=> $payment->food->allocation-1]);
+				return $payment->food;
+			}
+		}
+	}
 
     public function participants($type='',$edition=''){
         $count = 1;
@@ -452,22 +399,6 @@ class ConferenceManagementController extends Controller
 		
 			return view('conference_management.admin.users.index', compact('participants', 'count', 'edition','type'));
         }
-    }
-
-    public function resendEmail($id){
-        $payment = Payment::with('user')->findOrFail($id);
-        $user = $payment->user;
-
-        $data['family_id'] = $user->family_id;
-		$data['name'] =  $user->name;
-		$data['email'] =  $user->email;
-		$data['phone'] =  $user->phone;
-		$data['amount'] =  $payment->amount_paid;
-
-		//send email to participant
-		Mail::to($data['email'])->send(new WelcomeMail($data));
-
-		return back()->with('message', 'Email resent successfully');
     }
 
     public function getCard($id)
@@ -504,45 +435,40 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-	public function destroy($id){
+	public function destroy(Request $request, $id){
 	
 		//stop from accidentally deleted self
-		$hostel = Hostel::all();
-		$foodstand = Food::all();
-		$user = User::withTrashed()->with('payment')->where('id', $id)->first();
+		if(auth()->user()->id == $id){
+			return back()->with('error','You cannot delete yourself');
+		}
+		
+		// Reduce hostel
+		$payment = Payment::where(['id'=>$request->payment_id,'conference_edition_id'=>$request->edition])->first();
+		$user = User::withTrashed()->where('id', $payment->user_id)->first();
+		
+		$this->reduceHostelAllocation($payment);
+		$this->reduceFoodStandAllocation($payment);
+		
+		if($payment->uploaded_by){
+			$moderator = Payment::where(['user_id'=>$payment->uploaded_by,'conference_edition_id'=>$request->edition])->first();
+			$slot = ($moderator->slot_filled  > 0 ) ? $moderator->slot_filled - 1 : $moderator->slot_filled ;
 
-		$payment = Payment::where('user_id', $user->id)->first();
-	
+			$moderator->update(['slot_filled'=>$slot]);
+		}
+		
+		//Delete Avatar
 		if ($user->trashed()) {
 			if (isset($user->passport)) {
 				unlink($user->passport);
 			}
 			$user->forceDelete();
-			$user->payment->forceDelete();
+			$payment->forceDelete();
 
 			return back()->with('message', 'Participant has been deleted forever');
 		} else {
-
 			//Get user hostel
-			if ($payment->hostel) {
-				
-				$hostel = $hostel->where('id', $payment->hostel->id)->first();
-				$hostel->allocation -= 1;
-				$hostel->save();
-			};
-
-			//Get user foodstand
-			if ($payment->food) {
-				$food = $foodstand->where('id', $payment->food->id)->first();
-				$food->allocation -= 1;
-				$food->save();
-			};
-
 			$user->delete();
 			$payment->delete();
-
-			auth()->user()->payment->first()->slot_filled -= 1;
-			auth()->user()->payment->first()->save();
 
 			return back()->with('message', 'Record has been deleted!');
 		}

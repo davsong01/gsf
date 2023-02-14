@@ -17,7 +17,6 @@
                         <a href="{{ route('moderator.users.import.index') }}" class="btn btn-primary mt-1">Import</a>
                         @endif
                         @include('includes.alerts')
-                        
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -43,7 +42,7 @@
                                         <tr>
                                             <td>{{ $count ++}}</td>
                                             <td>
-                                                <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->passport ? '/'.$participant->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
+                                                <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->user->passport  ? '/'.$participant->user->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
                                             </td>
                                             <td>{{ $participant->conference_number }}</td>
                                             <td>@if($participant->registration_status == 'Complete')

@@ -155,23 +155,24 @@ class Controller extends BaseController
         return $descriptions;
     }
 
-    protected function sendEmail($data, $type, $subject, $content = null, $return_error = null)
+    protected function sendEmail($data, $return_error = null)
     {
-        $data = [
-            'type' => $type,
-            'subject' => $subject,
-            'name' => $name,
-            'content' => $content,
-        ];
-
+        // $data['type'] = $email->type;
+        // $data['recipient'] = $email->recipient;
+        // $data['content'] = $email->content;
+        // $data['subject'] = $email->subject;
+        // $data['attachments'] = $email->attachments;
         try {
-            Mail::to($recipient)->send(new NotificationEmail($data));
+            Mail::to($data['recipient'])->send(new NotificationEmail($data));
+            return [
+                'message'=>'success'
+            ];
         } catch (\Exception $e) {
             Log::error($e);
 
-            if ($return_error) {
-                return 0;
-            }
+            return [
+                'error' => $e->getMessage(),
+            ];
         }
     }
 
@@ -295,13 +296,13 @@ class Controller extends BaseController
     protected function uploadImage($image, $location, $width = null, $height = null)
     {
         $imgName = time() . rand(11111111, 9999999) . '.' . $image->getClientOriginalExtension();;
-
+       
         if ($width && $height) {
             $image = Image::make($image)->resize($width, $height);
         } else {
             $image = Image::make($image);
         }
-        
+       
         $image->save($location . '/' . $imgName);
 
         return $location . '/' . $imgName;
@@ -354,9 +355,17 @@ class Controller extends BaseController
             $hostel = Hostel::where(['level' => $level, 'conference_edition_id' => $setting->id])->first();
         } else {
             if (isset($setting->random_hostel) && $setting->random_hostel == "yes") {
-                $hostel = Hostel::where(['level' => $level, 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
+                if($level == 'Moderator'){
+                    $hostel = Hostel::where(['level' => 'Participant', 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
+                }else{
+                    $hostel = Hostel::where(['level' => $level, 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
+                }
             } else {
-                $hostel = Hostel::where(['level' => $level, 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+                if ($level == 'Moderator') {
+                    $hostel = Hostel::where(['level' => 'Participant', 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+                }else{
+                    $hostel = Hostel::where(['level' => $level, 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+                }
             }
             if (isset($hostel) && !empty($hostel)) {
                 $hostel->update(['allocation' => $hostel->allocation + 1]);
@@ -373,15 +382,30 @@ class Controller extends BaseController
             $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->first();
         } else {
             if (isset($setting->random_foodstand) && $setting->random_foodstand == "yes") {
-                $foodstand = Food::where(['level' => $level])->whereRaw('allocation < capacity')->inRandomOrder()->first();
+                if ($level == 'Moderator') {
+                    $foodstand = Food::where(['level' => 'Participant'])->whereRaw('allocation < capacity')->inRandomOrder()->first();
+                }else{
+                    $foodstand = Food::where(['level' => $level])->whereRaw('allocation < capacity')->inRandomOrder()->first();
+                }
             } else {
-                if (!empty($chapter) && in_array($chapter, [86])) {
-                    $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->where('off_campus', 'yes')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
-                } else {
-                    $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->where('off_campus', 'no')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+                if (!empty($chapter)){
+                    if($setting->foodstand_field_assignment == 'yes' && in_array($chapter, [86])){
+                        if ($level == 'Moderator') {
+                            $foodstand = Food::where(['level' => 'Participant', 'conference_edition_id' => $setting->id])->where('off_campus', 'yes')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+                        }else{
+                            $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->where('off_campus', 'yes')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+                        }
+                    }else{
+                        if ($level == 'Moderator') {
+                            $foodstand = Food::where(['level' => 'Participant', 'conference_edition_id' => $setting->id])->where('off_campus', 'no')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+                        }else{
+                            $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->where('off_campus', 'no')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+                        }
+                    }
                 }
             }
         }
+
         if (isset($foodstand) && !empty($foodstand)) {
             $foodstand->update(['allocation' => $foodstand->allocation + 1]);
         }
@@ -399,7 +423,7 @@ class Controller extends BaseController
         }
 
         if (isset($type) && $type == '2') {
-            $data['slot'] = isset($data['amount']) ? ($data['amount'] / $setting->registration_fee) : 1;
+            $data['slot'] = $amount / $setting->registration_fee;
             $data['ledge'] = $setting->reg_prefix . 'M-';
             $data['level'] = 'Moderator';
             $data['slot_filled'] = 1;

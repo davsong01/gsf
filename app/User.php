@@ -85,6 +85,24 @@ class User extends Authenticatable implements MustVerifyEmail
 		} else return false;
 	}
 
+	public function isChoir($edition)
+	{
+		$check = Payment::where(['level' => 'Choir', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
+
+		if (isset($check) && !empty($check)) {
+			return true;
+		} else return false;
+	}
+
+	public function isOfficial($edition)
+	{
+		$check = Payment::where(['level' => 'Official', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
+
+		if (isset($check) && !empty($check)) {
+			return true;
+		} else return false;
+	}
+
 
 	public function completeReg($edition)
 	{

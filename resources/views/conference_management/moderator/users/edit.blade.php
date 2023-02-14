@@ -14,23 +14,23 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Update: {{ $user->name }}</h4>
+                        <h4 class="card-title">Update: {{ $user->user->name }}</h4>
                         @include('includes.alerts')
                     </div>
                     <div class="card-content">
                     <div class="card-body">
-                        <form action="{{ route('users.update', $user->id) }}" onsubmit="return confirm('I am sure all filled details are correct and current');" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('conference.participants.update', ['edition'=>$edition->id,'id'=>$user->id]) }}" onsubmit="return confirm('I am sure all filled details are correct and current');" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PATCH')
                         <div class="row">
                              <div class="col-md-3">
-                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="{{ asset($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
+                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="{{ asset($user->user->passport ? $user->user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
                                 </div>
                             </div>
                             <div class="col-md-9">
                                 <fieldset class="form-group">
                                     <label for="conference_id">Conference ID</label>
-                                    <input type="text" class="form-control" name="conference_id" id="conference_id" value="{{ $user->conference_number }}" disabled required>
+                                    <input type="text" class="form-control" name="conference_id" id="conference_id" value="{{ $user->user->family_id }}" disabled required>
                                 </fieldset>
                             <fieldset class="form-group">
                                 <label for="registration_status">Registration Status</label>
@@ -52,7 +52,12 @@
                             </fieldset>
                             <fieldset class="form-group">
                                 <label for="email">Email</label>
-                                    <input type="email" id="email" class="form-control @error('email')is-invalid @enderror" value="{{ $user->email }}" required disabled>						
+                                    <input type="email" id="email" class="form-control @error('email')is-invalid @enderror" value="{{ $user->user->email }}" required disabled>						
+                            </fieldset>
+                            </fieldset>
+                                <fieldset class="form-group">
+                                <label for="transid">Transaction ID</label>
+                                <input type="text" id="transid" name="transid" class="form-control" value="{{ old('transid') ?? $user->transid }}" disabled required>
                             </fieldset>
                             </div>
                             <div class="col-md-6 col-sm-12">
@@ -66,29 +71,25 @@
                                     <input type="text" id="food_id" name="food_id" class="form-control" value="{{ ($user->food === NULL) ? 'N/A' : $user->food->name }}" disabled required>
                                 </fieldset>
                                 <fieldset class="form-group">
-                                <label for="payment_type">Payment Type</label>
-                                <input type="text" id="payment_type"  class="form-control @error('payment_type')is-invalid @enderror" value="{{ $user->payment_type }}" disabled required>
-                            
-                            </fieldset>
+                                    <label for="payment_type">Payment Type</label>
+                                    <input type="text" id="payment_type"  class="form-control @error('payment_type')is-invalid @enderror" value="{{ $user->payment_type }}" disabled required>
                                 <fieldset class="form-group">
-                                <label for="transid">Transaction ID</label>
-                                <input type="text" id="transid" name="transid" class="form-control" value="{{ old('transid') ?? $user->transid }}" disabled required>
-                            </fieldset>
-                            
-                            
+                                    <label for="chapter">Campus</label>
+                                    <input type="text" disabled class="form-control" value="{{ isset($user->user->campus->name) ? $user->user->campus->name : 'N/A' }}">
+                                </fieldset>
                             </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 col-sm-12">
                             <fieldset class="form-group">
                                 <label for="name">Name</label>
-                                    <input type="text" class="@error('name')is-invalid @enderror form-control" id="name" name="name" value="{{ old('name') ?? $user->name }}" placeholder="Enter name">
+                                    <input type="text" class="@error('name')is-invalid @enderror form-control" id="name" name="name" value="{{ old('name') ?? $user->user->name }}" placeholder="Enter name">
                                 
                             </fieldset>
-
+                            <input type="hidden" name="level" value="{{ $user->level }}">
                             <fieldset class="form-group">
                                 <label for="phone">Phone</label>
-                                <input type="phone" id="phone" name="phone" class="form-control @error('phone')is-invalid @enderror" value="{{ old('phone') ?? $user->phone }}" required>
+                                <input type="phone" id="phone" name="phone" class="form-control @error('phone')is-invalid @enderror" value="{{ old('phone') ?? $user->user->phone }}" required>
                             
                             </fieldset>
 
@@ -96,19 +97,14 @@
                                 <label for="sex">Gender</label>
                                 <select class="form-control @error('sex')is-invalid @enderror" name="sex" id="sex" required>
                                     <option value="">--Select Option--</option>
-                                    <option value="Male" {{ ($user->sex == 'Male' || old('sex') == 'Male') ? 'selected' : ''}}>Male</option>
-                                    <option value="Female" {{ ($user->sex == 'Female' || old('sex') == 'Female') ? 'selected' : ''}}>Female</option>
+                                    <option value="Male" {{ ($user->user->sex == 'Male' || old('sex') == 'Male') ? 'selected' : ''}}>Male</option>
+                                    <option value="Female" {{ ($user->user->sex == 'Female' || old('sex') == 'Female') ? 'selected' : ''}}>Female</option>
                                     </select>
                                 
                             </fieldset>
                             
                         </div>
                         <div class="col-md-6 col-sm-12">
-                            <fieldset class="form-group">
-                                <label for="chapter">Campus</label>
-                                <input type="text" disabled class="form-control" value="{{ isset($user->campus->name) ? $user->campus->name : 'N/A' }}">
-                            </fieldset>
-                            
                             <fieldset class="form-group @error('passport')is-invalid @enderror">
                                 <label for="passport">Change Passport</label>
                                 <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">	

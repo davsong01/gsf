@@ -18,10 +18,13 @@
 <li class="nav-item {{ Request::is('chapters*') ? 'active' : '' }}"><a href="{{ route('chapters.index') }}"><i class="fa fa-thumb-tack" aria-hidden="true"></i><span class="menu-title">Chapters</span></a>
 </li>
 
-<li class=" nav-item {{ Request::is('useremails') ? 'active' : '' }}"><a href="{{ route('useremails.index') }}"><i class="fa fa-envelope"></i><span class="menu-title" >Emails</span></a>
+<li class=" nav-item {{ Request::is('useremails') ? 'active' : '' }}"><a href="{{ route('useremails.index') }}"><i class="fa fa-envelope"></i><span class="menu-title">Emails</span></a>
 </li>
-<li
-class="nav-item {{ Request::is('profile*') ? 'active' : '' }}">
+<li class="nav-item">
+    <a class="nav-link {{ Request::is('criticalemails*') ? 'active' : '' }}" href="{{ route('criticalEmail.index') }}"><i class="fa fa-envelope"></i><span class="menu-title" >Logged Emails</a>
+</li>
+<li class="nav-item {{ Request::is('profile*') ? 'active' : '' }}">
 <a href="{{ route('users.show', auth()->user()->id) }}"><i class="fa fa-user-circle-o"></i><span class="menu-title"
 data-i18n="Kanban">My Profile</span></a>
 </li>
+<li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="fa fa-bars"></i><span class="menu-title" data-i18n="Kanban">General Settings</span></a></li>

@@ -158,7 +158,6 @@ class PaymentController extends Controller
 					$participant->status = 'Complete';
 					$participant->save();
 					
-					
 					//Todo: make this return redirect to
 					return view('frontend.conference.donationthankyou', compact('data', 'conference_year'));
 				}
@@ -207,15 +206,17 @@ class PaymentController extends Controller
 				
 				$this->logEmail($email);
 				// Mail::to($data['email'])->send(new WelcomeMail($data));
-				$email['subject'] = 'New Registration';
-				$email['type'] = 'new_registration';
-				$email['recipient'] = $setting->official_email;
-				$email['chapter'] = $data['chapter'];
-
-				$email['content'] = app('App\Http\Controllers\CriticalEmailController')->getContent($data);
+				$email = [
+					'subject' => 'New Registration',
+					'type'=> 'new_registration',
+					'recipient' => $setting->official_email,
+					'chapter' => $data['chapter'],
+					'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
+				];
+				
 				//send email to official email
 				$this->logEmail($email);
-				// Mail::to($this->conferenceEdition()->official_email)->send(new AdminMail($data));
+				
 				Auth::loginUsingId($payment->user->id);
 				$data['edition'] = $setting;
 				return $this->thankYouPage($data, $conference_year);
@@ -252,8 +253,6 @@ class PaymentController extends Controller
 				}
 				// return view('frontend.conference.thankyou', compact('data', 'conference_year'));
 			}
-			
-			
 		} else {
 			dd('Transaction failed! We have not received any money from you.');
 		}

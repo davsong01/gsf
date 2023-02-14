@@ -41,7 +41,9 @@
                                         @foreach($editions as $edition)
                                         <tr>
                                             <td>{{ $count++ }}</td>
-                                            <td>{{ $edition->conference_theme }}</td>
+                                            <td>{{ $edition->conference_theme }} <br>
+                                                <p class="btn btn-{{ $edition->status == 'active'?'primary':'danger' }} btn-sm" readonly>{{ $edition->status }}</p>
+                                            </td>
                                             <td>{{ $edition->level }}
                                                 <span style="color:red">{{ $edition->start_date }}</span> - <span style="color:green">{{ $edition->end_date }}</span>  <br>
                                                 <small class="blue">Close Reg: {{ $edition->close_registration }}</small>

@@ -18,7 +18,7 @@
                             <div class="d-flex justify-content-around align-items-center flex-wrap">
                                 <div class="user-analytics">
                                     <i class="bx bx-user mr-25 align-middle"></i>
-                                    <span class="align-middle text-muted">{{ auth()->user()->payment->slot  }} Slot(s) paid for</span>
+                                    <span class="align-middle text-muted">{{ $payment->slot  }} Slot(s) paid for</span>
                                     <div class="d-flex">
                                         <div id="radial-success-chart"></div>
                                         <h3 class="mt-1 ml-50"></h3>
@@ -26,7 +26,7 @@
                                 </div>
                                 <div class="sessions-analytics">
                                     <i class="bx bx-trending-down align-middle mr-25" style="color:red"></i>
-                                    <span class="align-middle text-muted">{{ auth()->user()->payment->slot_filled }} Slot(s) used</span>
+                                    <span class="align-middle text-muted">{{ $payment->slot_filled }} Slot(s) used</span>
                                     <div class="d-flex">
                                         <div id="radial-warning-chart-down"></div>
                                         <h3 class="mt-1 ml-50"></h3>
@@ -34,7 +34,7 @@
                                 </div>
                                 <div class="sessions-analytics">
                                     <i class="bx bx-trending-up align-middle mr-25" style="color:green"></i>
-                                    <span class="align-middle text-muted">{{ auth()->user()->payment->slot - auth()->user()->payment->slot_filled }} Slot(s) remaining</span>
+                                    <span class="align-middle text-muted">{{ $payment->slot - $payment->slot_filled }} Slot(s) remaining</span>
                                     <div class="d-flex">
                                         <div id="radial-warning-chart"></div>
                                         <h3 class="mt-1 ml-50"></h3>
@@ -72,8 +72,8 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">My Participants</h4>
-                        @if(auth()->user()->payment->slot >  auth()->user()->payment->slot_filled)
-                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new participant <strong>({{ (auth()->user()->slot -  (auth()->user()->slot_filled )) }} slot(s) left)</strong></a>  
+                        @if($payment->slot >  $payment->slot_filled)
+                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new participant <strong>({{ ($payment->slot -  ($payment->slot_filled )) }} slot(s) left)</strong></a>  
                         <a href="{{ route('moderator.conference.import.index') }}" class="btn btn-primary mt-1">Import</a>
                         @endif
                         @include('includes.alerts')
@@ -87,54 +87,52 @@
                                         <tr>
                                             <th>S/N</th>
                                             <th>Passport</th>
-                                            <th>Conference ID</th>
+                                            <th>Family ID</th>
                                             <th>Status</th>
                                             <th>Name</th>
                                             <th>Email</th>
                                             <th>Phone</th>
                                             <th>Amount Paid</th>
                                             <th>Uploaded by</th>
-                                            
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if(isset($myParticipantsAll))
+                                        @if(isset($myParticipantsAll) && $myParticipantsAll->count() > 0)
                                         @foreach($myParticipantsAll as $participant)
+                                        
                                         <tr>
                                             <td>{{ $count ++}}</td>
                                             <td>
-                                                <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->passport ? '/'.$participant->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
+                                                <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->user->passport ? '/'.$participant->user->passport : '/images/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
                                             </td>
-                                            <td>{{ $participant->conference_number }}</td>
+                                            <td>{{ $participant->user->family_id }}</td>
                                             <td>@if($participant->registration_status == 'Complete')
                                                 <i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small> @else
                                                 <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Pending</small>
                                                 @endif
                                             </td>
                                             
-                                            <td>{{ $participant->name }}</td>
-                                            <td>{{ $participant->email }}</td>
-                                            <td>{{ $participant->phone }}</td>
+                                            <td>{{ $participant->user->name }}</td>
+                                            <td>{{ $participant->user->email }}</td>
+                                            <td>{{ $participant->user->phone }}</td>
                                             <td>&#8358;{{ $participant->amount_paid }}</td>
                                             <td>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
                                                 @else N/A @endif
                                             </td>
                                             
-                                                
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                            <a class="actions" data-toggle="tooltip" title="View/Edit Participant" href="{{ route('users.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
+                                            <a class="actions" data-toggle="tooltip" title="View/Edit Participant" href="{{ route('conference.participants.edit', ['edition'=>$participant->conference_edition_id,'id'=>$participant->id]) }}"> <i class="bx bxs-edit actions"></i>
                                             </a>
                                             
                                             @if($participant->registration_status == 'Complete')
-                                            <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('participants.card', $participant->id) }}"> <i class="fa fa-print actions"></i></
+                                            <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('participants.card', ['id'=>$participant->id, 'edition'=>$participant->conference_edition_id]) }}"> <i class="fa fa-print actions"></i>
                                             </a>
                                            
-                                            <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('meal.ticket', $participant->id) }}"> <i class="icon-food actions"></i></
-                                            </a>
+                                            {{-- <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('meal.ticket', ['id'=>$participant->user_id, 'edition'=>$participant->conference_edition_id]) }}"> <i class="fa fa-bars actions"></i></a> --}}
                                             @endif
-                                            @if(auth()->user()->id != $participant->id)
-                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Participant" href="{{ route('users.delete', $participant->id) }}"> <i class="fa fa-trash"></i></
+                                            @if(auth()->user()->id != $participant->user_id)
+                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Participant" href="{{ route('conferenceparticipants.delete',['id'=>$participant->user_id,'edition'=>$participant->conference_edition_id,'payment_id'=>$participant->id]) }}"> <i class="fa fa-trash actions"></i></
                                             </a>
                                             @endif
                                         </tr>

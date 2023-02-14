@@ -14,7 +14,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Update: {{ $user->user->name }}</h4>
+                        <h4 class="card-title">Update: {{ $user->user->name }}</h4> <small style="color:blue">(Change the gender for hostel and foodstand changes to reflect)</small>
                        
                     </div>
                     <div class="card-content">

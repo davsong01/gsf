@@ -18,11 +18,8 @@
                         <p>
                             {!! $setting->conference_overview!!}
                         </p>
-                    
-                        {{-- <a class="btn submit" href="https://theGSF.com/english/history" style="width:100%" target="_blank">Read more</a> --}}
                     </div>
                 </div>
-            
             </div>
         </div>
     </div>
@@ -37,7 +34,6 @@
                 <h2>Register</h2>
             </div>
             <div class="row align-items-center">
-            
                 <div class="col-md-12">
                     <img class="center" src="{{ asset('frontend/img/register.jpg') }}" alt="Image" style=" border-radius: 10%; display: block; margin-left: auto; margin-right: auto; width: 20%;">
                     <br>
@@ -49,10 +45,12 @@
                     <a class="btn submit" onclick="myFunction()" id="individualregbutton" data-toggle="tooltip" data-placement="top"
                         title="Individual registration" style="width:100%">Individual</a>
                 </div>
+                @if($setting->mass_registration && $setting->mass_registration == 'yes')
                 <div class="col-md-4 col-sm-6" id="fellowshipregbutton">
                     <a class="btn submit" onclick="myFunction2()" id="fellowshipregbutton" data-toggle="tooltip" data-placement="top"
                         title="Register on behalf of your fellowship members" style="width:100%">Fellowship/Assembly</a>
                 </div>
+                @endif
                 <div class="col-md-4 col-sm-6" id="alumniregbutton">
                     <a class="btn submit" onclick="myFunction3()" id="alumniregbutton" data-toggle="tooltip" data-placement="top"
                         title="Register as an alumni"  style="width:100%">GSF Alumni</a>
