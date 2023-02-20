@@ -23,9 +23,7 @@
                     @endauth
                     @guest
                          <a href="/login" class="nav-item nav-link">LOGIN</a>
-                    @endguest
-                   
-                    
+                    @endguest 
                 </div>
             </div>
         </div>

@@ -135,6 +135,7 @@
                                         </div>
                                     </fieldset>
                                 </div>
+                                
                                 <div class="col-sm-12 col-md-12">
                                     <label for="conference_overview">Conference Overview</label><small> You can use html tags here</small>
                                     <fieldset class="form-group position-relative has-icon-left">

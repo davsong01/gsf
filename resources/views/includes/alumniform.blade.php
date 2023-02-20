@@ -55,7 +55,6 @@
                     {{-- <input type="hidden" name="orderID" value="345"> --}}
                     <div class="control-group">
                         
-                    <input class="form-control" type="hidden" name="amount" id="alumni_amount" value="{{ $setting->alumni_fee * 100 }}" readonly required>
                     </div>
                     <input type="hidden" name="quantity" value="1">
                     <input type="hidden" name="currency" value="NGN">

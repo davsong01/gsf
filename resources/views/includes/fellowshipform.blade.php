@@ -36,13 +36,12 @@
                         <input type="number" class="form-control" id="participants" name="participants"
                             placeholder="Number of participants from your fellowship" required="required">
                     </div>
-                   
                     <br>
                     {{-- <input type="hidden" name="orderID" value="345"> --}}
                     <input type="hidden" name="amount" id= "amount" value=""> {{-- required in kobo --}}
                     <input type="hidden" name="quantity" value="1">
                     <input type="hidden" name="currency" value="NGN">
-                    <input type="hidden" name="metadata" value="{{ json_encode($array = ['type' => '2',]) }}" > 
+                    <input type="hidden" name="metadata" value="{{ json_encode($array = ['type' => '2']) }}" > 
                     <input type="hidden" name="_token" value="{{ csrf_token() }}"> 
                     <script>
                         var participants = document.getElementById('participants');

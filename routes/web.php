@@ -20,6 +20,9 @@ Route::get('/token', 'ChapterController@generate')->name('token');
 Route::get('/campus', 'ChapterController@campusUpdate')->name('campus.update');
 Route::post('/campus', 'ChapterController@campusView')->name('campus.view');
 Route::post('/campus/{id}', 'ChapterController@campussave')->name('campus.save');
+// Route::post('/registration/{type}', 'HomeController@registrationType')->name('registration');
+
+Route::post('ajax-create-temp-details', 'ConferenceManagementController@ajaxPayment');
 Auth::routes();
 Auth::routes(['verify' => false, 'register' => false] );
 
@@ -88,7 +91,10 @@ Route::middleware(['stakeholder'])->group(function(){
 });
 
 // Registration links
-Route::get('/registration', 'ConferenceController@index')->name('index');
+Route::get( '/registration', 'ConferenceController@index')->name('index');
+Route::get('conference-registration/{page?}', 'HomeController@regPage')->name('conference.registration');
+
+
 Route::get('/nec/registration/portal/pay', 'ConferenceController@necRegistration')->name('nec.registration');
 Route::post('/pay', 'PaymentController@redirectToGateway')->name('pay');
 Route::get('/payment/callback', 'PaymentController@handleGatewayCallback');
@@ -138,8 +144,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('conferenceusers/export', 'UserController@usersExport')->name('conferenceusers.export');
     Route::post('participants/import', 'UserController@import')->name('conferenceuser.import');
     
-    
     Route::get('conferenceparticipants/{type?}/{edition?}', 'ConferenceManagementController@participants')->name('conference.participants');
+    Route::get('create-conferenceparticipants/{edition?}', 'ConferenceManagementController@create')->name('conference.participants.create');
+    Route::post('store-conferenceparticipants/{edition?}', 'ConferenceManagementController@store')->name('conference.participants.store');
     Route::get('edit-conferenceparticipants/{id}/edit/{edition?}', 'ConferenceManagementController@edit')->name('conference.participants.edit');
     Route::PATCH('update-conferenceparticipants/{id}/update', 'ConferenceManagementController@update')->name('conference.participants.update');
     Route::get('resendwelcomemail/{id}/show', 'ConferenceManagementController@resendEmail')->name('participants.resendmail');
@@ -242,8 +249,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('postfile/{filename}', 'PostController@getfile')->name('get.file');
     Route::post('postfilereplace', 'PostController@replaceFile')->name('file.replace');
 
-    
-    
     Route::patch('profile', 'SettingController@saveProfile')->name('profile.save');
 
     Route::resource('materials', 'MaterialController');

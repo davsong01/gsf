@@ -159,6 +159,36 @@
                                         </div>
                                     </fieldset>
                                 </div>
+                                @if( empty($edition->conference_logo))
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="conference_logo">Upload Logo</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="file" class="form-control" name="conference_logo" value="{{ old('conference_logo') }}" id="logo">
+                                    </fieldset>
+                                </div>
+                                @else
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="banner">Replace logo</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="file" class="form-control" name="logo" value="{{ old('conference_logo') }}" id="logo">
+                                    </fieldset>
+                                </div>
+                                @endif
+                                @if( empty($edition->banner))
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="banner">Upload Banner</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="file" class="form-control" name="banner" value="{{ old('banner') }}" id="banner">
+                                    </fieldset>
+                                </div>
+                                @else
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="banner">Replace banner</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="file" class="form-control" name="banner" value="{{ old('banner') }}" id="banner">
+                                    </fieldset>
+                                </div>
+                                @endif
                                 <div class="col-sm-12 col-md-12">
                                     <label for="conference_overview">Conference Overview</label><small> You can use html tags here</small>
                                     <fieldset class="form-group position-relative has-icon-left">

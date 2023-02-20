@@ -27,9 +27,16 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class Controller extends BaseController
 {
-
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+    public function __construct(Request $request)
+    {
+        $this->edition = ConferenceEdition::find($request->edition);
+
+        if (!isset($this->edition) && empty($this->edition)) {
+            return redirect(route('conferencemanagement.index'));
+        }
+    }
     protected function getMonths()
     {
         $months = [

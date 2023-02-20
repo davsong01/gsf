@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 class CriticalEmailController extends Controller
 {
     public function getContent($data=null){
+       
         // $data = [
         //    'conference_edition_id'=>'dsddds',
         //    'name' => 'name',

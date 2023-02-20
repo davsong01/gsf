@@ -23,7 +23,7 @@ class ConferenceController extends Controller
         
         return view('frontend.conference.welcome', compact('chapters', 'setting', 'conference_year', 'alumnis_amount'));
     }
-
+    
     public function thankyou()
     {
         return view('frontend.conference.thankyou');

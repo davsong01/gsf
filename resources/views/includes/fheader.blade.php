@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta property="og:title" content="GSF | @yield('ogtitle', "Gofamint Students' Fellowship")"> 
-          <meta property="og:image" content="{{ asset('frontend/img/logo.png') }}"/> 
+        <meta property="og:image" content="{{ asset('frontend/img/logo.png') }}"/> 
 
         <meta property="og:description" content="GSF | @yield('description', "Gofamint Student' Fellowship")"/>
         <meta property="og:site_name" content="GSF" />

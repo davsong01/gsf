@@ -48,7 +48,7 @@
                             </div>
                             <div class="contact-text">
                                 <h3>Amount Paid</h3>
-                                <p>{{ $data['amount'] }} </p>
+                                <p>{{ number_format($data['amount']) }} </p>
                             </div>
                         </div>
                         

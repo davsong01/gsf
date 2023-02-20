@@ -176,7 +176,6 @@
         donation.style.display = "none";
     }
   }
-  
 
 </script>
 <script>

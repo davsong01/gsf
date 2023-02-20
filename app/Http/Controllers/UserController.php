@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Collection;
 class UserController extends Controller
 {
 	use UserDatatableFeaturesTrait;
-
+	
 	public function index()
 	{
 		if(auth()->user()->isSubAdmin() && auth()->user()->isMember() || auth()->user()->isAdmin() ){ // Only sub admins who are members
@@ -146,19 +146,19 @@ class UserController extends Controller
 		
 	}
 
-	public function create()
+	public function create(Request $request)
 	{
 		$chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
 		$hostels = Hostel::orderBy('name')->get();
 		$foods = Food::all();
-
 		$chapters = Chapter::all();
 		$portfolios = $this->getCommunityPortfolios();
 		$sessions = range(date('1982'), date('Y'));
-
+		
 		if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
 			return view('admin.users.create', compact('chapters', 'portfolios', 'sessions'));
 		}
+
 		else return back(404);
 	}
 

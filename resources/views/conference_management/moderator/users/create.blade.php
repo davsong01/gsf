@@ -20,8 +20,8 @@
                     <div class="card-content">
                         <div class="card-body">
                             <form
-                                action="{{ route('users.store') }}"
-                                onsubmit="return confirm('I am sure all my details are correct and current');"
+                                action="{{ route('conference.participants.store',['edition'=>$edition->id]) }}"
+                                onsubmit="return confirm('I am sure all inputed details are correct and current');"
                                 method="POST" enctype="multipart/form-data">
                                 @csrf
                               

@@ -11,6 +11,7 @@ use App\Setting;
 use App\TempUser;
 use Carbon\Carbon;
 use App\Stakeholder;
+use App\ConferenceEdition;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Mail\NotificationEmail;
@@ -20,14 +21,68 @@ use Illuminate\Support\Facades\Mail;
 
 class HomeController extends Controller
 {
+    private $conference;
+
+    public function __construct()
+    {
+        $this->conference = ConferenceEdition::where('status','active')->where('close_registration','>', date('Y-m-d'))->first();
+       
+        if (!isset($this->conference) && empty($this->conference)) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     public function index() {
-        
         $events = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', '<>', 0)->limit(6)->get();
         $national = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', 0)->limit(3)->get();
-
-        return view('frontend.main.index', compact('events', 'national'));
+       
+        if($this->conference){
+            $chapters = Chapter::orderBy('name')->get();
+            $setting = $this->conference;
+            $conference_year = Carbon::parse($setting->start_date)->year;
+            $alumnis_amount = [
+                'alumni_registration_fee' => $setting->alumni_registration_fee,
+                'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
+            ];
+        
+            return view('frontend.conference.template'. $this->conference->template_id.'.welcome')
+                ->with('events',$events)
+                ->with('national',$national)
+                ->with('conference', $this->conference)
+                ->with('conference_year', $conference_year)
+                ->with('alumnis_amount', $alumnis_amount)
+                ->with('chapters', $chapters);
+        }else{
+            return view('frontend.main.index', compact('events', 'national'));
+        }
     }
-    
+
+    public function regPage($type)
+    {
+        if (isset($type) and $this->conference) {
+            $chapters = Chapter::orderBy('name')->get();
+            $setting = $this->conferenceEdition();
+            $conference_year = Carbon::parse($setting->start_date)->year;
+            $alumnis_amount = [
+                'alumni_registration_fee' => $setting->alumni_registration_fee,
+                'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
+            ];
+        
+            return view('frontend.conference.template'. $this->conference->template_id.'.registration',compact('chapters','setting','conference_year','alumnis_amount','type'));
+            // }
+            // if ($type == 2) {
+            //     return view('frontend.conference.template' . $this->conference->template_id . '.registration', compact('chapters', 'setting', 'conference_year', 'alumnis_amount'));
+            // }
+            // if ($type == 3) {
+            //     return view('frontend.conference.template' . $this->conference->template_id . '.registration', compact('chapters', 'setting', 'conference_year', 'alumnis_amount'));
+            // }
+        } else {
+            return abort(404);
+        }
+    }
+
     public function alumni() {
         $alumnis = User::wherehas('campus')->whereStatus(1)->where('role', '<>', 1)->paginate(45);        
         return view('frontend.main.alumni', compact('alumnis'));

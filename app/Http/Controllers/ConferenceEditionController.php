@@ -115,7 +115,15 @@ class ConferenceEditionController extends Controller
     public function update(Request $request, ConferenceEdition $conferenceEdition)
     {
         $edition = ConferenceEdition::find($request->id);
-       
+        dd($request->all());
+        if($request->has('banner')){
+
+        }
+
+        if ($request->has('conference_logo')) {
+
+        }
+
         $edition->update($request->all());
         return back()->with('message', 'Operation Successful');
     }

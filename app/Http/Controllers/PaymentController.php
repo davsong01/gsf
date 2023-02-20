@@ -31,61 +31,69 @@ class PaymentController extends Controller
 		}
 		
 		$this->validate($request, [
-			'name' => 'required|',
+			'name' => 'required',
 			'email' => 'required|email',
 			'phone' => 'required',
 			'chapter' => 'nullable'
 		]);
+		$type['type'] = json_decode($request->metadata)->type;
+		$type = $type['type'] ?? $request->type;
 		
 		//Validate individual registration
 		if (isset($type['type']) && $type['type'] == '1') {
 			//check amount
 			$this->validate($request, [
-				'gender' => 'required|',
+				'gender' => 'required',
 			]);
 
-			if ($request->amount <> ($setting->registration_fee * 100)) {
+			if ($request->amount <> ($setting->registration_fee)) {
 				return redirect(url('/registration/#register'))->with('error', 'Invalid amount');
 			}
 		}
 
 		//Validate Fellowship registration
-		if (isset($type['type']) && $type['type'] == '2') {
+		if (isset($type) && $type == '2') {
+			$request['amount'] = $setting->registration_fee * $request->participants;
+			
 			if($request->participants < 2){
 				return redirect(url('/registration/#register'))->with('error', 'You can only register minimum of 2 participants as a fellowship, kindly register as an individual');
 			}
 			//check amount
-			if ($request->amount <> ($setting->registration_fee * $request->participants * 100)) {
+			if ($request->amount <> ($setting->registration_fee * $request->participants)) {
 				return redirect(url('/registration/#register'))->with('error', 'Invalid amount');
 			}
 		}
-
+		
 		//Validate Alumni Registration
-		if (isset($type['type']) && $type['type'] == '3') {
+		if (isset($type) && $type == '3') {
 			$this->validate($request, [
 				'alumni_type' => 'required|in:alumni_registration_fee,new_alumni_registration_fee',
 				'gender' => 'required'
 			]);
-
+			$alumni_type = $request->alumni_type;
+			$request['amount'] = $setting->$alumni_type;
+			
 			//check amount
-			if ($request->amount != ($setting->$request->alumni_type * 100 )) {
-				return back()->with('error', 'You cannot pay less than ' . $setting->$request->alumni_type);
+			if ($request->amount != $setting->$alumni_type) {
+				return back()->with('error', 'You cannot pay less than ' . $setting->$alumni_type);
 			}
 		}
 
-		$type = json_decode($request['metadata'], true);
 		$request['transid'] = $this->generateTransactionId();
-
 		$tempUser = $this->createTempUser($request->all());
+		
 		$request['transid'] = $tempUser->transid;
+		$request['currency'] = 'NGN';
 		
 		try {
+			$request['amount'] = $request['amount'] * 100;
 			$url = $this->queryPaystack($request->all(), $setting);
 			
 			if(isset($url) && !empty($url)){
 				return redirect()->away($url);
 			}else{
-				return redirect(url('/registration/#register'))->with('error', 'Something went wrong, Please try again');
+				// return redirect(url('/registration/#register'))->with('error', 'Something went wrong, Please try again');
+				return redirect(url('/#register'))->with('error', 'Something went wrong, Please try again');
 			}
 			
 		} catch (\Exception $e) {

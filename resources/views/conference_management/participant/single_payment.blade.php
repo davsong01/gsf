@@ -165,8 +165,7 @@
 							</div>
 						</div>
 						<input type="hidden" name="level" value="{{ $payment->level  }}">
-						
-						@if($payment->edition->id == App\ConferenceEdition::where('status', 'active')->first()->value('id'))
+						@if($payment->edition->id == App\ConferenceEdition::where('status', 'active')->first()->id)
 						<div class="row">
 							<div class="col-md-12 col-sm-12">
 								<button class="btn btn-primary" style="width:100%" type="submit">Update Profile</button>

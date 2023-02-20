@@ -6,19 +6,18 @@
     }
 </style>
 @endsection
-@section('title', 'My Participants')
+@section('title', 'Email Logs')
 @section('active')
-<li class="breadcrumb-item">My Participants</li>
+<li class="breadcrumb-item">Email Logs</li>
 @endsection
 @section('content')
 <div class="content-body">
-    <!-- Zero configuration table -->
     <section id="basic-datatable">
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">My Participants</h4>
+                        <h4 class="card-title">Email Logs</h4>
                         
                         @include('includes.alerts')
                     </div>
