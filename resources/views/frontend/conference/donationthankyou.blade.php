@@ -1,6 +1,6 @@
 @extends('layouts.index')
 @section('body')
-
+{{ dd($setting) }}
 <!-- Contact Start -->
         <div class="contact">
             <div class="container mt-125">

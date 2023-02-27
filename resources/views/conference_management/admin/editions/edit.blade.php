@@ -20,7 +20,7 @@
                         <form action="{{ route('conferenceeditions.update', $edition->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PATCH')
-                             <div class="row">
+                            <div class="row">
                                 <div class="col-sm-6 col-md-6">
                                     <label for="enable_conference">Status</label>
                                     <fieldset class="form-group position-relative has-icon-left">
@@ -163,14 +163,14 @@
                                 <div class="col-sm-6 col-md-6">
                                     <label for="conference_logo">Upload Logo</label>
                                     <fieldset class="form-group position-relative has-icon-left">
-                                        <input type="file" class="form-control" name="conference_logo" value="{{ old('conference_logo') }}" id="logo">
+                                        <input type="file" class="form-control" name="logo" value="{{ old('logo') }}" id="logo">
                                     </fieldset>
                                 </div>
                                 @else
                                 <div class="col-sm-6 col-md-6">
                                     <label for="banner">Replace logo</label>
                                     <fieldset class="form-group position-relative has-icon-left">
-                                        <input type="file" class="form-control" name="logo" value="{{ old('conference_logo') }}" id="logo">
+                                        <input type="file" class="form-control" name="logo" value="{{ old('logo') }}" id="logo">
                                     </fieldset>
                                 </div>
                                 @endif
@@ -178,14 +178,14 @@
                                 <div class="col-sm-6 col-md-6">
                                     <label for="banner">Upload Banner</label>
                                     <fieldset class="form-group position-relative has-icon-left">
-                                        <input type="file" class="form-control" name="banner" value="{{ old('banner') }}" id="banner">
+                                        <input type="file" class="form-control" name="ban" value="{{ old('ban') }}" id="banner">
                                     </fieldset>
                                 </div>
                                 @else
                                 <div class="col-sm-6 col-md-6">
                                     <label for="banner">Replace banner</label>
                                     <fieldset class="form-group position-relative has-icon-left">
-                                        <input type="file" class="form-control" name="banner" value="{{ old('banner') }}" id="banner">
+                                        <input type="file" class="form-control" name="ban" value="{{ old('ban') }}" id="banner">
                                     </fieldset>
                                 </div>
                                 @endif
@@ -198,6 +198,35 @@
                                         <div class="form-control-position">
                                            &#9745;
                                         </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                             <div class="row">
+                                <div class="col-sm-12 col-md-12">
+                                   <h3>Social Media Settings</h3>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="facebook_page">Facebook Page</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="text" class="form-control" name="facebook_page" value="{{ old('facebook_page') ?? $edition->facebook_page}}" id="facebook_page">
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="telegram">Telegram Page</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="text" class="form-control" name="telegram" value="{{ old('telegram') ?? $edition->telegram}}" id="telegram">
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="telegram">Instagram Page</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="text" class="form-control" name="instagram" value="{{ old('instagram') ?? $edition->instagram}}" id="instagram">
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="telegram">Facebook Event Page</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="text" class="form-control" name="facebook_event_page" value="{{ old('facebook_event_page') ?? $edition->facebook_event_page}}" id="facebook_event_page">
                                     </fieldset>
                                 </div>
                             </div>

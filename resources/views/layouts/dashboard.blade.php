@@ -38,6 +38,7 @@
                 </div>
             </div>
         </div>
+        @include('includes.falerts')
         @yield('content')
     </div>
 </div>

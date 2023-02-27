@@ -36,7 +36,14 @@ class PaymentController extends Controller
 			'phone' => 'required',
 			'chapter' => 'nullable'
 		]);
-		$type['type'] = json_decode($request->metadata)->type;
+
+		$type['conference_edition_id'] = $setting->id ?? null;
+		
+		$metadata = json_decode($request->metadata);
+		$type['type'] = $metadata->type;
+		$request['metadata'] = json_encode($type);		
+		
+		// $type['type'] = json_decode($request->metadata)->type;
 		$type = $type['type'] ?? $request->type;
 		
 		//Validate individual registration
@@ -78,11 +85,23 @@ class PaymentController extends Controller
 				return back()->with('error', 'You cannot pay less than ' . $setting->$alumni_type);
 			}
 		}
+		
+		//Validate Donation Registration
+		if (isset($type) && $type == '5') {
+			$this->validate($request, [
+				"name" => "required",
+				"email" => "required",
+				"phone" => "required",
+				"amount"=>"required"
+			]);
 
+		}
+		
 		$request['transid'] = $this->generateTransactionId();
 		$tempUser = $this->createTempUser($request->all());
-		
 		$request['transid'] = $tempUser->transid;
+
+		$request['conference_edition_id'] = $setting->id;
 		$request['currency'] = 'NGN';
 		
 		try {
@@ -134,11 +153,11 @@ class PaymentController extends Controller
 				$ledge = $extras['ledge'] ?? null;
 				$data['level'] = $extras['level'] ?? null;
 				$data['slot_filled'] = $extras['slot_filled'] ?? null;
-	
+				
 				//Donations
 				if (isset($paymentDetails->metadata->type) && $paymentDetails->metadata->type == '5') {
 					//copy details to donations table
-					$donation = Donation::Updateorcreate([
+					$donation = Donation::Create([
 						'name' => $data['name'],
 						'email' => $data['email'],
 						'name' => $data['name'],
@@ -146,13 +165,14 @@ class PaymentController extends Controller
 						'amount' => $data['amount'],
 						'amount' => $data['amount'],
 						'state' => $participant->state,
+						'transid' => $paymentDetails->reference,
 						'conference_edition_id' => $participant->conference_edition_id,
 					]);
 
 					$data['chapter'] = 'N/A';
 					$data['conference_theme'] = $setting->conference_theme ?? null;
 					$data['type'] = 'admin_donation_notification';
-					// $data['type'] = $paymentDetails['data']['metadata']['type'];
+					// official email
 					$email = [
 						'recipient_name' => $data['name'],
 						'recipient' => $setting->official_email,
@@ -160,12 +180,22 @@ class PaymentController extends Controller
 						'type' => 'admin_donation_notification',
 						'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
 					];
-					//send email to official email
-					$this->logEmail($email);
-					//delete temp user
 					$participant->status = 'Complete';
 					$participant->save();
-					
+					$this->logEmail($email);
+
+					//send email to donator
+					$data['type'] = 'donator_notification';
+					$email = [
+						'subject' => 'Thank you for your donation',
+						'recipient_name' => $data['name'],
+						'recipient' => $data['email'],
+						'type' => $data['type'],
+						'amount' => $data['amount'],
+						'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
+					];
+
+					$this->logEmail($email);
 					//Todo: make this return redirect to
 					return view('frontend.conference.donationthankyou', compact('data', 'conference_year'));
 				}
@@ -230,9 +260,9 @@ class PaymentController extends Controller
 				return $this->thankYouPage($data, $conference_year);
 			}else{
 				$payment = Payment::with('user')->where('transid', $paymentDetails->reference)->first();
-				$user = $payment->user;
 				
 				if(isset($payment)){
+					$user = $payment->user;
 					$data = [
 						'name' => $payment->user->name,
 						'phone' => $payment->user->phone,
@@ -257,7 +287,7 @@ class PaymentController extends Controller
 
 					// return view('frontend.conference.thankyou', compact('data', 'conference_year'));
 				}else{
-					return 'Payment not detected!';
+					return redirect(route('home.index'));
 				}
 				// return view('frontend.conference.thankyou', compact('data', 'conference_year'));
 			}
@@ -267,7 +297,11 @@ class PaymentController extends Controller
 	}
 
 	public function thankYouPage($data, $conference_year){
-		return view('frontend.conference.thankyou', compact('data', 'conference_year'));
+		if(isset($this->edition) && !empty($this->edition)){
+            return view('frontend.conference.template'. $this->edition->template_id.'.thankyou', compact('data', 'conference_year'));
+		}else{
+			return view('frontend.conference.thankyou', compact('data', 'conference_year'));
+		}
 	}
 
 	public function queryPaystack($request,$setting)
@@ -352,7 +386,7 @@ class PaymentController extends Controller
 		$type = isset($data['metadata']) && !empty($data['metadata']) ? json_decode($data['metadata'], true) : [];
 		$type = !empty($type) ? $type['type'] : null;
 		$setting = $this->conferenceEdition();
-		$temp = TempUser::updateOrCreate(['email'=> $data['email']],[
+		$temp = TempUser::updateOrCreate(['email'=> $data['email'], 'conference_edition_id' => $setting->id],[
 			'name' => $data['name'],
 			'transid' => $data['transid'],
 			'phone' => $data['phone'],

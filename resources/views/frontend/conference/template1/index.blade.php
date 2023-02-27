@@ -16,15 +16,25 @@
     <meta property="og:site_name" content="{{ config('aap_name') }}" />
 
     <!-- Favicon -->
-    <link href="{{ asset('frontend/img/logo.png') }}" rel="icon">
+    <link href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}" rel="icon">
 
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('frontend/img/logo.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('frontend/img/logo.png')}}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('frontend/img/logo.png')}}">
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('frontend/img/logo.png')}}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
     <link rel="manifest" href="{{ asset('conference_templates/template1/assets/img/favicons/manifest.json')}}">
-    <meta name="msapplication-TileImage" content="{{ asset('frontend/img/logo.png')}}">
+    <meta name="msapplication-TileImage" content="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <meta name="theme-color" content="#ffffff">
+    <style>
+      .small-container{
+        width: 50% !important;
+        margin-top: 50px !important;
+      }
+      .socials {
+        width: 30px;
+      }
+    </style>
     @yield('css')
 
     <link href="{{ asset('conference_templates/template1/assets/css/theme.css') }}" rel="stylesheet"/>
@@ -36,21 +46,20 @@
   <body>
     <main class="main" id="top">
       <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" data-navbar-on-scroll="data-navbar-on-scroll">
-        <div class="container"><a class="navbar-brand" href="#"><img src="{{ !empty($setting->conference_logo) ? asset($seting->conference_logo): asset('frontend/img/logo.png') }}" alt="" width="30">
-            {{-- <span class="text-1000 fs-1 ms-2 fw-medium">Lasles<span class="fw-bold">VPN</span>
-            </span> --}}
+        <div class="container"><a class="navbar-brand" href="#"><img src="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}" alt="" width="90">
         </a>
+         
           <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mx-auto border-bottom border-lg-bottom-0 pt-2 pt-lg-0">
+            <ul class="navbar-nav mx-auto border-bottom border-lg-bottom-0 pt-2 pt-lg-0 mb-2">
               {{-- <li class="nav-item"><a class="nav-link active active" aria-current="page" href="#">About</a></li> --}}
-              <li class="nav-item"><a class="nav-link" href="#details">Details </a></li>
-              <li class="nav-item"><a class="nav-link" href="#expectation">Expectation</a></li>
-              <li class="nav-item"><a class="nav-link" href="#testimonies">Testimonies</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url('/').'#details' }}">Details </a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url('/').'#expectation' }}">Expectation</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url('/').'#testimonies' }}">Testimonies</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url('/').'#donate' }}">Donate</a></li>
               <li class="nav-item"><a class="nav-link" href="#register">Register </a></li>
             </ul>                   
-            <form class="d-flex py-3 py-lg-0">
-                @auth
+            @auth
                 <a href="/account"  class="btn btn-outline-danger rounded-pill order-0" >My Account</a>
                 <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <button class="btn btn-link text-1000 fw-medium order-1 order-lg-0" type="button">Log out</button>
@@ -60,12 +69,12 @@
                 </form>  
                 @endauth
                 @guest
-                <a href="/login" class="btn btn-outline-danger rounded-pill order-0" type="submit">Sign Up</a>
+                <a href="{{ '/login' }}" class="btn btn-outline-danger rounded-pill order-0" type="submit">Login</a>
                 @endguest
-            </form>
           </div>
         </div>
       </nav>
+      
         @yield('sec-content')
     </main>
     @include('frontend.conference.template1.footer')

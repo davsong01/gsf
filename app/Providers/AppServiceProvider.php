@@ -27,9 +27,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $setting = ConferenceEdition::where('status','active')->orderBy('created_at','DESC')->first();
         if($setting){
-            
             View::share('setting', $setting);
-           
         }
     }
 }

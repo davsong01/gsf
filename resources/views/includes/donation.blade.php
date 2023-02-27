@@ -7,7 +7,7 @@
                 <form action="" method="POST">
                     @csrf
                     <div class="control-group">
-                        <label>DINATION</label>
+                        <label>DONATION</label>
                         <input type="text" class="form-control" id="membership_id" name="membership_id"
                             placeholder="Enter Your GSF membership ID" required="required"
                             data-validation-required-message="Please enter your GSF membership ID" />

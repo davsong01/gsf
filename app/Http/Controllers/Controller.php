@@ -29,13 +29,16 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    public function __construct(Request $request)
+    public $edition = null;
+    
+    public function __construct(Request $request = null)
     {
-        $this->edition = ConferenceEdition::find($request->edition);
-
-        if (!isset($this->edition) && empty($this->edition)) {
-            return redirect(route('conferencemanagement.index'));
+        $this->edition = ConferenceEdition::where('status', 'active')->where('close_registration', '>', date('Y-m-d'))->first();
+        
+        if($request && $request->has('edition')){
+            $this->edition = ConferenceEdition::where('id',$request->edition)->first();
         }
+
     }
     protected function getMonths()
     {

@@ -95,33 +95,60 @@
                                     <option value="alumni_registration_fee">Old Alumni (&#8358;{{ $setting->alumni_registration_fee }})</option>
                                 </select>
                             </div>
-                           
                             @endif
+                            @endif
+                            <input type="hidden" name="metadata" value="{{ json_encode($array = ['type' => $type]) }}">
+                            <input type="hidden" name="type" value="{{ $type }}">
+                            @if($type == 1)
+                            <input type="hidden" name="amount" value="{{ $setting->registration_fee }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <input type="hidden" name="currency" value="NGN">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            @endif
+                            @if($type == 2)
+                            <script>
+                                var participants = document.getElementById('participants');
+                                var amount = document.getElementById('amount');
+                                
+                                participants.addEventListener('input', function() {
+                                    amount.value = this.value * {{ $setting->registration_fee * 100 }};
+                                });
+                                
+                                amount.addEventListener('input', function() {
+                                    participants.value = this.value;
+                                });
+                                </script>
                         @endif
-                        <input type="hidden" name="metadata" value="{{ json_encode($array = ['type' => $type]) }}">
-                        <input type="hidden" name="type" value="{{ $type }}">
-                        @if($type == 1)
-                        <input type="hidden" name="amount" value="{{ $setting->registration_fee * 100 }}">
-                        <input type="hidden" name="quantity" value="1">
-                        <input type="hidden" name="currency" value="NGN">
-                        <input type="hidden" name="metadata[]" id="metadata">
-                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        
+                        @if($type == 5)
+                        <div class="control-group">
+							<label>Full Name</label>
+							<input type="text" class="form-control" value="{{ old('name') }}" id="name" name="name" placeholder="Enter your full name"
+								required="required">
+						</div>
+
+						<div class="control-group">
+							<label>Email</label>
+							<input type="email" value="{{ old('email') }}" class="form-control" id="email" name="email" placeholder="Enter your email"
+								required="required">
+						</div>
+						{{-- <div class="control-group">
+							<label>State</label>
+							<input type="text" class="form-control" id="state" name="state" placeholder="Your Location"
+								required="required">
+						</div> --}}
+						<div class="control-group">
+							<label>Phone Number</label>
+							<input type="text" class="form-control" value="{{ old('phone') }}" id="phone" name="phone" placeholder="Enter your phone number"
+								required="required">
+						</div>
+
+						<div class="control-group">
+							<label>Enter amount</label>
+							<input type="number" class="form-control" id="amount" name="amount" value="{{ old('amount') }}"
+								placeholder="Amount you want to donate" min="1000" required="required">
+						</div>
                         @endif
-                        @if($type == 2)
-                        <script>
-                            var participants = document.getElementById('participants');
-                            var amount = document.getElementById('amount');
-                            
-                            participants.addEventListener('input', function() {
-                                amount.value = this.value * {{ $setting->registration_fee * 100 }};
-                            });
-                            
-                            amount.addEventListener('input', function() {
-                                participants.value = this.value;
-                            });
-                            </script>
-                        @endif
-                       
                         @endif
                         <br>
                         <div class="control-group" style="margin-top:30px">

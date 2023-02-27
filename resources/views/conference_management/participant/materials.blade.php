@@ -1,5 +1,8 @@
 @extends('layouts.dashboard')
-@section('title', 'Materials')
+@section('title', 'Download Conference Materials')
+@section('item')
+<li class="breadcrumb-item"><a href="{{ route('conferencemanagement.show', ['conferencemanagement'=>$payment, 'edition'=>$edition->id]) }}">{{ $setting->conference_theme }}</a></li>
+@endsection
 @section('active')
 <li class="breadcrumb-item">Conference Materials</li>
 @endsection
@@ -11,7 +14,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">All Conference materials</h4>
+                        <h4 class="card-title">All {{ $edition->conference_theme }}'s' Conference materials</h4>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">

@@ -110,6 +110,7 @@ class ConferenceManagementController extends Controller
 		
 		$payment = $conferencemanagement;
 		$edition = $this->edition;
+		
 		if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isNec($edition) || auth()->user()->isChoir($edition)) {
 			return view('conference_management.participant.single_payment', compact('edition', 'payment','chapters'));
 		}
@@ -461,11 +462,12 @@ class ConferenceManagementController extends Controller
     public function getCard($id)
 	{
 		$payment = Payment::find($id);
-		if (!auth()->user()->completeReg($this->edition)) {
+
+		if (!auth()->user()->completeReg($payment->edition)) {
 			return back()->with('error', 'You must complete registration before viewing this resource');
 		}
 
-		if (auth()->user()->isModerator($this->edition)) {
+		if (auth()->user()->isModerator($payment->edition)) {
 
 			if ($payment->uploaded_by != auth()->user()->id) {
 				return abort(404);
@@ -473,7 +475,7 @@ class ConferenceManagementController extends Controller
 		}
 		
 		return view('card.id')->with('payment', $payment)
-            ->with('edition', $this->edition)
+            ->with('edition', $payment->edition)
             ->with('user', $payment->user);
 	}
 

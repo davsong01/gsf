@@ -14,9 +14,16 @@ class MaterialController extends Controller
         $count = 1;
         $edition = ConferenceEdition::find($request->edition);
         $materials = Material::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
-        
+    
         if(auth()->user()->role == 1){
             return view('admin.materials.index', compact('materials', 'count', 'edition'));
+        }
+
+        $edition = $this->edition;
+        
+        if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)) {
+            $payment = $request->payment_id;
+            return view('conference_management.participant.materials', compact('edition','materials', 'count','payment'));
         }
 
         if(auth()->user()->level == 'Participant' || auth()->user()->level == 'Moderator' || auth()->user()->level == 'Alumni' || auth()->user()->level == 'Nec'){
@@ -56,8 +63,12 @@ class MaterialController extends Controller
     public function show(Material $material)
     {
         $realpath = $material->location;
-      
-        return response()->download($realpath);
+       
+        if(file_exists(public_path().'/'. $realpath)){
+            return response()->download($realpath);
+        }else{
+            return back()->with('error','File doesnt exist');
+        }
     }
 
     

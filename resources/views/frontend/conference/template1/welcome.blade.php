@@ -13,7 +13,7 @@
 </style>
 @endsection
 @section('sec-content')
-<section class="pb-6">
+<section class="pb-6" id="details" style="margin-top:50px">
 
   <div class="container">
     <div class="row flex-center">
@@ -41,7 +41,7 @@
                 </div>
               </div>
               <div>
-                <p class="fw-bolder text-1000 mb-0">6000+ </p>
+                <p class="fw-bolder text-1000 mb-0">6,000+ </p>
                 <p class="mb-0">Participants</p>
               </div>
             </div>
@@ -84,14 +84,14 @@
 
 </section>
 
-<section class="pt-4 pt-md-6">
+<section class="pt-4 pt-md-6" id="expectation">
 
   <div class="container">
     <div class="row align-items-center">
       <div class="col-md-5 col-lg-7 text-lg-center"><img class="img-fluid mb-5 mb-md-0" src="{{ asset('conference_templates/template1/assets/img/illustrations/2.png')}}" alt="" /></div>
       <div class="col-md-7 col-lg-5 text-center text-md-start">
-        <h2>We Provide Many <br />Features You Can Use</h2>
-        <p> You can explore the features that we provide with fun and have their own functions each feature.</p>
+        <h2>What to expect <br /></h2>
+        <p>This edition of the GSF Bienniel Conference is packaged with:</p>
         <div class="d-flex">
           <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
@@ -114,7 +114,7 @@
           <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
           </svg>
-          <p class="ms-2">Internet without borders.</p>
+          <p class="ms-2">And more</p>
         </div>
       </div>
     </div>
@@ -250,15 +250,15 @@
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center"><img class="img-fluid" src="{{ asset('conference_templates/template1/assets/img/gallery/user-1.png')}}" alt="" />
-                      <div class="flex-1 ms-3">
+                    <div class="d-flex align-items-center">
+                      <div class="flex-1 ms-0">
                         <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
                         <p class="fs--2 fw-normal mb-0">arsaw, Poland</p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“Wow...I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems. LaslesVPN always the best”.</p>
+                  <p class="card-text pt-3">“Wow...I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems..</p>
                 </div>
               </div>
             </div>
@@ -266,8 +266,8 @@
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center"><img class="img-fluid" src="{{ asset('conference_templates/template1/assets/img/gallery/user-2.png')}}" alt="" />
-                      <div class="flex-1 ms-3">
+                    <div class="d-flex align-items-center">
+                      <div class="flex-1 ms-0">
                         <h6 class="mb-0 fs--1 text-1000 fw-medium">Kim Young Jou</h6>
                         <p class="fs--2 fw-normal mb-0">Seoul, South Korea</p>
                       </div>
@@ -282,8 +282,8 @@
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center"><img class="img-fluid" src="{{ asset('conference_templates/template1/assets/img/gallery/user-3.png')}}" alt="" />
-                      <div class="flex-1 ms-3">
+                    <div class="d-flex align-items-center">
+                      <div class="flex-1 ms-0">
                         <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
                         <p class="fs--2 fw-normal mb-0">Shanxi, China</p>
                       </div>
@@ -302,15 +302,15 @@
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center"><img class="img-fluid" src="{{ asset('conference_templates/template1/assets/img/gallery/user-1.png')}}" alt="" />
-                      <div class="flex-1 ms-3">
+                    <div class="d-flex align-items-center">
+                      <div class="flex-1 ms-0">
                         <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
                         <p class="fs--2 fw-normal mb-0">arsaw, Poland</p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“Wow...I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems. LaslesVPN always the best”.</p>
+                  <p class="card-text pt-3">“Wow...I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems.”.</p>
                 </div>
               </div>
             </div>
@@ -318,8 +318,8 @@
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center"><img class="img-fluid" src="{{ asset('conference_templates/template1/assets/img/gallery/user-2.png')}}" alt="" />
-                      <div class="flex-1 ms-3">
+                    <div class="d-flex align-items-center">
+                      <div class="flex-1 ms-0">
                         <h6 class="mb-0 fs--1 text-1000 fw-medium">Kim Young Jou</h6>
                         <p class="fs--2 fw-normal mb-0">Seoul, South Korea</p>
                       </div>
@@ -334,8 +334,8 @@
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center"><img class="img-fluid" src="{{ asset('conference_templates/template1/assets/img/gallery/user-3.png')}}" alt="" />
-                      <div class="flex-1 ms-3">
+                    <div class="d-flex align-items-center">
+                      <div class="flex-1 ms-0">
                         <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
                         <p class="fs--2 fw-normal mb-0">Shanxi, China</p>
                       </div>
@@ -353,15 +353,15 @@
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center"><img class="img-fluid" src="{{ asset('conference_templates/template1/assets/img/gallery/user-1.png')}}" alt="" />
-                      <div class="flex-1 ms-3">
+                    <div class="d-flex align-items-center">
+                      <div class="flex-1 ms-0">
                         <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
                         <p class="fs--2 fw-normal mb-0">arsaw, Poland</p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“Wow...I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems. LaslesVPN always the best”.</p>
+                  <p class="card-text pt-3">“Wow...I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems.”.</p>
                 </div>
               </div>
             </div>
@@ -369,8 +369,8 @@
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center"><img class="img-fluid" src="{{ asset('conference_templates/template1/assets/img/gallery/user-2.png')}}" alt="" />
-                      <div class="flex-1 ms-3">
+                    <div class="d-flex align-items-center">
+                      <div class="flex-1 ms-0">
                         <h6 class="mb-0 fs--1 text-1000 fw-medium">Kim Young Jou</h6>
                         <p class="fs--2 fw-normal mb-0">Seoul, South Korea</p>
                       </div>
@@ -385,8 +385,8 @@
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center"><img class="img-fluid" src="{{ asset('conference_templates/template1/assets/img/gallery/user-3.png')}}" alt="" />
-                      <div class="flex-1 ms-3">
+                    <div class="d-flex align-items-center">
+                      <div class="flex-1 ms-0">
                         <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
                         <p class="fs--2 fw-normal mb-0">Shanxi, China</p>
                       </div>
@@ -420,17 +420,17 @@
 
 <!-- ============================================-->
 <!-- <section> begin ============================-->
-<section class="py-5 z-index-1" style="margin-bottom: -10rem">
+<section class="py-5 z-index-1" style="margin-bottom: 1rem">
 
-  <div class="container">
-    <div class="card py-5 px-5 border-0 shadow-sm">
+  <div class="container" id="donate">
+    <div class="card py-5 px-5 border-0 shadow-sm" style="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px !important;">
       <div class="card-body">
         <div class="row flex-center">
           <div class="col-12 col-lg-6 text-lg-start">
-            <h2>Visit <br />Get Special Features!</h2>
-            <p class="mb-lg-0">Let's subscribe with us and find the fun.</p>
+            <h2>Special <br />Support</h2>
+            <p class="mb-lg-0">You can support the conference online</p>
           </div>
-          <div class="col-12 col-lg-6 text-lg-end"><a class="btn btn-lg btn-danger hover-top btn-glow text-end" href="#">Subscribe Now</a></div>
+          <div class="col-12 col-lg-6 text-lg-end"><a class="btn btn-lg btn-danger hover-top btn-glow text-end" href="{{route('conference.registration',5) }}"type="submit">Donate Now</a></div>
         </div>
       </div>
     </div>
@@ -438,8 +438,7 @@
   <!-- end of .container-->
 
 </section>
-@include('frontend.conference.template1.footer')
-{{-- @include('frontend.conference.template1.modals') --}}
+
 @endsection 
 @section('script')
     <script>

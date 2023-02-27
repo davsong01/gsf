@@ -1,6 +1,5 @@
 @extends('layouts.index')
 @section('body')
-
 <!-- Contact Start -->
         <div class="contact">
             <div class="container mt-125">

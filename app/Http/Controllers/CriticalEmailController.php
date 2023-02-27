@@ -70,6 +70,14 @@ class CriticalEmailController extends Controller
                 <strong>Transaction ID: </strong>".$data['transid']."<br><br>Thanks,<br>";
                 # code...
                 break;
+
+            case 'donator_notification':
+                $content = "Dear " . $data['name'] . "<br>
+                Thank you for your donation of &#8358;" . number_format($data['amount']) . " for " . $data['conference_theme'] . " conference. <br><br>
+                You are much appreciated<br><br>
+                <strong>Transaction ID: </strong>" . $data['transid'] . "<br><br>Thanks,<br>";
+                # code...
+                break;
             default:
                 # code...
                 break;

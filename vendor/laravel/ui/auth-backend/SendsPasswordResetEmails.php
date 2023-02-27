@@ -14,11 +14,7 @@ trait SendsPasswordResetEmails
      *
      * @return \Illuminate\View\View
      */
-    public function showLinkRequestForm()
-    {
-        return view('auth.passwords.email');
-    }
-
+    
     /**
      * Send a reset link to the given user.
      *
