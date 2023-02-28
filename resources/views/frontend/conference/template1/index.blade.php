@@ -13,7 +13,7 @@
     <meta property="og:image" content="{{ asset('frontend/img/logo.png') }}"/> 
 
     <meta property="og:description" content="GSF - {{ $setting->conference_theme }}"/>
-    <meta property="og:site_name" content="{{ config('aap_name') }}" />
+    <meta property="og:site_name" content="{{ config('app_name') }}" />
 
     <!-- Favicon -->
     <link href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}" rel="icon">
@@ -57,7 +57,7 @@
               <li class="nav-item"><a class="nav-link" href="{{ url('/').'#expectation' }}">Expectation</a></li>
               <li class="nav-item"><a class="nav-link" href="{{ url('/').'#testimonies' }}">Testimonies</a></li>
               <li class="nav-item"><a class="nav-link" href="{{ url('/').'#donate' }}">Donate</a></li>
-              <li class="nav-item"><a class="nav-link" href="#register">Register </a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url('/').'#register' }}">Register </a></li>
             </ul>                   
             @auth
                 <a href="/account"  class="btn btn-outline-danger rounded-pill order-0" >My Account</a>

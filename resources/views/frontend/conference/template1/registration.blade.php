@@ -17,13 +17,13 @@
 @endsection
 @section('sec-content')
 <section class="bg-100 py-7" id="register">
-    <div class="container-lg">
+    <div class="container-lg" style="margin-top:40px">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-5 text-center mb-3">
                 <h2>Kindly fill form below and click the payment button</h2>
             </div>
         </div>
-        @include('includes.alerts')
+    @include('includes.alerts')
 
         <div class="row h-100 justify-content-center">
             <div class="contact-form">
