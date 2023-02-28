@@ -12,7 +12,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All materials</h4>
-                        <a href="{{ route('materials.create') }}" class="btn btn-primary mt-1">Upload new material</a>
+                        <a href="{{ route('materials.create',['edition'=>$edition]) }}" class="btn btn-primary mt-1">Upload new material</a>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">

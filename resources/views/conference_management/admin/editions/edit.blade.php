@@ -174,6 +174,21 @@
                                     </fieldset>
                                 </div>
                                 @endif
+                                @if( empty($edition->conference_favicon))
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="favicon">Upload Favicon</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="file" class="form-control" name="favicon" value="{{ old('favicon') }}" id="favicon">
+                                    </fieldset>
+                                </div>
+                                @else
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="favicon">Replace Favicon</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="file" class="form-control" name="favicon" value="{{ old('favicon') }}" id="favicon">
+                                    </fieldset>
+                                </div>
+                                @endif
                                 @if( empty($edition->banner))
                                 <div class="col-sm-6 col-md-6">
                                     <label for="banner">Upload Banner</label>
@@ -189,6 +204,7 @@
                                     </fieldset>
                                 </div>
                                 @endif
+                                
                                 <div class="col-sm-12 col-md-12">
                                     <label for="conference_overview">Conference Overview</label><small> You can use html tags here</small>
                                     <fieldset class="form-group position-relative has-icon-left">

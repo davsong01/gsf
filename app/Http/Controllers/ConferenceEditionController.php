@@ -124,8 +124,11 @@ class ConferenceEditionController extends Controller
 			$request['conference_logo'] = $this->uploadImage($request->logo, 'frontend/img/site');
         }
 
-        // dd($request->all());
-        $edition->update($request->except(['ban','logo']));
+        if ($request->has('favicon')) {
+            $request['conference_favicon'] = $this->uploadImage($request->favicon, 'frontend/img/site');
+        }
+
+        $edition->update($request->except(['ban','logo','favicon']));
         return back()->with('message', 'Operation Successful');
     }
 

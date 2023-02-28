@@ -2,6 +2,13 @@
 <html lang="en-US" dir="ltr">
 
   <head>
+    <meta property="og:url" content="{{ config('app.url') }}">
+    <meta property="og:title" content="GSF | @yield('ogtitle', config('app_name').'-'.$setting->conference_theme)"> 
+    <meta property="og:image" content="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}"/> 
+
+    <meta property="og:description" content="{{ config('app_name').'-'.$setting->conference_theme }}"/>
+    <meta property="og:site_name" content="{{ config('app_name') }}" />
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,19 +16,14 @@
     <title>Gofamint Students' Fellowship - {{ $setting->conference_theme }}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta property="og:title" content="GSF | @yield('ogtitle', "Gofamint Students' Fellowship")"> 
-    <meta property="og:image" content="{{ asset('frontend/img/logo.png') }}"/> 
-
-    <meta property="og:description" content="GSF - {{ $setting->conference_theme }}"/>
-    <meta property="og:site_name" content="{{ config('app_name') }}" />
 
     <!-- Favicon -->
-    <link href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}" rel="icon">
+    <link href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}" rel="icon">
 
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}">
     <link rel="manifest" href="{{ asset('conference_templates/template1/assets/img/favicons/manifest.json')}}">
     <meta name="msapplication-TileImage" content="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">

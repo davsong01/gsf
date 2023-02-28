@@ -36,8 +36,13 @@ class ConferenceManagementController extends Controller
 			return view('conference_management.admin.editions.index', compact('editions','count'));
 		}else{
 			$edition = $this->edition ?? ConferenceEdition::where('status','active')->orderBy('created_at','DESC')->first();
-			if(auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)){
-				return view('conference_management.participant.index', compact('edition'));
+			
+			if(auth()->user()->payments->count() > 0){
+				if(auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)){
+					return view('conference_management.participant.index', compact('edition'));
+				}
+			}else{
+				return back()->with('error','You have not registered for any conference');
 			}
 		}
     }

@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 @section('title', 'Upload new material')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('materials.index') }}">Materials</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('materials.index',['edition'=>$edition]) }}">Materials</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Upload Material</li>
@@ -19,7 +19,7 @@
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('materials.store') }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('materials.store',['edition'=>$edition]) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="col-md-12 col-sm-12">
                                 <fieldset class="form-group">

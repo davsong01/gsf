@@ -32,9 +32,11 @@ class MaterialController extends Controller
        
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('admin.materials.create');
+        $edition = ConferenceEdition::find($request->edition);
+        $edition = $edition->id;
+        return view('admin.materials.create',compact('edition'));
     }
 
     public function store(Request $request)
@@ -43,18 +45,17 @@ class MaterialController extends Controller
             'file*' => 'required|max:5000',
         ]);
 
-        if(auth()->user()->level == 'Admin'){
+        if(auth()->user()->role == 1){
             foreach($request->file('file') as $file){
-
                 $file->move('conferencematerials', $file->getClientOriginalName());  
-
                 Material::create([
                     'name' =>$file->getClientOriginalName(),
-                    'location' => 'conferencematerials/'.$file->getClientOriginalName(),
+                    'location' => 'conferencematerials/' . $file->getClientOriginalName(),
+                    'conference_edition_id' =>  $request->edition,
                 ]);
             }
+            return redirect(route('materials.index', ['edition' => $request->edition]))->with('message', 'Material(s) succesfully uploaded');
 
-            return redirect(route('materials.index'))->with('message', 'Upload Successful');
         } return abort(404);
 
     }
