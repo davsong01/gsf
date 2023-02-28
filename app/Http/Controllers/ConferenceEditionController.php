@@ -79,18 +79,30 @@ class ConferenceEditionController extends Controller
     {
         if (auth()->user()->role == 1) {
             $edition = ConferenceEdition::with(['payments','donations'])->find($id);
-
+            
             $registered_participants = $edition->payments->count();
             $pending_registration = $edition->payments->where('registration_status', 'Pending')->count();
             $total = $edition->payments->sum('amount_paid');
             $completed_registration = $edition->payments->where('registration_status', 'Complete')->count();
-            $donations = Donation::sum('amount');
-            $materials = Material::count('id');
-            
+            $donations = Donation::where('conference_edition_id',$id)->sum('amount');
+            $materials = Material::where('conference_edition_id',$id)->count();
+          
             return view('conference_management.admin.index', compact('registered_participants', 'pending_registration', 'completed_registration', 'total', 'donations', 'materials', 'edition'));
         }
     }
 
+    public function clone(ConferenceEdition $conferenceEdition, $id)
+    {
+        if (auth()->user()->role == 1) {
+            $edition = ConferenceEdition::find($id);
+            $new = $edition->replicate();
+            $new->status = 'inactive';
+            $new->conference_theme = $edition->conference_theme . '_copy';
+            $new->save();
+           
+            return back()->with('message','Copy Succesfull');
+        }
+    }
     /**
      * Show the form for editing the specified resource.
      *

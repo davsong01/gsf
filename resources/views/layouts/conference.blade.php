@@ -1,7 +1,6 @@
 @extends('layouts.dashboard')
 @section('content')
 <div class="content-body">
-    @include('includes.alerts')
     <!-- Dashboard Analytics Start -->
     <section id="dashboard-analytics">
         
@@ -13,6 +12,10 @@
                         <h5 style="color:blue">{{ $edition->conference_theme }} Conference Edition</h5>
                         <ul class="nav nav-tabs">
                           @if(isset($edition))
+                          
+                            <li class="nav-item">
+                              <a class="nav-link {{ Request::is('showedition*') ? 'active' : '' }}" href="{{ route('show.conference.edition',['id'=>$edition->id]) }}">Dashboard</a>
+                            </li>
                             <li class="nav-item">
                               <a class="nav-link {{ Request::is('conferenceparticipants/Participant*') ? 'active' : '' }}" href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">Participants</a>
                             </li>
@@ -51,17 +54,15 @@
                             </li>
                              
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('email*') ? 'active' : '' }}" href="{{ route('email.index') }}">Email Participants</a>
+                              <a class="nav-link {{ Request::is('email*') ? 'active' : '' }}" href="{{ route('email.index', ['edition'=>$edition->id]) }}">Email Participants</a>
                             </li>
 
                             <li class="nav-item">
                                <a class="nav-link {{ Request::is('materials*') ? 'active' : '' }}" href="{{ route('materials.index',['edition'=>$edition->id]) }}">Materials</a>
                             </li>
+                            
                             <li class="nav-item">
-                              <a class="nav-link {{ Request::is('import*') ? 'active' : '' }}" href="{{ route('edit.conference.edition', $edition->id) }}">Import/Export</a>
-                            </li>
-                            <li class="nav-item">
-                              <a class="nav-link {{ Request::is('conferenceusers/export*') ? 'active' : '' }}" href="{{ route('conferenceusers.export',['edition'=>$edition->id]) }}">Export</a>
+                              <a onclick="return confirm('Are you sure?')" class="nav-link {{ Request::is('conferenceusers/export*') ? 'active' : '' }}" href="{{ route('conferenceusers.export',['edition'=>$edition->id]) }}">Export</a>
                             </li>
                             <li class="nav-item">
                               <a class="nav-link {{ Request::is('conferenceeditions*') ? 'active' : '' }}" href="{{ route('edit.conference.edition', $edition->id) }}">Settings</a>

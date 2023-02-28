@@ -127,6 +127,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('conferenceeditions/{id}/edit', 'ConferenceEditionController@edit')->name('edit.conference.edition');
     Route::get('deleteedition/{id}', 'ConferenceEditionController@destroy')->name('delete.conference.edition');
     Route::get('showedition/{id}', 'ConferenceEditionController@show')->name('show.conference.edition');
+    Route::get('clone-edition/{id}', 'ConferenceEditionController@clone')->name('clone.conference.edition');
     Route::resource('tempusers', 'TempUserController');
 
     // Participant management
@@ -137,9 +138,14 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('participant/delete/{id}', 'ConferenceManagementController@destroy')->name('conferenceparticipants.delete');
     Route::get('trashed/participants', 'ConferenceManagementController@trashed')->name('conferenceparticipants.trashed');
 
-    Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
-    Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
-    Route::get('participants/import/index', 'UserController@usersImportIndex')->name('conferenceusers.import.index');
+    // Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
+    // Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
+    // Route::get('participants/import/index', 'UserController@usersImportIndex')->name('conferenceusers.import.index');
+
+    // Import conference users
+    Route::get('participants/import/index', 'ConferenceManagementController@usersImportIndex')->name('conferenceusers.import.index');
+    Route::get('conference-users-import/{type}', 'ConferenceManagementController@getAdminParticipantSample')->name('conference.usersexport.sample');
+
     //Export Conference users
     Route::get('conferenceusers/export', 'UserController@usersExport')->name('conferenceusers.export');
     Route::post('participants/import', 'UserController@import')->name('conferenceuser.import');

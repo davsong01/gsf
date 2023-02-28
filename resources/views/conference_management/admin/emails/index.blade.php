@@ -12,9 +12,8 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All sent Emails</h4>
-                        <a href="{{ route('email.create') }}" class="btn btn-primary mt-1">Send new Email</a>
-                        @include('includes.alerts')
-                        
+                       
+                        <a href="{{ route('email.create', ['edition'=>$edition]) }}" class="btn btn-primary mt-1">Send new Email</a>                        
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">

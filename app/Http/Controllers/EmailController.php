@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\Email;
+use App\Payment;
 use App\Jobs\sendMails;
+use App\ConferenceEdition;
 use Illuminate\Http\Request;
 use App\Mail\NotificationEmail;
 use App\Http\Controllers\Controller;
@@ -18,11 +20,13 @@ class EmailController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $emails = Email::all();
         $count = 1;
-        return view('conference_management.admin.emails.index', compact('emails', 'count'));
+        $edition = ConferenceEdition::find($request->edition);
+        $emails = Email::where('conference_edition_id',$edition->id)->orderBy('created_at','desc')->get();
+       
+        return view('conference_management.admin.emails.index', compact('emails', 'count','edition'));
     }
 
     /**
@@ -30,9 +34,11 @@ class EmailController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        return view('conference_management.admin.emails.create');
+        $edition = ConferenceEdition::find($request->edition);
+        
+        return view('conference_management.admin.emails.create',compact('edition'));
     }
 
     /**
@@ -48,9 +54,12 @@ class EmailController extends Controller
             'subject' => 'required | min: 3',
             'content' => 'required | min: 10'
         ]);
-     
-        $recipients = User::where('role', '<>', 1)->select('name', 'email');
 
+        $recipients = Payment::join('users', 'payments.user_id', '=', 'users.id')
+            ->where(['payments.conference_edition_id' => $request->edition])
+            ->select('users.name', 'users.email', 'users.phone','payments.level')
+            ->orderBy('payments.created_at', 'desc');
+       
         if($data['recipient'] == 'All'){
             $recipients = $recipients->get();
         }
@@ -70,8 +79,13 @@ class EmailController extends Controller
         if($data['recipient'] == 'Officials'){
             $recipients = $recipients->whereLevel('Official')->get();
         }
+
+        if ($data['recipient'] == 'Participants') {
+            $recipients = $recipients->whereLevel('Participant')->get();
+        }
        
         $data['type'] = 'email';
+       
         $recipients = $recipients->toArray();
 
         Email::create([
@@ -79,13 +93,25 @@ class EmailController extends Controller
             'recipient' => $data['recipient'],
             'subject' => $data['subject'],
             'content' => $data['content'],
+            'conference_edition_id' => $request->edition,
             'count' => count($recipients),
         ]);
 
-        // sendEmails::dispatch($details);
-        $mail = new sendMails($data, $recipients);
-        dispatch($mail);
+        foreach($recipients as $recipient){
+            $email = [
+                'subject' => $data['subject'],
+                'recipient_name' => $recipient['name'],
+                'recipient' => $recipient['email'],
+                'type' => 'conference_bulk_email',
+                'content' =>  $data['content'],
+            ];
 
+            $this->logEmail($email);
+        }
+        // sendEmails::dispatch($details);
+        // $mail = new sendMails($data, $recipients);
+        // dispatch($mail);
+       
         return back()->with('message', count($recipients). " emails were successfully sent!");
     }
 

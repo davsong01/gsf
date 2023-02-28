@@ -7,6 +7,7 @@ use App\User;
 use App\Hostel;
 use App\Chapter;
 use App\Payment;
+use App\CriticalEmail;
 use App\Mail\WelcomeMail;
 use App\ConferenceEdition;
 use Illuminate\Support\Arr;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\CriticalEmailController;
 
 class ConferenceManagementController extends Controller
 {
@@ -53,12 +55,14 @@ class ConferenceManagementController extends Controller
 		$chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
 		$hostels = Hostel::where('conference_edition_id', $edition->id)->orderBy('name')->get();
 		$foods = Food::where('conference_edition_id', $edition->id)->orderBy('name')->get();
-
+		$type = '';
 		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
+		$moderators = Payment::where(['level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->get();
 		// $moderator_participants = Payment::where(['user_id' => auth()->user()->id, 'level' => 'participant', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete','uploaded_by'=>auth()->user()->id])->get();
 		
 		if (auth()->user()->role == 1) {
-			return view('conference_management.admin.users.create', compact('edition','chapters', 'hostels', 'foods', 'moderators'));
+			$type = $request->type;
+			return view('conference_management.admin.users.create', compact('edition','chapters', 'hostels', 'foods', 'moderators','moderator','type'));
 		}
 
 		if (!$moderator) {
@@ -207,8 +211,22 @@ class ConferenceManagementController extends Controller
 			
 			$user = $this->createUser($data);
 			$payment = $this->createPayment($data, $user);
-			$this->createFamilyId($user, $extras['ledge']);
-			
+			$family_id = $this->createFamilyId($user, $extras['ledge']);
+
+			// Log Email
+			$data['type'] = 'welcome_mail';
+			$data['amount'] = $data['amount_paid'];
+			$data['family_id'] = $family_id ;
+			$data['chapter'] = isset($user->campus->name) ? $user->campus->name : '';
+			//send email to participant
+			$email = [
+				'subject' => 'Thank you for registering',
+				'recipient_name' => $data['name'],
+				'recipient' => $data['email'],
+				'type' => $data['type'],
+				'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
+			];
+			$this->logEmail($email);
 			return redirect(route('conference.participants',['type'=>$payment->level, 'edition'=>$setting]))->with('message', 'Participant successfully created');
 
 		}
@@ -456,10 +474,11 @@ class ConferenceManagementController extends Controller
 
     public function participants($type='',$edition=''){
         $count = 1;
+		
         if (auth()->user()->role == 1) {
 			$participants = Payment::with('user')->where('conference_edition_id',$edition)->wherehas('user')->orderBy('created_at', 'desc')->where('level',$type)->get();
 			$edition = ConferenceEdition::find($edition);
-		
+			
 			return view('conference_management.admin.users.index', compact('participants', 'count', 'edition','type'));
         }
     }
@@ -468,7 +487,7 @@ class ConferenceManagementController extends Controller
 	{
 		$payment = Payment::find($id);
 
-		if (!auth()->user()->completeReg($payment->edition)) {
+		if (!auth()->user()->completeReg($payment->edition) && auth()->user()->role <> 1) {
 			return back()->with('error', 'You must complete registration before viewing this resource');
 		}
 
@@ -482,6 +501,73 @@ class ConferenceManagementController extends Controller
 		return view('card.id')->with('payment', $payment)
             ->with('edition', $payment->edition)
             ->with('user', $payment->user);
+	}
+
+	public function resendEmail(Request $request, $id){
+		$payment = Payment::find($id);
+		$user = User::where('id', $payment->user_id)->first();
+		
+		$criticalEmail = CriticalEmail::where('recipient',$user->email)->where('type','welcome_mail')->where('status',1)->first();
+		
+		if($criticalEmail){
+			$data['type'] = $criticalEmail->type;
+			$data['recipient'] = $criticalEmail->recipient;
+			$data['content'] = $criticalEmail->content;
+			$data['subject'] = $criticalEmail->subject;
+			$data['attachments'] = $criticalEmail->attachments;
+
+			$res = $this->sendEmail($data);
+			if ($res['message'] && $res['message'] == 'success') {
+				return back()->with('message', 'Email resent successfully');
+			} else {
+				return back()->with('error', $res['error']);
+			}
+		}else{
+			return back()->with('error','No sent Email logged for user!');
+		}
+	}
+
+	public function usersImportIndex(Request $request)
+	{
+		$edition = $this->edition;
+		$type = $request->type;
+		$chapters = Chapter::all();
+		
+		return view('conference_management.admin.users.import', compact('chapters','edition', 'type'));
+	}
+
+	public function getAdminParticipantSample(Request $request,$type){
+	
+		$path = public_path() . '/frontend/exportsamples/import'. Str::lower($type).'.xlsx';
+		
+		if (file_exists($path)) {
+			return response()->download($path);
+		} else {
+			return back()->with('error', 'File doesnt exist');
+		}
+	}
+
+	public function import(Request $request)
+	{
+		if (auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())) {
+			if (auth()->user()->isAdmin()) {
+				$request['chapter_id'] = $request->chapter_id;
+			} else $request['chapter_id'] = auth()->user()->chapter_id;
+		} else return abort(404);
+
+		$data = $this->validate($request, [
+			'type' => 'required|numeric',
+			'chapter_id' => 'required|numeric',
+			'file' => 'required|mimes:xlsx,csv',
+		]);
+
+		try {
+			Excel::import(new UsersImport($data), request()->file('file'));
+		} catch (\Illuminate\Database\QueryException $ex) {
+			$error = $ex->getMessage();
+			return back()->with('error', $error);
+		}
+		return back()->with('message', 'Data has been imported succesfully');
 	}
 
 	public function trashed(Request $request)

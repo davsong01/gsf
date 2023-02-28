@@ -11,11 +11,12 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">All Participants</h4>
+                        <h4 class="card-title">All {{ $type }}s</h4>
                         <div class="">
-                            <a href="{{ route('participants.create', ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new</a>
-                            <a href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Import</a>
-                            <a href="{{ route('conferenceusers.export',  ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export</a>
+                            <a href="{{ route('conference.participants.create', ['edition'=>$edition->id, 'type'=>$type]) }}" class="btn btn-primary mt-1">Add new</a>
+                              <a class="btn btn-info mt-1" href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id,'type'=>$type]) }}">Import {{ $type }}</a>
+
+                            {{-- <a href="{{ route('conferenceusers.export',  ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export</a> --}}
                         </div>                        
                     </div>
                     <div class="card-content">
@@ -28,8 +29,7 @@
                                             <th>Date</th>
                                             <th>Avatar</th>
                                             <th>Details</th>
-                                            <th>Level</th>
-                                            <th>Status</th>
+                                           
                                             <th>Amount Paid</th>
                                             <th>Uploaded by</th>
                                             
@@ -37,30 +37,38 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                      
+                                        @if(isset($participants) && $participants->count() > 0)
                                         @foreach($participants as $participant)
+                                       
                                         <tr>
                                             <td>{{ $count++ }}</td>
-                                            <td>{{ $participant->created_at->format('Y-m-d : h-i-a') }}</td>
+                                            <td>{{ $participant->created_at->format('Y-m-d : h-i-a') }} <br>
+                                               <strong>Status: </strong> @if($participant->registration_status == 'Complete')
+                                                <i class="bx bxs-circle success font-small-1 mr-50"></i> @else
+                                                <i class="bx bxs-circle danger font-small-1 mr-50"></i>
+                                                @endif <br>
+                                                <strong>Level: {{ $participant->level }}
+                                            </td>
                                             <td>
                                                 <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->user->passport ? $participant->user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
                                             </td>
-                                            <td><b>{{ $participant->user->family_id }}</b> <br>
-                                                Name: {{ $participant->user->name }} <br>
-                                                Email: {{ $participant->user->email }} <br>
-                                                Phone: {{ $participant->user->phone }} <br>
-
+                                            <td>
+                                                <small>
+                                                    <b>{{ $participant->user->family_id }}</b> <br>
+                                                    <span style="color:red">
+                                                        <strong>Trans ID:</strong> {{ $participant->transid }} <br>
+                                                    </span>
+                                                    <strong>Name:</strong> {{ $participant->user->name }} <br>
+                                                    <strong>Email:</strong> {{ $participant->user->email }} <br>
+                                                    <strong>Phone:</strong> {{ $participant->user->phone }} <br>
+                                                </small>
                                             </td>
-                                            <td>{{ $participant->level }}</td>
-                                            <td>@if($participant->registration_status == 'Complete')
-                                                <i class="bx bxs-circle success font-small-1 mr-50"></i> @else
-                                                <i class="bx bxs-circle danger font-small-1 mr-50"></i>
-                                                @endif
-                                            </td>
-                                            <td>&#8358;{{ $participant->amount_paid ?? 0 }}</td>
-                                            <td>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
-                                                @else N/A @endif
-                                            </td>
+                                            <td>&#8358;{{ number_format($participant->amount_paid) ?? 0 }}</td>
+                                            <td></strong>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
+                                                @else N/A @endif</td>
                                             
+                                           
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                                 <a class="actions" data-toggle="tooltip" title="View/Edit User" href="{{ route('conference.participants.edit', ['edition'=>$edition->id,'id'=>$participant->id]) }}"> <i class="bx bxs-edit actions"></i></
                                                 </a>
@@ -82,6 +90,7 @@
                                             </td>
                                         </tr>
                                         @endforeach
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>

@@ -142,9 +142,11 @@ class CriticalEmailController extends Controller
         $data['content'] = $criticalEmail->content;
         $data['subject'] = $criticalEmail->subject;
         $data['attachments'] = $criticalEmail->attachments;
-
+       
         $res = $this->sendEmail($data);
         if ($res['message'] && $res['message'] == 'success') {
+            $criticalEmail->update(['status'=>1,'sent_at'=>now()]);
+           
             return back()->with('message', 'Email resent successfully');
         }else{
             return back()->with('error', $res['error']);

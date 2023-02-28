@@ -49,6 +49,7 @@
                                         </div>
                                     </fieldset>
                                 </div>
+                                <input type="hidden" name="edition" value="{{ $edition->id }}">
                             </div>
                             <div class="row">
                                 <div class="col-md-12 col-sm-12">

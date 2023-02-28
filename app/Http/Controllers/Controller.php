@@ -174,6 +174,7 @@ class Controller extends BaseController
         // $data['attachments'] = $email->attachments;
         try {
             Mail::to($data['recipient'])->send(new NotificationEmail($data));
+           
             return [
                 'message'=>'success'
             ];

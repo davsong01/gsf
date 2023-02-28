@@ -400,24 +400,6 @@ class UserController extends Controller
 			return abort(404);
 		}
 		
-		// $user = new User();
-		// $tableColumns = Schema::getColumnListing('users');
-		// $columnsForeign = [
-		// 	'hostel_id' => 'hostel_name',
-		// 	'food_id' => 'food_name',
-		// 	'chapter' => 'chapter'
-		// ];
-
-		// foreach ($user->getHidden() as $key => $value) {
-		// 	if (($k = array_search($value, $tableColumns)) !== false) {
-		// 		unset($tableColumns[$k]);
-		// 	}
-		// }
-		// foreach ($columnsForeign as $key => $value) {
-		// 	if (in_array($key, $tableColumns)) {
-		// 		$tableColumns[array_search($key, $tableColumns)] = $value;
-		// 	}
-		// }
 		$data = [
 			'edition_id' => $edition->id,
 		];

@@ -1,13 +1,14 @@
-@extends('layouts.dashboard')
-@section('title', 'Participants Import')
-@section('content')
-<div class="income-order-visit-user-area mg-t-40">
-	<div class="container">
-
-	</div>
-</div>
+@extends('layouts.conference')
+@section('title', 'Participant Import')
+@section('item')
+<li class="breadcrumb-item"> <a href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">Participants</a></li>
+@endsection
+@section('active')
+<li class="breadcrumb-item">Add Participant</li>
+@endsection
+@section('content2')
 <!-- Transitions Start-->
-<div class="transition-world-area">
+<div class="content-body">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-12">
@@ -15,14 +16,14 @@
 					<div class="sparkline7-list mg-b-40">
 						<div class="sparkline7-hd">
 							<div class="main-spark7-hd">
-								<h1>Import Users</h1>
+								<h3>Import {{ $type ?? null }}</h3>
 								@include('includes.alerts')
 							</div>
 
 						</div>
 						<div class="sparkline7-graph">
 							<div class="row">
-								<a class="btn btn-primary" href="{{ route('usersexport.sample', 'Participant') }}"><i class="fa fa-download"></i> Download
+								<a style="margin-left: 20px;margin-bottom: 20px;" class="btn btn-primary" href="{{ route('conference.usersexport.sample',['type'=>$type]) }}"><i class="fa fa-download"></i> Download
 									sample</a>
 								<div class="card-header">
 									<p>Select an excel file to upload, please pay attention to the following: </p>

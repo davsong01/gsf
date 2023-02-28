@@ -1,10 +1,10 @@
 @extends('layouts.conference')
 @section('title', 'Add Participant')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('participants.index', ['edition'=>$edition->id]) }}">Participants</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('conference.participants', ['edition'=>$edition->id]) }}">Participants</a></li>
 @endsection
 @section('active')
-<li class="breadcrumb-item">Add Participant</li>
+<li class="breadcrumb-item">Add {{ $type }}</li>
 @endsection
 @section('content2')
 <div class="content-body">
@@ -14,11 +14,11 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Register new participant</h4>
+                        <h4 class="card-title">Register new {{ $type }}</h4>
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('participants.store', ['edition'=>$edition->id]) }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('conference.participants.store', ['edition'=>$edition->id]) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                                                   
                         <div class="row">
@@ -62,12 +62,12 @@
                                 <label for="level">Level</label>
                                 <select class="form-control" name="level" id="level" required>
                                         <option value="">--Select Level--</option>
-                                        <option value="Participant" {{ old('level') == 'Participant' ? 'selected' : ''}}>Participant</option>
-                                        <option value="Moderator" {{ old('level') == 'Moderator' ? 'selected' : ''}}>Moderator</option>
-                                        <option value="Alumni" {{ old('level') == 'Alumni' ? 'selected' : ''}}>Alumni</option>
-                                        <option value="Choir" {{ old('level') == 'Choir' ? 'selected' : ''}}>Choir</option>
-                                        <option value="Medical" {{ old('level') == 'Medical' ? 'selected' : ''}}>Medical</option>
-                                        <option value="Nec" {{ old('level') == 'Nec' ? 'selected' : ''}}>Nec</option>
+                                        <option value="Participant" {{ $type == 'Participant' ? 'selected' : ''}}>Participant</option>
+                                        <option value="Moderator" {{ $type == 'Moderator' ? 'selected' : ''}}>Moderator</option>
+                                        <option value="Alumni" {{ $type == 'Alumni' ? 'selected' : ''}}>Alumni</option>
+                                        <option value="Choir" {{ $type == 'Choir' ? 'selected' : ''}}>Choir</option>
+                                        <option value="Medical" {{ $type == 'Medical' ? 'selected' : ''}}>Medical</option>
+                                        <option value="Nec" {{ $type == 'Nec' ? 'selected' : ''}}>Nec</option>
                                     
                                 </select>
                             </fieldset>
