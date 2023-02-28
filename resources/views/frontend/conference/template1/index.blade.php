@@ -3,10 +3,10 @@
 
   <head>
     <meta property="og:url" content="{{ config('app.url') }}">
-    <meta property="og:title" content="GSF | @yield('ogtitle', config('app_name').'-'.$setting->conference_theme)"> 
+    <meta property="og:title" content="{{ config('app_name') }}"> 
     <meta property="og:image" content="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}"/> 
 
-    <meta property="og:description" content="{{ config('app_name').'-'.$setting->conference_theme }}"/>
+    <meta property="og:description" content="{{ $setting->conference_theme . ' Conference '.date('Y') }}"/>
     <meta property="og:site_name" content="{{ config('app_name') }}" />
 
     <meta charset="utf-8">
