@@ -2,18 +2,18 @@
 <html lang="en-US" dir="ltr">
 
   <head>
-    <meta property="og:url" content="{{ config('app.url') }}">
-    <meta property="og:title" content="{{ config('app_name') }}"> 
+    <meta property="og:url" content="{{ env('APP_URL') }}">
+    <meta property="og:title" content="{{ env('APP_NAME') }}"> 
     <meta property="og:image" content="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}"/> 
 
     <meta property="og:description" content="{{ $setting->conference_theme . ' Conference '.date('Y') }}"/>
-    <meta property="og:site_name" content="{{ config('app_name') }}" />
+    <meta property="og:site_name" content="{{ env('APP_NAME') }}" />
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>{{ config('app_name') }}</title>
+    <title>{{ env('APP_NAME') }}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
