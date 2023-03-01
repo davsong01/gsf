@@ -30,7 +30,7 @@ class CronController extends Controller
         }
     }
 
-    public function emailCron()
+    public function emailCron($pick = 10)
     {
         $hourlyRate = 150;
         
