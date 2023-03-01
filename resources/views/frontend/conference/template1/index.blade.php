@@ -39,6 +39,7 @@
     </style>
     @yield('css')
 
+    <link href="{{ asset('conference_templates/template1/assets/css/extra_styles.css') }}" rel="stylesheet"/>
     <link href="{{ asset('conference_templates/template1/assets/css/theme.css') }}" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     {{-- <script src="{{ asset('conference_templates/template1/assets/js/custom.js')}}"></script> --}}

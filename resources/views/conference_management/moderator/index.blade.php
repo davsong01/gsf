@@ -1,12 +1,10 @@
 @extends('layouts.dashboard')
 @section('title', 'Dashboard')
 @section('item')
-<li class="breadcrumb-item"><a href="/account"><i class="bx bx-home-alt"></i></a>
-                                </li>
+<li class="breadcrumb-item"><a href="{{ route('conferencemanagement.index',['edition'=>$edition->id ?? $setting->id]) }}">My Conferences</a></li>
 @endsection
 @section('content')
 <div class="content-body">
-    @include('includes.alerts')
     <!-- Dashboard Analytics Start -->
     <section id="dashboard-analytics">
         <div class="row">
@@ -27,6 +25,7 @@
                                         <h3 class="mt-1 ml-50"></h3>
                                     </div>
                                 </div>
+                                
                                 <div class="sessions-analytics">
                                     <i class="bx bx-trending-down align-middle mr-25" style="color:red"></i>
                                     <span class="align-middle text-muted">{{ $thispayment->slot_filled }} Slot(s) used</span>
@@ -76,9 +75,10 @@
                     <h4 class="card-title">My Participants</h4>
                     @if($thispayment->slot >  $thispayment->slot_filled)
                     <a href="{{ route('conference.participants.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new participant <strong>({{ ($thispayment->slot -  ($thispayment->slot_filled )) }} slot(s) left)</strong></a>  
-                    <a href="{{ route('moderator.conference.import.index') }}" class="btn btn-primary mt-1">Import</a>
+                    {{-- <a class="btn btn-info mt-1" href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id,'type'=>'Participant']) }}">Import Participants</a> --}}
+
+                    {{-- <a href="{{ route('moderator.conference.import.index') }}" class="btn btn-primary mt-1">Import</a> --}}
                     @endif
-                    @include('includes.alerts')
                     
                 </div>
                 <div class="card-content">

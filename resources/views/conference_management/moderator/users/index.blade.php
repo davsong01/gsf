@@ -14,9 +14,9 @@
                         <h4 class="card-title">My Participants </h4>
                         @if(auth()->user()->payment->slot >  auth()->user()->payment->slot_filled)
                         <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new participant <strong>({{ (auth()->user()->slot -  (auth()->user()->slot_filled )) }} slot(s) left)</strong></a>  
-                        <a href="{{ route('moderator.users.import.index') }}" class="btn btn-primary mt-1">Import</a>
+                        {{-- <a href="{{ route('moderator.users.import.index') }}" class="btn btn-primary mt-1">Import</a> --}}
                         @endif
-                        @include('includes.alerts')
+                     
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">

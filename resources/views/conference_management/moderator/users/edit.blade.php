@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 @section('title', 'Update Participant')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('users.index') }}">Participants</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('conferencemanagement.show', ['conferencemanagement'=>$payment->id, 'edition'=>$payment->conference_edition_id]) }}">My Participants</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Update Participant</li>
@@ -15,7 +15,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Update: {{ $user->user->name }}</h4>
-                        @include('includes.alerts')
+                        
                     </div>
                     <div class="card-content">
                     <div class="card-body">

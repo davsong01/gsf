@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 @section('title', 'Add new participant')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('users.index') }}">Participant</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('conferencemanagement.show', ['conferencemanagement'=>$payment->id, 'edition'=>$payment->conference_edition_id]) }}">My Participants</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Add New Participant</li>
@@ -70,7 +70,7 @@
                                          <fieldset class="form-group @error('passport')is-invalid @enderror">
                                             <label for="sex">Upload Passport (Only jpeg and png files of less than 200kb allowed)</label>
                                             <input type="file" accept="image/*" class="form-control" name="passport"
-                                                id="passport" required>
+                                                id="passport">
                                         </fieldset>
                                         
 

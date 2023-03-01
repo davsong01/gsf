@@ -139,13 +139,13 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('trashed/participants', 'ConferenceManagementController@trashed')->name('conferenceparticipants.trashed');
 
     // Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
-    // Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
     // Route::get('participants/import/index', 'UserController@usersImportIndex')->name('conferenceusers.import.index');
-
+    
     // Import conference users
     Route::get('participants/import/index', 'ConferenceManagementController@usersImportIndex')->name('conferenceusers.import.index');
     Route::get('conference-users-import/{type}', 'ConferenceManagementController@getAdminParticipantSample')->name('conference.usersexport.sample');
-
+    Route::post('participants-import', 'ConferenceManagementController@import')->name('conferenceusers.import');
+    
     //Export Conference users
     Route::get('conferenceusers/export', 'UserController@usersExport')->name('conferenceusers.export');
     Route::post('participants/import', 'UserController@import')->name('conferenceuser.import');

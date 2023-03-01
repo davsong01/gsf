@@ -12,10 +12,13 @@ use App\Mail\WelcomeMail;
 use App\ConferenceEdition;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use App\Imports\UsersImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\CriticalEmailController;
 
 class ConferenceManagementController extends Controller
@@ -58,6 +61,7 @@ class ConferenceManagementController extends Controller
 		$type = '';
 		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 		$moderators = Payment::where(['level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->get();
+		$payment = $moderator;
 		// $moderator_participants = Payment::where(['user_id' => auth()->user()->id, 'level' => 'participant', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete','uploaded_by'=>auth()->user()->id])->get();
 		
 		if (auth()->user()->role == 1) {
@@ -71,14 +75,14 @@ class ConferenceManagementController extends Controller
 			if ($moderator->slot_filled == $moderator->slot) {
 				return back()->with('error', 'You have reached the maximum number of slots you can add');
 			}
-			return view('conference_management.moderator.users.create', compact('chapters', 'edition'));
+			return view('conference_management.moderator.users.create', compact('chapters', 'edition','payment'));
 		}
 	}
 
 	public function edit($id, Request $request)
 	{
-		$user = Payment::with('user')->whereId($id)->first();
-
+		$user = $payment = Payment::with('user')->whereId($id)->first();
+		
 		$edition = ConferenceEdition::find($request->edition);
 		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 
@@ -108,7 +112,7 @@ class ConferenceManagementController extends Controller
 				$foods = Food::where(['conference_edition_id' => $edition->id, 'level' => 'Participant', 'off_campus' => 'no'])->where('capacity', '>', 'allocation')->orderBy('name')->get();
 			}
 
-			return view('conference_management.moderator.users.edit', compact('user', 'hostels', 'foods', 'chapters', 'edition'));
+			return view('conference_management.moderator.users.edit', compact('user', 'hostels', 'foods', 'chapters', 'edition','payment'));
 		}
 
 		return abort(404);
@@ -323,35 +327,6 @@ class ConferenceManagementController extends Controller
 					'slot_filled' => $moderator->slot_filled + 1,
 				]);
 
-			// } catch (\Exception $ex) {
-			// 	dd($ex->getMessage());
-			// 	return back()->with('error', $ex->getMessage());
-			// }
-
-			// $user = $newuser;
-			// $data['level'] = 'Participant';
-			
-			// $hostels = Hostel::orderBy('allocation', 'ASC')->get();
-
-			//If user has foodstand and hostel, mark as complete else return to pending
-			// dd($user, $user->hostel_id);
-			// if($payment->hostel_id == NULL){
-			// 	$payment->registration_status = 'Pending';
-			// 	$payment->save();
-
-			// 	return redirect(route('participants.index'))->with('error', 'Participant successfully added but NO hostel is available at the moment. Edit the new participant with CONFERENCE ID: '. $user->family_id. ' to try and auto assign an hostel. Alternatively, contact an admin.');
-			// }
-
-			// if($payment->food_id == NULL){
-			// 	$user->registration_status = 'Pending';
-			// 	$user->save();
-
-
-			// 	return redirect(route('participantss.index'))->with('error', 'Participant successfully added but NO Foodstand is available at the moment. Edit the new participant with CONFERENCE ID: '. $user->family_id. ' to try and auto assign a foodstand. Alternatively, contact an admin.');
-			// }
-			// dd('done');
-			
-			// route('conferencemanagement.show', ['conferencemanagement'=>$payment->id, 'edition'=>$payment->conference_edition_id]);
 			return redirect(route('conferencemanagement.show', ['type' => $moderator->level,'conferencemanagement' => $payment->id, 'edition' => $payment->conference_edition_id]))->with('message', 'Participant successfully created, you have ' . ($moderator->slot - $moderator->slot_filled) . ' participant slot(s) left');
 
 		}
@@ -529,11 +504,25 @@ class ConferenceManagementController extends Controller
 
 	public function usersImportIndex(Request $request)
 	{
-		$edition = $this->edition;
-		$type = $request->type;
-		$chapters = Chapter::all();
+		$edition = ConferenceEdition::find($request->edition);
 		
-		return view('conference_management.admin.users.import', compact('chapters','edition', 'type'));
+		if(auth()->user()->role == 1){
+			$type = $request->type;
+			$chapters = Chapter::all();
+			
+			return view('conference_management.admin.users.import', compact('chapters','edition', 'type'));
+		}
+
+		if(auth()->user()->isModerator($edition)){
+			$payment = Payment::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $request->edition, 'registration_status'=>'Complete'])->first();
+			
+			if($payment->slot_filled >= $payment->slot){
+				return back()->with('error', 'You have already exhausted your registration slots');
+			}
+			$type = 'Participant';
+			return view('conference_management.moderator.users.import', compact('edition', 'type','payment'));
+		}
+
 	}
 
 	public function getAdminParticipantSample(Request $request,$type){
@@ -549,17 +538,28 @@ class ConferenceManagementController extends Controller
 
 	public function import(Request $request)
 	{
-		if (auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())) {
-			if (auth()->user()->isAdmin()) {
-				$request['chapter_id'] = $request->chapter_id;
-			} else $request['chapter_id'] = auth()->user()->chapter_id;
-		} else return abort(404);
 
-		$data = $this->validate($request, [
-			'type' => 'required|numeric',
-			'chapter_id' => 'required|numeric',
-			'file' => 'required|mimes:xlsx,csv',
-		]);
+		if (auth()->user()->role == 1 || auth()->user()->isModerator($this->edition)) {
+			if (auth()->user()->isAdmin()) {
+				$data = $this->validate($request, [
+					'type' => 'required|numeric',
+					'chapter_id' => 'required|numeric',
+					'file' => 'required|mimes:xlsx,csv',
+				]);
+				$request['chapter_id'] = $request->chapter_id;
+			} else {
+				$data = $this->validate($request, [
+					'file' => 'required|mimes:xlsx,csv',
+				]);
+				$payment = Payment::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $request->edition, 'registration_status'=>'Complete'])->first();
+				
+				if ($payment->slot_filled >= $payment->slot) {
+					return back()->with('error', 'You have already exhausted your registration slots');
+				}
+				$request['chapter_id'] = auth()->user()->chapter_id;
+				// $request['slot'] = auth()->user()->paym
+			}
+		} else return abort(404);
 
 		try {
 			Excel::import(new UsersImport($data), request()->file('file'));
