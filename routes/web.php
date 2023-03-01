@@ -35,7 +35,7 @@ Route::get('/clear', function () {
 });
 
 Route::get('/runcron', 'CronController@cron');
-Route::get('email-cron/{pick?}', 'cronController@emailCron');
+Route::get('email-cron/{pick?}', 'CronController@emailCron');
 Route::get('/conference', 'ConferenceController@index');
 Route::get('/', 'HomeController@index')->name('home.index');
 
