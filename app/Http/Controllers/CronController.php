@@ -57,8 +57,8 @@ class CronController extends Controller
                 $data['attachments'] = $email->attachments;
                 
                 $res = $this->sendEmail($data);
-               
-                if (($res['message'] && $res['message'] == 'success')) {
+              
+                if (isset($res['message']) && $res['message'] == 'success') {
                     $count++;
                     $email->status = 1;
                     $email->sent_at = now();
