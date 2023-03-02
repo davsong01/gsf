@@ -95,10 +95,10 @@ class PaymentController extends Controller
 				"phone" => "required",
 				"amount"=>"required"
 			]);
-
 		}
 		
 		$request['transid'] = $this->generateTransactionId();
+
 		$tempUser = $this->createTempUser($request->all());
 		
 		if(is_null($tempUser)){
@@ -203,7 +203,10 @@ class PaymentController extends Controller
 
 					$this->logEmail($email);
 					//Todo: make this return redirect to
-					return view('frontend.conference.donationthankyou', compact('data', 'conference_year'));
+					$data['edition'] = $setting;
+					return $this->donationThankYouPage($data, $conference_year);
+
+					// return view('frontend.conference.donationthankyou', compact('data', 'conference_year'));
 				}
 				
 				$user = $this->createUser($data);
@@ -310,6 +313,14 @@ class PaymentController extends Controller
 		}
 	}
 
+	public function donationThankYouPage($data, $conference_year)
+	{
+		if (isset($this->edition) && !empty($this->edition)) {
+			return view('frontend.conference.template' . $this->edition->template_id . '.donationthankyou', compact('data', 'conference_year'));
+		} else {
+			return view('frontend.conference.donationthankyou', compact('data', 'conference_year'));
+		}
+	}
 	public function queryPaystack($request,$setting)
 	{
 		$transId = $this->generateTransactionId();
@@ -393,13 +404,15 @@ class PaymentController extends Controller
 		$type = !empty($type) ? $type['type'] : null;
 		$setting = $this->conferenceEdition();
 		// Check if email already exists with a payment corresponding to this edition
-		$check = User::where('email', $data['email'])
-			->join('payments', 'payments.user_id','=','users.id')
-			->where('payments.conference_edition_id', $setting->id)
-			->select('payments.*')
-			->get();
-		if($check->count() > 0){
-			return null;
+		if(!in_array($type, [5])){
+			$check = User::where('email', $data['email'])
+				->join('payments', 'payments.user_id','=','users.id')
+				->where('payments.conference_edition_id', $setting->id)
+				->select('payments.*')
+				->get();
+			if($check->count() > 0){
+				return null;
+			}
 		}
 		
 		$temp = TempUser::updateOrCreate(['email'=> $data['email'], 'conference_edition_id' => $setting->id],[
