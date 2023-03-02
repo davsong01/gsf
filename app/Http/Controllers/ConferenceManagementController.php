@@ -274,6 +274,10 @@ class ConferenceManagementController extends Controller
 					'level' => 'Participant',
 					'uploaded_by' => auth()->user()->id,
 					'amount_paid' => $setting->registration_fee,
+					'slot' => 1,
+					'slot_filled' => 1,
+					'payment_type' => $moderator->payment_type,
+					'transid' => $this->generateTransactionId(),
 					'registration_status' => 'Complete',
 					'conference_edition_id' => $request->edition,
 				]);
