@@ -355,7 +355,7 @@ class Controller extends BaseController
 
     public function generateTransactionId()
     {
-        return 'GSF-' . date('Ymdh') . '-' . rand(999999999, 111111111);
+        return 'GSF-' . date('Ym') . '-' . rand(99999, 11111);
     }
 
     public function assignHostel($level, $sex, $setting = null)

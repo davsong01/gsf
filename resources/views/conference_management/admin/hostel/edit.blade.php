@@ -15,7 +15,8 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Update: {{ $hostel->name }}</h4>
-                       
+                        <a href="{{ route('hostelusers.export',['id'=>$hostel->id, 'edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export Hostel Participants</a>                        
+                        
                     </div>
                     <div class="card-content">
                         <div class="card-body">

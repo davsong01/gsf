@@ -64,10 +64,10 @@
 											<h2 class="name" style="margin-top: 10px; margin-bottom: 10px; font-size:22px">GOFAMINT STUDENTS' FELLOWSHIP
 											</h2>
 											<h2 class="alias" style="margin-top: 10px; margin-bottom: 10px; font-size:15px">{{ $edition->slug }}</h2>
-											<h3 style="font-size: 12px; margin: 2.5px 0;font-weight: 300;" class="date">{{ date("F dS, Y", strtotime($setting->start_date)) .' to '. date("F dS, Y", strtotime($setting->end_date)) }}</h3><br>
+											<h2 class="alias"  style="font-family:initial; margin-top: 5px; margin-bottom: 20px; font-size:15px">{{ $setting->conference_theme }}</h2>
+
 										</div>
 										<div class="photo" >
-											<h2 class="alias"  style="font-family:initial; margin-top: 5px; margin-bottom: 5px; font-size:15px">{{ $setting->conference_theme }}</h2>
 											<h1>@if($payment->level == 'Participant')PARTICIPANT
 												@elseif($payment->level == 'Alumni')ALUMNUS 
 												@if ($payment->amount_paid == $edition->new_alumni_registration_fee) <h4><i class="fa fa-id-badge" aria-hidden="true"></i>
@@ -84,16 +84,24 @@
 												@endif
 
 											</h1>
-											<img style="width: 150px; height: 150px; margin-top: 10px; border-radius: 50%;" src="{{ asset($user->passport ? '/'.$user->passport : 'https://place-hold.it/300x150?text=No%20Image&fontsize=23') }}">
+											<h6>{{ $payment->transid }}</h6>
+											<img style="width: 150px; height: 150px; margin-top: 10px; border-radius: 50%;" src="{{ asset($user->passport ? '/'.$user->passport : 'https://place-hold.it/300x150?text=No%20Image&fontsize=23') }}"> 
+											<?php
+												$details = 'Verified: '.$user->family_id.' | '.$payment->transid;
+											?>
+											@if($payment->registration_status == 'Complete')
+											{!! QrCode::size(100)->generate('.Verified: '.$payment->transid); !!}
+											@endif
 										</div>
 										<div>
 											<br>
 											<h3 style="font-size:25px"><strong>{{ $user->name }}</strong></h3>
+											<strong style="font-weight: bold; font-size:10px">Family ID: </strong><span style="font-weight:20px; font-size:10px">{{ $user->family_id  }}</span> <br>
+
+
 											@if(isset($user->campus))
-											<h3 style="font-weight:20px; font-size:10px">{{ $user->campus->name  }}</h3>
-											
+											<strong style="font-weight: bold; font-size:10px">Campus: </strong><span style="font-weight:20px; font-size:10px">{{ $user->campus->name  }}</span>
 											@endif
-											
 											<hr style="margin-top: 1rem;margin-bottom: 1rem; border-top: 1px solid #DFE3E7;">
 											
 											<h3 style="font-size:15px; font-weight:lighter;"> <strong>Hostel:</strong>
@@ -102,13 +110,18 @@
 												{{ isset($payment->food->name) ? $payment->food->name : 'Registration incomplete'  }}</h3>
 											
 										</div>
-										
+										<div class="card-footer">
+											<small style="color:black">
+												{{-- {{ date("F dS, Y", strtotime($setting->start_date)) .' to '. date("F dS, Y", strtotime($setting->end_date)) }}<br> --}}
+											</small>
+										</div>
 									</div>
+									
 								</div>
-
 							</section>
 						</div>
 					</div>
+					
 				</div>
 			</div>
 		</div>

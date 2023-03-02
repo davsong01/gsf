@@ -11,7 +11,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">All Hostels</h4>
+                        <h4 class="card-title">All Hostels for {{ $edition->conference_theme }}</h4>
                         <a href="{{ route('hostels.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Hostel</a>                        
                     </div>
                     <div class="card-content">
@@ -26,6 +26,7 @@
                                             <th>Level</th>
                                             <th>Capacity</th>
                                             <th>Allocation</th>
+                                            <th>Allotted</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -38,7 +39,7 @@
                                             <td>{{ $hostel->level }}</td>
                                             <td>{{ $hostel->capacity }}</td>
                                             <td>{{ $hostel->allocation }}</td>
-                                            
+                                            <td>{{ $hostel->payments->count() }}</td>
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Update hostel details" href="{{ route('hostels.edit', ['hostel'=>$hostel->id, 'edition'=>$edition->id, ]) }}"> <i class="bx bxs-edit actions"></i>
                                             </a>

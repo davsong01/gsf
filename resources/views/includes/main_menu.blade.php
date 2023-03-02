@@ -17,7 +17,6 @@
                 style="color:yellow !important; font-weight:bolder" href="{{ route('stop.switchuser') }}" aria-expanded="false"><i class="fa fa-arrow-left"></i><span
                     class="hide-menu">BACK TO ADMIN</span></a></li>
             @endif
-            
             @if(auth::user()->role == 1)
             {{-- Admin menus --}}
                 @include('includes.adminmenu')
@@ -33,28 +32,7 @@
             @else
             @endif
 
-            {{-- <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="fa fa-bars"></i><span class="menu-title" data-i18n="Kanban">Dashboard</span></a>
-            </li>
-            
-            @if(auth::user()->role == 1 && )                
-            <li class=" nav-item {{ Request::is('staff') ? 'active' : '' }}"><a href="{{ route('staff.index') }}"><i class="fa fa-group"></i><span class="menu-title">Staff</span></a>
-            </li>
-
-            <li class=" nav-item {{ Request::is('users*') ? 'active' : '' }}"><a href="{{ route('users.index') }}"><i class="fa fa-user"></i><span class="menu-title">Users</span></a></li>
-            <li class="nav-item {{ Request::is('trashedusers') ? 'active' : '' }}"><a href="{{ route('users.trashed') }}"><i class="fa fa-trash-o"></i><span class="menu-title">Trashed Users</span></a></li>
-            <li class="nav-item {{ Request::is('events') ? 'active' : '' }}"><a href="{{ route('events.index') }}"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title">Events</span></a></li> 
-            @endif
-            <li class="nav-item {{ Request::is('fields') ? 'active' : '' }}"><a href="{{ route('fields.index') }}"><i class="fa fa-globe" aria-hidden="true"></i><span class="menu-title">Fields</span></a>
-            </li>
-            <li class="nav-item {{ Request::is('zones') ? 'active' : '' }}"><a href="{{ route('zones.index') }}"><i class="fa fa-flag" aria-hidden="true"></i><span class="menu-title">Zones</span></a>
-            </li>
-            <li class="nav-item {{ Request::is('chapters') ? 'active' : '' }}"><a href="{{ route('chapters.index') }}"><i class="fa fa-thumb-tack" aria-hidden="true"></i><span class="menu-title">Chapters</span></a>
-            </li>
-
-            <li class=" nav-item {{ Request::is('useremails') ? 'active' : '' }}"><a href="{{ route('useremails.index') }}"><i class="fa fa-envelope"></i><span class="menu-title" >Emails</span></a>
-            </li>
            
-            @endif --}}
         </ul> 
     </div>
 </div>

@@ -13,7 +13,11 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    
+                     <div class="card-header">
+                        <h4 class="card-title">Update: {{ $food->name }}</h4>
+                        <a href="{{ route('foodusers.export',['id'=>$food->id, 'edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export Foodstand Participants</a>                        
+                        
+                    </div>
                     <div class="card-content">
                         <div class="card-body">
                         <form action="{{ route('foods.update',['food'=>$food->id, 'edition'=>$edition->id]) }}" method="POST">

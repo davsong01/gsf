@@ -11,4 +11,9 @@ class Food extends Model
     public function user(){
         return $this->hasMany(User::class);
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

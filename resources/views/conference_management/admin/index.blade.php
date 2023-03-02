@@ -14,7 +14,7 @@
         </div>
         <div class="col-sm-4 col-12 dashboard-users-success">
             <div class="card text-center">
-                <a href="{{ route('conference.participants') }}">
+                <a href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">
                     <div class="card-content">
                         <div class="card-body py-1">
                             <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
@@ -44,7 +44,6 @@
         </div>
         <div class="col-sm-4 col-12 dashboard-users-success">
             <div class="card text-center">
-                
                     <div class="card-content">
                         <div class="card-body py-1">
                             <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
@@ -54,11 +53,12 @@
                             <h3 class="mb-0"></h3>
                         </div>
                     </div>
-                
+                    
             </div>
         </div>
         <div class="col-sm-4 col-12 dashboard-users-success">
             <div class="card text-center">
+                    <a href="{{ route('donations.index',['edition'=>$edition->id]) }}">
                 
                     <div class="card-content">
                         <div class="card-body py-1">
@@ -69,7 +69,7 @@
                             <h3 class="mb-0"></h3>
                         </div>
                     </div>
-
+                    </a>
             </div>
         </div>
         <div class="col-sm-4 col-12 dashboard-users-success">

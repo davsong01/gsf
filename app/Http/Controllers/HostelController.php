@@ -6,6 +6,8 @@ use App\Hostel;
 use App\ConferenceEdition;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\HostelParticipantExport;
 
 class HostelController extends Controller
 {
@@ -14,10 +16,9 @@ class HostelController extends Controller
     {
         $edition = ConferenceEdition::find($request->edition);
         $count = 1;
-       
+        
         if(auth()->user()->role == 1){
             $hostels = Hostel::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
-
             return view('conference_management.admin.hostel.index', compact('hostels', 'count','edition'));
         }return abort(404);
     }
@@ -26,6 +27,22 @@ class HostelController extends Controller
     {
         $edition = ConferenceEdition::find($request->edition);
         return view('conference_management.admin.hostel.create',compact('edition'));
+    }
+
+    public function participantExport(Request $request, $id){
+        $hostel = Hostel::find($id);
+        $count = 1;
+        
+        if (auth()->user()->role != 1) {
+            return abort(404);
+        }
+
+        $data = [
+            'hostel_id' => $hostel->id,
+        ];
+        
+        return Excel::download(new HostelParticipantExport($data), $hostel->name."'s participants.xlsx");
+    
     }
 
     public function store(Request $request)

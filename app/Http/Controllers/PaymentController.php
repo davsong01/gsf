@@ -74,16 +74,17 @@ class PaymentController extends Controller
 		//Validate Alumni Registration
 		if (isset($type) && $type == '3') {
 			$this->validate($request, [
-				'alumni_type' => 'required|in:alumni_registration_fee,new_alumni_registration_fee',
+				// 'amount' => 'required|in:alumni_registration_fee,new_alumni_registration_fee',
 				'gender' => 'required'
 			]);
 			$alumni_type = $request->alumni_type;
 			$request['amount'] = $setting->$alumni_type;
-			
 			//check amount
+			
 			if ($request->amount != $setting->$alumni_type) {
 				return back()->with('error', 'You cannot pay less than ' . $setting->$alumni_type);
 			}
+
 		}
 		
 		//Validate Donation Registration
@@ -99,6 +100,11 @@ class PaymentController extends Controller
 		
 		$request['transid'] = $this->generateTransactionId();
 		$tempUser = $this->createTempUser($request->all());
+		
+		if(is_null($tempUser)){
+			return back()->with('error', 'You are already a Participant in this conference');
+		}
+
 		$request['transid'] = $tempUser->transid;
 
 		$request['conference_edition_id'] = $setting->id;
@@ -386,6 +392,16 @@ class PaymentController extends Controller
 		$type = isset($data['metadata']) && !empty($data['metadata']) ? json_decode($data['metadata'], true) : [];
 		$type = !empty($type) ? $type['type'] : null;
 		$setting = $this->conferenceEdition();
+		// Check if email already exists with a payment corresponding to this edition
+		$check = User::where('email', $data['email'])
+			->join('payments', 'payments.user_id','=','users.id')
+			->where('payments.conference_edition_id', $setting->id)
+			->select('payments.*')
+			->get();
+		if($check->count() > 0){
+			return null;
+		}
+		
 		$temp = TempUser::updateOrCreate(['email'=> $data['email'], 'conference_edition_id' => $setting->id],[
 			'name' => $data['name'],
 			'transid' => $data['transid'],

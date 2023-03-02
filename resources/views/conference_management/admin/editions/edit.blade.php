@@ -41,6 +41,15 @@
                                         </div>
                                     </fieldset>
                                 </div>
+                                 <div class="col-sm-6 col-md-6">
+                                    <label for="slug">Conference slug(Will be used on ID cards)</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <input type="text" class="form-control" name="slug" value="{{ old('slug') ?? $edition->slug}}" id="conference_theme">
+                                        <div class="form-control-position">
+                                           &#8962;
+                                        </div>
+                                    </fieldset>
+                                </div>
                                 <div class="col-sm-6 col-md-6">
                                     <label for="registration_fee">Registration Fee</label>
                                     <fieldset class="form-group position-relative has-icon-left">

@@ -6,6 +6,8 @@ use App\Food;
 use App\ConferenceEdition;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\FoodParticipantExport;
 
 class FoodController extends Controller
 {
@@ -61,6 +63,22 @@ class FoodController extends Controller
     {
         $food->update($request->except('edition'));
         return back()->with('message', 'Update successful!');        
+    }
+
+    public function participantExport(Request $request, $id)
+    {
+        $food = Food::find($id);
+        $count = 1;
+
+        if (auth()->user()->role != 1) {
+            return abort(404);
+        }
+
+        $data = [
+            'food_id' => $food->id,
+        ];
+
+        return Excel::download(new FoodParticipantExport($data), $food->name . "'s participants.xlsx");
     }
 
     public function destroy($id,Request $request)

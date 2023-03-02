@@ -48,7 +48,21 @@
                                                 <i class="bx bxs-circle success font-small-1 mr-50"></i> @else
                                                 <i class="bx bxs-circle danger font-small-1 mr-50"></i>
                                                 @endif <br>
-                                                <strong>Level: {{ $participant->level }}
+                                                <strong>Level:</strong> {{ $participant->level }}
+                                                @if(isset($participant->hostel_id)) <br>
+                                                <strong>Hostel:</strong> {{ $participant->hostel->name }}
+                                                @endif
+                                                @if(isset($participant->food_id)) <br>
+                                                <strong>Foodstand:</strong> {{ $participant->food->name }}
+                                                @endif
+                                                @if($type == 'Moderator') <br>
+                                                <span>
+                                                    <strong  style="color:blue">Slots:</strong> {{ $participant->slot }} <br>
+                                                    <strong  style="color:blue">Slots Available:</strong> {{ $participant->slot - $participant->slot_filled }} 
+
+                                                </span>
+                                                @endif
+
                                             </td>
                                             <td>
                                                 <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->user->passport ? $participant->user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">

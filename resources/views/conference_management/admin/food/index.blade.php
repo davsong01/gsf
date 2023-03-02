@@ -25,6 +25,7 @@
                                             <th>Level</th>
                                             <th>Capacity</th>
                                             <th>Allocation</th>
+                                            <th>Allotted</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -36,6 +37,7 @@
                                             <td>{{ $food->level }}</td>
                                             <td>{{ $food->capacity }}</td>
                                             <td>{{ $food->allocation }}</td>
+                                            <td>{{ $food->payments->count() }}</td>
                                             
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Update food details" href="{{ route('foods.edit', ['food'=>$food->id,'edition'=>$edition->id]) }}"> <i class="bx bxs-edit actions"></i>

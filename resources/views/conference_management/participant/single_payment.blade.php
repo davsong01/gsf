@@ -59,12 +59,12 @@
 						<div class="row">
 							<div class="col-md-6 col-sm-12">
 								<fieldset class="form-group">
-									<label for="conference_id">Conference ID</label>
+									<label for="conference_id">Family ID</label>
 									<input type="text" class="form-control" name="conference_id" id="conference_id"
 										value="{{ auth()->user()->family_id }}" disabled required>
 								</fieldset>
 								<fieldset class="form-group">
-									<label for="transid">Transaction ID</label>
+									<label for="transid">Conference/Transaction ID</label>
 									<input type="text" id="transid" name="transid" class="form-control"
 										value="{{ old('transid') ?? $payment->transid }}" disabled required>
 								</fieldset>

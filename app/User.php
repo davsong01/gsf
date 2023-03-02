@@ -134,7 +134,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function stopSwitchingUser()
     {
-        Session::forget('switchuser');
+        // Session::forget('switchuser');
     }
 
     public function isSwitchingUser()

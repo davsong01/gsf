@@ -149,7 +149,11 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     //Export Conference users
     Route::get('conferenceusers/export', 'UserController@usersExport')->name('conferenceusers.export');
     Route::post('participants/import', 'UserController@import')->name('conferenceuser.import');
-    
+
+    // Export Hostel participants
+    Route::get('hostel-export/{id}', 'HostelController@participantExport')->name('hostelusers.export');
+    Route::get('food-export/{id}', 'FoodController@participantExport')->name('foodusers.export');
+
     Route::get('conferenceparticipants/{type?}/{edition?}', 'ConferenceManagementController@participants')->name('conference.participants');
     Route::get('create-conferenceparticipants/{edition?}', 'ConferenceManagementController@create')->name('conference.participants.create');
     Route::post('store-conferenceparticipants/{edition?}', 'ConferenceManagementController@store')->name('conference.participants.store');

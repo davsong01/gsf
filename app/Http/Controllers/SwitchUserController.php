@@ -12,19 +12,18 @@ class SwitchUserController extends Controller
 {
     public function index(Request $request, $id)
     {
-     
-        if(Auth::user()->level <> 'Admin')
+        if(Auth::user()->role <> 1)
         {
             return redirect('/');
         }
-
+        $admin = Auth::user()->id;
         $user = User::find($id);
-
-        Auth::user()->setSwitchingUser($user->id);
-
         
+        Auth::user()->setSwitchingUser($admin);
+        Auth::loginUsingId($user->id);
+
         // Guard against administrator switch
-        if($user->level <> 'Admin')
+        if(Auth::user()->role <> 1)
         {
             return redirect('/account');
         }
@@ -32,14 +31,18 @@ class SwitchUserController extends Controller
         {
             return back()->with('error', 'Switch disabled for this user!');
         }
-
     }
 
-    public function stopSwitching()
+    public function stopSwitching(Request $request)
     {
         
-        Auth::user()->stopSwitchingUser();
-        
+        // Auth::user()->stopSwitchingUser();
+        $admin = \Session::get('switchuser');
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        Auth::loginUsingId($admin);
+
         $message = "Welcome back boss!";
         $smiley = '<b>These are bold texts</b>';
         return redirect(route('users.index'))->with('welcomeback', $message);   
