@@ -506,6 +506,13 @@ class ConferenceManagementController extends Controller
 					$request['password']  = Hash::make($request['phone']);
 				}
 
+				//Handle Passport Upload
+				if ($request->has('passport')) {
+					$request['passport'] = $this->uploadImage($request->passport, 'images/passports', 400, 400);
+				} else {
+					$request['passport'] = NULL;
+				}
+
 				$user->update($request->except(['edition']));
 				return redirect(route('conference.staff', ['edition' => $this->edition]))->with('message', 'Staff successfully updated');
 			}
