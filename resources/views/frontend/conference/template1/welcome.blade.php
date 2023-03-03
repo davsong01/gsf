@@ -239,7 +239,7 @@
     <div class="row flex-center">
       <div class="col-md-8 col-lg-5 text-center">
         <h2>Testimonies from previous conferences</h2>
-        <p>These are the stories of our customers who have joined us with great pleasure when using this crazy feature.</p>
+        <p>Checkout testimonies from previous conferences. Boost your faith as you prepare for this forthcoming conference</p>
       </div>
     </div>
     <div class="carousel slide pt-6" id="carouselExampleDark" data-bs-ride="carousel">
@@ -252,13 +252,13 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                       <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
-                        <p class="fs--2 fw-normal mb-0">arsaw, Poland</p>
+                        <h6 class="mb-0 fs--1 text-1000 fw-medium">David</h6>
+                        <p class="fs--2 fw-normal mb-0">Lagos, Nigeria</p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“Wow...I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems..</p>
+                  <p class="card-text pt-3">“During the last GSF Conference (ABOVE ONLY), I asked God to take me higher from single to married and today, I am happily married to the love of my life. Halleluyah</p>
                 </div>
               </div>
             </div>
@@ -268,13 +268,13 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                       <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium">Kim Young Jou</h6>
-                        <p class="fs--2 fw-normal mb-0">Seoul, South Korea</p>
+                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
+                        <p class="fs--2 fw-normal mb-0"></p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“I like it because I like to travel far and still can connect with high speed.”</p>
+                  <p class="card-text pt-3">“”</p>
                 </div>
               </div>
             </div>
@@ -284,13 +284,13 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                       <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
-                        <p class="fs--2 fw-normal mb-0">Shanxi, China</p>
+                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
+                        <p class="fs--2 fw-normal mb-0"></p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">like it because I like to travel far and still can connect with high speed”.</p>
+                  <p class="card-text pt-3">"”.</p>
                 </div>
               </div>
             </div>
@@ -304,13 +304,13 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                       <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
-                        <p class="fs--2 fw-normal mb-0">arsaw, Poland</p>
+                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
+                        <p class="fs--2 fw-normal mb-0"></p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“Wow...I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems.”.</p>
+                  <p class="card-text pt-3">“”.</p>
                 </div>
               </div>
             </div>
@@ -320,13 +320,13 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                       <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium">Kim Young Jou</h6>
-                        <p class="fs--2 fw-normal mb-0">Seoul, South Korea</p>
+                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
+                        <p class="fs--2 fw-normal mb-0"></p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“I like it because I like to travel far and still can connect with high speed.”</p>
+                  <p class="card-text pt-3">“”</p>
                 </div>
               </div>
             </div>
@@ -336,12 +336,12 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                       <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
-                        <p class="fs--2 fw-normal mb-0">Shanxi, China</p>
+                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
+                        <p class="fs--2 fw-normal mb-0"></p>
                       </div>
                     </div>
                   </div>
-                  <p class="card-text pt-3">like it because I like to travel far and still can connect with high speed”.</p>
+                  <p class="card-text pt-3">"”.</p>
                 </div>
               </div>
             </div>
@@ -355,13 +355,13 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                       <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
-                        <p class="fs--2 fw-normal mb-0">arsaw, Poland</p>
+                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
+                        <p class="fs--2 fw-normal mb-0"></p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“Wow...I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems.”.</p>
+                  <p class="card-text pt-3">“”.</p>
                 </div>
               </div>
             </div>
@@ -371,13 +371,13 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                       <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium">Kim Young Jou</h6>
-                        <p class="fs--2 fw-normal mb-0">Seoul, South Korea</p>
+                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
+                        <p class="fs--2 fw-normal mb-0"></p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“I like it because I like to travel far and still can connect with high speed.”</p>
+                  <p class="card-text pt-3">“”</p>
                 </div>
               </div>
             </div>
@@ -387,13 +387,13 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                       <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium">Viezh Robert</h6>
-                        <p class="fs--2 fw-normal mb-0">Shanxi, China</p>
+                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
+                        <p class="fs--2 fw-normal mb-0"></p>
                       </div>
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">like it because I like to travel far and still can connect with high speed”.</p>
+                  <p class="card-text pt-3">"”.</p>
                 </div>
               </div>
             </div>
