@@ -381,11 +381,19 @@ class ConferenceManagementController extends Controller
 			$data['password']  = Hash::make($request['phone']);
 		}
 
+		//Handle Passport Upload
+		if ($request->has('passport')) {
+			$data['passport'] = $this->uploadImage($request->passport, 'images/passports', 400, 400);
+		} else {
+			$data['passport'] = NULL;
+		}
+		
 		$user = User::Create([
 			"name" => $data['name'],
 			"email" => $data['email'],
 			"phone" => $data['phone'],
 			"sex" => $data['sex'],
+			"passport" => $data['passport'],
 			"role" => 1,
 			'slug' => Str::slug($data['name']),
 			"conference_role" => $data['conference_role'],
