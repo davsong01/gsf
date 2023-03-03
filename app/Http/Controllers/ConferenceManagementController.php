@@ -376,11 +376,12 @@ class ConferenceManagementController extends Controller
 
 		//Handle password
 		if ($request['password']) {
-			$data['password'] = Hash::make($request['password']);
+			$password = $data['password'];
 		} else {
-			$data['password']  = Hash::make($request['phone']);
+			$password = $request['phone'];
 		}
 
+		$password = Hash::make($password);
 		//Handle Passport Upload
 		if ($request->has('avatar')) {
 			$data['passport'] = $this->uploadImage($request->avatar, 'images/passports', 400, 400);
@@ -397,7 +398,7 @@ class ConferenceManagementController extends Controller
 			"role" => 1,
 			'slug' => Str::slug($data['name']),
 			"conference_role" => $data['conference_role'],
-			"password" => $data['password']
+			"password" => $password
 		]);
 
 		$user->update([
@@ -500,12 +501,14 @@ class ConferenceManagementController extends Controller
 		
 		if (isset($edition) && $edition->status == 'active') {
 			if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') {
+				//Handle password
 				if ($request['password']) {
-					$password = Hash::make($request['password']);
+					$password = $request['password'];
 				} else {
-					$password  = Hash::make($request['phone']);
+					$password = $request['phone'];
 				}
-				$request['password'] = $password;
+
+				$request['password'] = Hash::make($password);
 				
 				//Handle Passport Upload
 				if ($request->has('avatar')) {
