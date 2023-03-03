@@ -20,7 +20,9 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All Conference Editions</h4>
+                        @if(auth()->user()->conference_role == 'superadmin')
                         <a href="{{ route('conferenceeditions.create') }}" class="btn btn-primary mt-1">Add conference editions</a>
+                        @endif
                         @include('includes.alerts')
                     </div>
                     <div class="card-content">
@@ -63,10 +65,12 @@
                                                 </small>
                                             </td>
                                             <td>
-                                                <a style="margin-bottom: 3px;" href="{{ route('show.conference.edition', $edition->id) }}" class="btn btn-success btn-sm"><i class="fa fa-eye"></i> View</a> <br>
+                                                <a style="margin-bottom: 3px;" href="{{ route('show.conference.edition', $edition->id) }}" class="btn btn-success btn-sm"><i class="fa fa-eye"></i> View</a> 
+                                                @if(auth()->user()->conference_role == 'superadmin')
+                                                <br>
                                                 <a style="margin-bottom: 3px;" href="{{ route('clone.conference.edition', $edition->id) }}" class="btn btn-info btn-sm"><i class="fa fa-copy"></i> Clone</a> <br>
-                                                {{-- <a href="{{ route('edit.conference.edition', $edition->id) }}" class="btn btn-primary btn-sm"><i class="fa fa-edit"></i> Edit</a> <br> --}}
                                                 <a style="margin-bottom: 3px;" href="{{ route('delete.conference.edition', $edition->id) }}" class="btn btn-danger btn-sm"><i class="fa fa-edit"></i> Delete</a>
+                                                @endif
                                             </td>
                                         </tr>
                                         @endforeach

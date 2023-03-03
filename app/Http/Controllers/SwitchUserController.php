@@ -22,6 +22,10 @@ class SwitchUserController extends Controller
         Auth::user()->setSwitchingUser($admin);
         Auth::loginUsingId($user->id);
 
+        if(in_array($user->conference_role, ['admin'])){
+            return redirect(route('conferencemanagement.index',['edition'=>$this->edition]));
+        }
+
         // Guard against administrator switch
         if(Auth::user()->role <> 1)
         {

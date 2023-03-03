@@ -12,7 +12,8 @@
             <!-- Website Analytics Starts-->
             <div class="col-md-12 col-sm-12">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">                    </div>
+                    <div class="card-header d-flex justify-content-between align-items-center">                   
+                    </div>
                     <div class="card-content">
                         <div class="row">
                             <div class="col-12">

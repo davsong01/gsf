@@ -722,7 +722,25 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-	
+	public function destroyStaff(Request $request, $id)
+	{
+
+		//stop from accidentally deleted self
+		if (auth()->user()->id == $id) {
+			return back()->with('error', 'You cannot delete yourself');
+		}
+
+		$user = User::where('id',$id)->first();
+		//Delete Avatar
+
+		$this->deleteImage($user->passport);
+		$user->forceDelete();
+
+		return back()->with('message', 'Staff has been deleted forever');
+		
+	}
+
+
 	public function restore($id){
 		if (auth()->user()->level == 'Admin') {
 
