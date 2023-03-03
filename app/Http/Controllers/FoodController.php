@@ -36,7 +36,8 @@ class FoodController extends Controller
             'name' => 'required|min:5',
             'level' => 'required',
             'capacity' => 'required',
-            'edition' => 'required'
+            'edition' => 'required',
+            'field_id' => 'nullable'
         ]);
 
         Food::create([
@@ -44,6 +45,7 @@ class FoodController extends Controller
             'level' => $data['level'],
             'capacity' => $data['capacity'],
             'conference_edition_id' => $data['edition'],
+            'field_id' => $data['field_id'],
         ]);
 
         return redirect(route('foods.index',['edition'=>$request->edition]))->with('message', 'Food Stand succesfully created');

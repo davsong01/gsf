@@ -13,7 +13,10 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    
+                    <div class="card-header">
+                        @include('includes.falerts')
+
+                    </div>
                     <div class="card-content">
                         <div class="card-body">
                             <form action="{{ route('foods.store',['edition'=>$edition->id]) }}" method="POST">
