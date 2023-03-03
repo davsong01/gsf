@@ -42,7 +42,15 @@
                                         <option value="Nec" {{ $food->level == 'Nec' ? 'selected' : ''}}>Nec</option>
                                     </select>
                                 </fieldset>
-
+                                <fieldset class="form-group">
+                                    <label for="field">Field</label>
+                                    <select class="form-control" name="field_id" id="field">
+                                        <option value="">-- Select option --</option>
+                                        @foreach($fields as $field)
+                                        <option value="{{ $field->id }}" {{ $food->field_id == $field->id ? 'selected':'' }}>{{ $field->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </fieldset>
                                 <fieldset class="form-group">
                                     <label for="capacity">Capacity</label>
                                     <input type="number" id="capacity" name="capacity" class="form-control" value="{{ old('capacity') ?? $food->capacity }}" required>

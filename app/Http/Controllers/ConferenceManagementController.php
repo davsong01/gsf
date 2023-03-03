@@ -19,6 +19,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\ConferenceUsersImport;
 use App\Http\Controllers\CriticalEmailController;
 
 class ConferenceManagementController extends Controller
@@ -540,20 +541,19 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-	public function import(Request $request)
+	public function import(Request $request, $type)
 	{
-
 		if (auth()->user()->role == 1 || auth()->user()->isModerator($this->edition)) {
 			if (auth()->user()->isAdmin()) {
 				$data = $this->validate($request, [
-					'type' => 'required|numeric',
-					'chapter_id' => 'required|numeric',
 					'file' => 'required|mimes:xlsx,csv',
 				]);
 				$request['chapter_id'] = $request->chapter_id;
+				$request['edition'] = ConferenceEdition::where('id', $request['edition'])->first();
 			} else {
 				$data = $this->validate($request, [
 					'file' => 'required|mimes:xlsx,csv',
+					'chapter_id' => 'nullable',
 				]);
 				$payment = Payment::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $request->edition, 'registration_status'=>'Complete'])->first();
 				
@@ -561,12 +561,11 @@ class ConferenceManagementController extends Controller
 					return back()->with('error', 'You have already exhausted your registration slots');
 				}
 				$request['chapter_id'] = auth()->user()->chapter_id;
-				// $request['slot'] = auth()->user()->paym
 			}
 		} else return abort(404);
 
 		try {
-			Excel::import(new UsersImport($data), request()->file('file'));
+			Excel::import(new ConferenceUsersImport($request->all()), request()->file('file'));
 		} catch (\Illuminate\Database\QueryException $ex) {
 			$error = $ex->getMessage();
 			return back()->with('error', $error);

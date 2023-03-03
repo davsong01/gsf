@@ -6,6 +6,7 @@ use App\Food;
 use App\User;
 use App\Email;
 use App\Hostel;
+use App\Chapter;
 use App\Payment;
 use App\Setting;
 use Carbon\Carbon;
@@ -293,7 +294,7 @@ class Controller extends BaseController
             });
     }
 
-    protected function createFamilyId($user, $prefix = null)
+    public function createFamilyId($user, $prefix = null)
     {
         $family_id = 'GSF' . $prefix . $user->id;
 
@@ -301,7 +302,7 @@ class Controller extends BaseController
             'family_id' => $family_id,
         ]);
 
-        return;
+        return $family_id;
     }
 
     protected function uploadImage($image, $location, $width = null, $height = null)
@@ -388,35 +389,39 @@ class Controller extends BaseController
     public function assignFoodStand($level, $chapter = "", $setting = null)
     {
         $setting = $setting ?? $this->conferenceEdition();
-
+        if ($level == 'Moderator') {
+            $level = 'Participant';
+        }
+    
+        // $chapter = isset($chapter) && !empty($chapter) ? Chapter::where('id',$chapter)->first
         if (in_array($level, ['Official', 'Medical', 'Official'])) {
             $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->first();
         } else {
             if (isset($setting->random_foodstand) && $setting->random_foodstand == "yes") {
-                if ($level == 'Moderator') {
-                    $foodstand = Food::where(['level' => 'Participant'])->whereRaw('allocation < capacity')->inRandomOrder()->first();
-                }else{
-                    $foodstand = Food::where(['level' => $level])->whereRaw('allocation < capacity')->inRandomOrder()->first();
-                }
+                $foodstand = Food::where(['level' => $level])->whereRaw('allocation < capacity')->inRandomOrder()->first();
             } else {
                 if (!empty($chapter)){
-                    if($setting->foodstand_field_assignment == 'yes' && in_array($chapter, [86])){
-                        if ($level == 'Moderator') {
-                            $foodstand = Food::where(['level' => 'Participant', 'conference_edition_id' => $setting->id])->where('off_campus', 'yes')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+                    $campus = Chapter::where('id',$chapter)->first();
+                    $field_id = $campus->field->id ?? null;
+                  
+                    if($setting->foodstand_field_assignment == 'yes'){
+                        // Others foodstand
+                        if(in_array($chapter, [86])){
+                            $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->whereNull('field_id')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
                         }else{
-                            $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->where('off_campus', 'yes')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+                           
+                            // According to fields
+                            $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->where('field_id', $field_id)->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
                         }
                     }else{
-                        if ($level == 'Moderator') {
-                            $foodstand = Food::where(['level' => 'Participant', 'conference_edition_id' => $setting->id])->where('off_campus', 'no')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
-                        }else{
-                            $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->where('off_campus', 'no')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
-                        }
+                        $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
                     }
+                }else{
+                    $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
                 }
             }
         }
-
+       
         if (isset($foodstand) && !empty($foodstand)) {
             $foodstand->update(['allocation' => $foodstand->allocation + 1]);
         }
@@ -534,7 +539,7 @@ class Controller extends BaseController
             'transid' => $data['transid'],
             'conference_edition_id' => $data['conference_edition_id']
         ]);
-
+        
         return $payment;
     }
 }

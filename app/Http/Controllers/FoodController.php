@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\FoodParticipantExport;
+use App\Field;
 
 class FoodController extends Controller
 {
@@ -24,8 +25,9 @@ class FoodController extends Controller
 
     public function create(Request $request)
     {
+        $fields = Field::all();
         $edition = ConferenceEdition::find($request->edition);
-        return view('conference_management.admin.food.create',compact('edition'));
+        return view('conference_management.admin.food.create',compact('edition', 'fields'));
     }
 
     public function store(Request $request)
@@ -55,8 +57,9 @@ class FoodController extends Controller
     public function edit(Food $food,Request $request)
     {
         $edition = ConferenceEdition::find($request->edition);
+        $fields = Field::all();
         
-        return view('conference_management.admin.food.edit', compact('food','edition'));
+        return view('conference_management.admin.food.edit', compact('food','edition','fields'));
     }
 
     public function update(Request $request, Food $food)

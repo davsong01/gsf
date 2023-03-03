@@ -39,11 +39,11 @@
 
 								</div>
 
-								<form action="{{ route('users.import') }}" method="POST" name="importform" enctype="multipart/form-data"
+								<form action="{{ route('conferenceuser.import',['type'=>$type, 'edition'=>$edition->id]) }}" method="POST" name="importform" enctype="multipart/form-data"
 									class="@if($errors->any()) has-error @endif">
 									@csrf
 									<input type="file" name="file" class="form-control" accept=".csv, .xlsv, .xls, .xlsx" required>
-									<input type="hidden" name="import_level" value="Participant">
+									<input type="hidden" name="import_level" value="{{ $type }}">
 									<br>
 									@error('file')
 									<div class="alert alert-danger" role="alert">

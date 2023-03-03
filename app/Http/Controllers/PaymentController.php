@@ -114,14 +114,14 @@ class PaymentController extends Controller
 			$request['amount'] = $request['amount'] * 100;
 			$url = $this->queryPaystack($request->all(), $setting);
 			
-			if(isset($url) && !empty($url)){
+			if (isset($url['error'])) {
+				return back()->with('error', $url['error']);
+			}elseif (isset($url) && !empty($url)) {
 				return redirect()->away($url);
-			}else{
-				// return redirect(url('/registration/#register'))->with('error', 'Something went wrong, Please try again');
-				return redirect(url('/#register'))->with('error', 'Something went wrong, Please try again');
 			}
-			
+		
 		} catch (\Exception $e) {
+			
 			return redirect(url('/registration/#register'))->with('error', $e . 'Transaction token has expired or details not correct. Please refresh the page and try again');
 		}
 	}
@@ -213,7 +213,7 @@ class PaymentController extends Controller
 				$payment = $this->createPayment($data, $user);
 
 				// Assign Automatic foodstand and hostel
-				if (in_array($payment->level, ['Participant', 'Alumni', 'Nec'])) {
+				if (in_array($payment->level, ['Participant', 'Alumni', 'Nec','Moderator'])) {
 					$hostel = $this->assignHostel($data['level'], $data['sex']);
 					$food = $this->assignFoodStand($data['level'], $data['chapter']);
 
@@ -360,7 +360,10 @@ class PaymentController extends Controller
 			return $result->data->authorization_url;
 		} catch (\Exception $th) {
 			\Log::error('Payment Gateway Error: ' . $th->getMessage());
-			return;
+			return [
+				'error' => $result->message
+			];
+
 		}
 	}
 

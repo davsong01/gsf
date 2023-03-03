@@ -38,7 +38,16 @@
                                             <option value="Nec" {{ old('level')  == 'Nec' ? 'selected' : ''}}>Nec</option>
                                         </select>
                                     </fieldset>
+                                    <fieldset class="form-group">
+                                        <label for="field">Field</label>
+                                        <select class="form-control" name="field_id" id="field">
+                                            <option value="">-- Select option --</option>
+                                            @foreach($fields as $field)
+                                            <option value="{{ $field->id }}">{{ $field->name }}</option>
+                                            @endforeach
 
+                                        </select>
+                                    </fieldset>
                                     <fieldset class="form-group">
                                         <label for="capacity">Capacity</label>
                                         <input type="number" id="capacity" min="1" name="capacity" class="form-control" value="{{ old('capacity') }}" required>

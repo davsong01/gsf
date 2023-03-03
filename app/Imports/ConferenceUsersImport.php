@@ -16,27 +16,24 @@ use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class UsersImport implements ToModel, WithHeadingRow
+class ConferenceUsersImport implements ToModel, WithHeadingRow
 {
 	use Importable;
 
-	private $import_level = null;
+	private $data = null;
 	private $count = 0;
 
-	public function __construct(string $import_level)
+	public function __construct($data)
 	{
-		$this->import_level = $import_level;
+		$this->data = $data;
 		
 	}
 
 	public function model(array $row)
 	{
-			
 		$validation_rule = [
 			// Nullables
 			'conference_number' => 'nullable|unique:users,conference_number',
-			'hostel_name' => 'nullable|exists:hostels,name',
-			'food_name' => 'nullable|exists:food,name',
 			'registration_status' => 'nullable|in:Pending,Complete',
 			'chapter' => 'nullable|exists:chapters,name',
 
@@ -44,57 +41,55 @@ class UsersImport implements ToModel, WithHeadingRow
 			'name' => 'required|min:3|max:200',
 			'email' => 'required|unique:users,email',
 			'phone' => 'required|unique:users,phone',
-			'level' => $this->import_level,
+			'level' => $this->data['import_level'],
 		];
 
-		dd($this->import_level);
-		switch ($this->import_level) {
+
+		switch ($this->data['import_level']) {
 			case 'Participant':
 				$validation_rule['sex'] = 'required|in:Male,Female';
 				$type = 1;
-				$prefix = 'AOP';
-				$chapter = auth::user()->chapter;
+				$details = app('App\http\Controllers\Controller')->getExtras(1, $this->data['edition']);
+				$prefix = $details['ledge'];
+				$amount_paid = $this->data['edition']->registration_fee;
 				break;
+
 			case 'Choir':
-				$type = 5;
-				$prefix = 'AOC';
-				$chapter = null;
+				$type = 6;
+				$details = app('App\http\Controllers\Controller')->getExtras(6, $this->data['edition']);
+				$amount_paid = $this->data['edition']->registration_fee;
+				$prefix = $details['ledge'];
 				break;
 			case 'Moderator':
 				$type = 2;
-				$prefix = 'AOP';
+				$details = app('App\http\Controllers\Controller')->getExtras(1, $this->data['edition']);
+				$prefix = $details['ledge'];
+				$amount_paid = $this->data['edition']->registration_fee;
 				$chapter = null;
 				break;
 			case 'Alumni':
 				$type = 3;
-				$prefix = 'AOA';
+				$details = app('App\http\Controllers\Controller')->getExtras(1, $this->data['edition']);
+				$prefix = $details['ledge'];
 				$chapter = null;
 				break;
 			case 'Nec':
 				$type = 4;
-				$prefix = 'AON';
-				$chapter = null;
-				break;
-				default:
-				$type = 1;
-				$prefix = 'AOP';
+				$details = app('App\http\Controllers\Controller')->getExtras(1, $this->data['edition']);
+				$prefix = $details['ledge'];
 				$chapter = null;
 				break;
 		}
-
+		$import_level = $this->data['import_level'];
 		Validator::make(
 			$row,
 			$validation_rule,
 			[
-				'name.required' => "One or more $this->import_level do not have a name, please check the name field and try again",
-				'name.min' => "One or more $this->import_level name is too short minimum is 3, please check the name field and try again",
-				'name.max' => "One or more $this->import_level name is too long maximum is 200, please check the name field and try again",
+				'name.required' => "One or more $import_level do not have a name, please check the name field and try again",
+				'name.min' => "One or more $import_level name is too short minimum is 3, please check the name field and try again",
+				'name.max' => "One or more $import_level name is too long maximum is 200, please check the name field and try again",
 
 				// 'conference_number.unique' => 'One or more conference number already exists, please check the conference number field and try again',
-
-				'hostel_name.exists' => "One or more $this->import_level is using a non existing hostel, please check the hostel name field and try again",
-				'food_name.exists' => "One or more $this->import_level is using a non existing food stand, please check the food name field and try again",
-
 				'email.unique' => 'One or more email already exists, please check the email field and try again',
 				'phone.unique' => 'One or more phone number already exists, please check the phone number field and try again',
 
@@ -105,40 +100,25 @@ class UsersImport implements ToModel, WithHeadingRow
 			]
 		)->validate();
 
-		
 		$name = trim($row['name']);
 		$email = trim($row['email']);
 		$phone = trim($row['phone']);
-		$level = trim($this->import_level);
+		$level = trim($this->data['import_level']);
 		$password = Hash::make(trim($row['phone']));
-
-		//take care of nullable fields
-		$conference_number = isset($row['conference_number']) ? trim($row['conference_number']) : null;
-		$hostel_id = isset($row['hostel_name']) ?
-			DB::table('hostels')->whereName(trim($row['hostel_name']))->pluck('id')->first()
-			: DB::table('hostels')->whereLevel($level)->whereType($row['sex'])->whereColumn('allocation', '<', 'hostels.capacity')->pluck('id')->first();
-		$food_id = isset($row['food_name']) ?
-			DB::table('food')->whereName(trim($row['food_name']))->pluck('id')->first()
-			: DB::table('food')->whereLevel($level)->whereColumn('allocation', '<', 'food.capacity')->pluck('id')->first();
-		$chapter = isset($row['chapter']) ?
-			DB::table('chapters')->whereName(trim($row['chapter']))->pluck('id')->first()
-			: null;
 		$sex = isset($row['sex']) ? $row['sex'] : null;
+
 		$registration_status = isset($row['registration_status']) ? $row['registration_status'] : 'Pending';
 		$slot = isset($row['slot']) ? $row['slot'] : 1;
 		$slot_filled = isset($row['slot_filled']) ? $row['slot_filled'] : 1;
 		$amount_paid = isset($row['amount_paid']) ? $row['amount_paid'] : 0;
-		$payment_type = isset($row['payment_type']) ? $row['payment_type'] : null;
-		$transid = isset($row['transid']) ? $row['transid'] : null;
+		$payment_type = isset($row['payment_type']) ? $row['payment_type'] : 'Bulk Upload';
 		$uploaded_by = isset($row['uploaded_by']) ? $row['uploaded_by'] : auth::user()->id;
 				
-		
 		if(auth::user()->level == 'Moderator' ){
 			auth::user()->update([
 				'slot_filled' => auth::user()->slot_filled + 1,
 			]);
 			
-
 			if(auth::user()->slot_filled > auth::user()->slot ){
 				// Create fake Validation rule
 				$validation_rule = [
@@ -156,53 +136,48 @@ class UsersImport implements ToModel, WithHeadingRow
 			)->validate();
 			}
 
-			$hostel = Hostel::find($hostel_id);
-		$food = Food::find($food_id);
-		
-		if($hostel){
-			$hostel->allocation++;
-			$hostel->save();
 		}
-		if($food){
-			$food->allocation++;
-			$food->save();
-		}
-
-			
-		}
-		
-		
-		$user = User::create([
+		$data = [
 			'name'  => $name,
 			'email' => $email,
 			'phone' => $phone,
 			'level' => $level,
 			'type' => $type,
-			'food_id' => $food_id,
-			'hostel_id' => $hostel_id,
-			'chapter' => $chapter,
+			'chapter_id' => $chapter ?? null,
 			'sex' => $sex,
 			'registration_status' => $registration_status,
 			'slot' => $slot,
 			'slot_filled' => $slot_filled,
-			'amount_paid' => Setting::select('registration_fee')->first()->value('registration_fee'),
+			'amount_paid' => $amount_paid,
 			'payment_type' => $payment_type,
-			'transid' => $transid,
+			'transid' => app('App\Http\Controllers\Controller')->generateTransactionId(),
 			'uploaded_by' => $uploaded_by,
-			'password' => $password
-		]);
+			'password' => $password,
+			'conference_edition_id' => $this->data['edition']->id
+		];
+		
+		// Create User
+		$user = app('App\Http\Controllers\Controller')->createUser($data);
+		$payment = app('App\Http\Controllers\Controller')->createPayment($data, $user);
 
+		//take care of nullable fields
+		$hostel_id = app('App\http\Controllers\Controller')->assignHostel($level, $sex, $this->data['edition']);
+		$food_id = app('App\Http\Controllers\Controller')->assignFoodStand($level, $this->data['edition']);
+		// dd($hostel_id);
+		$payment->update([
+			'hostel_id'=> $hostel_id->id,
+			'food_id'=>$food_id->id
+		]);
+		
 		$user->update([
-			'conference_number' => 'GSF-'.$prefix.'-'.$user->id,
+			'family_id' => app('App\Http\Controllers\Controller')->createFamilyId($user, $prefix),
 		]);
-
-		if(isset($user->hostel_id) && isset($user->food_id)){
-
-			$user->update([
+		if(isset($payment->hostel_id) && isset($payment->food_id)){
+			$payment->update([
 				'registration_status' => 'Complete'
 			]);
 		}
-
+		// dd($payment);
 		return $user;
 
 	}

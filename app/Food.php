@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Field;
 use Illuminate\Database\Eloquent\Model;
 
 class Food extends Model
@@ -15,5 +16,10 @@ class Food extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function field()
+    {
+        return $this->belongsTo(Field::class);
     }
 }

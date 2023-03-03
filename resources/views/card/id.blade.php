@@ -105,9 +105,9 @@
 											<hr style="margin-top: 1rem;margin-bottom: 1rem; border-top: 1px solid #DFE3E7;">
 											
 											<h3 style="font-size:15px; font-weight:lighter;"> <strong>Hostel:</strong>
-												{{ isset($payment->hostel->name) ? $payment->hostel->name : 'Registration incomplete'  }}</h3>
+												{{ isset($payment->hostel->name) ? $payment->hostel->name : 'N/A'  }}</h3>
 											<h3 style="font-size:15px; font-weight:lighter"> <b>Food Stand:</b>
-												{{ isset($payment->food->name) ? $payment->food->name : 'Registration incomplete'  }}</h3>
+												{{ isset($payment->food->name) ? $payment->food->name : 'N/A'  }}</h3>
 											
 										</div>
 										<div class="card-footer">

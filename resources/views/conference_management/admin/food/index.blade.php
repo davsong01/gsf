@@ -33,7 +33,12 @@
                                         @foreach($foods as $food)
                                         <tr>
                                             <td>{{ $count++ }}</td>
-                                            <td>{{ $food->name }}</td>
+                                            <td>{{ $food->name }} 
+                                                @if($food->field)
+                                                <br>
+                                                <strong>Field: </strong>{{ $food->field->name }}
+                                                @endif
+                                            </td>
                                             <td>{{ $food->level }}</td>
                                             <td>{{ $food->capacity }}</td>
                                             <td>{{ $food->allocation }}</td>

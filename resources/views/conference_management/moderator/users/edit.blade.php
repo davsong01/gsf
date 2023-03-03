@@ -15,7 +15,17 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Update: {{ $user->user->name }}</h4>
-                        
+                        @if($user->user->completeReg($edition) && $payment->hostel && $payment->food)
+                        <div style="padding:20px">
+                            <a href="{{ route('participants.card', ['id'=>$payment->id, 'edition'=>$edition->id]) }}" class="btn btn-primary glow"><i class="fa fa-print" aria-hidden="true"></i> View/Print Conference I.D. card</a>
+                            @if(isset($edition->material) && !empty($edition->material))
+                            <a href="{{ route('materials.index', ['edition'=>$edition->id, 'payment_id'=>$payment->id]) }}" class="btn btn-info glow"><i class="fa fa-print" aria-hidden="true"></i> View/Donload Conference Materials</a>
+                            @endif
+                        </div>
+                        @else
+                        <a href="#" onclick="return false;" data-toggle="tooltip" data-placement="top" title="You must complete registration to use this button" class="btn btn-primary glow disabled"><i class="fa fa-print" aria-hidden="true"></i> View/PrintConference I.D. Card
+                        </a>
+                        @endif
                     </div>
                     <div class="card-content">
                     <div class="card-body">
@@ -27,15 +37,23 @@
                                 <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="{{ asset($user->user->passport ? $user->user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
                                 </div>
                             </div>
-                            <div class="col-md-9">
+                            <div class="col-md-5">
                                 <fieldset class="form-group">
-                                    <label for="conference_id">Conference ID</label>
+                                    <label for="conference_id">Family ID</label>
                                     <input type="text" class="form-control" name="conference_id" id="conference_id" value="{{ $user->user->family_id }}" disabled required>
                                 </fieldset>
-                            <fieldset class="form-group">
-                                <label for="registration_status">Registration Status</label>
-                                <input type="text" class="form-control" name="registration_status" id="registration_status" value="{{ $user->registration_status }}" disabled required>
+                               
+                                <fieldset class="form-group">
+                                    <label for="transid">Transaction ID</label>
+                                    <input type="text" id="transid" name="transid" class="form-control" value="{{ old('transid') ?? $user->transid }}" disabled required>
                                 </fieldset>
+                               
+                            </div>
+                            <div class="col-md-4">
+                                <fieldset class="form-group">
+                                        <label for="registration_status">Registration Status</label>
+                                        <input type="text" class="form-control" name="registration_status" id="registration_status" value="{{ $user->registration_status }}" disabled required>
+                                    </fieldset>
                             </div>
                         </div>
                         <div class="row"> 
@@ -54,11 +72,7 @@
                                 <label for="email">Email</label>
                                     <input type="email" id="email" class="form-control @error('email')is-invalid @enderror" value="{{ $user->user->email }}" required disabled>						
                             </fieldset>
-                            </fieldset>
-                                <fieldset class="form-group">
-                                <label for="transid">Transaction ID</label>
-                                <input type="text" id="transid" name="transid" class="form-control" value="{{ old('transid') ?? $user->transid }}" disabled required>
-                            </fieldset>
+                            
                             </div>
                             <div class="col-md-6 col-sm-12">
                                 <fieldset class="form-group">

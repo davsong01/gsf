@@ -134,11 +134,21 @@
                                             <option value="yes" {{ $edition->random_foodstand == 'yes'?'selected':'' }}>Yes</option>
                                             <option value="no"  {{ $edition->random_foodstand == 'no'?'selected':'' }}>No</option>
                                         </select>
-                                      
                                     </fieldset>
                                 </div>
                                 <div class="col-sm-6 col-md-6">
-                                    <label for="random_hostel">Enable Seperate Foodstand for "Other" Chapters</label>
+                                    <label for="random_hostel">Enable Random Foodstand</label>
+                                    <fieldset class="form-group position-relative has-icon-left">
+                                        <select class="form-control" name="random_foodstand" id="random_foodstand" required>
+                                            <option value="">Select...</option>
+                                            <option value="yes" {{ $edition->random_foodstand == 'yes'?'selected':'' }}>Yes</option>
+                                            <option value="no"  {{ $edition->random_foodstand == 'no'?'selected':'' }}>No</option>
+                                        </select>
+                                    </fieldset>
+                                </div>
+                                
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="foodstand_field_assignment">Foodstand Field Assigment (Foodstand will be assigned based on chapters/Alumni)</label>
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <select class="form-control" name="foodstand_field_assignment" id="foodstand_field_assignment" required>
                                             <option value="">Select...</option>

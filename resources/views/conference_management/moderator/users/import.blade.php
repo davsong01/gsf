@@ -9,7 +9,7 @@
 						<div class="sparkline7-hd">
 							<div class="main-spark7-hd">
 								<h3>Import {{ $type ?? null }}</h3>
-								@include('includes.alerts')
+							
 							</div>
 
 						</div>
