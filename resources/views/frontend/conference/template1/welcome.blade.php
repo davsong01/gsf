@@ -10,6 +10,9 @@
     border: 1px solid;
     width: 35px; 
   }
+  .testi{
+    font-size: 14px;
+  }
 </style>
 @endsection
 @section('sec-content')
@@ -237,9 +240,9 @@
 
   <div class="container">
     <div class="row flex-center">
-      <div class="col-md-8 col-lg-5 text-center">
+      <div class="col-md-8 text-center">
         <h2>Testimonies from previous conferences</h2>
-        <p>Checkout testimonies from previous conferences. Boost your faith as you prepare for this forthcoming conference</p>
+        <p>Rev.12.11 - And they overcame him by the blood of the Lamb, and by the word of their testimony; and they loved not their lives unto the death. <br> <br> Here are the beautiful manifestations of what the Lord has done at the previous conference, God awaits you this year to have a share of yours. <br>See you there!</p>
       </div>
     </div>
     <div class="carousel slide pt-6" id="carouselExampleDark" data-bs-ride="carousel">
@@ -258,7 +261,7 @@
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“During the last GSF Conference (ABOVE ONLY), I asked God to take me higher from single to married and today, I am happily married to the love of my life. Halleluyah</p>
+                  <p class="card-text pt-3 testi">“During the last GSF Conference (ABOVE ONLY), I asked God to take me higher from single to married and today, I am happily married to the love of my life. Halleluyah"</p>
                 </div>
               </div>
             </div>
@@ -274,7 +277,7 @@
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“”</p>
+                  <p class="card-text pt-3 testi">“”</p>
                 </div>
               </div>
             </div>
@@ -290,7 +293,7 @@
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">"”.</p>
+                  <p class="card-text pt-3 testi">"”.</p>
                 </div>
               </div>
             </div>
@@ -310,7 +313,7 @@
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“”.</p>
+                  <p class="card-text pt-3 testi">“”.</p>
                 </div>
               </div>
             </div>
@@ -326,7 +329,7 @@
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“”</p>
+                  <p class="card-text pt-3 testi">“”</p>
                 </div>
               </div>
             </div>
@@ -341,7 +344,7 @@
                       </div>
                     </div>
                   </div>
-                  <p class="card-text pt-3">"”.</p>
+                  <p class="card-text pt-3 testi">"”.</p>
                 </div>
               </div>
             </div>
@@ -361,7 +364,7 @@
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“”.</p>
+                  <p class="card-text pt-3 testi">“”.</p>
                 </div>
               </div>
             </div>
@@ -377,7 +380,7 @@
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">“”</p>
+                  <p class="card-text pt-3 testi">“”</p>
                 </div>
               </div>
             </div>
@@ -393,7 +396,7 @@
                     </div>
                     
                   </div>
-                  <p class="card-text pt-3">"”.</p>
+                  <p class="card-text pt-3 testi">"”.</p>
                 </div>
               </div>
             </div>

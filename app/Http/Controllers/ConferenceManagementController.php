@@ -26,17 +26,15 @@ class ConferenceManagementController extends Controller
 {
 	public $edition;
 
-	// public function __construct(Request $request){
-	// 	$this->edition = ConferenceEdition::find($request->edition);
-	// 	if (!isset($this->edition) && empty($this->edition)) {
-	// 		return redirect(route('conferencemanagement.index'));
-	// 	}
-	// }
-	
     public function index(Request $request){
 		// Admin
+		
 		if (auth()->user()->role == 1) {
-			$editions = ConferenceEdition::all();
+			if(auth()->user()->conference_role == 'superadmin'){
+				$editions = ConferenceEdition::all();
+			}else{
+				$editions = ConferenceEdition::where('id', $this->edition->id)->get();
+			}
 			
 			$count = 1;
 			return view('conference_management.admin.editions.index', compact('editions','count'));
@@ -80,6 +78,19 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
+	public function staffCreate(Request $request, $edition)
+	{
+		$edition = ConferenceEdition::find($edition);
+		if (isset($edition) && $edition->status == 'active') {
+			if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') {
+				$staff = User::where('role', 1)->where('conference_role', 'admin')->get();
+				return view('conference_management.admin.staff.create', compact('edition'));
+			}
+		} else {
+			return back()->with('error', 'Conference Edition not active');
+		}
+	}
+
 	public function edit($id, Request $request)
 	{
 		$user = $payment = Payment::with('user')->whereId($id)->first();
@@ -94,7 +105,6 @@ class ConferenceManagementController extends Controller
 		if (auth()->user()->role == 1) {
 			return view('conference_management.admin.users.edit', compact('user', 'hostels', 'foods', 'chapters', 'edition'));
 		}
-
 
 		if (!$moderator) {
 			return abort(404);
@@ -117,6 +127,20 @@ class ConferenceManagementController extends Controller
 		}
 
 		return abort(404);
+	}
+
+	public function staffEdit($id, Request $request){
+		$edition = ConferenceEdition::find($request->edition);
+		$user = User::find($id);
+		
+		if (isset($edition) && $edition->status == 'active') {
+			if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') {
+				$staff = User::where('role', 1)->where('conference_role', 'admin')->get();
+				return view('conference_management.admin.staff.edit', compact('edition','user'));
+			}
+		} else {
+			return back()->with('error', 'Conference Edition not active');
+		}
 	}
 
 	public function show(Payment $conferencemanagement, Request $request){
@@ -339,6 +363,43 @@ class ConferenceManagementController extends Controller
 		return abort(404);
 	}
 
+	public function staffStore(Request $request){
+		
+		$data = $this->validate($request, [
+			"name" => "required",
+			"email" => "required",
+			"phone" => "required",
+			"sex" => "required",
+			"conference_role" => "required",
+			"password"=>"nullable"
+		]);
+
+		//Handle password
+		if ($request['password']) {
+			$data['password'] = Hash::make($request['password']);
+		} else {
+			$data['password']  = Hash::make($request['phone']);
+		}
+
+		$user = User::Create([
+			"name" => $data['name'],
+			"email" => $data['email'],
+			"phone" => $data['phone'],
+			"sex" => $data['sex'],
+			"role" => 1,
+			'slug' => Str::slug($data['name']),
+			"conference_role" => $data['conference_role'],
+			"password" => $data['password']
+		]);
+
+		$user->update([
+			'family_id' => $this->generateStaffFamilyId($this->edition, $user),
+		]);
+
+		return redirect(route('conference.staff', ['edition' => $this->edition]))->with('message', 'Staff successfully created');
+
+	}
+
 	public function checkRegFee($request, $setting){
 		$error = 0;
 		if($request['level'] == 'Participant' and ($request['amount_paid'] < $setting->registration_fee)){
@@ -357,8 +418,6 @@ class ConferenceManagementController extends Controller
 			return back()->with('error', 'Amount is lower than registration fee for '. $request['level']);
 		}
 	}	
-
-   
 
     public function update(Request $request, $id){
         $payment = Payment::with('user')->whereId($id)->first();
@@ -426,6 +485,27 @@ class ConferenceManagementController extends Controller
 		return back()->with('message','Operation succesful');
     }
 
+	public function staffUpdate(Request $request, $id){
+		
+		$edition = ConferenceEdition::find($request->edition);
+		$user = User::find($id);
+		
+		if (isset($edition) && $edition->status == 'active') {
+			if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') {
+				if ($request['password']) {
+					$request['password'] = Hash::make($request['password']);
+				} else {
+					$request['password']  = Hash::make($request['phone']);
+				}
+
+				$user->update($request->except(['edition']));
+				return redirect(route('conference.staff', ['edition' => $this->edition]))->with('message', 'Staff successfully updated');
+			}
+		} else {
+			return back()->with('error', 'Conference Edition not active');
+		}
+	}
+
 	public function reduceHostelAllocation($payment){
 		if (isset($payment->hostel->id) && !empty($payment->hostel->id)) {
 			$current_hostel = Hostel::find($payment->hostel->id);
@@ -462,6 +542,21 @@ class ConferenceManagementController extends Controller
 			return view('conference_management.admin.users.index', compact('participants', 'count', 'edition','type'));
         }
     }
+
+	public function staffIndex($edition = '')
+	{
+		$count = 1;
+		$edition = ConferenceEdition::find($edition);
+		if(isset($edition) && $edition->status == 'active'){
+			if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') {
+				$staff = User::where('role', 1)->get();
+				
+				return view('conference_management.admin.staff.index', compact('staff', 'count', 'edition'));
+			}
+		}else{
+			return back()->with('error', 'Conference Edition not active');
+		}
+	}
 
     public function getCard($id)
 	{

@@ -57,8 +57,8 @@
                                                 @endif
                                                 @if($type == 'Moderator') <br>
                                                 <span>
-                                                    <strong  style="color:blue">Slots:</strong> {{ $participant->slot }} <br>
-                                                    <strong  style="color:blue">Slots Available:</strong> {{ $participant->slot - $participant->slot_filled }} 
+                                                    <strong style="color:blue">Slots:</strong> {{ $participant->slot }} <br>
+                                                    <strong style="color:blue">Slots Available:</strong> {{ $participant->slot - $participant->slot_filled }} 
 
                                                 </span>
                                                 @endif

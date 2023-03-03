@@ -135,9 +135,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('criticalEmail', 'CriticalEmailController');
     Route::get('CriticalEmail-delete/{id}','CriticalEmailController@destroy')->name('CriticalEmail.delete');
     
-    Route::get('participant/delete/{id}', 'ConferenceManagementController@destroy')->name('conferenceparticipants.delete');
-    Route::get('trashed/participants', 'ConferenceManagementController@trashed')->name('conferenceparticipants.trashed');
-
     // Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
     // Route::get('participants/import/index', 'UserController@usersImportIndex')->name('conferenceusers.import.index');
     
@@ -161,10 +158,22 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::PATCH('update-conferenceparticipants/{id}/update', 'ConferenceManagementController@update')->name('conference.participants.update');
     Route::get('resendwelcomemail/{id}/show', 'ConferenceManagementController@resendEmail')->name('participants.resendmail');
 
+    Route::get('participant/delete/{id}', 'ConferenceManagementController@destroy')->name('conferenceparticipants.delete');
+    Route::get('trashed/participants', 'ConferenceManagementController@trashed')->name('conferenceparticipants.trashed');
+
+    Route::group([], function () {
+        // Conference Staff
+        Route::get('conferencestaff/{edition?}', 'ConferenceManagementController@staffIndex')->name('conference.staff');
+        Route::get('conferencestaff-create/{edition?}', 'ConferenceManagementController@staffCreate')->name('conference.staff.create');
+        Route::post('conferencestaff-store/{edition?}', 'ConferenceManagementController@staffStore')->name('conference.staff.store');
+        Route::get('conferencestaff-edit/{id}/{edition?}', 'ConferenceManagementController@staffEdit')->name('conference.staff.edit');
+        Route::PATCH('conferencestaff-update/{id}', 'ConferenceManagementController@staffUpdate')->name('conference.staff.update');
+        Route::get('conferencestaff.delete/{id}', 'ConferenceManagementController@destroyStaff')->name('conferencestaff.delete');
+    });
+    
     Route::get('conferencecards/{id}', 'ConferenceManagementController@getCard')->name('participants.card');
     Route::get('user/meal/{id}', 'ConferenceManagementController@getMealTicket')->name('meal.ticket');
 
-    
     Route::resource('conferencesettings', 'ConferenceSettingController');
     Route::get('/reset', 'ConferenceSettingController@resetData')->name('database.clear');
     
@@ -271,6 +280,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('users-export/{type}', 'UserController@getAdminParticipantSample')->name('usersexport.sample');
     
 });
+
 
  //Get signature Image
 //  Route::get('stakeholdersignature/{image}', function($image){

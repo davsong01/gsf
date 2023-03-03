@@ -305,6 +305,10 @@ class Controller extends BaseController
         return $family_id;
     }
 
+    public function generateStaffFamilyId($edition, $user){
+        return  'GSF' . $edition->reg_prefix .'-'. $user->id;
+    }
+
     protected function uploadImage($image, $location, $width = null, $height = null)
     {
         $imgName = time() . rand(11111111, 9999999) . '.' . $image->getClientOriginalExtension();;
