@@ -382,8 +382,8 @@ class ConferenceManagementController extends Controller
 		}
 
 		//Handle Passport Upload
-		if ($request->has('passport')) {
-			$data['passport'] = $this->uploadImage($request->passport, 'images/passports', 400, 400);
+		if ($request->has('avatar')) {
+			$data['passport'] = $this->uploadImage($request->avatar, 'images/passports', 400, 400);
 		} else {
 			$data['passport'] = NULL;
 		}
@@ -501,19 +501,20 @@ class ConferenceManagementController extends Controller
 		if (isset($edition) && $edition->status == 'active') {
 			if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') {
 				if ($request['password']) {
-					$request['password'] = Hash::make($request['password']);
+					$password = Hash::make($request['password']);
 				} else {
-					$request['password']  = Hash::make($request['phone']);
+					$password  = Hash::make($request['phone']);
 				}
-
+				$request['password'] = $password;
+				
 				//Handle Passport Upload
-				if ($request->has('passport')) {
-					$request['passport'] = $this->uploadImage($request->passport, 'images/passports', 400, 400);
+				if ($request->has('avatar')) {
+					$request['passport'] = $this->uploadImage($request->avatar, 'images/passports', 400, 400);
 				} else {
 					$request['passport'] = NULL;
 				}
 
-				$user->update($request->except(['edition']));
+				$user->update($request->except(['edition','avatar']));
 				return redirect(route('conference.staff', ['edition' => $this->edition]))->with('message', 'Staff successfully updated');
 			}
 		} else {

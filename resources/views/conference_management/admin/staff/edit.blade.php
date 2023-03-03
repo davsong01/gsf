@@ -56,8 +56,8 @@
                                     </select>
                                 </fieldset>
                                 <fieldset class="form-group @error('passport')is-invalid @enderror">
-                                    <label for="passport">Replace Passport</label>
-                                    <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">	
+                                    <label for="avatar">Replace Passport</label>
+                                    <input type= "file"  accept="image/*" class="form-control" name="avatar" id="avatar">	
                                 </fieldset>     
                                 
                                 <fieldset class="form-group">

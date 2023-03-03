@@ -320,7 +320,7 @@ class Controller extends BaseController
         }
        
         $image->save($location . '/' . $imgName);
-
+        
         return $location . '/' . $imgName;
     }
 
