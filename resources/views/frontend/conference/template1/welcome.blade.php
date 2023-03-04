@@ -10,8 +10,13 @@
     border: 1px solid;
     width: 35px; 
   }
+
   .testi{
     font-size: 14px;
+  }
+
+  .bi.bi-check-circle-fill {
+    margin-top: 3px;
   }
 </style>
 @endsection
@@ -91,7 +96,7 @@
 
   <div class="container">
     <div class="row align-items-center">
-      <div class="col-md-5 col-lg-7 text-lg-center"><img class="img-fluid mb-5 mb-md-0" src="{{ asset('conference_templates/template1/assets/img/illustrations/2.png')}}" alt="" /></div>
+      <div class="col-md-5 col-lg-7 text-lg-center"><img style="width:500px" class="img-fluid mb-5 mb-md-0" src="{{ asset('conference_templates/template1/assets/img/illustrations/2.jpg')}}" alt="" /></div>
       <div class="col-md-7 col-lg-5 text-center text-md-start">
         <h2>What to expect <br /></h2>
         <p>This edition of the GSF Bienniel Conference is packaged with:</p>
@@ -99,31 +104,48 @@
           <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
           </svg>
-          <p class="ms-2">""</p>
+          <p class="ms-2">Powerful Davidic worship experience</p>
         </div>
         <div class="d-flex">
           <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
           </svg>
-          <p class="ms-2">""</p>
+          <p class="ms-2">Bible exposition & Word explosion</p>
         </div>
         <div class="d-flex">
           <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
           </svg>
-          <p class="ms-2">""</p>
+          <p class="ms-2">Salvation & Healing</p>
         </div>
         <div class="d-flex">
           <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
           </svg>
-          {{-- <p class="ms-2">And more</p> --}}
+          <p class="ms-2">Delivarance from any kind of bondage </p>
+        </div>
+        <div class="d-flex">
+          <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
+          </svg>
+          <p class="ms-2">Relationship & Marriage talk</p>
+        </div>
+        <div class="d-flex">
+          <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
+          </svg>
+          <p class="ms-2">Miracle signs & wonders</p>
+        </div>
+        <div class="d-flex">
+          <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
+          </svg>
+          <p class="ms-2">and lots more</p>
         </div>
       </div>
     </div>
   </div>
   <!-- end of .container-->
-
 </section>
 
 <section class="bg-100 py-7" id="register">
@@ -265,7 +287,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-md-4 mb-3 mb-md-0">
+            {{-- <div class="col-md-4 mb-3 mb-md-0">
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
@@ -296,10 +318,10 @@
                   <p class="card-text pt-3 testi">"”.</p>
                 </div>
               </div>
-            </div>
+            </div> --}}
           </div>
         </div>
-        <div class="carousel-item" data-bs-interval="2000">
+        {{-- <div class="carousel-item" data-bs-interval="2000">
           <div class="row h-100">
             <div class="col-md-4 mb-3 mb-md-0">
               <div class="card h-100">
@@ -401,7 +423,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> --}}
       </div>
       <div class="row px-3 px-md-0 mt-4">
         <div class="col-6 position-relative">
@@ -418,13 +440,7 @@
   <!-- end of .container-->
 
 </section>
-<!-- <section> close ============================-->
-<!-- ============================================-->
-
-<!-- ============================================-->
-<!-- <section> begin ============================-->
 <section class="py-5 z-index-1" style="margin-bottom: 1rem">
-
   <div class="container" id="donate">
     <div class="card py-5 px-5 border-0 shadow-sm" style="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px !important;">
       <div class="card-body">
