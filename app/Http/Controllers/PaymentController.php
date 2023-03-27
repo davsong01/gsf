@@ -126,14 +126,14 @@ class PaymentController extends Controller
 		}
 	}
 
-	public function handleGatewayCallback(Request $request)
+	public function handleGatewayCallback(Request $request, $admin="")
 	{
 		$reference = $request->reference;
 		$setting = $this->conferenceEdition();
 		$conference_year = Carbon::parse($setting->start_date)->year;
 
 		$paymentDetails = $this->verify($reference, $setting);
-
+		
 		if (isset($paymentDetails) && $paymentDetails->status === 'success') {
 			//get participant details
 			$participant = TempUser::where('transid', $paymentDetails->reference)->whereStatus('initiated')->first();
@@ -204,7 +204,12 @@ class PaymentController extends Controller
 					$this->logEmail($email);
 					//Todo: make this return redirect to
 					$data['edition'] = $setting;
-					return $this->donationThankYouPage($data, $conference_year);
+
+					if($admin !== 'admin'){
+						return $this->donationThankYouPage($data, $conference_year);
+					}else{
+						return $paymentDetails;
+					}
 
 					// return view('frontend.conference.donationthankyou', compact('data', 'conference_year'));
 				}
@@ -263,10 +268,17 @@ class PaymentController extends Controller
 				
 				//send email to official email
 				$this->logEmail($email);
+				if($admin !== 'admin'){
+					Auth::loginUsingId($payment->user->id);	
+				} 
 				
-				Auth::loginUsingId($payment->user->id);
 				$data['edition'] = $setting;
-				return $this->thankYouPage($data, $conference_year);
+				
+				if($admin !== 'admin'){
+					return $this->thankYouPage($data, $conference_year);
+				} else {
+					return $paymentDetails;
+				}
 			}else{
 				$payment = Payment::with('user')->where('transid', $paymentDetails->reference)->first();
 				
@@ -291,17 +303,32 @@ class PaymentController extends Controller
 					];
 					
 					// Log user in
-					Auth::loginUsingId($payment->user->id);
-					return $this->thankYouPage($data, $conference_year);
+				if($admin !== 'admin'){
+						Auth::loginUsingId($payment->user->id);
+					} 
 
+				if($admin !== 'admin'){
+						return $this->thankYouPage($data, $conference_year);
+					} else {
+						return $paymentDetails;
+					}
 					// return view('frontend.conference.thankyou', compact('data', 'conference_year'));
 				}else{
-					return redirect(route('home.index'));
+				if($admin !== 'admin'){
+						return redirect(route('home.index'));
+					} else {
+						return $paymentDetails;
+					}
 				}
 				// return view('frontend.conference.thankyou', compact('data', 'conference_year'));
 			}
 		} else {
-			dd('Transaction failed! We have not received any money from you.');
+
+		if($admin !== 'admin'){
+				dd('Transaction failed! We have not received any money from you.');
+			} else {
+				return $paymentDetails;
+			}
 		}
 	}
 
