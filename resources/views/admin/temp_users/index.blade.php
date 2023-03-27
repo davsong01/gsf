@@ -128,15 +128,18 @@
             },
 			beforeSend: function (){
 				$('#before-fetch').html("<i class='fa fa-spinner fa-spin' style='font-size: x-large; !important'></i>");
-                if(type == 'single'){
-                    obj.forEach(function(item){
-                        $("#check-"+item).prop("checked", false);
-                    });
-                }
+                 obj.forEach(function(item){
+                    $("#single-"+item).html("<i class='fa fa-spinner fa-spin'></i>");
+                });
 			},
             
 			success:function (data, textStatus, jQxhr) {
                 data.forEach(function(item){
+                    if(type == 'single'){
+                        obj.forEach(function(item){
+                            $("#check-"+item).prop("checked", false);
+                        });
+                    }
                     if(item.status == 'success'){
                         $('#tr-'+item.reference).remove();
                     }
