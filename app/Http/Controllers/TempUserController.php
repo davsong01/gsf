@@ -61,7 +61,7 @@ class TempUserController extends Controller
             if($request->has('obj')){
                 foreach($request->obj as $obj){
                     $temp = TempUser::where('transid',$obj)->first();
-            
+                    
                     $request->request->add(['reference' => $obj]);
                     
                     $req = new \App\Http\Controllers\PaymentController();

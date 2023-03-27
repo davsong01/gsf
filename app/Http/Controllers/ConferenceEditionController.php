@@ -129,7 +129,7 @@ class ConferenceEditionController extends Controller
         $edition = ConferenceEdition::find($request->id);
         
         if($request->has('ban')){
-			$request['banner'] = $this->uploadImage($request->ban, 'frontend/img/site', 400, 400);
+			$request['banner'] = $this->uploadImage($request->ban, 'frontend/img/site');
         }
    
         if ($request->has('logo')) {
