@@ -97,6 +97,9 @@
         $("input:checkbox[name=reference]:checked").each(function(){
             obj.push($(this).val());
         });
+        if(obj.length < 1){
+            return alert('You must select one or more payments to verify');
+        }
         process(obj,'single');
     }
 
@@ -110,12 +113,6 @@
             );
         }
 
-        // all.each(function(){
-        //     obj.push($(this).val());
-        // });
-        // $("input:checkbox[name=reference]").each(function(){
-        //     obj.push($(this).val());
-        // });
         process(obj,'all');
     }
 
