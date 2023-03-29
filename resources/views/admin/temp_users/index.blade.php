@@ -38,6 +38,7 @@
                                         <tr>
                                             <th>S/N</th>
                                             <th>Details</th>
+                                            <th>Status</th>
                                             <th>Payment Response</th>
                                             <th>Date</th>
                                             <th>Actions</th>
@@ -53,6 +54,7 @@
                                                     <input class="form-check-input" name="reference" type="checkbox" value="{{ $participant->transid }}" id="check-{{ $participant->transid }}">
                                                 </span>
                                             </td>
+                                           
                                             <td>
                                                 Name: {{ $participant->name }} <br>
                                                 Email: {{ $participant->email }} <br>
@@ -67,6 +69,8 @@
                                                 @endif <br>
                                                 <span id="single-{{$participant->transid}}"><span>
                                             </td>
+                                             <td>{{ $participant->status }}</td>
+
                                             <td>
                                                 @if(isset($participant->gateway_response) && !empty($participant->gateway_response ))
                                                     <pre class="response"><span >{!! $participant->gateway_response !!}</span></pre>

@@ -15,7 +15,7 @@ class TempUserController extends Controller
         $edition = ConferenceEdition::with(['payments', 'donations'])->find($request->edition);
 
 		if (auth()->user()->role == 1) {
-			$participants = TempUser::where('conference_edition_id', $edition->id)->where('status','Initiated')->orderBy('created_at', 'desc')->get();
+			$participants = TempUser::where('conference_edition_id', $edition->id)->whereIn('status',['Initiated','abandoned'])->orderBy('created_at', 'desc')->get();
 			return view('admin.temp_users.index', compact('participants', 'count','edition'));
         }
         return abort(404);
