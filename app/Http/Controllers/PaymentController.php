@@ -98,7 +98,6 @@ class PaymentController extends Controller
 		}
 		
 		$request['transid'] = $this->generateTransactionId();
-
 		$tempUser = $this->createTempUser($request->all());
 		
 		if(is_null($tempUser)){
@@ -350,7 +349,6 @@ class PaymentController extends Controller
 	}
 	public function queryPaystack($request,$setting)
 	{
-		$transId = $this->generateTransactionId();
 		$url = "https://api.paystack.co/transaction/initialize";
 		// Convert amount using payment mode exchange rate
 		$metadata = isset($request['metadata']) ? json_decode($request['metadata'],true) : []; 
@@ -447,7 +445,6 @@ class PaymentController extends Controller
 		
 		$temp = TempUser::updateOrCreate(['email'=> $data['email'], 'conference_edition_id' => $setting->id],[
 			'name' => $data['name'],
-			'transid' => $data['transid'],
 			'phone' => $data['phone'],
 			'type' => $type ?? null,
 			'chapter_id' => $data['chapter'] ?? NULL,

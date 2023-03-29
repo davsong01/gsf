@@ -34,6 +34,14 @@ class TempUserController extends Controller
        
     }
 
+    public function update(Request $request, TempUser $tempuser){
+        $tempuser->update([
+            'transid'=>$request->transid,
+        ]);
+
+        return back()->with('message','Update Successful');
+    }
+
     public function requery($id, Request $request){
         if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin'){
             $temp = TempUser::where('id',$id)->first();
@@ -47,8 +55,14 @@ class TempUserController extends Controller
                 $response = json_encode($response);
                 $temp->update(['gateway_response' => $response]);
             }
+
+            if($status == 'abandoned'){
+                $temp->update(['status' => $status]);
+                return back()->with('error','Payment Status: '.$status);
+            }
+
             if($status == 'Failed'){
-                return back()->with('error','Payment Status'.$status);
+                return back()->with('error','Payment Status: '.$status);
             }else{
                 return back()->with('message','Payment Status: '.$status);
             }
@@ -71,7 +85,13 @@ class TempUserController extends Controller
                     if(isset($response) && !empty($response)){
                         $response = json_encode($response);
                         $temp->update(['gateway_response' => $response]);
+
+                        if($status == 'abandoned'){
+                            $temp->update(['status' => $status]);
+                        }
                     }
+
+                    
 
                     $res[] = [
                             'reference' => $obj,

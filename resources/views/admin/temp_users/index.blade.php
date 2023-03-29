@@ -73,13 +73,52 @@
                                                 @endif
                                             </td>
                                             <td>{{ $participant->created_at->format('Y-m-d') }}</td>
-                                                                                        
+
                                             <td style="padding-left: 5px;padding-right: 5px;">
+                                            
+                                                <button type="button" class="actions" data-toggle="modal" data-target="#myModal{{ $participant->id }}" title="Change reference ID"> <i style="padding: 5px;" class="fa fa-pencil"></i></button>
                                                 <a class="actions" data-toggle="tooltip" title="Requery Payment" href="{{ route('tempusers.requery', ['id'=>$participant->id, 'reference'=>$participant->transid]) }}"> <i style="padding: 5px;" class="fa fa-refresh"></i></a>
                                                 <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete User" href="{{ route('tempusers.destroy', $participant->id) }}"> <i style="padding: 5px;" class="fa fa-trash"></i>
                                                 </a>
                                             </td>
                                         </tr>
+                                        <div class="modal" id="myModal{{ $participant->id }}">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+
+                                                    <!-- Modal Header -->
+                                                    <div class="modal-header">
+                                                        <h4 class="modal-title">Edit Transaction from {{ $participant->email }}</h4>
+                                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                    </div>
+
+                                                    <!-- Modal body -->
+                                                    <div class="modal-body">
+                                                        <form action="{{ route('tempusers.update', $participant->id) }}" method="POST" enctype="multipart/form-data">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <div class="row">
+                                                                <div class="col-md-12">
+                                                                    <fieldset class="form-group">
+                                                                        <label for="conference_id">Transaction ID</label>
+                                                                        <input type="text" class="form-control" name="transid" id="transid" value="{{ $participant->transid }}" required>
+                                                                    </fieldset>
+                                                                </div>
+                                                                <div class="col-md-12 col-sm-12">
+                                                                    <button class="btn btn-primary" style="width:100%" type="submit">Update</button>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+
+                                                    <!-- Modal footer -->
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -89,6 +128,8 @@
                 </div>
             </div>
         </div>
+        <!-- The Modal -->
+
     </section>
 </div>
 <script>
