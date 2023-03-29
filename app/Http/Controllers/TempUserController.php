@@ -80,7 +80,7 @@ class TempUserController extends Controller
                     
                     $req = new \App\Http\Controllers\PaymentController();
                     $response = $req->handleGatewayCallback($request, 'admin');
-                    $status = $response->status ?? 'Failed';
+                    $status = $response->status ?? 'Unknown';
                 
                     if(isset($response) && !empty($response)){
                         $response = json_encode($response);
@@ -90,8 +90,6 @@ class TempUserController extends Controller
                             $temp->update(['status' => $status]);
                         }
                     }
-
-                    
 
                     $res[] = [
                             'reference' => $obj,
