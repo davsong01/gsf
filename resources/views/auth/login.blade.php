@@ -36,9 +36,11 @@
                     </div>
                     
                     <div class="form-group-icon mb15">
-                        <small onclick="newFunction()" style="cursor: pointer;">
-                            <input type="checkbox" id="check"> Show password
-                          </small>
+                        <div id="check">
+                            <small onclick="newFunction()" style="cursor: pointer;">
+                                <input type="checkbox"> Show password
+                            </small>
+                        </div>
                     </div>
 
                     <div class="checkbox">

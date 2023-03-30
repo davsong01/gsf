@@ -3,7 +3,7 @@
 .response{
     font-size: 11px;
     border: 1px solid black;
-    max-width: 500px;
+    max-width: 450px;
     display: inline-block;
     padding: 6px;
     white-space: pre-line;
@@ -69,7 +69,7 @@
                                                 @endif <br>
                                                 <span id="single-{{$participant->transid}}"><span>
                                             </td>
-                                             <td>{{ $participant->status }}</td>
+                                            <td>{{ $participant->status }}</td>
 
                                             <td>
                                                 @if(isset($participant->gateway_response) && !empty($participant->gateway_response ))
@@ -79,9 +79,14 @@
                                             <td>{{ $participant->created_at->format('Y-m-d') }}</td>
 
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                            
+                                               
+
                                                 <button type="button" class="actions" data-toggle="modal" data-target="#myModal{{ $participant->id }}" title="Change reference ID"> <i style="padding: 5px;" class="fa fa-pencil"></i></button>
+
+                                            
                                                 <a class="actions" data-toggle="tooltip" title="Requery Payment" href="{{ route('tempusers.requery', ['id'=>$participant->id, 'reference'=>$participant->transid]) }}"> <i style="padding: 5px;" class="fa fa-refresh"></i></a>
+                                                 <a class="actions" style="margin: 0" onclick="return confirm('Are you really sure?');" data-toggle="tooltip" title="Confirm Transfer" href="{{ route('tempusers.transfer.confirm', $participant->id) }}"> <i style="padding: 5px;" class="fa fa-exchange"></i></a>
+
                                                 <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete User" href="{{ route('tempusers.destroy', $participant->id) }}"> <i style="padding: 5px;" class="fa fa-trash"></i>
                                                 </a>
                                             </td>

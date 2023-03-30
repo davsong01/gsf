@@ -125,7 +125,7 @@ class PaymentController extends Controller
 		}
 	}
 
-	public function handleGatewayCallback(Request $request, $admin="")
+	public function handleGatewayCallback(Request $request, $admin="", $transfer_confirm="")
 	{
 		$reference = $request->reference;
 		$setting = $this->conferenceEdition();
@@ -133,10 +133,18 @@ class PaymentController extends Controller
 
 		$paymentDetails = $this->verify($reference, $setting);
 		
-		if (isset($paymentDetails) && $paymentDetails->status === 'success') {
+		if (isset($paymentDetails) && $paymentDetails->status === 'success' || !empty($transfer_confirm)) {
 			//get participant details
-			$participant = TempUser::where('transid', $paymentDetails->reference)->whereStatus('initiated')->first();
-			
+			// $participant = TempUser::where('transid', $paymentDetails->reference)->whereStatus('initiated')->first();
+			if(empty($paymentDetails)){
+				return false;
+			}
+
+			if(!empty($transfer_confirm)){
+				$participant = TempUser::where('transid', $request->reference)->first();
+			}else{
+				$participant = TempUser::where('transid', $paymentDetails->reference)->first();
+			}
 			// if(isset($participant) && !empty($participant)){
 			if(isset($participant) && !empty($participant)){
 				$data['name'] = $participant->name ?? null;

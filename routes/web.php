@@ -129,6 +129,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('showedition/{id}', 'ConferenceEditionController@show')->name('show.conference.edition');
     Route::get('clone-edition/{id}', 'ConferenceEditionController@clone')->name('clone.conference.edition');
     Route::resource('tempusers', 'TempUserController');
+    Route::get('tempusers-transfer-confirm/{id}', 'TempUserController@confirmTransfer')->name('tempusers.transfer.confirm');
+
+    
     Route::get('requery/{id}', 'TempUserController@requery')->name('tempusers.requery');
     Route::post('verify-multiple-payments', 'TempUserController@requeryMultiple')->name('tempusers.requery-multiple');
     

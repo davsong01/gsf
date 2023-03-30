@@ -102,5 +102,23 @@ class TempUserController extends Controller
 		}
     }
 
+    public function confirmTransfer(Request $request, $id){
+        $temp = TempUser::find($id);
+        if(!$temp){
+            return back()->with('message','Record not found');
+        }
+
+        $request->request->add(['reference' => $temp->transid]);
+                    
+        $req = new \App\Http\Controllers\PaymentController();
+        $response = $req->handleGatewayCallback($request, 'admin','transfer-confirmed');
+  
+        if($response){
+            return back()->with('message','Operation Succesful');
+        }else{
+            return back()->with('error','Transaction not found');
+
+        }
+    }
 
 }
