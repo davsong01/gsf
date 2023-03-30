@@ -79,8 +79,6 @@
                                             <td>{{ $participant->created_at->format('Y-m-d') }}</td>
 
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                               
-
                                                 <button type="button" class="actions" data-toggle="modal" data-target="#myModal{{ $participant->id }}" title="Change reference ID"> <i style="padding: 5px;" class="fa fa-pencil"></i></button>
 
                                             

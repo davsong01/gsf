@@ -114,7 +114,8 @@ class ChapterController extends Controller
     {
         $zones = Zone::all();
         $fields = Field::all();
-        return view('admin.chapters.create', compact('zones', 'fields'));
+        $chapters = Chapter::all();
+        return view('admin.chapters.create', compact('zones', 'fields','chapters'));
     }
 
 

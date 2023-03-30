@@ -60,8 +60,7 @@
                                     </fieldset>
                                     <label for="about">About</label><small> <br>Write brief biography of chapter, you can include fellowship periods</small>
                                     <fieldset class="form-group position-relative has-icon-left">
-                                        <textarea class="form-control" id="about" rows="3" name="about" rows="10" cols="200">{!! old('about') ?? $chapters->about !!}</textarea>
-                                        
+                                        <textarea class="form-control" id="about" rows="3" name="about" rows="10" cols="200">{!! old('about') !!}</textarea>
                                     </fieldset>
                                     <fieldset class="form-group">
                                         <label for="chapter_banner">Upload banner</label>
