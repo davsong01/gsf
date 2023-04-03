@@ -34,7 +34,6 @@ class Payment extends Model
     public function hostel(){
         return $this->belongsTo(Hostel::class);
     }
-
     public function food(){
         return $this->belongsTo(Food::class);
     }

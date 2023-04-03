@@ -11,7 +11,7 @@ class TempUser extends Model
 
     protected $table = 'temp_users';
     
-     public function campus(){
+    public function campus(){
         return $this->belongsTo(Chapter::class, 'chapter');
     }
     

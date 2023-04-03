@@ -48,6 +48,7 @@
                                                 <i class="bx bxs-circle success font-small-1 mr-50"></i> @else
                                                 <i class="bx bxs-circle danger font-small-1 mr-50"></i>
                                                 @endif <br>
+                                                <strong>Campus:</strong>{{ isset($participant->user->campus) ? $participant->user->campus->name : 'N/A'}} <br>
                                                 <strong>Level:</strong> {{ $participant->level }}
                                                 @if(isset($participant->hostel_id)) <br>
                                                 <strong>Hostel:</strong> {{ $participant->hostel->name }}
