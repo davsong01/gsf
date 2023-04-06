@@ -188,8 +188,8 @@
           </div>
         </div>
       </div>
-      
-       <div class="col-md-4 pt-4 px-md-2 px-lg-3">
+      @if(isset($setting->lock_online_payment) && $setting->lock_online_payment == 'no')
+      <div class="col-md-4 pt-4 px-md-2 px-lg-3">
         <div class="card h-100">
           <div class="card-body d-flex flex-column justify-content-around mx-auto">
             <div class="text-center pt-5">
@@ -221,6 +221,7 @@
           </div>
         </div>
       </div>
+      @endif
        <div class="col-md-4 pt-4 px-md-2 px-lg-3">
         <div class="card h-100">
           <div class="card-body d-flex flex-column justify-content-around mx-auto">
