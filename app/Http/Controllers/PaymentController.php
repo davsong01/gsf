@@ -109,6 +109,10 @@ class PaymentController extends Controller
 		$request['conference_edition_id'] = $setting->id;
 		$request['currency'] = 'NGN';
 		
+		if($setting->lock_online_payment == 'yes'){
+			return back()->with('message', 'Details received. Please make payment at the registration stand at the venue and show the registration officer your email address: '.$request->email);
+		}
+
 		try {
 			$request['amount'] = $request['amount'] * 100;
 			$url = $this->queryPaystack($request->all(), $setting);
@@ -145,6 +149,7 @@ class PaymentController extends Controller
 			}else{
 				$participant = TempUser::where('transid', $paymentDetails->reference)->first();
 			}
+			
 			// if(isset($participant) && !empty($participant)){
 			if(isset($participant) && !empty($participant)){
 				$data['name'] = $participant->name ?? null;
