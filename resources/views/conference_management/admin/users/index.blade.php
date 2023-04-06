@@ -62,8 +62,9 @@
                                                     <strong style="color:blue">Slots Available:</strong> {{ $participant->slot - $participant->slot_filled }} 
 
                                                 </span>
-                                                @endif
-
+                                                @endif <br>
+                                                <span style="color:blue">Payment Location: <strong>{{ $participant->location ?? 'Online' }}</strong></span> <br>
+                                                <span id="single-{{$participant->transid}}"><span>
                                             </td>
                                             <td>
                                                 <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->user->passport ? $participant->user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">

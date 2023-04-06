@@ -134,7 +134,7 @@ class TempUserController extends Controller
         }
 
         $request->request->add(['reference' => $temp->transid]);
-                    
+        
         $req = new \App\Http\Controllers\PaymentController();
         $response = $req->handleGatewayCallback($request, 'admin','','onsite-confirmed');
        

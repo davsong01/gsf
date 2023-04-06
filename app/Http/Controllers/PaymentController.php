@@ -146,7 +146,6 @@ class PaymentController extends Controller
 				$participant = TempUser::where('transid', $paymentDetails->reference)->first();
 			}
 			
-			
 			if(empty($participant)){
 				return false;
 			}
@@ -200,6 +199,7 @@ class PaymentController extends Controller
 						'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
 					];
 					$participant->status = 'Complete';
+
 					$participant->save();
 					$this->logEmail($email);
 
@@ -258,7 +258,11 @@ class PaymentController extends Controller
 				$data['family_id'] = $user->family_id;
 				$data['chapter'] = isset($participant->campus->name) ? $participant->campus->name : '';
 				
-				//update temp user
+				//update payment user
+				if(!empty($onsite_confirm)){
+					$payment->update(['location'=>'On Site']);
+				}
+
 				$participant->update(['status'=>'Complete']);
 				$data['type'] = 'welcome_mail';
 				//send email to participant

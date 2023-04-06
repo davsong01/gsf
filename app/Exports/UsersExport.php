@@ -23,7 +23,7 @@ class UsersExport implements WithHeadings, FromQuery
 	 */
 	public function headings(): array
 	{
-		return ["Family ID","Transaction ID", "Registration Status", "Name", "Email", "Phone", "Chapter","Registration Date","Amount Paid","Level","Hostel","Foodstand","Purpose"];
+		return ["Family ID","Transaction ID", "Registration Status", "Name", "Email", "Phone", "Chapter","Registration Date","Amount Paid","Level","Hostel","Foodstand","Purpose","Location"];
 	}
 	
 	public function query()
@@ -33,7 +33,7 @@ class UsersExport implements WithHeadings, FromQuery
 		->leftJoin('food', 'food.id', '=', 'payments.food_id')
 		->leftJoin('chapters', 'chapters.id', '=', 'users.chapter_id')
 		->where(['payments.conference_edition_id'=> $this->data['edition_id']])->where('role','!=',1)
-			->select('users.family_id', 'payments.transid', 'payments.registration_status', 'users.name', 'users.email', 'users.phone', 'chapters.name as chapter', 'payments.created_at as registration_date','payments.amount_paid', 'payments.level','hostels.name as hostel','food.name as foodstand', 'payments.purpose')
+			->select('users.family_id', 'payments.transid', 'payments.registration_status', 'users.name', 'users.email', 'users.phone', 'chapters.name as chapter', 'payments.created_at as registration_date','payments.amount_paid', 'payments.level','hostels.name as hostel','food.name as foodstand', 'payments.purpose', 'payments.location')
 			->orderBy('users.created_at', 'desc');
 
 		return $participants;
