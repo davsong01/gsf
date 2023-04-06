@@ -56,18 +56,21 @@
                                             </td>
                                            
                                             <td>
-                                                Name: {{ $participant->name }} <br>
-                                                Email: {{ $participant->email }} <br>
-                                                Phone: {{ $participant->phone }} <br>
-                                                Campus: {{ isset($participant->campus) ? $participant->campus->name : 'N/A'}} <br>
-                                                Trans ID: {{ $participant->transid }} <br>
-                                                Payment Type: @if($participant->type == 1)Individual
-                                                @elseif($participant->type == 2)Fellowship
-                                                @elseif($participant->type == 3)Alumni
-                                                @elseif($participant->type == 4)Nec
-                                                @elseif($participant->type == 5)Donation
-                                                @endif <br>
-                                                <span id="single-{{$participant->transid}}"><span>
+                                                <div style="width:350px !important">
+                                                     Name: {{ $participant->name }} <br>
+                                                    Email: {{ $participant->email }} <br>
+                                                    Phone: {{ $participant->phone }} <br>
+                                                    Campus: {{ isset($participant->campus) ? $participant->campus->name : 'N/A'}} <br>
+                                                    Trans ID: {{ $participant->transid }} <br>
+                                                    Payment Type: @if($participant->type == 1)Individual
+                                                    @elseif($participant->type == 2)Fellowship
+                                                    @elseif($participant->type == 3)Alumni
+                                                    @elseif($participant->type == 4)Nec
+                                                    @elseif($participant->type == 5)Donation
+                                                    @endif <br>
+                                                    <span style="color:blue">Payment Location: <strong>{{ $participant->location ?? 'N/A' }}</strong></span> <br>
+                                                    <span id="single-{{$participant->transid}}"><span>
+                                                </div>
                                             </td>
                                             <td>{{ $participant->status }}</td>
 
@@ -87,7 +90,7 @@
                                                 <a class="actions" style="margin: 0;background-color:yellow;color:black" onclick="return confirm('Are you really sure?');" data-toggle="tooltip" title="Confirm Transfer" href="{{ route('tempusers.transfer.confirm', $participant->id) }}"> <i style="padding: 5px;" class="fa fa-exchange"></i></a>
                                                 @endif
 
-                                                <a class="actions" style="margin: 0;background-color:green" onclick="return confirm('Are you really sure to confirm On Site payment?');" data-toggle="tooltip" title="Confirm onsite payment" href="{{ route('tempusers.onsite.confirm', $participant->id) }}"> <i style="padding: 5px;" class="fa fa-money"></i></a>
+                                                <a class="actions" style="margin: 0;background-color:green" onclick="return confirm('Are you really sure to confirm On Site payment?');" data-toggle="tooltip" title="Confirm On Site payment" href="{{ route('tempusers.onsite.confirm', $participant->id) }}"> <i style="padding: 5px;" class="fa fa-money"></i></a>
 
                                                 <a class="actions" style="background-color:red" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete User" href="{{ route('tempusers.destroy', $participant->id) }}"> <i style="padding: 5px;" class="fa fa-trash"></i>
                                                 </a>

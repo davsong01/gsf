@@ -137,36 +137,38 @@ class PaymentController extends Controller
 
 		$paymentDetails = $this->verify($reference, $setting);
 		
-		if (isset($paymentDetails) && $paymentDetails->status === 'success' || !empty($transfer_confirm) || !empty($onsite_confirmed)) {
-			//get participant details
-			// $participant = TempUser::where('transid', $paymentDetails->reference)->whereStatus('initiated')->first();
-			if(empty($paymentDetails)){
-				return false;
-			}
 
-			if(!empty($transfer_confirm)){
+		if ((isset($paymentDetails) && $paymentDetails->status === 'success') || !empty($transfer_confirm) || !empty($onsite_confirm)) {
+			//get participant details
+			if(!empty($transfer_confirm) || !empty($onsite_confirm)){
 				$participant = TempUser::where('transid', $request->reference)->first();
 			}else{
 				$participant = TempUser::where('transid', $paymentDetails->reference)->first();
 			}
-			dd($participant);
+			
+			
+			if(empty($participant)){
+				return false;
+			}
+
 			// if(isset($participant) && !empty($participant)){
 			if(isset($participant) && !empty($participant)){
 				$data['name'] = $participant->name ?? null;
 				$data['phone'] = $participant->phone ?? null;
 				$data['sex'] = $participant->gender ?? null;
-				$data['type'] = $paymentDetails->metadata->type ?? null;
+				$data['type'] = $paymentDetails->metadata->type ?? $participant->type;
 				$data['email'] = $participant->email;
 				$data['password'] = bcrypt($participant->phone);
-				$data['amount'] = $paymentDetails->amount/100;
+				$data['amount'] = ($paymentDetails->amount/100) ?? $participant->amount;
 				$data['transid'] = $participant->transid;
 				$data['payment_type'] = "PAYSTACK";
 				$data['conference_edition_id'] = $participant->conference_edition_id;
 				$data['chapter'] = $participant->chapter_id ?? null;
 
-				$type = $paymentDetails->metadata->type;
+				$type = $paymentDetails->metadata->type ?? $participant->type;
 				$extras = $this->getExtras($type, $setting, $data['amount']);
 				
+				dd($participant, $type);
 				$data['slot'] = $extras['slot'] ?? null;
 				$ledge = $extras['ledge'] ?? null;
 				$data['level'] = $extras['level'] ?? null;
@@ -458,8 +460,9 @@ class PaymentController extends Controller
 		
 		if(isset($setting->lock_online_payment) && $setting->lock_online_payment == 'yes'){
 			$location = 'On Site';
+			$amount = $data['amount'];
 		}
-
+		
 		$temp = TempUser::updateOrCreate(['email'=> $data['email'], 'conference_edition_id' => $setting->id],[
 			'name' => $data['name'],
 			'phone' => $data['phone'],
@@ -470,7 +473,8 @@ class PaymentController extends Controller
 			'status' => 'Initiated',
 			'gender' => $data['gender'] ?? null,
 			'conference_edition_id' => $setting->id,
-			'location' => $location ?? null
+			'location' => $location ?? null,
+			'amount' => $amount ?? null,
 		]);
 
 		return $temp;

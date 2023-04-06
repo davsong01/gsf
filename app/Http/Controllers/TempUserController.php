@@ -15,9 +15,11 @@ class TempUserController extends Controller
         $edition = ConferenceEdition::with(['payments', 'donations'])->find($request->edition);
 
 		if (auth()->user()->role == 1) {
-			$participants = TempUser::where('conference_edition_id', $edition->id)->whereIn('status',['Initiated','abandoned'])->orderBy('created_at', 'desc')->get();
+			$participants = TempUser::with('campus')->where('conference_edition_id', $edition->id)->whereIn('status',['Initiated','abandoned'])->orderBy('created_at', 'desc')->get();
+            
 			return view('admin.temp_users.index', compact('participants', 'count','edition'));
         }
+       
         return abort(404);
 	}
 
@@ -126,12 +128,16 @@ class TempUserController extends Controller
         if(!$temp){
             return back()->with('message','Record not found');
         }
+        
+        if($temp->location != 'On Site'){
+            return back()->with('error', 'This is not an On Site payment');
+        }
 
         $request->request->add(['reference' => $temp->transid]);
                     
         $req = new \App\Http\Controllers\PaymentController();
-        $response = $req->handleGatewayCallback($request, 'admin','onsite-confirmed');
-  
+        $response = $req->handleGatewayCallback($request, 'admin','','onsite-confirmed');
+        dd($response, 'response');
         if($response){
             return back()->with('message','Operation Succesful');
         }else{
