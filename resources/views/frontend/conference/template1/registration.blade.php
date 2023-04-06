@@ -23,8 +23,12 @@
                 <h2>Kindly fill form below and click the payment button</h2>
             </div>
         </div>
-    @include('includes.alerts')
-
+        @include('includes.alerts')
+        @if(isset($setting->lock_online_payment) && $setting->lock_online_payment == 'yes')
+        <div class="alert alert-warning" role="alert">
+            <strong>NOTE:</strong> Online Payment has closed. Please fill the form below and pay at the venue.
+        </div>
+        @endif
         <div class="row h-100 justify-content-center">
             <div class="contact-form">
                 <form action="{{ route('pay') }}" method="POST">
