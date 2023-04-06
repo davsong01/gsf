@@ -130,6 +130,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('clone-edition/{id}', 'ConferenceEditionController@clone')->name('clone.conference.edition');
     Route::resource('tempusers', 'TempUserController');
     Route::get('tempusers-transfer-confirm/{id}', 'TempUserController@confirmTransfer')->name('tempusers.transfer.confirm');
+    Route::get('tempusers-onsite-confirm/{id}', 'TempUserController@confirmOnSiteTransfer')->name('tempusers.onsite.confirm');
 
     
     Route::get('requery/{id}', 'TempUserController@requery')->name('tempusers.requery');

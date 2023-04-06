@@ -129,7 +129,7 @@ class PaymentController extends Controller
 		}
 	}
 
-	public function handleGatewayCallback(Request $request, $admin="", $transfer_confirm="")
+	public function handleGatewayCallback(Request $request, $admin="", $transfer_confirm="",$onsite_confirm="")
 	{
 		$reference = $request->reference;
 		$setting = $this->conferenceEdition();
@@ -137,7 +137,7 @@ class PaymentController extends Controller
 
 		$paymentDetails = $this->verify($reference, $setting);
 		
-		if (isset($paymentDetails) && $paymentDetails->status === 'success' || !empty($transfer_confirm)) {
+		if (isset($paymentDetails) && $paymentDetails->status === 'success' || !empty($transfer_confirm) || !empty($onsite_confirmed)) {
 			//get participant details
 			// $participant = TempUser::where('transid', $paymentDetails->reference)->whereStatus('initiated')->first();
 			if(empty($paymentDetails)){
@@ -149,7 +149,7 @@ class PaymentController extends Controller
 			}else{
 				$participant = TempUser::where('transid', $paymentDetails->reference)->first();
 			}
-			
+			dd($participant);
 			// if(isset($participant) && !empty($participant)){
 			if(isset($participant) && !empty($participant)){
 				$data['name'] = $participant->name ?? null;
@@ -456,6 +456,10 @@ class PaymentController extends Controller
 			}
 		}
 		
+		if(isset($setting->lock_online_payment) && $setting->lock_online_payment == 'yes'){
+			$location = 'On Site';
+		}
+
 		$temp = TempUser::updateOrCreate(['email'=> $data['email'], 'conference_edition_id' => $setting->id],[
 			'name' => $data['name'],
 			'phone' => $data['phone'],
@@ -465,7 +469,8 @@ class PaymentController extends Controller
 			'transid' => $data['transid'] ?? NULL,
 			'status' => 'Initiated',
 			'gender' => $data['gender'] ?? null,
-			'conference_edition_id' => $setting->id
+			'conference_edition_id' => $setting->id,
+			'location' => $location ?? null
 		]);
 
 		return $temp;
