@@ -156,19 +156,18 @@ class PaymentController extends Controller
 				$data['name'] = $participant->name ?? null;
 				$data['phone'] = $participant->phone ?? null;
 				$data['sex'] = $participant->gender ?? null;
-				$data['type'] = $paymentDetails->metadata->type ?? $participant->type;
+				$data['type'] = isset($paymentDetails) ? $paymentDetails->metadata->type : $participant->type;
 				$data['email'] = $participant->email;
 				$data['password'] = bcrypt($participant->phone);
-				$data['amount'] = ($paymentDetails->amount/100) ?? $participant->amount;
+				$data['amount'] = isset($paymentDetails) ? $paymentDetails->amount/100 : $participant->amount;
 				$data['transid'] = $participant->transid;
 				$data['payment_type'] = "PAYSTACK";
 				$data['conference_edition_id'] = $participant->conference_edition_id;
 				$data['chapter'] = $participant->chapter_id ?? null;
 
-				$type = $paymentDetails->metadata->type ?? $participant->type;
+				$type = isset($paymentDetails) ? $paymentDetails->metadata->type : $participant->type;
 				$extras = $this->getExtras($type, $setting, $data['amount']);
 				
-				dd($participant, $type);
 				$data['slot'] = $extras['slot'] ?? null;
 				$ledge = $extras['ledge'] ?? null;
 				$data['level'] = $extras['level'] ?? null;
@@ -252,6 +251,7 @@ class PaymentController extends Controller
 				if ($payment->level == 'Moderator') {
 					$payment->update([
 						'uploaded_by' => $user->id,
+						'response' => isset($paymentDetails) ? json_encode($paymentDetails) : null,
 					]);
 				}
 
@@ -291,7 +291,7 @@ class PaymentController extends Controller
 				if($admin !== 'admin'){
 					return $this->thankYouPage($data, $conference_year);
 				} else {
-					return $paymentDetails;
+					return $paymentDetails ?? $payment;
 				}
 			}else{
 				$payment = Payment::with('user')->where('transid', $paymentDetails->reference)->first();
@@ -324,14 +324,14 @@ class PaymentController extends Controller
 				if($admin !== 'admin'){
 						return $this->thankYouPage($data, $conference_year);
 					} else {
-						return $paymentDetails;
+						return $paymentDetails ?? $payment;
 					}
 					// return view('frontend.conference.thankyou', compact('data', 'conference_year'));
 				}else{
 				if($admin !== 'admin'){
 						return redirect(route('home.index'));
 					} else {
-						return $paymentDetails;
+						return $paymentDetails ?? $payment;
 					}
 				}
 				// return view('frontend.conference.thankyou', compact('data', 'conference_year'));
@@ -341,7 +341,7 @@ class PaymentController extends Controller
 		if($admin !== 'admin'){
 				dd('Transaction failed! We have not received any money from you.');
 			} else {
-				return $paymentDetails;
+				return $paymentDetails ?? $payment;
 			}
 		}
 	}

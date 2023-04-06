@@ -137,9 +137,9 @@ class TempUserController extends Controller
                     
         $req = new \App\Http\Controllers\PaymentController();
         $response = $req->handleGatewayCallback($request, 'admin','','onsite-confirmed');
-        dd($response, 'response');
+       
         if($response){
-            return back()->with('message','Operation Succesful');
+            return back()->with('message','On Site Registration Succesful');
         }else{
             return back()->with('error','Transaction not found');
 
