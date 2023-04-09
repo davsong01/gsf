@@ -93,7 +93,7 @@ class CriticalEmailController extends Controller
      */
     public function index(Request $request)
     {
-        $emails = CriticalEmail::all();
+        $emails = CriticalEmail::orderby('status','ASC')->get();
         $count = 1;
         return view('emails.emaillog', compact('emails','count'));
     }
