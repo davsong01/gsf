@@ -113,8 +113,8 @@ class NotificationEmail extends Mailable
             ->subject('Thank you for your Donation');
         }
 
-        if (isset($this->data['type']) && $this->data['type'] == 'admin_registration_notification') {
-            return $this->markdown('emails.admin')
+        if (isset($this->data['type']) && $this->data['type'] == 'new_registration') {
+            return $this->markdown('emails.welcomeMail')
             ->subject('New Registration');
         }
       

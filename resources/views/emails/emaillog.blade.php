@@ -32,6 +32,7 @@
                                             <th>Subject</th>
                                             <th>Recipient</th>
                                             <th>Preview</th>
+                                            <th>Error(s)</th>
                                             
                                             <th>Actions</th>
                                         </tr>
@@ -55,6 +56,7 @@
                                                 <td>{!! mb_strimwidth($email->content, 0, 100, " ...") !!} <br>
                                                         <a class="btn btn-info btn-sm" data-target="#emailModal{{ $email->id }}" data-toggle="modal" id="{{ $email->id }}"> <i class="fa fa-eye"></i> </a>
                                                 </td>
+                                                <td><span style="color:red">{{ $email->errors }}</span></td>
                                                 <td style="padding-left: 5px;padding-right: 5px;">
                                                     <a class="actions" data-toggle="tooltip" title="Resend" href="{{ route('criticalEmail.show', $email->id)}}" data-original-title="View/Update stakeholder details"> <i class="fa fa-envelope actions"></i>
                                                     </a>

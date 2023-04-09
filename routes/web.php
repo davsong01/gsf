@@ -64,6 +64,7 @@ Route::POST('student/contact', 'HomeController@alumniContact')->name('student.co
 
 //Events
 Route::get('/people/programs', 'HomeController@programs')->name('people.programs');
+
 // Homepage search
 Route::POST('all/search', 'HomeController@generalSearch')->name('general.search');
 
