@@ -62,6 +62,7 @@ class CronController extends Controller
                     $count++;
                     $email->status = 1;
                     $email->sent_at = now();
+                    $email->errors = NULL;
                     $email->save();
                 } else {
                     $email->errors = $res['error'];
