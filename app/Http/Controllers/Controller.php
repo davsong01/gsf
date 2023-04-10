@@ -180,7 +180,7 @@ class Controller extends BaseController
                 'message'=>'success'
             ];
         } catch (\Exception $e) {
-            dd($e->getMessage(), $data);
+            \Log::error($e->getMessage());
             return [
                 'error' => $e->getMessage(),
             ];
