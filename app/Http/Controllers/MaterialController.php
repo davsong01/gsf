@@ -47,10 +47,12 @@ class MaterialController extends Controller
 
         if(auth()->user()->role == 1){
             foreach($request->file('file') as $file){
-                $file->move('conferencematerials', $file->getClientOriginalName());  
+                $location = $this->uploadFile($file, 'conferencematerials');
+                // $file->move('conferencematerials', $file->getClientOriginalName());  
                 Material::create([
                     'name' =>$file->getClientOriginalName(),
-                    'location' => 'conferencematerials/' . $file->getClientOriginalName(),
+                    // 'location' => 'conferencematerials/' . $file->getClientOriginalName(),
+                    'location' => $location,
                     'conference_edition_id' =>  $request->edition,
                 ]);
             }
@@ -64,7 +66,7 @@ class MaterialController extends Controller
     public function show(Material $material)
     {
         $realpath = $material->location;
-       
+        
         if(file_exists(public_path().'/'. $realpath)){
             return response()->download($realpath);
         }else{

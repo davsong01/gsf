@@ -208,69 +208,6 @@ class Controller extends BaseController
             'message' => $message
         ]);
     }
-
-    // public function createOrUpdateHostel(User $user, string $level, string $gender, Collection $hostel_collection, Request $request)
-    // {
-    // 	$collection = $hostel_collection->where('level', $level == 'Moderator' ?'Participant':$level)->where('type', $gender)
-    // 		->sortBy('allocation'); // sort by the lowest allocation
-    // 	$message = ['key' => 'error', 'value' => ':(, this is not you it\'s us, looks like there is no hostel available.'];
-
-    // 	$this->createNewFood($user); // it doesnt matter where you place this, it excutes once - CORRECT
-
-    // 	// Iterate through the collection
-    // 	$iterator = 0;
-    // 	$collection->each(
-    // 		function ($item, $key) use ($user, $hostel_collection, $collection, $request, &$iterator, &$message) {
-    // 			$iterator++;
-    // 			if ($item->capacity != $item->allocation) {
-    // 				// check if user has an associated hostel
-    // 				$user_hostel = $hostel_collection
-    // 					->where('id', $user->hostel_id)->first(); // you want to make sure you are querying the global as you can get
-    // 				$user_hostel // find the hostel from the sorted
-    // 					? $user_hostel->allocation-- : null; // , this is the only way to reduce the allocation effectively
-    // 				$user_hostel ? $user_hostel->save() : null; // and reduce by one
-
-    // 				$item->allocation++; // increase the numbers of allocation in the corresponding hostel
-    // 				$item->save(); // remember to save the hostel 
-
-    // 				$user->hostel_id = $item->id; // update the user hostel_id if required
-    // 				$user->sex = $request->sex ?: $user->sex; // gender
-    // 				$user->name = $request->name ?: $user->name; // name
-    // 				$user->phone = $request->phone ?: $user->phone; // phone
-    // 				$user->password = $request->password ? Hash::make($request->password) : $user->password; // password
-
-    // 				// Handle passport upload
-    // 				if ($request->hasFile('passport') && $request->file('passport')->isValid()) {
-    // 					$imgName = $request->passport->getClientOriginalName();
-    // 					$passport = Image::make($request->passport)->resize(500, 500);
-    // 					$passport->save('frontend/passports/' . date('Y-m-d-His') . $imgName);
-    // 					$image_path = $passport->dirname . '/' . $passport->basename;
-
-    // 					if (file_exists($user->passport))
-    // 						unlink($user->passport);
-
-    // 					$passport->destroy();
-    // 					$user->passport = $image_path;
-    // 				}
-    // 				if ($user->registration_status != 'Complete')
-    // 					$user->registration_status = 'Complete';
-
-    // 				$user->save(); // save the changes if any
-    // 				$message['key'] = 'message';
-    // 				$message['value'] = '&#128515;, update was successful';
-    // 				return false;
-    // 			}
-    // 			if ($item->capacity == $item->allocation && $collection->count() == $iterator) { // the last loop
-    // 				$message['key'] = 'error';
-    // 				$message['value'] = ':(, this is not you it\'s us, looks like there is no hostel available.';
-    // 				return false;
-    // 			}
-    // 		}
-    // 	);
-    // 	return back()->with($message['key'], $message['value']);
-
-    // }
-
     protected function createNewFood(User $user)
     {
         $collection = Food::where('level', $user->level == 'Moderator' ? 'Participant' : $user->level)
@@ -310,7 +247,7 @@ class Controller extends BaseController
 
     protected function uploadImage($image, $location, $width = null, $height = null)
     {
-        $imgName = time() . rand(11111111, 9999999) . '.' . $image->getClientOriginalExtension();;
+        $imgName = time() . rand(11111111, 9999999) . '.' . $image->getClientOriginalExtension();
        
         if ($width && $height) {
             $image = Image::make($image)->resize($width, $height);
@@ -321,6 +258,14 @@ class Controller extends BaseController
         $image->save($location . '/' . $imgName);
         
         return $location . '/' . $imgName;
+    }
+
+     protected function uploadFile($file, $location)
+    {
+        $fileName = time() . rand(11111111, 9999999) . '.' . $file->getClientOriginalExtension();
+        $file->move($location, $fileName);
+
+        return $location . '/' . $fileName;
     }
 
 
