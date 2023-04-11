@@ -30,7 +30,7 @@
                                     <tbody>
                                         @foreach($materials as $material)
                                         <tr>
-                                            <td>{{ $count }}</td>
+                                            <td>{{ $count++ }}</td>
                                             
                                             <td>{{ $material->name }}</td>                                           
                                             <td>
