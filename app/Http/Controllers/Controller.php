@@ -263,7 +263,7 @@ class Controller extends BaseController
      protected function uploadFile($file, $location)
     {
         $fileName = time() . rand(11111111, 9999999) . '.' . $file->getClientOriginalExtension();
-        $file->move($location, $fileName);
+        $file->move($location, $fileName );
 
         return $location . '/' . $fileName;
     }

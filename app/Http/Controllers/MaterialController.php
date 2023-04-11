@@ -67,7 +67,7 @@ class MaterialController extends Controller
     {
         $realpath = $material->location;
         
-        if(file_exists(public_path().'/'. $realpath)){
+        if(file_exists($realpath)){
             return response()->download($realpath);
         }else{
             return back()->with('error','File doesnt exist');
@@ -79,7 +79,7 @@ class MaterialController extends Controller
     {
         $material = Material::find($id);
 
-        unlink( $material->location);
+        if (file_exists($material->location)) unlink( $material->location);
 
         $material->delete();
         
