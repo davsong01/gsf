@@ -4,43 +4,29 @@
         <div class="container">
             <div class="row justify-content-center mb-4 mb-xl-5">
                 <div class="col-12 col-xl-10 text-center">
-                    <h1 class="display-2">Find your space.</h1>
-                    <p class="lead text-muted mt-4 px-md-6"><span class="font-weight-bold">12,000+</span> coworking spaces with desks, offices & meeting rooms in <span class="font-weight-bold">165+</span> countries. Discover and reserve space today.</p>
+                    <h1 class="display-2">Find buddy...</h1>
+                    <p class="lead text-muted mt-4 px-md-6"><span class="font-weight-bold">12,000+</span> stallites, alumni in <span class="font-weight-bold">80+</span> campuses. Search and reunite today.</p>
                 </div>
             </div>
             <div class="row mb-5">
                 <div class="col-12">
                     <div class="card p-md-2">
                         <div class="card-body p-2 p-md-0">
-                            <form autocomplete="off" class="row" method="get" action="https://demo.themesberg.com/spaces/html/all-spaces.html">
-                                <div class="col-12 col-lg-5">
+                            <form autocomplete="off" class="row" method="GET" action="{{ route('general.search') }}">
+                                <div class="col-12 col-lg-9">
                                     <div class="form-group form-group-lg mb-lg-0">
                                         <div class="input-group">
-                                            <div class="input-group-prepend"><span class="input-group-text"><span class="fas fa-map-marker-alt"></span></span></div><input id="search-location" type="text" class="form-control autocomplete" placeholder="Search location" required>
+                                            <div class="input-group-prepend"><span class="input-group-text"><span class="fas fa-map-marker-alt"></span></span></div><input id="name" name="name" type="text" class="form-control autocomplete" placeholder="Search for an stuent, alumni of GSF..." required>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-12 col-lg-4">
-                                    <div class="input-group input-group-lg mb-3 mb-lg-0">
-                                        <div class="input-group-prepend"><span class="input-group-text"><i class="far fa-calendar-alt"></i></span></div><input class="form-control datepicker" placeholder="Select date" type="text" required>
-                                    </div>
-                                </div>
-                                <div class="col-12 col-lg-3"><button class="btn btn-lg btn-primary btn-block animate-up-2" type="submit">Find a desk</button></div>
+                                <div class="col-12 col-lg-3"><button class="btn btn-lg btn-primary btn-block animate-up-2" type="submit">Search</button></div>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row justify-content-center">
-                <div class="col">
-                    <ul class="d-flex flex-wrap justify-content-center list-unstyled mb-0">
-                        <li class="mx-xl-4 mx-2 mb-5 mb-md-0"><img class="img-fluid image-xs" src="https://demo.themesberg.com/spaces/assets/img/clients/northwestern.svg" alt="northwestern logo"></li>
-                        <li class="mx-xl-4 mx-2 mb-5 mb-md-0"><img class="img-fluid image-xs" src="https://demo.themesberg.com/spaces/assets/img/clients/google.svg" alt="google logo"></li>
-                        <li class="mx-xl-4 mx-2 mb-5 mb-md-0"><img class="img-fluid image-xs" src="https://demo.themesberg.com/spaces/assets/img/clients/university-of-chicago.svg" alt="university logo"></li>
-                        <li class="mx-xl-4 mx-2 mb-5 mb-md-0"><img class="img-fluid image-xs" src="https://demo.themesberg.com/spaces/assets/img/clients/corsair.svg" alt="corsair logo"></li>
-                    </ul>
-                </div>
-            </div>
+           
         </div>
     </section>
     <section class="section section-lg pb-lg-6 pb-5">

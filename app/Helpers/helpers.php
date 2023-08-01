@@ -17,10 +17,10 @@ if (!function_exists("menu")) {
                 'route' => 'people.students',
                 'name' => 'Members'
             ],
-            [
-                'route' => 'people.programs',
-                'name' => 'Events'
-            ]
+            // [
+            //     'route' => 'people.programs',
+            //     'name' => 'Events'
+            // ]
         ];
                 
         return $menu;

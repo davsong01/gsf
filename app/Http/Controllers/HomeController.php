@@ -86,13 +86,15 @@ class HomeController extends Controller
     }
 
     public function alumni() {
-        $alumnis = User::wherehas('campus')->whereStatus(1)->where('role', '<>', 1)->paginate(45);        
-        return view('frontend.main.alumni', compact('alumnis'));
+        $alumnis = User::wherehas('campus')->whereStatus(1)->where('role', '<>', 1)->paginate(45);
+        return view('frontend.' . frontendTemplate() . '.alumni', compact('alumnis'));
+        
+        // return view('frontend.main.alumni', compact('alumnis'));
     }
 
     public function students() {
-        $students = User::wherehas('campus')->whereStatus(0)->where('role', '<>', 1)->paginate(45);        
-        return view('frontend.main.student', compact('students'));
+        $alumnis = User::wherehas('campus')->whereStatus(0)->where('role', '<>', 1)->paginate(10);
+        return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
     }
 
     public function programs() {
@@ -101,9 +103,12 @@ class HomeController extends Controller
     }
 
     public function chapters() {
-        $chapters = Chapter::all();  
-        return view('frontend.main.chapters', compact('chapters'));
+        $chapters = Chapter::withCount('users')->where('id','<>',86)->get();
+       
+        return view('frontend.' . frontendTemplate() . '.campuses', compact('chapters'));
+        // return view('frontend.main.chapters', compact('chapters'));
     }
+
     private function getSidebar() {
         $chapters = Chapter::all();
         $portfolios = $this->getCommunityPortfolios();
@@ -114,20 +119,63 @@ class HomeController extends Controller
     public function generalSearch(Request $request) {
 
         $this->validate($request, ['name' => 'required']);;
-
-        $searchMember = User::with('campus')->select("name","chapter_id", "status","slug","role")
+        
+        $searchMember = User::with('campus')->select("name","chapter_id", "status","slug","role", "passport", "matric_year", "portfolio_session", "facebook","twitter", "role")
         ->where("name","LIKE","%{$request->name}%")
         ->where("role", "<>", 1)
-        ->where("status", 0)
-        ->get();
+        // ->where("status", 0)
+        ->paginate(40);
+        
+        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('searchMember', 'searchAlumni'));
+    }
 
-        $searchAlumni = User::with('campus')->select("name","chapter_id", "status","slug","role")
-        ->where("name","LIKE","%{$request->name}%")
-        ->where("role", "<>", 1)
-        ->where("status", 1)
-        ->get();
+    public function alumniSearch(Request $request)
+    {
+        $this->validate($request, ['name' => 'required|min:4']);
 
-        return view('frontend.main.general_search_results', compact('searchMember', 'searchAlumni'));
+        $results = User::wherehas('campus')->where("name", "LIKE", "%{$request->name}%")->where('status', 1)->where('role', '<>', 1)->orderBy('users.created_at', 'desc')->get();
+        
+        if ($request->has('school')) {
+            $searchFromSchool = Chapter::select("id", "name")
+            ->where("chapters.name", "LIKE", "%{$request->school}%")
+            ->leftJoin('users', 'chapters.id', '=', 'users.chapter_id')
+            // ->where('users.status', 1)
+            ->where('users.role', '<>', 1)
+            ->select('users.*','chapters.*')
+            ->orderBy('users.created_at', 'desc')
+            ->get();
+        }
+        $searchAlumni = collect([]);
+        $searchMember = $searchFromSchool->merge($results);
+        
+        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('searchMember', 'searchAlumni'));
+    }
+
+    public function memberSearch(Request $request)
+    {
+        $this->validate($request, ['name' => 'required|min:4']);
+
+        $results = User::with(['campus' => function($query){
+            return $query->where('id', '<>', 86);
+        }])->where("name", "LIKE", "%{$request->name}%")->where('status', 0)->where('role', '<>', 1)->orderBy('users.created_at', 'desc')->get();
+
+        if ($request->school) {
+            $searchFromSchool = Chapter::select("id", "name")
+                ->where("chapters.name", "LIKE", "%{$request->school}%")
+                ->leftJoin('users', 'chapters.id', '=', 'users.chapter_id')
+                // ->where('users.status', 1)
+                // ->where('users.role', '<>', 0)
+                ->select('users.*', 'chapters.*', 'users.name AS name', 'users.id AS id', 'chapters.name AS c_name')
+                ->orderBy('users.created_at', 'desc')
+                ->get();
+        }else{
+            $searchFromSchool = collect([]);
+        }
+       
+        $searchMember = $searchFromSchool->merge($results);
+        // run this through a service
+        
+        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('searchMember', ));
     }
 
     public function autocomplete(Request $request)
@@ -136,18 +184,19 @@ class HomeController extends Controller
             $data = $request->get('data');
             $data = Chapter::select("name", "id")
                 ->where("name","LIKE","%{$data}%")
-                ->take(10)->get();
+                ->take(3)->get();
           
-            $output = '<ul class="dropdown-menu" style="display:block; position:relative">';
+            $output = '<ul class="dropdown-menu" style="display:block; position:relative;width: 100%;">';
             foreach ($data as $row) {
                 $output .= "
-            <li><a href='singlecampus/" . $row->id. "' class='ml-2'  style='color:black;font-weight: bold;'>" . $row->name . "</a></li>";
+                <a href='singlecampus/" . $row->id. "' class='ml-2'  style='color:black;font-weight: bold;display: block;padding: 0 10px 0 10px;'><li>" . $row->name . "</li></a>";
             }
             $output .= '</ul>';
             echo $output;
         }
 
     }
+
     public function autoSearch(Request $request)
     {
         if ($request->get('data')) {
@@ -167,29 +216,70 @@ class HomeController extends Controller
 
     }
 
-    public function campusAutocomplete(Request $request){
-        
+    public function memberAutoComplete(Request $request)
+    {
         if ($request->get('data')) {
             $data = $request->get('data');
-            $data = Chapter::select("name", "id")
-                ->where("name","LIKE","%{$data}%")
-                ->take(10)->get();
-          
-            $output = '<ul class="dropdown-menu form-control side" style="display:block; position:relative">';
-            
+            $data = User::select("name", "id")
+            ->where("name", "LIKE", "%{$data}%")
+            ->take(10)->get();
+
+            $output = '<ul class="dropdown-menu" style="display:block; position:relative">';
             foreach ($data as $row) {
-                $output .= "<option class='ml-2' name='chapter_id' value='" . $row->id . "' style='color:black;font-weight: bold;'>" . $row->name . "</option>";
+                $output .= "
+            <li><a href='singlecampus/" . $row->id . "' class='ml-2'  style='color:black;font-weight: bold;'>" . $row->name . "</a></li>";
             }
             $output .= '</ul>';
             echo $output;
         }
     }
 
+    public function alumniAutoComplete(Request $request)
+    {
+        if ($request->ajax()) {
+            $query = $request->get('query');
+            $data = User::wherehas('campus')->where("name", "LIKE", "%{$query}%")->where('role', '<>', 1)->take(5)->get();
+
+            return response()->json($data);
+        }
+    }
+
+    public function campusAutocomplete(Request $request)
+    {
+        // if ($request->get('data')) {
+        //     $data = $request->get('data');
+        //     $data = Chapter::select("name", "id")
+        //         ->where("name", "LIKE", "%{$data}%")
+        //         ->take(10)->get();
+
+        //     $output = '<ul class="dropdown-menu form-control side" style="display:block; position:relative">';
+
+        //     foreach ($data as $row) {
+        //         $output .= "<option class='ml-2' name='chapter_id' value='" . $row->id . "' style='color:black;font-weight: bold;'>" . $row->name . "</option>";
+        //     }
+        //     $output .= '</ul>';
+        //     echo $output;
+        // }
+
+        if ($request->ajax()) {
+            $query = $request->get('query');
+            $data = Chapter::select("name", "id")
+                ->where("name", "LIKE", "%{$query}%")
+                ->take(10)->get();
+
+            return response()->json($data);
+        }
+    }
+
+
     public function singleCampus(Chapter $chapter){
         
-        $nationalevents = Event::where('chapter_id', 0)->take(6)->get();
+        $nationalevents = Event::where('chapter_id', 0)->get();
+        $related = Chapter::where('zone_id', $chapter->zone_id)->where('id','<>', $chapter->id)->orWhere('field_id', $chapter->field->id)->get();
 
-        return view('frontend.main.single-chapter', compact('chapter', 'nationalevents'));
+        return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents','chapter','related'));
+
+        // return view('frontend.main.single-chapter', compact('chapter', 'nationalevents'));
     }
 
     public function contactCampus(Request $request){
@@ -201,6 +291,7 @@ class HomeController extends Controller
         ]);
 
         $chapter = Chapter::findorfail($request->chapter_id);
+        
         if($chapter && !is_null($chapter->email)){
             $type = 'contactCampus';
             $name = 'Publicity Secretary';
@@ -213,33 +304,16 @@ class HomeController extends Controller
             <strong>Message: </strong>" . $request->message . "<br>
             </p>";
 
-            $mailresponse = $this->sendEmail($chapter->email, $type, $subject, $name, $content, 1);
-           
-            if(!is_null($mailresponse)) {
-                return back()->with('error', 'Message not sent, please try again!');
+            try {
+                //code...
+                $mailresponse = $this->sendEmail($chapter->email, $type, $subject, $name, $content, 1);
+            } catch (\Throwable $th) {
+                //throw $th;
             }
-            //Send toastr
-            return back()->with('message', 'Message sent!');
-
-            }else {
-                return back()->with('message', 'Something went wrong, try again later');
-            }           
-    }
-
-    public function alumniSearch(Request $request) {
-        $this->validate($request, ['name' => 'required|min:4']);
-      
-        $results =  User::wherehas('campus')->where("name","LIKE","%{$request->name}%")->where('status', 1)->where('role', '<>', 1)->get();
-
-        if(!is_null($request->chapter) && !is_null($request->chapter_id)){
-            $results = $results->where('chapter_id', $request->chapter_id);
+                   
         }
-
-        return view('frontend.main.alumni-search', compact('results'));
-        
+        return back()->with('message', 'Message sent successfully!');
     }
-
- 
     public function studentSearch(Request $request) {
         $this->validate($request, ['name' => 'required|min:4']);
         $name = $request->name;
@@ -257,12 +331,21 @@ class HomeController extends Controller
 
     public function singleAlumni($slug){
         $alumni = User::whereSlug($slug)->first();
-        return view('frontend.main.single-alumni', compact('alumni'));
+        return view('frontend.' . frontendTemplate() . '.single-alumni', compact('alumni'));
+    }
+
+    public function singleUser($slug){
+        $alumni = User::whereSlug($slug)->first();
+        // Check if this is an alumni
+        return view('frontend.' . frontendTemplate() . '.single-alumni', compact('alumni'));
     }
 
     public function singleStudent($slug){
-        $alumni = User::whereSlug($slug)->first();  
-        return view('frontend.main.single-alumni', compact('alumni'));
+        $alumni = User::whereSlug($slug)->first();
+
+        return view('frontend.' . frontendTemplate() . '.single-alumni', compact('alumni'));
+
+        // return view('frontend.main.single-alumni', compact('alumni'));
         
     }
 
@@ -312,4 +395,6 @@ class HomeController extends Controller
 	public function saveNewAlumni(){
 
 	}
+
+    
 }

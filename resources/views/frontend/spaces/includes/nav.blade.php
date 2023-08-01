@@ -1,5 +1,5 @@
 <header class="header-global">
-    <nav id="navbar-main" class="navbar navbar-main navbar-theme-primary navbar-expand-lg headroom py-lg-3 px-lg-6 navbar-dark navbar-transparent navbar-theme-primary">
+    <nav style="background-color: @yield('nav-background') " id="navbar-main" class="navbar navbar-main navbar-theme-primary navbar-expand-lg headroom py-lg-3 px-lg-6 navbar-dark navbar-transparent navbar-theme-primary">
         <div class="container">
             <a class="navbar-brand @@logo_classes" href="">
                 <x-logo width="auto" height="70px" class="navbar-brand-dark common"/>

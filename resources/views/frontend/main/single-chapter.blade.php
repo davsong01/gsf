@@ -102,7 +102,8 @@
                             </div>
                         </div>
                         <div class="col-sm-12 mb15">
-                            <textarea name="message" value="{{ old('message') }}" class="form-control" rows="5" placeholder="Message...." required></textarea><input type="hidden" name="chapter_id" value="{{ $chapter->id }}">          
+                            <textarea name="message" value="{{ old('message') }}" class="form-control" rows="5" placeholder="Message...." required></textarea>
+                            <input type="hidden" name="chapter_id" value="{{ $chapter->id }}">          
                         </div>
                     </div>
                     <div class="row mb15">

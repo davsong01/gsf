@@ -8,7 +8,6 @@
                 <h3>GSF Community - Chapters</h3>
             </div>
             <div class="col-sm-6">
-
             </div>
         </div>
     </div>
@@ -20,13 +19,13 @@
             <p>
                 List most recent places are submitted by our users. It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
             </p>
-                    <div class="form-group">
-                        <input type="text" name="product_name" id="product_name" class="form-control input-lg"
-                               placeholder="Start typing to search for a GSF chapter"/>
-                        <div id="productList">
-                        </div>
-                    </div>
-                    {{ csrf_field() }}
+            <div class="form-group">
+                <input type="text" name="product_name" id="product_name" class="form-control input-lg"
+                        placeholder="Start typing to search for a GSF chapter"/>
+                <div id="productList">
+                </div>
+            </div>
+            {{ csrf_field() }}
         </div>
     </div><!--/row-->
 </div>

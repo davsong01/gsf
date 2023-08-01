@@ -16,7 +16,7 @@ class ConferenceEditionController extends Controller
      */
     public function index()
     {
-        dd('hello');
+       identifier is empty
     }
 
     /**

@@ -65,6 +65,8 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index')->name('home.index');
     //Campus auto complete
     Route::get('/autocomplete-search', 'campusAutocomplete')->name('campus.suggestions');
+    Route::get('/alumni-autocomplete-search', 'alumniAutoComplete')->name('alumni.suggestions');
+    Route::get('/member-autocomplete-search', 'memberAutoComplete')->name('member.suggestions');
     // Campus routes
     Route::get('/people/campuses', 'chapters')->name('people.campuses');
     Route::post('search', 'search')->name('search');
@@ -72,20 +74,24 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('people/singlecampus/{chapter}', 'singleCampus')->name('campus.single');
     Route::post('contactcampus', 'contactCampus')->name('campus.contact');
     // Alumni routes
-    Route::get('/people/alumni', 'alumni')->name('people.alumni');
-    Route::get('people/alumni/{slug}', 'singleAlumni')->name('alumni.single');
-    Route::POST('alumni/search', 'alumniSearch')->name('alumni.search');
+    Route::get('all-alumni', 'alumni')->name('people.alumni');
+    Route::get('all-members', 'students')->name('people.students');
+    Route::get('people/{slug}', 'singleUser')->name('user.single');
+    // Route::get('people/{student}', 'singleStudent')->name('student.single');
+
     Route::POST('alumni/contact', 'alumniContact')->name('alumni.contact');
     // Student routes
-    Route::get('/people/members', 'students')->name('people.students');
-    Route::get('people/student/{student}', 'singleStudent')->name('student.single');
     Route::POST('student/search', 'studentSearch')->name('student.search');
     Route::POST('student/contact', 'alumniContact')->name('student.contact');
 
     //Events
     Route::get('/people/programs', 'programs')->name('people.programs');
     // Homepage search
-    Route::POST('all/search', 'generalSearch')->name('general.search');
+    Route::get('general-search', 'generalSearch')->name('general.search');
+    Route::get('alumni/search', 'alumniSearch')->name('alumni.search');
+    Route::get('member/search', 'memberSearch')->name('member.search');
+   
+
     Route::get('newalumni', 'newAlumni')->name('newalumni');
     Route::post('newalumni', 'saveNewAlumni')->name('newalumni.save');
     Route::get('conference-registration/{page?}', 'regPage')->name('conference.registration');
@@ -208,13 +214,13 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('user/meal/{id}', 'getMealTicket')->name('meal.ticket');
 
     });
-    // Route::get('moderator/import/index', 'UserController@usersImportIndex')->name('moderator.conference.import.index');
-    // Route::get('participants/import/index', 'UserController@usersImportIndex')->name('conferenceusers.import.index');
-    
-    //Export Conference users
-    Route::get('conferenceusers/export', [UserController::class, 'usersExport'])->name('conferenceusers.export');
 
-    // Export Hostel participants
+    Route::controller(UserController::class)->group(function () {
+        Route::get('conferenceusers/export', 'usersExport')->name('conferenceusers.export');
+        // Route::get('moderator/import/index', 'usersImportIndex')->name('moderator.conference.import.index');
+        // Route::get('participants/import/index', 'usersImportIndex')->name('conferenceusers.import.index');
+    });
+   
     Route::resource('hostels', HostelController::class);
     Route::controller(HostelController::class)->group(function () {
         Route::get('hostels/delete/{id}', 'destroy')->name('hostels.delete');

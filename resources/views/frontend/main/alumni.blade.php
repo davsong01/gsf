@@ -37,8 +37,6 @@
                     <input type="text" id="chapter" name="chapter" class="form-control"
                     placeholder="Start typing to search for a GSF chapter"/>
                     <input type="hidden" id="chapter_id" name="chapter_id" class="form-control input-lg" required/>
-                    <div id="productList">
-                    </div>
                 </div>
             </div>
             
