@@ -78,7 +78,21 @@ class CriticalEmailController extends Controller
                 <strong>Transaction ID: </strong>" . $data['transid'] . "<br><br>Thanks,<br>";
                 # code...
                 break;
-            default:
+            case 'new_listing':
+                $content = "<p>Dear Admin, <br>
+                A new Listing has been submmitted on GSF Directory website, please find details below: <br><br>
+                <strong>Name: </strong>" . $data['request']['name'] . "<br>
+                <strong>Phone: </strong>" . $data['request']['phone'] . "<br>
+                <strong>Email: </strong>" . $data['request']['email'] . "<br>
+                <strong>Gender: </strong>" . $data['request']['gender'] . "<br>
+                <strong>Portfolio: </strong>" . $data[ 'request']['portfolio'] . "<br>
+                <strong>Chapter: </strong>" . $data['chapter'] . "<br>
+                <strong>Matriculation year: </strong>" . $data['request']['matriculation_year'] . "<br>
+                <strong>Graduation year: </strong>" . $data['request']['graduation_year'] . "<br>
+                </p><br><br>
+                Kindly sign in to approve listing
+                ";
+                default:
                 # code...
                 break;
             }

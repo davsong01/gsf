@@ -77,7 +77,7 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('all-alumni', 'alumni')->name('people.alumni');
     Route::get('all-members', 'students')->name('people.students');
     Route::get('people/{slug}', 'singleUser')->name('user.single');
-    // Route::get('people/{student}', 'singleStudent')->name('student.single');
+    Route::get('people/{student}', 'singleStudent')->name('student.single');
 
     Route::POST('alumni/contact', 'alumniContact')->name('alumni.contact');
     // Student routes

@@ -127,7 +127,7 @@
             <aside class="col-12 col-lg-4 mt-3 mt-lg-0">
 
                 <div class="card border-light mt-4 p-3">
-                    <h5 class="font-weight-normal">Send {{ $chapter->name }} a message</h5>
+                    <h5 class="font-weight-normal">Reach out to this GSF Chapter now</h5>
                     <form class="mt-3" action="{{ route('campus.contact') }}" method="POST">
                         @csrf
                         <div class="form-group">

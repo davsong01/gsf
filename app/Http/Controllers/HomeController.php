@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use App\Models\GeneralSetting;
 use App\Mail\NotificationEmail;
 use App\Models\ConferenceEdition;
+use App\Models\NewListing;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -120,13 +121,13 @@ class HomeController extends Controller
 
         $this->validate($request, ['name' => 'required']);;
         
-        $searchMember = User::with('campus')->select("name","chapter_id", "status","slug","role", "passport", "matric_year", "portfolio_session", "facebook","twitter", "role")
+        $searchMember = User::with('campus')->select("name","chapter_id", "status","slug","role", "passport", "matric_year", "portfolio_session", "facebook","twitter", "role","graduation_year")
         ->where("name","LIKE","%{$request->name}%")
         ->where("role", "<>", 1)
         // ->where("status", 0)
         ->paginate(40);
         
-        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('searchMember', 'searchAlumni'));
+        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('searchMember'));
     }
 
     public function alumniSearch(Request $request)
@@ -134,8 +135,8 @@ class HomeController extends Controller
         $this->validate($request, ['name' => 'required|min:4']);
 
         $results = User::wherehas('campus')->where("name", "LIKE", "%{$request->name}%")->where('status', 1)->where('role', '<>', 1)->orderBy('users.created_at', 'desc')->get();
-        
-        if ($request->has('school')) {
+       
+        if ($request->school) {
             $searchFromSchool = Chapter::select("id", "name")
             ->where("chapters.name", "LIKE", "%{$request->school}%")
             ->leftJoin('users', 'chapters.id', '=', 'users.chapter_id')
@@ -144,7 +145,10 @@ class HomeController extends Controller
             ->select('users.*','chapters.*')
             ->orderBy('users.created_at', 'desc')
             ->get();
+        }else{
+            $searchFromSchool = collect([]);
         }
+
         $searchAlumni = collect([]);
         $searchMember = $searchFromSchool->merge($results);
         
@@ -387,14 +391,30 @@ class HomeController extends Controller
     public function newAlumni(){
         $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
 		$portfolios = $this->getCommunityPortfolios();
-		$sessions = range(date('1982'), date('Y'));
+		$sessions = range(date('Y'), date('1982'));
 
-		return view('frontend.main.newalumni', compact('chapters', 'portfolios', 'sessions'));
+        return view('frontend.' . frontendTemplate() . '.newalumni', compact('chapters', 'portfolios', 'sessions'));
 	}
 
-	public function saveNewAlumni(){
+	public function saveNewAlumni(Request $request){
+        $new = NewListing::create($request->all());
+        $setting = GeneralSetting::first();
 
+        $data['type'] = 'new_listing';
+        $data['chapter'] = Chapter::find($request->campus)->name;
+        $data['request'] = $request->all();
+
+        $email = [
+            'subject' => 'New Listing',
+            'recipient_name' => 'Admin',
+            'type' => $data['type'],
+            'recipient' => $setting->official_email,
+            'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
+        ];
+        
+        $this->logEmail($email);
+
+        return back()->with('message', 'Submission Added successfully');
+        
 	}
-
-    
 }

@@ -61,7 +61,7 @@
                     </div>  
                     <div class='form-group-icon mb15'>
                         <label for="portfolio">Office</label>
-                        
+                       
                         <select class="form-control pl-0" name="role" id="role" required>
                             <option value="">Select Portfolio--</option>
                             @foreach($portfolios as $portfolio=>$value)

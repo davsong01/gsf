@@ -23,7 +23,7 @@
                             <span class="btn btn-dark btn-sm">{{ $user->rolename }}</span>
                             @endif
                         </h4>
-                        @include('includes.alerts')
+                        {{-- @include('includes.alerts') --}}
                     </div>
                     <div class="card-content">
                         <div class="card-body">

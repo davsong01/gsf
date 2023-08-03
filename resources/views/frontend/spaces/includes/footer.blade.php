@@ -5,28 +5,27 @@
                 <div class="card border-light">
                     <div class="card-body text-left px-5 py-4">
                         <div class="row align-items-center">
-                            <div class="col-md-5">
-                                <p class="lead mb-4"><span class="font-weight-bold">5500</span> venues in <span class="font-weight-bold">400</span> cities across <span class="font-weight-bold">73</span> countries, and everyday counting.</p>
+                            <div class="col-md-6">
+                                <p class="lead mb-4"><span class="font-weight-bold">{{ number_format(\App\Models\User::count())}}+</span> members, <span class="font-weight-bold">{{ number_format(\App\Models\Chapter::count())}}+</span> Chapters<span class="font-weight-bold"></span> across the country, and everyday counting.</p>
+
                                 <div class="row mb-4">
-                                    <div class="col">
-                                        <ul class="list-group mb-3">
-                                            <li class="list-group-item text-gray p-0 mb-2"><a href="#"><span class="fas fa-map-marker-alt mr-2"></span>New York</a></li>
-                                            <li class="list-group-item text-gray p-0 mb-2"><a href="#"><span class="fas fa-map-marker-alt mr-2"></span>Paris</a></li>
-                                            <li class="list-group-item text-gray p-0 mb-2"><a href="#"><span class="fas fa-map-marker-alt mr-2"></span>Milano</a></li>
-                                            <li class="list-group-item text-gray p-0"><a href="#"><span class="fas fa-map-marker-alt mr-2"></span>Rome</a></li>
+                                    @foreach(\App\Models\Chapter::inRandomOrder()->where('id','<>',86)->limit(7)->get() as $chapter)
+                                    <div class="col-md-6">
+                                        <ul class="list-group">
+                                            <li style="font-size: small !important;" class="list-group-item text-gray p-0 mb-2"><a target="_blank" href="{{ route('campus.single', $chapter->id)}}"><span class="fas fa-map-marker-alt mr-2"></span>{{ Str::limit($chapter->name, 40)}}</a></li>
                                         </ul>
                                     </div>
-                                    <div class="col">
-                                        <ul class="list-group mb-3">
-                                            <li class="list-group-item text-gray p-0 mb-2"><a href="#"><span class="fas fa-map-marker-alt mr-2"></span>Madrid</a></li>
-                                            <li class="list-group-item text-gray p-0 mb-2"><a href="#"><span class="fas fa-map-marker-alt mr-2"></span>Berlin</a></li>
-                                            <li class="list-group-item text-gray p-0 mb-2"><a href="#"><span class="fas fa-map-marker-alt mr-2"></span>London</a></li>
-                                            <li class="list-group-item p-0"><a href="all-spaces.html">All cities<span class="fas fa-arrow-right fa-xs ml-2"></span></a></li>
+                                    @endforeach
+                                    <div class="col-md-6">
+                                        <ul class="list-group">
+                                            <li class="list-group-item p-0"><a target="_blank" href="{{route('people.campuses')}}">All chapters<span class="fas fa-arrow-right fa-xs ml-2"></span></a></li>
                                         </ul>
                                     </div>
-                                </div><a href="submit-item.html" class="btn btn-secondary animate-up-2"><span class="fas fa-plus mr-2"></span>List a Space</a>
+                                </div>
+
+                               <a href="{{route('newalumni')}}" class="btn btn-secondary animate-up-2"><span class="fas fa-plus mr-2"></span>Add a member</a>
                             </div>
-                            <div class="col-12 col-md-7 mt-5 mt-md-0 text-md-right d-none d-sm-block"><img src="https://demo.themesberg.com/spaces/assets/img/illustrations/world-map.svg" alt></div>
+                            <div class="col-12 col-md-6 mt-5 mt-md-0 text-md-right d-none d-sm-block"><img src="{{ asset('gsfcom/images/nigeriamap.jpg')}}" alt=""></div>
                         </div>
                     </div>
                 </div>
