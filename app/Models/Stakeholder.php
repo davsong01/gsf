@@ -1,8 +1,9 @@
 <?php
 
-namespace app\Models;
+namespace App\Models;
 
 use App\Models\Zone;
+use App\Models\Field;
 use App\Models\Chapter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;

@@ -1,3 +1,6 @@
+<?php 
+    $main = $chapter->id;
+?>
 @extends('frontend.spaces.layouts.app')
 @section('title', 'GSF, ' . $chapter->name)
 @section('css')
@@ -176,7 +179,9 @@ padding-bottom: 0rem !important;">
             </div>
             @if($related)
                 @foreach($related as $chapter)
-                    @include('frontend.spaces.includes.campus_block')
+                    @if($chapter->id <> $main)
+                        @include('frontend.spaces.includes.campus_block')
+                    @endif
                 @endforeach
             @endif
         </div>

@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\Notification;
 use Laravel\Sanctum\HasApiTokens;
 use App\Http\Controllers\Controller;
+use App\Models\Stakeholder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Notifications\Notifiable;
@@ -167,5 +168,9 @@ class User extends Authenticatable implements MustVerifyEmail
 		// if (isset($check) && !empty($check)) {
 		// 	return true;
 		// } else return false;
+	}
+
+	public function stakeholder(){
+		return $this->hasOne(Stakeholder::class, 'email', 'email');
 	}
 }

@@ -88,6 +88,7 @@ class HomeController extends Controller
 
     public function alumni() {
         $alumnis = User::wherehas('campus')->whereStatus(1)->where('role', '<>', 1)->paginate(45);
+        
         return view('frontend.' . frontendTemplate() . '.alumni', compact('alumnis'));
         
         // return view('frontend.main.alumni', compact('alumnis'));
@@ -121,7 +122,7 @@ class HomeController extends Controller
 
         $this->validate($request, ['name' => 'required']);;
         
-        $searchMember = User::with('campus')->select("name","chapter_id", "status","slug","role", "passport", "matric_year", "portfolio_session", "facebook","twitter", "role","graduation_year")
+        $searchMember = User::with('campus')->select("users.*","chapter_id")
         ->where("name","LIKE","%{$request->name}%")
         ->where("role", "<>", 1)
         // ->where("status", 0)
@@ -161,7 +162,7 @@ class HomeController extends Controller
 
         $results = User::with(['campus' => function($query){
             return $query->where('id', '<>', 86);
-        }])->where("name", "LIKE", "%{$request->name}%")->where('status', 0)->where('role', '<>', 1)->orderBy('users.created_at', 'desc')->get();
+        }])->where("name", "LIKE", "%{$request->name}%")->where('status', 0)->where('role', '<>', 0)->orderBy('users.created_at', 'desc')->get();
 
         if ($request->school) {
             $searchFromSchool = Chapter::select("id", "name")
@@ -279,8 +280,8 @@ class HomeController extends Controller
     public function singleCampus(Chapter $chapter){
         
         $nationalevents = Event::where('chapter_id', 0)->get();
-        $related = Chapter::where('zone_id', $chapter->zone_id)->where('id','<>', $chapter->id)->orWhere('field_id', $chapter->field->id)->get();
-
+        $related = Chapter::where('zone_id', $chapter->zone_id)->orWhere('field_id', $chapter->field->id)->get();
+      
         return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents','chapter','related'));
 
         // return view('frontend.main.single-chapter', compact('chapter', 'nationalevents'));
@@ -340,8 +341,10 @@ class HomeController extends Controller
 
     public function singleUser($slug){
         $alumni = User::whereSlug($slug)->first();
+        $related = User::where('chapter_id', $alumni->chapter_id)->where('status', $alumni->status)->where('role', '<>', 1)->get();
+
         // Check if this is an alumni
-        return view('frontend.' . frontendTemplate() . '.single-alumni', compact('alumni'));
+        return view('frontend.' . frontendTemplate() . '.single-alumni', compact('alumni', 'related'));
     }
 
     public function singleStudent($slug){
@@ -353,7 +356,7 @@ class HomeController extends Controller
         
     }
 
-    public function alumniContact(Request $request) {
+    public function userContact(Request $request) {
         $this->validate($request, [
             'name' => 'required',
             'email' => 'required',
@@ -363,10 +366,10 @@ class HomeController extends Controller
 
         $alumni = User::findorfail($request->alumni_id);
         if(!is_null($alumni->email)){
-            $type = 'contactCampus';
+            $type = 'user-contact';
             $name = $alumni->name;
             $subject = 'Someone Contacted you on GSF community';
-            $content = "Someone has filled the contact form on your profile on GSF webpage, view details below '<br>'
+            $content = "Someone has filled the contact form on your profile on GSF Directory webpage, view details below '<br>'
             <p>
             <strong>Name: </strong>" . $request->name . "<br>
             <strong>Email: </strong>" . $request->email . "<br>
@@ -375,11 +378,18 @@ class HomeController extends Controller
             </p>";
 
             $this->saveContactForm($alumni->id, $type, $request->name, $request->email, $request->phone, $request->message );
-            $mailresponse = $this->sendEmail($alumni->email, $type, $subject, $name, $content, 1);
+
+            $email = [
+                'subject' => $subject,
+                'recipient_name' => $name,
+                'type' => $type,
+                'recipient' => $alumni->email,
+                'content' => $content,
+            ];
+
+            $this->logEmail($email);
+            // $mailresponse = $this->sendEmail($alumni->email, $type, $subject, $name, $content, 1);
            
-            if(!is_null($mailresponse)) {
-                return back()->with('danger', 'Message not sent, please try again!');
-            }
             //Send toastr
             return back()->with('message', 'Message sent!');
 

@@ -22,16 +22,16 @@
         <div class="row mt-7">
             @if($searchMember->count() > 0)
                 @foreach($searchMember as $user)
-                    @include('frontend.spaces.includes.user_block')
+                  @include('frontend.spaces.includes.user_block')
                 @endforeach
             @endif
         </div>
       </div>
     </section>
-    <section class="section section-lg pt-0">
+    {{-- <section class="section section-lg pt-0">
       <div class="col mt-3 d-flex justify-content-center">
-        {{-- {{$searchMember->links()}} --}}
+      {{$searchMember->links()}}
       </div>
-    </section>
+    </section> --}}
 
 @endsection

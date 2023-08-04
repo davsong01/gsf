@@ -15,6 +15,8 @@
     <meta name="theme-color" content="#ffffff">
     <link type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
+    <link href="{{ asset('frontend/img/logo.png') }}" rel="icon">
+
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
     <link rel="stylesheet" href="{{asset('gsfcom/fancybox/min.css')}}">
     <link rel="stylesheet" href="{{asset('gsfcom/jqvmap/min.css')}}">
@@ -39,6 +41,18 @@
         .thick-line {
             font-weight: bold;
             padding: 2px;
+        }
+        .shadow{
+            box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        }
+        .line {
+            border: 0.1px solid #0d1b48;
+        }
+        .typeahead.dropdown-menu li {
+            width: 100%;
+        }
+        .portfolio{
+            color:blue
         }
     </style>
     @yield('css')

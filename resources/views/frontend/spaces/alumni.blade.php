@@ -49,7 +49,7 @@
       <div class="row mb-5">
         <div class="col-12">
             <div class="card p-md-2">
-                <div class="card-body p-2 p-md-0">
+                <div class="card-body p-2 p-md-0" style="margin-bottom:20px">
                     <form autocomplete="off" class="row" method="GET" action="{{ route('alumni.search') }}">
                         <div class="col-12 col-lg-5">
                             <div class="form-group form-group-lg mb-lg-0">
@@ -74,117 +74,23 @@
       
       <div class="row">
         <div class="col-12 col-lg-12 order-lg-1">
-          <div class="justify-content-between align-items-center d-none d-md-flex">
+          <div class="justify-content-between align-items-center d-none d-md-flex" style="margin-bottom:120px">
             <div class="mr-3">
-              <h2 class="h5 mb-3 mb-md-0">Total: <span class="counter font-weiht-bolder text-primary">{{$alumnis->count()}}</span>
+              <h2 class="h5 mb-3 mb-md-0">Total: <span class="counter font-weiht-bolder text-primary">{{ $alumnis->count() }}</span>
               </h2>
-            </div>
-            <div class="nav-wrapper position-relative p-0" style="padding-top: 20px; !important">
-              <ul class="nav nav-pills small-pills" id="tab-34" role="tablist">
-                <li class="nav-item pr-0"><a class="nav-link text-sm-center border-0 active" id="tab-link-example-14"
-                    data-toggle="tab" href="#link-example-14" role="tab" aria-controls="link-example-14"
-                    aria-selected="false"><span class="nav-link-icon d-block"><span
-                        class="fas fa-th-large"></span></span></a></li>
-                <li class="nav-item pr-0"><a class="nav-link text-sm-center border-0" id="tab-link-example-13"
-                    data-toggle="tab" href="#link-example-13" role="tab" aria-controls="link-example-13"
-                    aria-selected="true"><span class="nav-link-icon d-block"><span
-                        class="fas fa-th-list"></span></span></a></li>
-              </ul>
             </div>
           </div>
           <div class="tab-content mt-4 mt-lg-4" id="tabcontentexample-5">
-            <div class="tab-pane fade" id="link-example-13" role="tabpanel" aria-labelledby="tab-link-example-13">
-              <div class="row justify-content-center">
-                @foreach($alumnis as $alumni)
-                <div class="col-12 col-sm-10 col-md-6 col-lg-12 mb-4">
-                  <div class="card border-light mb-4 animate-up-5">
-                    <div class="row no-gutters align-items-center">
-                      <div class="col-12 col-lg-3 col-xl-5"><a href="{{ route('user.single', $alumni->slug) }}" style="padding:20px"><img
-                            src="https://demo.themesberg.com/spaces/assets/img/private-office.jpg"
-                            alt="private office" class="card-img p-2 rounded-sm list-image"></a></div>
-                      <div class="col-12 col-lg-3 col-xl-7">
-                        <div class="card-body"><a href="{{ route('user.single', $alumni->slug) }}">
-                            <h4 class="h5">{{ $alumni->name }}</h4>
-                          </a>
-                          <div class="d-flex my-3"><span class="star fas fa-star text-warning"></span> <span
-                              class="star fas fa-star text-warning"></span> <span
-                              class="star fas fa-star text-warning"></span> <span
-                              class="star fas fa-star text-warning"></span> <span
-                              class="star fas fa-star text-warning"></span> <span
-                              class="badge badge-pill badge-primary ml-2">5.0</span></div>
-                          <ul class="list-group mb-3">
-                            <li class="list-group-item small p-0"><span class="fas fa-map-marker-alt mr-2"></span>New
-                              York, Manhattan, USA</li>
-                            <li class="list-group-item small p-0"><span class="fas fa-bullseye mr-2"></span>Old Street
-                              (2 mins walk)</li>
-                          </ul>
-                          <div class="d-flex justify-content-between">
-                            <div class="col pl-0"><span class="text-muted font-small d-block">Monthly</span> <span
-                                class="h6 text-dark font-weight-bold">500$</span></div>
-                            <div class="col"><span class="text-muted font-small d-block">People</span> <span
-                                class="h6 text-dark font-weight-bold">12</span></div>
-                            <div class="col pr-0"><span class="text-muted font-small d-block">Sq.Ft</span> <span
-                                class="h6 text-dark font-weight-bold">1200</span></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                @endforeach
-              </div>
-            </div>
             <div class="tab-pane fade show active" id="link-example-14" role="tabpanel"
               aria-labelledby="tab-link-example-14">
               <div class="row">
-                @foreach($alumnis as $alumni)
-                <div class="col-12 col-md-4">
-                  <div class="card border-light mb-4 animate-up-5"><a href="{{ route('user.single', $alumni->slug) }}"
-                      class="position-relative" style="padding-top: 20px; !important"><img
-                        src="https://demo.themesberg.com/spaces/assets/img/cowork-office.jpg"
-                        class="card-img-top rounded-xl p-2 list-image2" alt="developer desk">
-                      </a>
-                    <div class="card-body" style="text-align: center">
-                      <a href="{{ route('user.single', $alumni->slug) }}" >
-                        <h4 class="h5">{{ $alumni->name }}</h4>
-                      </a>
-                      <ul class="list-group mb-3">
-                        <li class="list-group-item small p-0"><span
-                            class="fas fa-map-marker-alt mr-2"></span>California, USA</li>
-                        <li class="list-group-item small p-0"><span class="fas fa-bullseye mr-2"></span>Penny Market
-                          Street (15 mins walk)</li>
-                        <li class="list-group-item small p-0"><span class="fas fa-bullseye mr-2"></span>Museum Street
-                          (20 mins walk)</li>
-                      </ul>
-                    </div>
-                    <div class="card-footer bg-soft border-top">
-                      <div class="d-flex justify-content-between">
-                        <div class="col pl-0"><span class="text-muted font-small d-block mb-2">Monthly</span> <span
-                            class="h5 text-dark font-weight-bold">300$</span></div>
-                        <div class="col"><span class="text-muted font-small d-block mb-2">People</span> <span
-                            class="h5 text-dark font-weight-bold">24</span></div>
-                        <div class="col pr-0"><span class="text-muted font-small d-block mb-2">Sq.Ft</span> <span
-                            class="h5 text-dark font-weight-bold">2000</span></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                @foreach($alumnis as $user)
+                  @include('frontend.spaces.includes.user_block')
                 @endforeach
               </div>
             </div>
-            <div class="col mt-3 d-flex justify-content-center">
-              <nav aria-label="Page navigation example">
-                <ul class="pagination">
-                  <li class="page-item disabled"><a class="page-link" tabindex="-1" href="#">Previous</a></li>
-                  <li class="page-item"><a class="page-link" href="#">1</a></li>
-                  <li class="page-item active"><a class="page-link" href="#">2</a></li>
-                  <li class="page-item"><a class="page-link" href="#">3</a></li>
-                  <li class="page-item"><a class="page-link" href="#">4</a></li>
-                  <li class="page-item"><a class="page-link" href="#">5</a></li>
-                  <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                </ul>
-              </nav>
-            </div>
+          </div>
+          <div>
           </div>
         </div>
       </div>

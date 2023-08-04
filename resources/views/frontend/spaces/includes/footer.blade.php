@@ -1,4 +1,4 @@
-<div class="section py-0">
+<div class="section py-0 mt-5">
     <div class="container z-2">
         <div class="row position-relative justify-content-center align-items-cente">
             <div class="col-12">
@@ -7,7 +7,6 @@
                         <div class="row align-items-center">
                             <div class="col-md-6">
                                 <p class="lead mb-4"><span class="font-weight-bold">{{ number_format(\App\Models\User::count())}}+</span> members, <span class="font-weight-bold">{{ number_format(\App\Models\Chapter::count())}}+</span> Chapters<span class="font-weight-bold"></span> across the country, and everyday counting.</p>
-
                                 <div class="row mb-4">
                                     @foreach(\App\Models\Chapter::inRandomOrder()->where('id','<>',86)->limit(7)->get() as $chapter)
                                     <div class="col-md-6">

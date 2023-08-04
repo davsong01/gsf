@@ -37,7 +37,9 @@
                                         @foreach($chapters as $chapter)
                                         <tr>
                                             <td>{{ $count++ }}</td>
-                                            <td>{{ $chapter->name }}</td>
+                                            <td>{{ $chapter->name }} <br>
+                                                <small><a href="{{ route('people.campuses'), $chapter->id }}">View on website</a></small>
+                                            </td>
                                             <td>{{ $chapter->stakeholder->name ?? 'N/A' }}</td>
                                             <td>
                                                 <small>
@@ -51,10 +53,10 @@
                                                 <small>
                                                     Students: {{ $chapter->users->where('status', 0)->count() }} <br>
                                                     Alumni: {{ $chapter->users->where('status', 1)->count() }} 
-                                                    @if($setting)
+                                                    {{-- @if($setting) --}}
                                                     <br>
                                                     Conference Participants: {{ $chapter->registerdParticipants->count() }}
-                                                    @endif
+                                                    {{-- @endif --}}
                                                 </small>
                                                 
                                             </td>

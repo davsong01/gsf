@@ -12,9 +12,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All stakeholders</h4>
-                        <a href="{{ route('staff.create') }}" class="btn btn-primary mt-1">Add new stakeholder</a>
-                        @include('includes.alerts')
-                        
+                        <a href="{{ route('staff.create') }}" class="btn btn-primary mt-1">Add new stakeholder</a>                        
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">

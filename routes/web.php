@@ -12,6 +12,7 @@ use App\Http\Controllers\FieldController;
 use App\Http\Controllers\HostelController;
 use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SettingController;
@@ -77,12 +78,12 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('all-alumni', 'alumni')->name('people.alumni');
     Route::get('all-members', 'students')->name('people.students');
     Route::get('people/{slug}', 'singleUser')->name('user.single');
-    Route::get('people/{student}', 'singleStudent')->name('student.single');
+    // Route::get('people/{student}', 'singleStudent')->name('student.single');
 
-    Route::POST('alumni/contact', 'alumniContact')->name('alumni.contact');
+    Route::POST('listing/contact', 'userContact')->name('listing.contact');
     // Student routes
     Route::POST('student/search', 'studentSearch')->name('student.search');
-    Route::POST('student/contact', 'alumniContact')->name('student.contact');
+    // Route::POST('student/contact', 'alumniContact')->name('student.contact');
 
     //Events
     Route::get('/people/programs', 'programs')->name('people.programs');
@@ -113,14 +114,14 @@ Route::controller(StakeholderAccountController::class)->group(function () {
 });
 //Logged in stakeholder Account
 Route::middleware(['stakeholder'])->group(function(){
-    Route::resource('reports', 'ReportsController');
+    Route::resource('reports', ReportsController::class);
 
     Route::controller(ReportsController::class)->group(function () {
         Route::get('deletereports/{id}', 'delete')->name('reports.delete');
         Route::post('rejectreports', 'rejectReport')->name('report.reject');
     });
     
-    Route::resource('stakeholderpayment', 'StakeholderPaymentController');
+    Route::resource('stakeholderpayment', StakeholderPaymentController::class);
 
     Route::controller(StakeholderPaymentController::class)->group(function () {
         Route::get('stakeholderpaymentdelete/{id}', 'delete')->name('stakeholderpayment.delete');
@@ -266,9 +267,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('users-export/{type}', 'getAdminParticipantSample')->name('usersexport.sample');
     });
     
-    Route::resource('officials', 'OfficialController');
+    Route::resource('officials', OfficialController::class);
 
-    Route::resource('chapters', 'ChapterController');
+    Route::resource('chapters', ChapterController::class);
     Route::controller(ChapterController::class)->group(function () {
         Route::get('newtoken/{id}', 'generateNewToken')->name('chapter.newtoken');
         Route::get('chapters/delete/{chapter}', 'destroy')->name('chapters.delete');

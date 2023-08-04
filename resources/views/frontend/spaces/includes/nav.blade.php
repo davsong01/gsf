@@ -9,7 +9,7 @@
                 <div class="navbar-collapse-header">
                     <div class="row">
                         <div class="col-6 collapse-brand">
-                            <a href="/"><x-logo width="auto" height="35px"/></a>
+                            <a href="{{url('/')}}"><x-logo width="auto" height="35px"/></a>
                         </div>
                         <div class="col-6 collapse-close"><a href="#navbar_global" role="button" class="fas fa-times" data-toggle="collapse" data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false" aria-label="Toggle navigation"></a></div>
                     </div>
