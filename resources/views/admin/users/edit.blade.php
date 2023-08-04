@@ -47,10 +47,10 @@
                                 @endif
                                 @endif
                                 @if(auth()->user()->status == 0)
-                                <a href="{{ route('student.single', $user->slug) }}" target="_blank" class="btn btn-dark">View Profile</a>
+                                <a href="{{ route('user.single', $user->slug) }}" target="_blank" class="btn btn-dark">View Profile</a>
                                 @endif
                                 @if(auth()->user()->status == 1)
-                                <a href="{{ route('alumni.single', $user->slug)  }}" target="_blank" class="btn btn-dark">View Profile</a>
+                                <a href="{{ route('user.single', $user->slug)  }}" target="_blank" class="btn btn-dark">View Profile</a>
                                 @endif
                             </div>
                         </div>

@@ -21,6 +21,7 @@
                 @if($user->stakeholder->role == 'Financial Secretary')Official @endif --}}
                 @if($user->stakeholder->role == 'Portfolio') <span class="portfolio" >{{ 'GSF '.$user->stakeholder->portfolio }} </span> @endif
             @endif
+            <br>
             @if($user->campus->id != 86)
             <span class="card-subtitle text-gray font-weight-normal"><em>
                 {{ $user->campus->name ?? $user->c_name }}
