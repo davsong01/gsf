@@ -114,7 +114,7 @@
                                         </div>
                                         <div class="card-footer bg-soft border-top">
                                             <div class="d-flex justify-content-between">
-                                                <div class="col pr-0">
+                                                <div class="col pr-0" style="width:250px">
                                                     @if($alumni->stakeholder)
                                                         @if($alumni->stakeholder->role == 'President' && !is_null($alumni->stakeholder->chapter_id))<span class="portfolio">President, </span>{{ $alumni->stakeholder->chapter->name ?? 'N/A' }}@endif
                                                         @if($alumni->stakeholder->role == 'Zonal Pastor' && !is_null($alumni->stakeholder->zone_id))<span class="portfolio">Zonal Pastor, </span>{{ $alumni->stakeholder->zone->name ?? 'N/A' }}@endif
@@ -199,7 +199,7 @@
             <hr class="line">
             <div class="row">
                 <div class="col-12" style="margin-bottom:100px">
-                    <span class="mb-5 mt-3">{{ $alumni->name }} attended the same school as</span>
+                    <span class="mb-5 mt-3">Attended <strong style="font-style: italic;">{{ $alumni->campus->name }} </strong>together</span>
                 </div>
                     @foreach($related as $user)
                         @if($user->id <> $main)

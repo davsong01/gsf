@@ -4,15 +4,7 @@
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-12 col-md-10 col-lg-8 text-center">
-            <h1 class="display-2 mb-3">{{ $searchMember->count() }} result(s) found</h1>
-            {{-- <p class="lead">
-                @if($searchMember->count() > 0)
-                <h5><a href="#student">{{ $searchMember->count() }} Student(s)</a></h4>
-                @endif
-                @if($searchAlumni->count() > 0) 
-                <h5> <a href="#alumni">{{ $searchAlumni->count() }} Alumni</a> 
-                </h4>@endif
-            </p> --}}
+            <h1 class="display-2 mb-3">{{ $count }} result(s) found</h1>
           </div>
         </div>
       </div>
@@ -26,12 +18,12 @@
                 @endforeach
             @endif
         </div>
+        <div>
+          @if($searchMember instanceof \Illuminate\Pagination\LengthAwarePaginator )
+          {{ $searchMember->links()}}
+          @endif
+        </div>
       </div>
+       
     </section>
-    {{-- <section class="section section-lg pt-0">
-      <div class="col mt-3 d-flex justify-content-center">
-      {{$searchMember->links()}}
-      </div>
-    </section> --}}
-
 @endsection

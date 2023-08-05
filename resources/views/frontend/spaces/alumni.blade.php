@@ -94,6 +94,9 @@
           </div>
         </div>
       </div>
+      <div>
+        {{ $alumnis->links()}}
+      </div>
     </div>
   </div>
 @endsection

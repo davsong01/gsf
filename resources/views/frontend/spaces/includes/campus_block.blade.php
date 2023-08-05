@@ -2,7 +2,7 @@
     <div class="card border-light mb-4 animate-up-5"><a href="{{ route('campus.single', $chapter->id) }}"
         class="position-relative"><img style="height: 240px;" src="{{ asset($chapter->banner ?? 'gsfcom/images/image-office.jpg') }}"
         class="card-img-top rounded-xl p-2" alt="{{ $chapter->banner }}"></a>
-    <div class="card-body" style="height: 250px;"><a href="{{ route('campus.single', $chapter->id) }}">
+    <div class="card-body" style="height: 300px;"><a href="{{ route('campus.single', $chapter->id) }}">
         <h4 class="h5">{{$chapter->name}}</h4>
         </a>
         <div class="d-flex my-2">
@@ -13,14 +13,14 @@
         </li>
         @if($chapter->address)
         <li class="list-group-item small p-0"><span class="fas fa-bullseye mr-2"></span>{{$chapter->address}}</li>
-        @else 
-        <li class="list-group-item small p-0"> &nbsp;  </li>
-
         @endif
+        @if($chapter->phone)
+        <li class="list-group-item small p-0"><span class="fas fa-phone mr-2"></span>{{ $chapter->phone }}</li>
+        @endif
+        
         @if($chapter->email)
         <li class="list-group-item small p-0"><span class="fas fa-envelope mr-2"></span>{{ $chapter->email }}</li>
-        @else 
-        <li class="list-group-item small p-0"> &nbsp; </span></li>
+        
         @endif
         </ul>
     </div>

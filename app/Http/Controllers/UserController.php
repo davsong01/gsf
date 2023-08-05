@@ -182,7 +182,7 @@ class UserController extends Controller
 
 		//Handle Passport Upload
 		if ($request['passport']) {
-			$passport = $this->uploadImage($request->passport, 'frontend/passports/', 500, 500);
+			$passport = $this->uploadImage($request->passport, 'frontend/passports', 500, 500);
 
 			$data['passport'] = $passport;		
 		} 
@@ -226,7 +226,7 @@ class UserController extends Controller
 
 		//Handle Passport Upload
 		if ($request['passport']) {
-			$passport = $this->uploadImage($request->passport, 'frontend/passports/', 500, 500);
+			$passport = $this->uploadImage($request->passport, 'frontend/passports', 500, 500);
 
 			$data['passport'] = $passport;		
 		} 

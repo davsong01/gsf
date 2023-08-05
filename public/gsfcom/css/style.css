@@ -109,6 +109,14 @@ body {
     outline: 0 !important
 }
 
+.hover-hide-text{
+    color:white !important;
+}
+
+.hover-hide-text:hover{
+    color:#fff0 !important;
+}
+
 hr {
     box-sizing: content-box;
     height: 0;
@@ -25414,6 +25422,10 @@ button.section-github:hover {
 
 .fh-400 {
     height: 400px !important
+}
+
+.fh-250 {
+    height: 250px !important
 }
 
 .fh-420 {

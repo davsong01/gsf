@@ -17,12 +17,10 @@
                 @if($user->stakeholder->role == 'President' && !is_null($user->stakeholder->chapter_id))<span class="portfolio">President, </span>{{ $user->stakeholder->chapter->name ?? 'N/A' }}@endif
                 @if($user->stakeholder->role == 'Zonal Pastor' && !is_null($user->stakeholder->zone_id))<span class="portfolio">Zonal Pastor, </span>{{ $user->stakeholder->zone->name ?? 'N/A' }}@endif
                 @if($user->stakeholder->role == 'Field Pastor' && !is_null($user->stakeholder->field_id)) <span class="portfolio">Field Pastor, </span>{{ $user->stakeholder->field->name ?? 'N/A' }}@endif
-                {{-- @if($user->stakeholder->role == 'Secretariat')Official @endif
-                @if($user->stakeholder->role == 'Financial Secretary')Official @endif --}}
-                @if($user->stakeholder->role == 'Portfolio') <span class="portfolio" >{{ 'GSF '.$user->stakeholder->portfolio }} </span> @endif
+                @if($user->stakeholder->role == 'Portfolio') <span class="portfolio" >{{ 'GSF National '.$user->stakeholder->portfolio }} </span> @endif
             @endif
             <br>
-            @if($user->campus->id != 86)
+            @if(!empty($user->campus->id) && $user->campus->id != 86)
             <span class="card-subtitle text-gray font-weight-normal"><em>
                 {{ $user->campus->name ?? $user->c_name }}
             </em>

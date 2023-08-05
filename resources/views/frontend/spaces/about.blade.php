@@ -32,7 +32,7 @@
           <div class="col-md-4">
             <p class="lead">Individuals and teams from <span class="font-weight-bold">105, 000</span> businesses in
               <span class="font-weight-bold">900</span> cities have connected to the Spaces network to solve their
-              office needs.</p><img class="mt-4" src="https://demo.themesberg.com/spaces/assets/img/signature.svg"
+              office needs.</p><img class="mt-4" src="https://demo.GSF .com/spaces/assets/img/signature.svg"
               alt="signature" width="100">
           </div>
         </div>
@@ -145,7 +145,7 @@
         <div class="row mb-5 mb-lg-7">
           <div class="col-12 col-md-6 col-lg-4 mb-5 mb-lg-0">
             <div class="card border-light"><img
-                src="https://demo.themesberg.com/spaces/assets/img/team/profile-picture-1.jpg"
+                src="https://demo.GSF .com/spaces/assets/img/team/profile-picture-1.jpg"
                 class="card-img-top rounded-top" alt="Joseph Portrait">
               <div class="card-body">
                 <h3 class="h4 card-title mb-2">Joseph Garth</h3><span
@@ -167,7 +167,7 @@
           </div>
           <div class="col-12 col-md-6 col-lg-4 mb-5 mb-lg-0">
             <div class="card border-light"><img
-                src="https://demo.themesberg.com/spaces/assets/img/team/profile-picture-2.jpg"
+                src="https://demo.GSF .com/spaces/assets/img/team/profile-picture-2.jpg"
                 class="card-img-top rounded-top" alt="Bonnie portrait">
               <div class="card-body">
                 <h3 class="h4 card-title mb-2">Bonnie Green</h3><span
@@ -189,7 +189,7 @@
           </div>
           <div class="col-12 col-md-6 col-lg-4">
             <div class="card border-light"><img
-                src="https://demo.themesberg.com/spaces/assets/img/team/profile-picture-3.jpg"
+                src="https://demo.GSF .com/spaces/assets/img/team/profile-picture-3.jpg"
                 class="card-img-top rounded-top" alt="Jose Avatar">
               <div class="card-body">
                 <h3 class="h4 card-title mb-2">Jose Leos</h3><span
@@ -225,7 +225,7 @@
                     class="icon"><span class="fas fa-plus"></span></span></a>
                 <div class="collapse" id="panel-1">
                   <div class="pt-3">
-                    <p class="mb-0">At Themesberg, our mission has always been focused on bringing openness and
+                    <p class="mb-0">At GSF , our mission has always been focused on bringing openness and
                       transparency to the design process. We've always believed that by providing a space where
                       designers can share ongoing work not only empowers them to make better products, it also helps
                       them grow. We're proud to be a part of creating a more open culture and to continue building a
@@ -239,7 +239,7 @@
                     class="icon"><span class="fas fa-plus"></span></span></a>
                 <div class="collapse" id="panel-2">
                   <div class="pt-3">
-                    <p class="mb-0">At Themesberg, our mission has always been focused on bringing openness and
+                    <p class="mb-0">At GSF , our mission has always been focused on bringing openness and
                       transparency to the design process. We've always believed that by providing a space where
                       designers can share ongoing work not only empowers them to make better products, it also helps
                       them grow. We're proud to be a part of creating a more open culture and to continue building a
@@ -253,7 +253,7 @@
                     class="icon"><span class="fas fa-plus"></span></span></a>
                 <div class="collapse" id="panel-3">
                   <div class="pt-3">
-                    <p class="mb-0">At Themesberg, our mission has always been focused on bringing openness and
+                    <p class="mb-0">At GSF , our mission has always been focused on bringing openness and
                       transparency to the design process. We've always believed that by providing a space where
                       designers can share ongoing work not only empowers them to make better products, it also helps
                       them grow. We're proud to be a part of creating a more open culture and to continue building a

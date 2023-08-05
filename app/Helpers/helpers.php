@@ -6,6 +6,10 @@ if (!function_exists("menu")) {
     function menu(){
         $menu = [
             [
+                'route' => 'home.index',
+                'name' => 'Directory'
+            ],
+            [
                 'route' => 'people.campuses',
                 'name' => 'Campuses'
             ],

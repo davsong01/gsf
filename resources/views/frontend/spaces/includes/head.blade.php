@@ -54,6 +54,9 @@
         .portfolio{
             color:blue
         }
+        .hover-hide-text:hover{
+            display:none;
+        }
     </style>
     @yield('css')
 </head>

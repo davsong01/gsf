@@ -58,7 +58,24 @@ class HomeController extends Controller
                 ->with('alumnis_amount', $alumnis_amount)
                 ->with('chapters', $chapters);
         }else{
-            return view('frontend.'. frontendTemplate().'.index', compact('events', 'national'));
+            $used = ['Zonal Pastor', 'Field Pastor', 'Portfolio'];
+            $officials = Stakeholder::whereIn('role', $used)->get();
+
+            foreach($officials as $user){
+                if($user->role == 'Zonal Pastor' && !is_null($user->zone_id)){
+                    $user->office = 'Zonal Pastor, ' .$user->zone->name ?? 'N/A' ;
+                }
+
+                if($user->role == 'Field Pastor' && !is_null($user->field_id)){
+                    $user->office = "Field Pastor, ". $user->field->name ?? 'N/A';
+                } 
+               
+                if($user->role == 'Portfolio'){
+                    $user->office = "GSF National ".$user->portfolio;
+                } 
+            }
+
+            return view('frontend.'. frontendTemplate().'.index', compact('events', 'national', 'officials'));
         }
     }
 
@@ -87,15 +104,13 @@ class HomeController extends Controller
     }
 
     public function alumni() {
-        $alumnis = User::wherehas('campus')->whereStatus(1)->where('role', '<>', 1)->paginate(45);
-        
+        $alumnis = User::wherehas('campus')->whereStatus(1)->where('role', '<>', 1)->paginate(12)->withQueryString();
         return view('frontend.' . frontendTemplate() . '.alumni', compact('alumnis'));
-        
         // return view('frontend.main.alumni', compact('alumnis'));
     }
 
     public function students() {
-        $alumnis = User::wherehas('campus')->whereStatus(0)->where('role', '<>', 1)->paginate(10);
+        $alumnis = User::wherehas('campus')->whereStatus(0)->where('role', '<>', 1)->paginate(15)->withQueryString();
         return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
     }
 
@@ -118,17 +133,19 @@ class HomeController extends Controller
         return ['chapters' => $chapters, 'portfolios' => $portfolios];
     }
 
-    public function generalSearch(Request $request) {
+    public function generalSearch(Request $request)
+    {
 
         $this->validate($request, ['name' => 'required']);;
-        
-        $searchMember = User::with('campus')->select("users.*","chapter_id")
-        ->where("name","LIKE","%{$request->name}%")
-        ->where("role", "<>", 1)
-        // ->where("status", 0)
-        ->paginate(40);
-        
-        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('searchMember'));
+
+        $searchMember = User::with('campus')->select("users.*", "chapter_id")
+        ->where("name", "LIKE", "%{$request->name}%")
+        ->where("role", "<>", 1);
+
+        $count = $searchMember->count();
+        $searchMember = $searchMember->paginate(15)->withQueryString();
+
+        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('searchMember', 'count'));
     }
 
     public function alumniSearch(Request $request)
@@ -152,14 +169,15 @@ class HomeController extends Controller
 
         $searchAlumni = collect([]);
         $searchMember = $searchFromSchool->merge($results);
+        $count = $searchMember->count();
         
-        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('searchMember', 'searchAlumni'));
+        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('count','searchMember'));
     }
 
     public function memberSearch(Request $request)
     {
         $this->validate($request, ['name' => 'required|min:4']);
-
+        
         $results = User::with(['campus' => function($query){
             return $query->where('id', '<>', 86);
         }])->where("name", "LIKE", "%{$request->name}%")->where('status', 0)->where('role', '<>', 0)->orderBy('users.created_at', 'desc')->get();
@@ -178,9 +196,11 @@ class HomeController extends Controller
         }
        
         $searchMember = $searchFromSchool->merge($results);
+        $count = $searchMember->count();
+
         // run this through a service
         
-        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('searchMember', ));
+        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('count','searchMember', ));
     }
 
     public function autocomplete(Request $request)
@@ -341,8 +361,8 @@ class HomeController extends Controller
 
     public function singleUser($slug){
         $alumni = User::whereSlug($slug)->first();
-        $related = User::where('chapter_id', $alumni->chapter_id)->where('status', $alumni->status)->where('role', '<>', 1)->get();
-
+        $related = User::where('chapter_id', $alumni->chapter_id)->where('role', '<>', 1)->get();
+        
         // Check if this is an alumni
         return view('frontend.' . frontendTemplate() . '.single-alumni', compact('alumni', 'related'));
     }

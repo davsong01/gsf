@@ -1,19 +1,3 @@
-/*
-
-=========================================================
-* Spaces - Bootstrap Directory Listing Template
-=========================================================
-
-* Product Page: https://themesberg.com/product/bootstrap-themes/spaces-bootstrap-directory-listing-template
-* Copyright 2020 Themesberg EULA (https://www.themesberg.com/licensing)
-
-* Coded by https://themesberg.com
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 
 "use strict";
 $(document).ready(function () {
