@@ -1,66 +1,64 @@
-@extends('layouts.app')
+@extends('frontend.spaces.layouts.app')
 @section('title', 'Stakeholder Login')
+@section('ogtitle', 'Stakeholder Login')
+@section('ogdescription')
 @section('content')
-<div class="app-content content">
-    <div class="content-overlay"></div>
-    <div class="content-wrapper">
-        <div class="content-header row">
+  <section class="section section-header bg-primary overlay-primary text-white pb-2" style="margin-top:-50px" !important>
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-12 col-md-8 text-center">
+            <h1 class="display-2 mb-4">Login</h1>
+          </div>
         </div>
-        <div class="content-body">
-            <!-- login page start -->
-            <section id="auth-login" class="row flexbox-container">
-                <div class="col-xl-8 col-11">
-                    <div class="card bg-authentication mb-0">
-                        <div class="row m-0">
-                            <!-- left section-login -->
-                            <div class="col-md-12 col-12 px-0">
-                                <div class="card disable-rounded-right mb-0 p-2 h-100 d-flex justify-content-center">
-                                    {{-- <div class="card-header pb-1">
-                                        
-                                    </div> --}}
-                                    <div class="card-content">
-                                        <div class="card-body">
-                                           <div class="card-title">
-                                                <div style="text-align: center;"><img style="width: 10%;" src="{{ asset('frontend/img/logo.png') }}"></div>
-                                            </div>
-                                            <div class="divider">
-                                                <h5 style="color:red">ADMINISTRATOR ACCESS ONLY</h5>
-                                                <h6 style="color:blue">REPORTS</h6>
-                                                <div class="divider-text text-uppercase text-muted"><small>LOGIN AS A STAKEHOLDER</small>
-                                                </div>
-                                            </div>
-                                            </div>
-                                            <div class="card-title">
-                                                @include('includes.alerts')
-                                            
-                                                <form method="POST" action="{{ route('stakeholder.login') }}">
-                                                @csrf
-                                                <div class="form-group mb-50">
-                                                    <label class="text-bold-600" for="email">Email</label>
-                                                    <input type="email" class="form-control" name="email" id="email" value="{{ old('email')  }}" required></div>
-                                                <div class="form-group">
-                                                    <label class="text-bold-600" for="password">Password</label>
-                                                    <input type="password" class="form-control" id="password" value="{{ old('password')  }}" name="password" required>
-                                                </div>
-                                                <div class="form-group d-flex flex-md-row flex-column justify-content-between align-items-center">
-                                                    <div class="text-right"><a herf="#" class="card-link"><small>Forgot Password? Contact the NPS to have your password reset</small></a></div>
-                                                </div>
-                                                <button type="submit" class="btn btn-primary glow w-100 position-relative">Login<i id="icon-arrow" class="bx bx-right-arrow-alt"></i></button>
-                                            </form>
-                                            <hr>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- right section image -->
-                           
+      </div>
+    </section>
+    <section class="min-vh-80 d-flex align-items-center" style="margin-top:20px">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-12">
+            <div class="text-center text-md-center mb-5 mt-md-0 text-white">
+                <h5 style="color:red">ADMINISTRATOR ACCESS ONLY</h5>
+                <p style="color:blue">
+                    LOGIN AS AN ADMINISTRATOR
+                </p>
+                {{-- <h6 style="color:blue">REPORTS</h6> --}}
+                <div class="divider-text text-uppercase text-muted"><small></small>
+                </div>
+            </div>
+          </div>
+          <div class="col-12 d-flex align-items-center justify-content-center" style="margin-bottom:20px">
+            <div class="signin-inner mt-3 mt-lg-0 bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-500">
+                @include('includes.alerts')
+
+                <form action="{{ route('stakeholder.login') }}" method="POST">
+                  @csrf
+                    <div class="form-group"><label for="email">Email</label>
+                    <div class="input-group mb-4">
+                        <div class="input-group-prepend"><span class="input-group-text"><span
+                            class="fas fa-envelope"></span></span></div>
+                            <input class="form-control" required id="email" name="email" value="{{old('email')}}"
+                        placeholder="Enter email" type="text" aria-label="Email">
+                    </div>
+                    </div>
+                    <div class="form-group">
+                    <div class="form-group"><label for="password">Password</label>
+                        <div class="input-group mb-4">
+                        <div class="input-group-prepend"><span class="input-group-text"><span
+                                class="fas fa-unlock-alt"></span></span></div><input class="form-control" id="password"
+                            placeholder="Password" type="password" name="password" aria-label="Password" required>
                         </div>
                     </div>
-                </div>
-            </section>
-            <!-- login page ends -->
-
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div><a href="#" class="small text-right">Forgot Password? Contact the NPS to have your password reset</a></div>
+                    </div>
+                    </div>
+                    <button type="submit" class="btn btn-block btn-primary">Sign in</button>
+                </form>
+               
+            </div>
+          </div>
         </div>
-    </div>
-</div>
+      </div>
+    </section>
+    
 @endsection

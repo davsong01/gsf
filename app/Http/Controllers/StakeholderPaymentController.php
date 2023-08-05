@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use DateTime;
 use DatePeriod;
-use App\Moels\Reports;
+use App\Models\Reports;
 use DateInterval;
-use App\Moels\Stakeholder;
+use App\Models\Stakeholder;
 use Illuminate\Http\File;
 use App\Exports\ExportPop;
 use App\Models\StakeholderPayment;

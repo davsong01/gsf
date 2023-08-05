@@ -43,6 +43,12 @@ Route::get('/retry', function () {
 
 Route::get('test/{data?}', [CriticalEmailController::class, 'getContent']);
 
+// Campus Tracker routes
+Route::controller(ChapterController::class)->group(function () {
+    Route::get('campus-tracker', 'campusUpdate')->name('campus.tracker'); //http://127.0.0.1:8000/campus-view?chapter=1&token=387130
+    Route::get('/campus-view', 'campusView')->name('campus.view');
+    Route::post('/campus/{id}', 'campusSave')->name('campus.save');
+});
 
 Route::post('ajax-create-temp-details', [ConferenceManagementController::class, 'ajaxPayment']);
 Auth::routes();
@@ -56,11 +62,9 @@ Route::get('/clear', function () {
     echo "<p>Fully optimized.*</p>";
 });
 
-
 Route::get('/runcron', [CronController::class, 'cron']);
 Route::get('email-cron/{pick?}', [CronController::class, 'emailCron']);
 Route::get('/conference', [ConferenceController::class, 'index']);
-
 
 Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index')->name('home.index');
@@ -112,10 +116,10 @@ Route::controller(StakeholderAccountController::class)->group(function () {
     Route::get('/stakeholderprofile', 'profile')->name('stakeholder.profile');
     Route::post('/stakeholderprofile', 'saveProfile')->name('stakeholder.saveprofile');
 });
+
 //Logged in stakeholder Account
 Route::middleware(['stakeholder'])->group(function(){
     Route::resource('reports', ReportsController::class);
-
     Route::controller(ReportsController::class)->group(function () {
         Route::get('deletereports/{id}', 'delete')->name('reports.delete');
         Route::post('rejectreports', 'rejectReport')->name('report.reject');
@@ -275,9 +279,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('chapters/delete/{chapter}', 'destroy')->name('chapters.delete');
         Route::get('/chapter/exporting', 'chaptersExport')->name('chapters.export');
         Route::get('/token', 'generate')->name('token');
-        Route::get('/campus', 'campusUpdate')->name('campus.update');
-        Route::post('/campus', 'campusView')->name('campus.view');
-        Route::post('/campus/{id}', 'campussave')->name('campus.save');
+        // Route::get('/campus', 'campusUpdate')->name('campus.update');
+        // Route::post('/campus', 'campusView')->name('campus.view');
+        // Route::post('/campus/{id}', 'campussave')->name('campus.save');
     });
 
     Route::resource('fields', FieldController::class);
@@ -325,8 +329,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
 });
 
-
- //Get signature Image
+//Get signature Image
 //  Route::get('stakeholdersignature/{image}', function($image){
 //     $realpath = base_path() . '/uploads/signatures'. '/' .$image;
 //         return response()->download($realpath);

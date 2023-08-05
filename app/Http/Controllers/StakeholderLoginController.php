@@ -28,7 +28,6 @@ class StakeholderLoginController extends Controller
         ]);
        
         if (Auth::guard('stakeholder')->attempt(['email'=>$request->email, 'password' => $request->password])) {
-            
             return redirect()->intended('/stakeholderdashboard')->with('message', 'welcome');
         }
         //Authentication failed...

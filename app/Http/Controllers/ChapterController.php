@@ -36,7 +36,8 @@ class ChapterController extends Controller
 
     public function campusUpdate()
     {
-        $chapters = Chapter::all();
+        $chapters = Chapter::where('id','<>',86)->get();
+        
         return view('frontend.conference.campusUpdate', compact('chapters'));
     }
 
@@ -55,18 +56,29 @@ class ChapterController extends Controller
     }
     public function campusView(Request $request)
     {
-        
         $chapter = Chapter::findorfail($request->chapter);
+        $token = false;
+        $realToken = '';
 
-        return view('frontend.conference.campusView', compact('chapter'));
+        if($request->token){
+            if($chapter->token != $request->token){
+                return back()->with('error', 'Invalid Token for GSF Chapter, Kindly contact the National Publicity Office');
+            }
+
+            $token = true;
+            $realToken = $chapter->token;
+
+        }
+        
+        return view('frontend.conference.campusView', compact('chapter', 'token', 'realToken'));
     }
     
     public function campusSave(Request $request)
     {
-      
         $data = $this->validate($request, [
             'phone' => 'required',
             'token' => 'required',
+            'realToken' => 'required',
             'chapter' => 'required|numeric',
             'facebook' => 'nullable',
             'twitter' => 'nullable',
@@ -75,9 +87,9 @@ class ChapterController extends Controller
         ]);
         
         $chapter = Chapter::find($request->chapter);
-
+    
         //check if token matches campus
-        if(  $data['token'] == 'SuperToken12345654321' || $data['token'] == $chapter->token){
+        if(  $data['token'] == 'SuperToken12345654321' || $data['realToken'] == $chapter->token){
             $chapter->update([
                 'email' => $data['email'],
                 'phone' => $data['phone'],
@@ -85,14 +97,12 @@ class ChapterController extends Controller
                 'twitter' => $data['twitter'],
                 'address' => $data['address']
             ]);
-            return(redirect(route('campus.update')))->with('message', 'Update Successful');
-            
+            return back()->with('message', 'Update Successful');
         }else{
-            return(redirect(route('campus.update')))->with('warning', 'Invalid Token for details Update');
+            return back()->with('warning', 'Invalid Token for details Update');
         }
       
     }
-
 
     public function index()
     {

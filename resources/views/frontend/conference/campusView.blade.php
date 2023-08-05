@@ -65,14 +65,14 @@
                 <h2>{{ $chapter->name }}</h2>
             </div>
             <div class="row align-items-center">
-            
+                @if($token)
                 <div class="col-md-12">
                    
                     <br>
                     <p style="text-align:center">Details not correct? Kindly contact the National Publicity Secretary for guidance on how to update your fellowship details</p>
                     @include('includes.falerts')
                 </div>
-                
+                @endif
                 <div class="col-md-12 col-sm-12">
                     <div class="container">
                         <div class="row align-items-center">
@@ -82,54 +82,55 @@
                                    
                                     <form action="{{ route('campus.save', $chapter->id) }}" method="POST">
                                         @csrf
-                                            
+                                           
                                             <div class="control-group">
                                                 <label>Fellowship Email (Optional)</label>
-                                                <input type="email" class="form-control" id="email" name="email"
-                                                    value="{{  old('email') ?? $chapter->email }}">
+                                                <input type="email" class="form-control" id="email" name="email" value="{{  old('email') ?? $chapter->email }}" {{ !$token ? 'disabled' : ''}}>
                                             </div>
                                             <div class="control-group">
                                                 <label>Fellowship Phone Numbers</label>
-                                                <input type="text" class="form-control" id="phone" name="phone"
-                                                value="{{ old('phone') ?? $chapter->phone }}" required>
+                                                <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone') ?? $chapter->phone }}" required {{ !$token ? 'disabled' : ''}}>
                                             </div>
                                             <div class="control-group">
                                                 <label>Fellowship Address</label>
-                                                <input type="text" class="form-control" id="address" name="address"
-                                                value="{{ old('address') ?? $chapter->address }}" required>
+                                                <input type="text" class="form-control" id="address" name="address" value="{{ old('address') ?? $chapter->address }}" required {{ !$token ? 'disabled' : ''}}>
                                             </div>
                                             <div class="control-group">
-                                                <label>Fellowship Facebook link (Optional)<small style="color:green"> e.g: https://www.facebook.com/gsfnational/</small></label>
-                                                <input type="url" class="form-control" id="facebook" name="facebook"
-                                                value="{{ old('facebook') ?? $chapter->facebook }}" >
+                                                <label>Fellowship Facebook link <span style="display:{{ !$token ? 'none':''}}">(Optional)<small style="color:green"> e.g: https://www.facebook.com/gsfnational/</small></span></label>
+                                                <input type="url" class="form-control" id="facebook" name="facebook" value="{{ old('facebook') ?? $chapter->facebook }}" {{ !$token ? 'disabled' : ''}}>
                                             </div>
                                             <div class="control-group">
-                                                <label>Fellowship Twitter link (Optional)<small style="color:green"> e.g: https://twitter.com/GSF_National</small></label>
+                                                <label>Fellowship Twitter link <span style="display:{{ !$token ? 'none':'' }}"><small style="color:green"> e.g: https://twitter.com/GSF_National</small></span></label>
                                                 <input type="url" class="form-control" id="twitter" name="twitter"
-                                                value="{{ old('twitter') ?? $chapter->twitter }}" >
+                                                value="{{ old('twitter') ?? $chapter->twitter }}" {{ !$token ? 'disabled' : ''}}>
                                             </div>
-                                            <div class="control-group">
+                                            
+                                        @if($token)
+                                        {{-- <div class="control-group">
                                                 <label style="color:red">Token (Official use)</label>
                                                 <input type="password" id="password" onkeyup="showUpdate()" class="form-control" id="token" name="token"
                                                 value="{{ old('token') }}" required>
-                                            </div>
+                                            </div> --}}
                                             <input type="hidden" name="chapter" value={{ $chapter->id }}>
+                                            <input type="hidden" name="token" value={{ $token }}>
+                                            <input type="hidden" name="realToken" value={{ $realToken }}>
+
                                             <br>
-                                            
                                         <div class="control-group">
-                                            <button class="btn submitregistration" id ="submitbutton" type="submit" style="width:100%; display:none">Update details (Official Use)</button>
+                                            <button class="btn submitregistration" id ="submitbutton" type="submit" style="width:100%;">Update details </button>
                                         </div>
+                                        @endif
+                                        
                                         <script>
                                             function showUpdate(){
                                                 var x = document.getElementById("submitbutton");
                                                 var y = document.getElementById("password").value;
                                                 
-                                                if(y != ''){
-                                                    x.value = x.style.display = 'block';
-                                                }else{
-                                                    x.value = x.style.display = 'none';
-                                                }
-                                                
+                                                // if(y != ''){
+                                                //     x.value = x.style.display = 'block';
+                                                // }else{
+                                                //     x.value = x.style.display = 'none';
+                                                // }
                                             }
                                         </script>
                                     </form>
@@ -143,7 +144,7 @@
             </div>
         </div>
     </div>
-        @include('includes.ffooter')
+        {{-- @include('includes.ffooter') --}}
 
         <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
 

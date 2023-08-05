@@ -65,21 +65,21 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-12 col-sm-6 col-md-4 text-center mb-4 mb-md-0 px-lg-4"><img class="img-fluid image-lg mb-4" src="https://demo.GSF .com/spaces/assets/img/illustrations/easy-transaction.svg" alt="northwestern logo">
+                <div class="col-12 col-sm-6 col-md-4 text-center mb-4 mb-md-0 px-lg-4"><img class="img-fluid image-md mb-4" src="{{asset('gsfcom/images/explore.png')}}" alt="explore">
                     <h2 class="h4">Explore</h2>
-                    <p>Our search makes it verry simple to find your space. And from office match, we are here to help you.</p>
+                    <p>Explore the GSF member database with simple and elegant search features.</p>
                 </div>
-                <div class="col-12 col-sm-6 col-md-4 text-center mb-4 mb-md-0 px-lg-4"><img class="img-fluid image-lg mb-4" src="https://demo.GSF .com/spaces/assets/img/illustrations/support.svg" alt="northwestern logo">
+                <div class="col-12 col-sm-6 col-md-4 text-center mb-4 mb-md-0 px-lg-4"><img class="img-fluid image-md mb-4" src="{{asset('gsfcom/images/connect.png')}}" alt="connect">
                     <h2 class="h4">Connect</h2>
-                    <p>We give you all this info, lifting the lid on actual offices, real availability, and accurate pricing.</p>
+                    <p>Connect with GSFites. Stallites and Alumni. Home and Abroad.</p>
                 </div>
-                <div class="col-12 col-sm-6 col-md-4 text-center mb-4 mb-md-0 px-lg-4"><img class="img-fluid image-lg mb-4" src="https://demo.GSF .com/spaces/assets/img/illustrations/payment.svg" alt="northwestern logo">
-                    <h2 class="h4">Give Back</h2>
-                    <p>Join</p>
+                <div class="col-12 col-sm-6 col-md-4 text-center mb-4 mb-md-0 px-lg-4"><img class="img-fluid image-md mb-4" src="{{asset('gsfcom/images/locate.png')}}" alt="locate">
+                    <h2 class="h4">Locate</h2>
+                    <p>Locate GSF fellowships around you and Nationawide.</p>
                 </div>
             </div>
             @if(!empty($officials) && $officials->count() > 0)
-            <div class="row mt-6">
+            <div class="row mt-6" style="display:none">
                 <div class="col-12">
                     <h3 class="h4 mb-5">Meet our Officials</h3>
                 </div>
@@ -107,7 +107,7 @@
             <div class="row justify-content-center mb-4 mb-lg-5">
                 <div class="col-12 col-md-8 text-center">
                     <h2 class="h1"><span class="font-weight-bold">How</span> it works?</h2>
-                    <p class="lead mt-3">All you’ll need are the details of the building and location, the types of space, pricing and some good quality photographs.</p>
+                    <p class="lead mt-3">All you’ll need is a name!</p>
                 </div>
             </div>
             <div class="row">
@@ -127,8 +127,8 @@
                                     <div class="card border-light mb-4 mb-lg-0 text-center">
                                         <div class="card-body p-4 px-xl-4 py-xl-6">
                                             <div class="icon icon-shape icon-lg icon-shape-primary mb-4 rounded-circle"><span class="fas fa-map-pin"></span></div>
-                                            <h3 class="h5 my-3">1. Choose a workspace</h3>
-                                            <p>It takes no longer than 15 minutes to list your space on GSF . Our user friendly process.</p>
+                                            <h3 class="h5 my-3">1. Type a name</h3>
+                                            <p>Type a name in the search box and we will find your GSFite</p>
                                         </div>
                                     </div>
                                 </div>
@@ -136,22 +136,22 @@
                                     <div class="card border-light mb-4 mb-lg-0 text-center">
                                         <div class="card-body p-4 px-xl-4 py-xl-6">
                                             <div class="icon icon-shape icon-lg icon-shape-primary mb-4 rounded-circle"><span class="far fa-calendar-check"></span></div>
-                                            <h3 class="h5 my-3">2. Schedule a tour</h3>
-                                            <p>After you have uploaded your space - our website makes it easy for you to keep the details up to date.</p>
+                                            <h3 class="h5 my-3">2. Customize your search</h3>
+                                            <p>Start typing a name on the Alumi or Members page and we will find your GSFite</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4">
                                     <div class="card border-light mb-4 mb-lg-0 text-center">
                                         <div class="card-body p-4 px-xl-4 py-xl-6">
-                                            <div class="icon icon-shape icon-lg icon-shape-primary mb-4 rounded-circle"><span class="fas fa-mouse-pointer"></span></div>
-                                            <h3 class="h5 my-3">3. Book your workspace</h3>
-                                            <p>Orders coming from GSF  are 100% prepaid. We will bring you not just leads but new clients.</p>
+                                            <div class="icon icon-shape icon-lg icon-shape-primary mb-4 rounded-circle"><span class="fas fa-university"></span></div>
+                                            <h3 class="h5 my-3">3. Get Campus Details</h3>
+                                            <p>Start typing a school name and we will get all GSFites on that campus</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col mt-lg-6 mt-3 text-center"><a href="all-spaces.html" class="btn btn-primary animate-up-2"><i class="fas fa-search-location mr-2"></i>Find a Location</a></div>
+                            {{-- <div class="col mt-lg-6 mt-3 text-center"><a href="all-spaces.html" class="btn btn-primary animate-up-2"><i class="fas fa-search-location mr-2"></i>Find a Location</a></div> --}}
                         </div>
                         <div class="tab-pane fade" id="submit-space" role="tabpanel" aria-labelledby="tab-submit-space">
                             <div class="row">
@@ -159,8 +159,8 @@
                                     <div class="card border-light mb-4 mb-lg-0 text-center">
                                         <div class="card-body p-3 px-xl-4 py-xl-6">
                                             <div class="icon icon-shape icon-lg icon-shape-secondary mb-4 rounded-circle"><span class="fas fa-clipboard-list"></span></div>
-                                            <h3 class="h5 my-3">1. List your space</h3>
-                                            <p>It takes no longer than 15 minutes to list your space on GSF . Our user friendly onboarding process.</p>
+                                            <h3 class="h5 my-3">1. </h3>
+                                            <p>Can't find your name, click <a href="{{route('newalumni')}}">HERE</a> to submit details</p>
                                         </div>
                                     </div>
                                 </div>
@@ -168,8 +168,8 @@
                                     <div class="card border-light mb-4 mb-lg-0 text-center">
                                         <div class="card-body p-3 px-xl-4 py-xl-6">
                                             <div class="icon icon-shape icon-lg icon-shape-secondary mb-4 rounded-circle"><span class="far fa-user"></span></div>
-                                            <h3 class="h5 my-3">2. Get ready</h3>
-                                            <p>After you have uploaded your space - our website makes it easy for you to keep the details up to date.</p>
+                                            <h3 class="h5 my-3">2. Upload details</h3>
+                                            <p>Fill your correct information on the form that shows up with and click submit.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -177,13 +177,13 @@
                                     <div class="card border-light mb-4 mb-lg-0 text-center">
                                         <div class="card-body p-3 px-xl-4 py-xl-6">
                                             <div class="icon icon-shape icon-lg icon-shape-secondary mb-4 rounded-circle"><span class="far fa-money-bill-alt"></span></div>
-                                            <h3 class="h5 my-3">3. Earn money</h3>
-                                            <p>Orders coming from GSF  are 100% prepaid. We will bring you not just leads but new clients.</p>
+                                            <h3 class="h5 my-3">3. Get Listed</h3>
+                                            <p>Your details will be reviwed and you get listed on the directory. Great work!</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col mt-6 text-center"><a href="submit-item.html" class="btn btn-secondary animate-up-2"><i class="fas fa-plus mr-2"></i>List a Space</a></div>
+                            <div class="col mt-6 text-center"><a href="{{route('newalumni')}}" class="btn btn-secondary animate-up-2"><i class="fas fa-plus mr-2"></i>Start now</a></div>
                         </div>
                     </div>
                 </div>

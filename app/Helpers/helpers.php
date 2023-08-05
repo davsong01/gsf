@@ -21,6 +21,10 @@ if (!function_exists("menu")) {
                 'route' => 'people.students',
                 'name' => 'Members'
             ],
+            [
+                'route' => 'campus.tracker',
+                'name' => 'Campus Tracker'
+            ],
             // [
             //     'route' => 'people.programs',
             //     'name' => 'Events'

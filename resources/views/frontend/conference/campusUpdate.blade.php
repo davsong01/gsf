@@ -6,18 +6,16 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta property="og:title" content="GSF - Campus Tracker"> 
-          <meta property="og:image" content="{{ asset('frontend/img/logo.png') }}"/> 
+        <meta property="og:image" content="{{ asset('frontend/img/logo.png') }}"/> 
 
-        <meta property="og:description" content="Do you need periodical, urgent and handy information on admission processes in the institution of your choice. Visit GSF campus tracker now
-        "/>
+        <meta property="og:description" content="Do you need periodical, urgent and handy information on admission processes in the institution of your choice. Visit GSF campus tracker now"/>
         <meta property="og:site_name" content="GSF" />
 
         <!-- Favicon -->
         <link href="{{ asset('frontend/img/logo.png') }}" rel="icon">
 
         <!-- Google Font -->
-        <!-- <link href="https://fonts.googleapis.com/css2?family=Lato&family=Oswald:wght@200;300;400&display=swap" rel="stylesheet"> -->
-         <link href="{{ asset('frontend/css/opensans.css') }}" rel="stylesheet">
+        <link href="{{ asset('frontend/css/opensans.css') }}" rel="stylesheet">
 
         <!-- CSS Libraries -->
         <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
@@ -28,14 +26,11 @@
         <!-- Template Stylesheet -->
         <link href="{{ asset('frontend/css/style.css') }}" rel="stylesheet">
         
-
-         {{-- Select2 --}}
-         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
-
+        {{-- Select2 --}}
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
     </head>
     <!-- Nav Bar Start -->
-
-    <div class="navbar navbar-expand-lg bg-dark navbar-dark" >
+       <div class="navbar navbar-expand-lg bg-dark navbar-dark" >
      
         <div class="container-fluid">
             <a href="/" class="navbar-brand"> <img src="{{ asset('frontend/img/logo.png') }}" alt="logo"></a><b>GSF CAMPUS UPDATE</b>
@@ -51,13 +46,10 @@
             </div>
         </div>
     </div>
- 
-<!-- Nav Bar End -->
+    <!-- Nav Bar End -->
     <body>
-      
-         <!-- About End -->
-
-     <div class="contact" id="register">
+    <!-- About End -->
+    <div class="contact" id="register">
     </div>
     <!-- Contact Start -->
     <div class="contact">
@@ -66,14 +58,11 @@
                 <h2>GSF CAMPUS TRACKER</h2>
             </div>
             <div class="row align-items-center">
-            
                 <div class="col-md-12">
-                   
                     <br>
                     <p style="text-align:center">Select GSF campus and click view details</p>
                     @include('includes.falerts')
                 </div>
-                
                 <div class="col-md-12 col-sm-12" id="individualregbutton">
                     <div class="container">
                         <div class="row align-items-center">
@@ -81,8 +70,7 @@
                                 <hr>
                                 <div class="contact-form">
                                    
-                                    <form action="{{ route('campus.view') }}" method="POST">
-                                        @csrf
+                                    <form action="{{ route('campus.view') }}" method="GET">
                                         
                                         <div class="control-group">
                                             <label for="chapter">GSF Campus</label><br>

@@ -119,7 +119,7 @@
                                                         @if($alumni->stakeholder->role == 'President' && !is_null($alumni->stakeholder->chapter_id))<span class="portfolio">President, </span>{{ $alumni->stakeholder->chapter->name ?? 'N/A' }}@endif
                                                         @if($alumni->stakeholder->role == 'Zonal Pastor' && !is_null($alumni->stakeholder->zone_id))<span class="portfolio">Zonal Pastor, </span>{{ $alumni->stakeholder->zone->name ?? 'N/A' }}@endif
                                                         @if($alumni->stakeholder->role == 'Field Pastor' && !is_null($alumni->stakeholder->field_id)) <span class="portfolio">Field Pastor, </span>{{ $alumni->stakeholder->field->name ?? 'N/A' }}@endif
-                                                        @if($alumni->stakeholder->role == 'Portfolio') <span class="portfolio" >{{ 'GSF '.$alumni->stakeholder->portfolio }} </span> @endif
+                                                        @if($alumni->stakeholder->role == 'Portfolio') <span class="portfolio" >{{ 'GSF National '.$alumni->stakeholder->portfolio }} </span> @endif
                                                     @else
                                                         @if($alumni->rolename == 'Member')
                                                             {{ $alumni->rolename }} <br>

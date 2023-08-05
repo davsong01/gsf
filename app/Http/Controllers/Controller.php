@@ -64,8 +64,12 @@ class Controller extends BaseController
     protected function getPortfolios()
     {
         $portfolios = [
-            'Assistant Publicity Secretary',
+            'NCP',
+            'General Secretary',
+            'President',
+            'Field Pastor',
             'Assistant General Secretary',
+            'Assistant Publicity Secretary',
             'Assistant Music Director 1',
             'Assistant Music Director 2',
             'Evangelism Secretary 1',
@@ -74,7 +78,6 @@ class Controller extends BaseController
             'Special Duty',
             'Head of Musician',
             'Sisters Cord',
-            'National President',
             'Assistant Sis Cord 1',
             'Organizing Secretary 1',
             'Editor In Chief',
@@ -85,7 +88,6 @@ class Controller extends BaseController
             'Technical Director 2',
             'Bible Study Secretary',
             'Treasurer',
-            'General Secretary',
             'Assistant Sis Cord 2',
             'Assistant Sis Cord 2 (North)',
             'Prayer Secretary',
@@ -99,7 +101,6 @@ class Controller extends BaseController
             'Drama Secretary/ Liaison Officer (Alumni)',
             'Transport Secretary',
             'Special Duty',
-            'National Field Pastor/Eastern Field',
         ];
 
         return $portfolios;
