@@ -114,8 +114,8 @@
                 <div class="col-12 col-md-10 col-lg-6 mx-auto">
                     <div class="nav-wrapper">
                         <ul class="nav nav-pills nav-fill flex-column flex-sm-row mb-lg-4 mb-0" id="tab-32" role="tablist">
-                            <li class="nav-item mr-0 mr-sm-2 mr-md-0 mb-3 mb-lg-0"><a class="nav-link flex-sm-fill text-sm-center active" id="tab-find-space" data-toggle="tab" href="#find-space" role="tab" aria-controls="find-space" aria-selected="true"><span class="far fa-building mr-2"></span>Find a GSFite</a></li>
-                            <li class="nav-item"><a class="nav-link flex-sm-fill text-sm-center" id="tab-submit-space" data-toggle="tab" href="#submit-space" role="tab" aria-controls="submit-space" aria-selected="false"><span class="far fa-money-bill-alt mr-2"></span>Upload your details</a></li>
+                            <li class="nav-item mr-0 mr-sm-2 mr-md-0 mb-3 mb-lg-0"><a class="nav-link flex-sm-fill text-sm-center active" id="tab-find-space" data-toggle="tab" href="#find-space" role="tab" aria-controls="find-space" aria-selected="true"><span class="fa fa-search mr-2"></span>Find a GSFite</a></li>
+                            <li class="nav-item"><a class="nav-link flex-sm-fill text-sm-center" id="tab-submit-space" data-toggle="tab" href="#submit-space" role="tab" aria-controls="submit-space" aria-selected="false"><span class="fa fa-upload mr-2"></span>Upload your details</a></li>
                         </ul>
                     </div>
                 </div>
@@ -158,7 +158,7 @@
                                 <div class="col-12 col-lg-4">
                                     <div class="card border-light mb-4 mb-lg-0 text-center">
                                         <div class="card-body p-3 px-xl-4 py-xl-6">
-                                            <div class="icon icon-shape icon-lg icon-shape-secondary mb-4 rounded-circle"><span class="fas fa-clipboard-list"></span></div>
+                                            <div class="icon icon-shape icon-lg icon-shape-secondary mb-4 rounded-circle"><span class="fa fa-mouse-pointer "></span></div>
                                             <h3 class="h5 my-3">1. </h3>
                                             <p>Can't find your name, click <a href="{{route('newalumni')}}">HERE</a> to submit details</p>
                                         </div>
@@ -167,7 +167,7 @@
                                 <div class="col-12 col-lg-4">
                                     <div class="card border-light mb-4 mb-lg-0 text-center">
                                         <div class="card-body p-3 px-xl-4 py-xl-6">
-                                            <div class="icon icon-shape icon-lg icon-shape-secondary mb-4 rounded-circle"><span class="far fa-user"></span></div>
+                                            <div class="icon icon-shape icon-lg icon-shape-secondary mb-4 rounded-circle"><span class="fa fa-upload"></span></div>
                                             <h3 class="h5 my-3">2. Upload details</h3>
                                             <p>Fill your correct information on the form that shows up with and click submit.</p>
                                         </div>
