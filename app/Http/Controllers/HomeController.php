@@ -111,6 +111,7 @@ class HomeController extends Controller
 
     public function nec()
     {
+    //    dd(Hash::make('0987654321'));
         $nec = Nec::orderBy('order', 'ASC')->get();
         return view('frontend.' . frontendTemplate() . '.nec', compact('nec'));
     }
