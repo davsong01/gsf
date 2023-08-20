@@ -106,7 +106,7 @@
               <li class="breadcrumb-item text-muted active" aria-current="page">NEC</li>
             </ol>
           </nav>
-          <h1 class="mb-5">GSF Leaders, 2022 - 2023 <span class="font-weight-bolder"></span></h1>
+          <h1 class="mb-5">GSF National Executive Council<span class="font-weight-bolder"></span></h1>
         </div>
       </div>
     </div>
@@ -114,7 +114,7 @@
   <div class="container" style="margin-top:20px">
     <div class="row">
       @foreach($nec as $n)
-        <div class="col-md-3 col-sm-6" style="margin-bottom: 10px;">
+        <div class="col-md-2 col-sm-6" style="margin-bottom: 40px;">
             <div class="our-team">
                 <div class="pic">
                     <img src="{{ !is_null($n->passport) ? asset($n->passport) : asset('frontend/passports/avatar.jpg') }}" alt="">
@@ -128,7 +128,7 @@
                     </div>
                 </div>
                 <div class="team-prof">
-                    <h3 class="h4 card-title mb-2">{{ $n->name }}</h3>
+                    <h6 class="card-title mb-2">{{ $n->name }}</h3>
                      <small style="color: #c33c54;; font-size:100%">{{ $n->office }}</small>
                 </div>
             </div>
