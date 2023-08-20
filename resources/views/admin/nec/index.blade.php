@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 @section('title', 'Necs')
 @section('active')
-<li class="breadcrumb-item">Nec Participants</li>
+<li class="breadcrumb-item">Nec Members</li>
 @endsection
 @section('content')
 <div class="content-body">
@@ -11,14 +11,11 @@
 			<div class="col-12">
 				<div class="card">
 					<div class="card-header">
-						<h4 class="card-title">All Necs</h4>
+						<h4 class="card-title">All Nec Members</h4>
 						<div class="">
-							<a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
-							<a href="{{ route('necs.import.index') }}" class="btn btn-primary mt-1">Import</a>
-							<a href="{{ route('necs.export') }}" class="btn btn-primary mt-1">Export</a>
+							<a href="{{ route('nec.create') }}" class="btn btn-primary mt-1">Add new</a>
 						</div>
-						@include('includes.alerts')
-
+						
 					</div>
 					<div class="card-content">
 						<div class="card-body card-dashboard">
@@ -27,49 +24,43 @@
 									<thead>
 										<tr>
 											<th>S/N</th>
-											<th>Date</th>
 											<th>Avatar</th>
-											<th>Conference ID</th>
-											<th>Level</th>
-											<th>Status</th>
-											<th>Name</th>
-											<th>Email</th>
-											<th>Phone</th>
-											<th>Amount Paid</th>
-											<th>Uploaded by</th>
-
+											<th>Details</th>
 											<th>Actions</th>
 										</tr>
 									</thead>
 									<tbody>
-										@foreach($participants as $participant)
+										@foreach($nec as $n)
 										<tr>
 											<td>{{ $count++ }}</td>
-											<td>{{ $participant->created_at->format('Y-m-d') }}</td>
 											<td><img class="mr-1" style="border-radius:50%"
-													src="{{ asset($participant->passport ? $participant->passport : 'frontend/passports/avatar.jpg') }}"
+													src="{{ asset($n->passport ? $n->passport : 'frontend/passports/avatar.jpg') }}"
 													alt="avatar" height="40" width="40"></td>
-											<td>{{ $participant->conference_number }}</td>
-											<td>{{ $participant->level }}</td>
-											<td>@if($participant->registration_status == 'Complete')
-												<i class="bx bxs-circle success font-small-1 mr-50"></i> @else
-												<i class="bx bxs-circle danger font-small-1 mr-50"></i>
-												@endif
+											
+											<td>Name: {{ $n->name }} <br>
+												Email: {{ $n->email }} <br>
+												Phone: {{ $n->phone }}
 											</td>
-
-											<td>{{ $participant->name }}</td>
-											<td>{{ $participant->email }}</td>
-											<td>{{ $participant->phone }}</td>
-											<td>&#8358;{{ $participant->amount_paid }}</td>
-											<td>@if(isset($participant->moderator->name) && ($participant->level) ==
-												'Participant'){{ $participant->moderator->name }}
-												@else N/A @endif
-											</td>
-
+											
 											<td style="padding-left: 5px;padding-right: 5px;">
-												<a class="actions" data-toggle="tooltip" title="View/Edit Nec"
-													href="{{ route('choir.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></ </a>
-														<a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');"
-														title="Delete Nec" href="{{ route('users.delete', $participant->id) }}"> <i
-														class="fa fa-recycle"></i></ </a> </td> </tr> @endforeach </tbody> </table> </div> </div>
-														</div> </div> </div> </div> </section> </div> @endsection
+												<a class="actions" data-toggle="tooltip" title="View/Edit Nec" href="{{ route('nec.edit', $n->id) }}"> <i class="bx bxs-edit actions"></i>
+												</a>
+												<a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');"
+													title="Delete Nec" href="{{ route('nec.delete', $n->id) }}"> <i
+													class="fa fa-trash"></i>
+												</a> 
+											</td> 
+										</tr> 
+									@endforeach 
+								</tbody> 
+							</table> 
+						</div> 
+					</div>
+														
+					</div> 
+				</div> 
+			</div> 
+		</div> 
+	</section> 
+	</div>
+	@endsection

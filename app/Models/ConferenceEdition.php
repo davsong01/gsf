@@ -3,6 +3,7 @@
 namespace app\Models;
 
 use App\Models\Payment;
+use App\Models\Donation;
 use App\Models\Material;
 use App\Models\TempUser;
 use Illuminate\Database\Eloquent\Model;

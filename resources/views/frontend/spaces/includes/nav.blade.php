@@ -1,7 +1,7 @@
 <header class="header-global">
     <nav style="background-color: @yield('nav-background') " id="navbar-main" class="navbar navbar-main navbar-theme-primary navbar-expand-lg headroom py-lg-3 px-lg-6 navbar-dark navbar-transparent navbar-theme-primary">
         <div class="container">
-            <a class="navbar-brand @@logo_classes" href="{{url('/')}}">
+            <a class="navbar-brand @@logo_classes" href="https://gsfnational.org" target="_blank">
                 <x-logo width="auto" height="70px" class="navbar-brand-dark common"/>
                 <img class="navbar-brand-dark common" src="" height="35">
             </a>
@@ -15,9 +15,9 @@
                     </div>
                 </div>
                 <ul class="navbar-nav navbar-nav-hover justify-content-center">
-                    @foreach(menu() as $m)
+                @foreach(menu() as $m)
                     <li class="nav-item">
-                        <a href="{{route($m['route'])}}" id="dashboardPagesDropdown" class="nav-link" aria-expanded="false">
+                        <a href="{{route($m['route'])}}" class="nav-link" aria-expanded="false">
                             <span class="nav-link-inner-text mr-1">{{$m['name']}}</span>
                         </a>
                     </li>

@@ -2,13 +2,17 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\NecController;
 use App\Http\Controllers\CronController;
 use App\Http\Controllers\FoodController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ZoneController;
+use App\Http\Controllers\EmailController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\FieldController;
+use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\HostelController;
 use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\AccountController;
@@ -18,10 +22,12 @@ use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\OfficialController;
 use App\Http\Controllers\TempUserController;
 use App\Http\Controllers\ModeratorController;
 use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\SwitchUserController;
+use App\Http\Controllers\UserEmailsController;
 use App\Http\Controllers\StakeholderController;
 use App\Http\Controllers\CriticalEmailController;
 use App\Http\Controllers\StakeholderLoginController;
@@ -80,6 +86,8 @@ Route::controller(HomeController::class)->group(function () {
     Route::post('contactcampus', 'contactCampus')->name('campus.contact');
     // Alumni routes
     Route::get('all-alumni', 'alumni')->name('people.alumni');
+    Route::get('all-nec', 'nec')->name('people.nec');
+    
     Route::get('all-members', 'students')->name('people.students');
     Route::get('people/{slug}', 'singleUser')->name('user.single');
     // Route::get('people/{student}', 'singleStudent')->name('student.single');
@@ -148,6 +156,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('email', EmailController::class);
 
     // Official
+    Route::resource('nec', NecController::class);
+    Route::get('nec-delete/{id}', [NecController::class, 'delete'])->name('nec.delete');
     Route::resource('users', UserController::class);
     Route::controller(UserController::class)->group(function () {
         Route::post('allusers', 'allUsers' )->name('users.all');
@@ -264,7 +274,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('choir/{id}/edit', 'editChoir')->name('choir.edit');
         Route::get('medic/{id}/edit', 'editMedic')->name('medic.edit');
 
-        Route::get('nec', 'getNec')->name('user.nec');
+        // Route::get('nec', 'getNec')->name('user.nec');
         Route::get('nec/{id}/edit', 'editNec')->name('nec.edit');
         Route::get('nec/{id}/edit', 'editOfficial')->name('official.edit');
 

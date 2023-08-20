@@ -22,6 +22,10 @@ if (!function_exists("menu")) {
                 'name' => 'Members'
             ],
             [
+                'route' => 'people.nec',
+                'name' => 'NEC'
+            ],
+            [
                 'route' => 'campus.tracker',
                 'name' => 'Campus Tracker'
             ],

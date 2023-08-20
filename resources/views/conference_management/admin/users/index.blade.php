@@ -29,10 +29,8 @@
                                             <th>Date</th>
                                             <th>Avatar</th>
                                             <th>Details</th>
-                                           
                                             <th>Amount Paid</th>
                                             <th>Uploaded by</th>
-                                            
                                             <th>Actions</th>
                                         </tr>
                                     </thead>

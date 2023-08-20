@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Nec;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Event;
@@ -10,13 +11,13 @@ use App\Models\Payout;
 use App\Models\Chapter;
 use App\Models\Setting;
 use App\Models\TempUser;
+use App\Models\NewListing;
 use App\Models\Stakeholder;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\GeneralSetting;
 use App\Mail\NotificationEmail;
 use App\Models\ConferenceEdition;
-use App\Models\NewListing;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -106,7 +107,12 @@ class HomeController extends Controller
     public function alumni() {
         $alumnis = User::wherehas('campus')->whereStatus(1)->where('role', '<>', 1)->paginate(12)->withQueryString();
         return view('frontend.' . frontendTemplate() . '.alumni', compact('alumnis'));
-        // return view('frontend.main.alumni', compact('alumnis'));
+    }
+
+    public function nec()
+    {
+        $nec = Nec::orderBy('order', 'ASC')->get();
+        return view('frontend.' . frontendTemplate() . '.nec', compact('nec'));
     }
 
     public function students() {
