@@ -22,7 +22,7 @@
                 <div class="card">
                     <div class="card-header">
                         {{-- <h4 class="card-title">Update: {{ $chapter->name }}</h4> --}}
-                        @include('includes.alerts')
+                        {{-- @include('includes.alerts') --}}
                     </div>
                     <div class="card-content">
                         <div class="card-body">

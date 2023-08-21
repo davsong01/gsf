@@ -8,19 +8,6 @@ use Illuminate\Http\Request;
 class CriticalEmailController extends Controller
 {
     public function getContent($data=null){
-       
-        // $data = [
-        //    'conference_edition_id'=>'dsddds',
-        //    'name' => 'name',
-        //    'email' => 'new@gmail.com',
-        //    'phone' => '0000000',
-        //    'family_id' => 'GHSF434434-P',
-        //    'amount_paid' => 1500,
-        //    'hostel' => 'SAINT PAUL',
-        //    'foodstand' => 'FOODSTASND',
-        //     'conference_edition_id' => 1,
-        //     'category'=> 'welcome_mail'
-        // ];
         switch ($data['type']) {
             case 'welcome_mail':
                 $account = "<a style='color: white;text-decoration: none;background-color: #29166f;padding: 7px;border-radius: 5px;' href='". route('conferencemanagement.index', ['edition' => $data['conference_edition_id']])."'>Login</a>";

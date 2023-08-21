@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Nec;
 use App\Models\Stakeholder;
-use App\Models\CriticalEmail;
 use Illuminate\Http\Request;
+use App\Models\CriticalEmail;
 use App\Mail\NotificationEmail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
@@ -17,7 +18,7 @@ class CronController extends Controller
         $notifiables = ['davsong16@gmail.com', 'abokiogbeni@gmail.com', 'princedamab19057@gmail.com', 'oyedepokds@gmail.com'];
         //Get all stakeholders 
         $stakeholders = Stakeholder::limit(10)->get();
-        
+     
         foreach($stakeholders as $stakeholder){
             if($stakeholder->day == date('d') && ($stakeholder->month == date('m'))){
                 $data['name'] = $stakeholder->name;
@@ -26,6 +27,42 @@ class CronController extends Controller
                 
                 foreach($notifiables as $notifiable){
                     Mail::to($notifiable)->send(new NotificationEmail($data));
+                }
+            }
+        }
+    }
+
+    public function birthdayReminderForNec($days)
+    {
+        //All Notifiable emails
+        $notifiables = ['davsong16@gmail.com', 'princedamab19057@gmail.com', 'oyedepokds@gmail.com', 'gsfnationalpublicity@gmail.com'];
+        //Get all stakeholders 
+        $stakeholders = Nec::all();
+        $twoDaysBefore = Carbon::now()->addDays($days);
+        $twoDaysBefore = $twoDaysBefore->format('d');
+        if($days == 1){
+            $type = 'onedaynecbirthdaynotification';
+        }
+        if ($days == 2) {
+            $type = 'twodaysnecbirthdaynotification';
+        }
+       
+        foreach ($stakeholders as $stakeholder) {
+            if(!empty($stakeholder->bday)){
+                $date = explode('/',$stakeholder->bday);
+                $day = $date[0];
+                $month = $date[1];
+
+                if ($day == $twoDaysBefore && $month == date('m')) {
+                    $data['name'] = $stakeholder->name;
+                    $data['bday'] = date('Y').'/'.$stakeholder->bday;
+                    $data['type'] = $type;
+                   
+                    $data['portfolio'] = $stakeholder->office;
+    
+                    foreach ($notifiables as $notifiable) {
+                        Mail::to($notifiable)->send(new NotificationEmail($data));
+                    }
                 }
             }
         }

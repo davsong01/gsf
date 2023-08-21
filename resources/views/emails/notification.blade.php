@@ -66,8 +66,21 @@ Current Amount in Wallet: {!! $setting->default_currency !!}{{ $data['wallet'] }
 Dear Admin, <br>
 {{ $data['name'] }} has birthday today, <br>
 {{ $data['name'] }} is the {{ $data['portfolio'] }} <br><br>
-Kindly design birthday fyler.
+Kindly design birthday flyer.
+@endif
 
+@if($data['type'] == 'twodaysnecbirthdaynotification')
+Hello, <br>
+{{ $data['name'] }} has birthday in two days time - <strong>{{$data['bday']}}</strong>, <br>
+{{ $data['name'] }} is the {{ $data['portfolio'] }} <br><br>
+Kindly design birthday flyer.
+@endif
+
+@if($data['type'] == 'onedaynecbirthdaynotification')
+Hello, <br>
+{{ $data['name'] }} has birthday tomorrow - <strong>{{$data['bday']}}</strong>, <br>
+{{ $data['name'] }} is the {{ $data['portfolio'] }} <br><br>
+Kindly design birthday flyer.
 @endif
 
 @if($data['type'] == 'nationalRejection')

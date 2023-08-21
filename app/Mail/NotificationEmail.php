@@ -50,7 +50,7 @@ class NotificationEmail extends Mailable
             ->subject('Report Notification');
         }
 
-        if(isset($this->data['type']) && $this->data['type'] == 'birthdaynotification'){
+        if(isset($this->data['type']) && in_array($this->data['type'], ['twodaysnecbirthdaynotification', 'birthdaynotification', 'onedaynecbirthdaynotification'])){
             return $this->markdown('emails.notification')
             ->subject('Its '. $this->data['name'] . '\'s Birthday');
         }
