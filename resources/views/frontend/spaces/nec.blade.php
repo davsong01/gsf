@@ -3,7 +3,13 @@
 
 @section('css')
 <style>
-    .our-team{
+  @media (max-width: 400px) {
+       .our-team {
+            width: 50%;
+            margin: auto;
+        }
+    }
+  .our-team{
       text-align: center;
     }
     .our-team .pic{
@@ -115,7 +121,7 @@
   <div class="container" style="margin-top:20px">
     <div class="row">
       @foreach($nec as $n)
-        <div class="col-md-2 col-sm-6" style="margin-bottom: 40px;">
+        <div class="col-md-2 col-sm-6" style="margin-bottom: 25px;">
             <div class="our-team">
                 <div class="pic">
                     <img style="box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;" src="{{ !is_null($n->passport) ? asset($n->passport) : asset('frontend/passports/avatar.jpg') }}" alt="">
@@ -130,7 +136,7 @@
                         </ul>
                     </div>
                 </div>
-                <div class="team-prof">
+                <div class="team-prof" style="line-height: 1.0 !important;margin-top: 10px;">
                     <h6 class="card-title mb-2">{{ $n->name }}</h3>
                      <small style="color: #c33c54;font-size: 11px;font-weight: 200;line-height: 1.0">{{ $n->office }}</small>
                 </div>
