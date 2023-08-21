@@ -118,7 +118,7 @@
         <div class="col-md-2 col-sm-6" style="margin-bottom: 40px;">
             <div class="our-team">
                 <div class="pic">
-                    <img src="{{ !is_null($n->passport) ? asset($n->passport) : asset('frontend/passports/avatar.jpg') }}" alt="">
+                    <img style="box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;" src="{{ !is_null($n->passport) ? asset($n->passport) : asset('frontend/passports/avatar.jpg') }}" alt="">
                     <div class="social_media_team">
                         <ul class="team_social">
                             @if(!empty($n->email))
@@ -132,7 +132,7 @@
                 </div>
                 <div class="team-prof">
                     <h6 class="card-title mb-2">{{ $n->name }}</h3>
-                     <small style="color: #c33c54;; font-size:100%">{{ $n->office }}</small>
+                     <small style="color: #c33c54;font-size: 11px;font-weight: 200;line-height: 1.0">{{ $n->office }}</small>
                 </div>
             </div>
         </div>
