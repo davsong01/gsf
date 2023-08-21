@@ -26,6 +26,7 @@
 											<th>S/N</th>
 											<th>Avatar</th>
 											<th>Details</th>
+											<th>Order</th>
 											<th>Actions</th>
 										</tr>
 									</thead>
@@ -37,11 +38,13 @@
 													src="{{ asset($n->passport ? $n->passport : 'frontend/passports/avatar.jpg') }}"
 													alt="avatar" height="40" width="40"></td>
 											
-											<td>Name: {{ $n->name }} <br>
+											<td>
+												Name: {{ $n->name }} <br>
 												Email: {{ $n->email }} <br>
-												Phone: {{ $n->phone }}
+												Phone: {{ $n->phone }} <br>
+												Office: {{ $n->office }}
 											</td>
-											
+											<td>{{ $n->order }}</td>
 											<td style="padding-left: 5px;padding-right: 5px;">
 												<a class="actions" data-toggle="tooltip" title="View/Edit Nec" href="{{ route('nec.edit', $n->id) }}"> <i class="bx bxs-edit actions"></i>
 												</a>

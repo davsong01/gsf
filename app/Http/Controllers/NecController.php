@@ -33,7 +33,7 @@ class NecController extends Controller
     {
         $data = $this->validateUser($request);
         if ($request['passport']) {
-            $passport = $this->uploadImage($request->passport, 'frontend/passports', 500, 500);
+            $passport = $this->uploadImage($request->passport, 'frontend/passports', 450, 400);
 
             $data['passport'] = $passport;
         }

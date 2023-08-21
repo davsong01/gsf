@@ -120,12 +120,14 @@
                 <div class="pic">
                     <img src="{{ !is_null($n->passport) ? asset($n->passport) : asset('frontend/passports/avatar.jpg') }}" alt="">
                     <div class="social_media_team">
-                        {{-- <ul class="team_social">
-                            <li><a href="#"><i class="fa fa-envelope"></i></a></li>
-                            <li><a href="#"><i class="fab fa-google-plus"></i></a></li>
+                        <ul class="team_social">
+                            @if(!empty($n->email))
+                            <li><a target="_blank" href="mailto:{{$n->email}}"><i class="fa fa-envelope"></i></a>{{ $n->email }}</li>
+                            @endif
+                            {{-- <li><a href="#"><i class="fab fa-google-plus"></i></a></li>
                             <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-                            <li><a href="#"><i class="fab fa-facebook"></i></a></li>
-                        </ul> --}}
+                            <li><a href="#"><i class="fab fa-facebook"></i></a></li> --}}
+                        </ul>
                     </div>
                 </div>
                 <div class="team-prof">
