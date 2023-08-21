@@ -54,7 +54,7 @@
         font-size: 15px;
     }
     .team_social > li > a:hover{
-        background: #31aab5;
+        background: #125;
     }
     .post-title > a{
         color:#fff;
@@ -122,7 +122,7 @@
                     <div class="social_media_team">
                         <ul class="team_social">
                             @if(!empty($n->email))
-                            <li><a target="_blank" href="mailto:{{$n->email}}"><i class="fa fa-envelope"></i></a>{{ $n->email }}</li>
+                            <li><a target="_blank" href="mailto:{{$n->email}}"><i class="fa fa-envelope"></i></a></li>
                             @endif
                             {{-- <li><a href="#"><i class="fab fa-google-plus"></i></a></li>
                             <li><a href="#"><i class="fab fa-twitter"></i></a></li>
