@@ -38,7 +38,8 @@
                                         <tr>
                                             <td>{{ $count++ }}</td>
                                             <td>{{ $chapter->name }} <br>
-                                                <small><a href="{{ route('people.campuses'), $chapter->id }}">View on website</a></small>
+                                               <small style="color:red">Token: {{ $chapter->token }}</small> <br>
+                                                <small><a target="_blank" href="{{ route('campus.single', $chapter->id) }}"><i class="fa fa-eye"></i> View on website</a></small>
                                             </td>
                                             <td>{{ $chapter->stakeholder->name ?? 'N/A' }}</td>
                                             <td>

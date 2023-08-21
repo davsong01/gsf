@@ -2,7 +2,7 @@
 
 namespace app\Models;
 
-use App\Models\field;
+use App\Models\Field;
 use AppModels\Chapter;
 use AppModels\Stakeholder;
 use Illuminate\Database\Eloquent\Model;
