@@ -42,7 +42,8 @@
 												Name: {{ $n->name }} <br>
 												Email: {{ $n->email }} <br>
 												Phone: {{ $n->phone }} <br>
-												Office: {{ $n->office }}
+												Office: {{ $n->office }} <br>
+												B/Day: {{ $n->bday }} <br>
 											</td>
 											<td>{{ $n->order }}</td>
 											<td style="padding-left: 5px;padding-right: 5px;">
