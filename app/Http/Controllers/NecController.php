@@ -12,7 +12,7 @@ class NecController extends Controller
      */
     public function index()
     {
-        $nec = Nec::all();
+        $nec = Nec::orderBy('order', 'ASC')->get();
         $count = 1;
         return view('admin.nec.index')->with('nec', $nec)->with('count', $count);
 
