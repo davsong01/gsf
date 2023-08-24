@@ -76,6 +76,13 @@ Hello, <br>
 Kindly design birthday flyer.
 @endif
 
+@if($data['type'] == 'threedaysnecbirthdaynotification')
+Hello, <br>
+{{ $data['name'] }} has birthday in three days time - <strong>{{$data['bday']}}</strong>, <br>
+{{ $data['name'] }} is the {{ $data['portfolio'] }} <br><br>
+Kindly design birthday flyer.
+@endif
+
 @if($data['type'] == 'onedaynecbirthdaynotification')
 Hello, <br>
 {{ $data['name'] }} has birthday tomorrow - <strong>{{$data['bday']}}</strong>, <br>

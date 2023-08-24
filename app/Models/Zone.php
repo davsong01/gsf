@@ -3,7 +3,7 @@
 namespace app\Models;
 
 use App\Models\Field;
-use AppModels\Chapter;
+use App\Models\Chapter;
 use AppModels\Stakeholder;
 use Illuminate\Database\Eloquent\Model;
 

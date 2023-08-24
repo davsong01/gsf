@@ -15,7 +15,7 @@ class CronController extends Controller
 {
     public function cron(){
         //All Notifiable emails
-        $notifiables = ['davsong16@gmail.com', 'abokiogbeni@gmail.com', 'princedamab19057@gmail.com', 'oyedepokds@gmail.com'];
+        $notifiables = ['princedamab19057@gmail.com', 'oyedepokds@gmail.com', 'gsfnationalpublicity@gmail.com'];
         //Get all stakeholders 
         $stakeholders = Stakeholder::limit(10)->get();
      
@@ -35,7 +35,7 @@ class CronController extends Controller
     public function birthdayReminderForNec($days)
     {
         //All Notifiable emails
-        $notifiables = ['davsong16@gmail.com', 'princedamab19057@gmail.com', 'oyedepokds@gmail.com', 'gsfnationalpublicity@gmail.com'];
+        $notifiables = ['princedamab19057@gmail.com', 'oyedepokds@gmail.com', 'gsfnationalpublicity@gmail.com'];
         //Get all stakeholders 
         $stakeholders = Nec::all();
         $twoDaysBefore = Carbon::now()->addDays($days);
@@ -45,6 +45,9 @@ class CronController extends Controller
         }
         if ($days == 2) {
             $type = 'twodaysnecbirthdaynotification';
+        }
+        if ($days == 3) {
+            $type = 'threedaysnecbirthdaynotification';
         }
        
         foreach ($stakeholders as $stakeholder) {
@@ -57,7 +60,6 @@ class CronController extends Controller
                     $data['name'] = $stakeholder->name;
                     $data['bday'] = date('Y').'/'.$stakeholder->bday;
                     $data['type'] = $type;
-                   
                     $data['portfolio'] = $stakeholder->office;
     
                     foreach ($notifiables as $notifiable) {
