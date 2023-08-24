@@ -4,7 +4,7 @@ namespace app\Models;
 
 use App\Models\Field;
 use App\Models\Chapter;
-use AppModels\Stakeholder;
+use App\Models\Stakeholder;
 use Illuminate\Database\Eloquent\Model;
 
 class Zone extends Model
