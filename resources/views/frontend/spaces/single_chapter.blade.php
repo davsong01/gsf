@@ -38,7 +38,13 @@
                                 class="far fa-address-card mr-2"></span>About</a>
                         <a class="nav-item nav-link" id="nav-events-tab" data-toggle="tab" href="#nav-events" role="tab"
                             aria-controls="nav-events" aria-selected="false"><span
-                                class="far fa-play-circle mr-2"></span>Events</a>
+                                class="far fa fa-calendar mr-2"></span>Events</a>
+                        <a class="nav-item nav-link" id="nav-events-tab" data-toggle="tab" href="#members" role="tab"
+                            aria-controls="nav-events" aria-selected="false"><span
+                                class="fa fa-graduation-cap mr-2"></span>Members</a>
+                        <a class="nav-item nav-link" id="nav-events-tab" data-toggle="tab" href="#alumni" role="tab"
+                            aria-controls="nav-events" aria-selected="false"><span
+                                class="fas fa-user-graduate mr-2"></span>Alumni</a>
                     </div>
                 </nav>
                 <div class="tab-content" id="nav-tabContent">
@@ -92,39 +98,77 @@
 
                     </div>
                     <div class="tab-pane fade" id="nav-events" role="tabpanel" aria-labelledby="nav-video-tab">
-
-                      @if($chapter->events->count())
-                         @foreach($chapter->events as $event)
-                          <div class="card border-light mb-4">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col-12 col-lg-6 col-xl-4">
-                                      <a class="img-fluid" href="{{ asset('gsfcom/images/events.jpg')}}"><img src="{{ asset('gsfcom/images/events.jpg')}}" alt="private office" class="card-img p-2 rounded-xl">
-                                      </a>
-                                    </div>
-                                    <div class="col-12 col-lg-6 col-xl-8">
-                                        <div class="card-body py-lg-0">
-                                            <a href="{{ isset($event->banner) ? $event->banner : asset('gsfcom/images/events.jpg')}}">
-                                                <h2 class="h5"> {{ $event->title }}</h2>
+                        @if($chapter->events->count())
+                            @foreach($chapter->events as $event)
+                                <div class="card border-light mb-4">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col-12 col-lg-6 col-xl-4">
+                                            <a class="img-fluid" href="{{ asset('gsfcom/images/events.jpg')}}"><img src="{{ asset('gsfcom/images/events.jpg')}}" alt="private office" class="card-img p-2 rounded-xl">
                                             </a>
-                                            <div class="col d-flex pl-0 pb-1"><span class="text-primary font-small mr-3">
-                                              <span class="fas fa-street-view mr-2"></span>{{ $event->venue }}</span>
                                             </div>
-                                            <div class="col d-flex pl-0"><span class="text-primary font-small mr-3">
-                                              <span class="font-small mr-3"><span class="fas fa-calendar mr-2"></span>{{  date("F jS, Y", strtotime($event->date)) }}</span> 
-                                              <span class="font-small mr-3"><span class="fa fa-clock mr-2"></span>{{  Carbon\Carbon::parse($event->time)->format('g:i A') }}</span> 
+                                            <div class="col-12 col-lg-6 col-xl-8">
+                                                <div class="card-body py-lg-0">
+                                                    <a href="{{ isset($event->banner) ? $event->banner : asset('gsfcom/images/events.jpg')}}">
+                                                        <h2 class="h5"> {{ $event->title }}</h2>
+                                                    </a>
+                                                    <div class="col d-flex pl-0 pb-1"><span class="text-primary font-small mr-3">
+                                                    <span class="fas fa-street-view mr-2"></span>{{ $event->venue }}</span>
+                                                    </div>
+                                                    <div class="col d-flex pl-0"><span class="text-primary font-small mr-3">
+                                                    <span class="font-small mr-3"><span class="fas fa-calendar mr-2"></span>{{  date("F jS, Y", strtotime($event->date)) }}</span> 
+                                                    <span class="font-small mr-3"><span class="fa fa-clock mr-2"></span>{{  Carbon\Carbon::parse($event->time)->format('g:i A') }}</span> 
+                                                    </div>
+                                                </div>
                                             </div>
+                                        
                                         </div>
-                                    </div>
-                                  
                                 </div>
-                          </div>
-                          @endforeach
-                          @else 
-                          <div class="col-12 col-lg-6 col-xl-4">
+                            @endforeach
+                        @else 
+                            <div class="col-12 col-lg-6 col-xl-4">
                             No Events
-                          </div>
-                          @endif
-                      </div>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="tab-pane fade" id="members" role="tabpanel" aria-labelledby="nav-video-tab">
+                        @if($chapter->members()->count() > 0)
+                        <div class="row">
+                            @foreach($chapter->members()->take(10) as $member)
+                                <div class="col-md-6 card mb-4">
+                                    <h6 style="float:left">{{ $member->name }}</h3>
+                                    <a style="float:right" target="_blank" href="{{ route('user.single', $member->slug) }}" class="btn btn-sm btn-primary animate-up-2" style="color: white;">View details</a>
+                                </div>
+                               
+                            @endforeach
+                            <div class="col-md-12">
+                                <a target="_blank" href="{{route('members.single.campus', $chapter->id)}}" class="btn btn-info">View all</a>
+                            </div>
+                        </div>
+                        @else 
+                            <div class="col-12 col-lg-6 col-xl-4">
+                            No Member
+                            </div>
+                        @endif
+                    </div>
+                    <div class="tab-pane fade" id="alumni" role="tabpanel" aria-labelledby="nav-video-tab">
+                        @if($chapter->alumni()->count() > 0)
+                        <div class="row">
+                            @foreach($chapter->alumni()->take(10) as $member)
+                                <div class="col-md-6 card mb-4">
+                                    <h6 style="float:left">{{ $member->name }}</h3>
+                                    <a style="float:right" target="_blank" href="{{ route('user.single', $member->slug) }}" class="btn btn-sm btn-primary animate-up-2" style="color: white;">View details</a>
+                                </div>
+                            @endforeach
+                            <div class="col-md-12">
+                                <a target="_blank" href="{{route('alumni.single.campus', $chapter->id)}}" class="btn btn-info">View all</a>
+                            </div>
+                        </div>
+                        @else 
+                            <div class="col-12 col-lg-6 col-xl-4">
+                            No Alumni
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
             <aside class="col-12 col-lg-4 mt-3 mt-lg-0">

@@ -133,6 +133,17 @@ class HomeController extends Controller
         // return view('frontend.main.chapters', compact('chapters'));
     }
 
+    public function studentsByChapter($id){
+        $alumnis = User::where('chapter_id', $id)->whereStatus(0)->where('role', '<>', 1)->paginate(15)->withQueryString();
+        return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
+    }
+
+    public function alumniByChapter($id)
+    {
+        $alumnis = User::where('chapter_id', $id)->whereStatus(1)->where('role', '<>', 1)->paginate(15)->withQueryString();
+        return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
+    }
+
     private function getSidebar() {
         $chapters = Chapter::all();
         $portfolios = $this->getCommunityPortfolios();

@@ -18,6 +18,16 @@ class Chapter extends Model
         return $this->hasMany(User::class, 'chapter_id');
     }
 
+    public function members()
+    {
+        return User::where('chapter_id', $this->id)->where('status', 0)->where('role', '<>', 1)->orderBy('created_at', 'ASC')->get();
+    }
+
+    public function alumni()
+    {
+        return User::where('chapter_id', $this->id)->where('status', 1)->where('role', '<>', 1)->orderBy('created_at', 'ASC')->get();
+    }
+
     public function stakeholder(){
         return $this->hasOne(Stakeholder::class);
     }
