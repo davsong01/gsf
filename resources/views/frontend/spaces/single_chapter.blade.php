@@ -141,7 +141,7 @@
                                
                             @endforeach
                             <div class="col-md-12">
-                                <a target="_blank" href="{{route('members.single.campus', $chapter->id)}}" class="btn btn-info">View all</a>
+                                <a target="_blank" href="{{route('members.campus', $chapter->id)}}" class="btn btn-info">View all</a>
                             </div>
                         </div>
                         @else 
@@ -160,7 +160,7 @@
                                 </div>
                             @endforeach
                             <div class="col-md-12">
-                                <a target="_blank" href="{{route('alumni.single.campus', $chapter->id)}}" class="btn btn-info">View all</a>
+                                <a target="_blank" href="{{route('alumni.campus', $chapter->id)}}" class="btn btn-info">View all</a>
                             </div>
                         </div>
                         @else 
