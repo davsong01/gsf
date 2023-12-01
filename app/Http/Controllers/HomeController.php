@@ -430,6 +430,15 @@ class HomeController extends Controller
         return view('frontend.' . frontendTemplate() . '.newalumni', compact('chapters', 'portfolios', 'sessions'));
 	}
 
+    public function newDonation()
+    {
+        $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+        $portfolios = $this->getCommunityPortfolios();
+        $sessions = range(date('Y'), date('1982'));
+
+        return view('frontend.' . frontendTemplate() . '.newdonation', compact('chapters', 'portfolios', 'sessions'));
+    }
+
 	public function saveNewAlumni(Request $request){
         $new = NewListing::create($request->all());
         $setting = GeneralSetting::first();
@@ -454,12 +463,16 @@ class HomeController extends Controller
 
     public function uploadAlumni(Request $request){
         //Handle Passport Upload
+        $setting = GeneralSetting::first();
+
         if ($request->has('image')) {
             $request['passport'] = $this->uploadImage($request->image, 'frontend/passports', 500, 500);
         } 
 
         TempMember::updateOrCreate($request->except(['_token','image']));
         $request['type'] = 'alumni-upload';
+        $request['chapter'] = Chapter::find($request->chapter)->name;
+        
         $email = [
             'subject' => 'Thank you for submitting your details',
             'recipient_name' => $request['name'],
@@ -469,6 +482,18 @@ class HomeController extends Controller
         ];
 
         $this->logEmail($email);
+
+        // Send notification to admin
+        $request['type'] = 'new_mewmber_listing';
+        $email2 = [
+            'subject' => $request['name']. ' has just submitted details on GSF alumni page',
+            'recipient_name' => $request['Admin'],
+            'recipient' => $setting->official_email,
+            'type' => 'email',
+            'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($request),
+        ];
+        
+        $this->logEmail($email2);
         
         return back()->with('message', 'Submission Added successfully, we have sent you an email with the next steps');
 

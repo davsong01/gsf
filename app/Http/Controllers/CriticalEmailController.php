@@ -79,7 +79,25 @@ class CriticalEmailController extends Controller
                 </p><br><br>
                 Kindly sign in to approve listing
                 ";
+            break;
+            case 'new_mewmber_listing':
+                $level = $data['status'] == 0 ? 'Student' : 'Alumni';
+                $content = "<p>Dear Admin, <br>
+                A new Listing has been submmitted on GSF Directory website, please find details below: <br><br>
+                <strong>Name: </strong>" . $data['name'] . "<br>
+                <strong>Phone: </strong>" . $data['phone'] . "<br>
+                <strong>Email: </strong>" . $data['email'] . "<br>
+                <strong>Gender: </strong>" . $data['gender'] . "<br>
+                <strong>Portfolio: </strong>" . $data['portfolio'] . "<br>
+                <strong>Chapter: </strong>" . $data['chapter'] . "<br>
+                <strong>Matriculation year: </strong>" . $data['matriculation_year'] . "<br>
+                <strong>Graduation year: </strong>" . $data['graduation_year'] . "<br>
+                <strong>Status: </strong>" . $level . "<br>
 
+                </p><br><br>
+                Kindly sign in to approve listing
+                ";
+            break;
             case 'alumni-upload';
                 $content = "Dear " . $data['name'] . ", <br><br>
                     We have successfully received your details. <br><br>We are now processing your submission and you will will be notified via email once we complete the verification process. Thank you<br><br>

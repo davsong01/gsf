@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string("role")->nullable();
             $table->string("program")->nullable();
             $table->string("course")->nullable();
+            $table->string('matriculation_year')->nullable();
+            $table->string('graduation_year')->nullable();
             $table->string("open_to_work")->nullable();
             $table->timestamps();
         });

@@ -115,6 +115,9 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('conference-registration/{page?}', 'regPage')->name('conference.registration');
     // Route::post('/registration/{type}', 'registrationType')->name('registration');
 
+    Route::get('newdonation', 'newDonation')->name('newdonation');
+    Route::post('newdonation', 'saveNewDonation')->name('newdonation.save');
+
 });
 
 Route::controller(StakeholderLoginController::class)->group(function () {
