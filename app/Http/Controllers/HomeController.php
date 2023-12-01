@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use App\Models\GeneralSetting;
 use App\Mail\NotificationEmail;
 use App\Models\ConferenceEdition;
+use App\Models\TempMember;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -111,7 +112,6 @@ class HomeController extends Controller
 
     public function nec()
     {
-    //    dd(Hash::make('0987654321'));
         $nec = Nec::orderBy('order', 'ASC')->get();
         return view('frontend.' . frontendTemplate() . '.nec', compact('nec'));
     }
@@ -168,55 +168,41 @@ class HomeController extends Controller
 
     public function alumniSearch(Request $request)
     {
-        $this->validate($request, ['name' => 'required|min:4']);
-
-        $results = User::wherehas('campus')->where("name", "LIKE", "%{$request->name}%")->where('status', 1)->where('role', '<>', 1)->orderBy('users.created_at', 'desc')->get();
-       
+        $alumni = $results = User::with('campus')
+        ->where('status', 1)
+        ->where('role', '<>', 1)->orderBy('created_at','desc');
+        
+        if(!empty($request->name)){
+            $alumni = $alumni->where("name", "LIKE", "%{$request->name}%");
+        }
+        
         if ($request->school) {
-            $searchFromSchool = Chapter::select("id", "name")
-            ->where("chapters.name", "LIKE", "%{$request->school}%")
-            ->leftJoin('users', 'chapters.id', '=', 'users.chapter_id')
-            // ->where('users.status', 1)
-            ->where('users.role', '<>', 1)
-            ->select('users.*','chapters.*')
-            ->orderBy('users.created_at', 'desc')
-            ->get();
-        }else{
-            $searchFromSchool = collect([]);
+            $campus = Chapter::where("name", "LIKE", "%{$request->school}%")->pluck('id');
+            $alumni = $alumni->whereIn('users.chapter_id', $campus);            
         }
 
-        $searchAlumni = collect([]);
-        $searchMember = $searchFromSchool->merge($results);
+        $searchMember = $alumni->get();
         $count = $searchMember->count();
-        
         return view('frontend.' . frontendTemplate() . '.general_search_results', compact('count','searchMember'));
     }
 
     public function memberSearch(Request $request)
     {
-        $this->validate($request, ['name' => 'required|min:4']);
+        $results = User::with('campus')
+        ->where('status', 0)
+        ->where('role', '<>', 1)->orderBy('created_at', 'desc');
         
-        $results = User::with(['campus' => function($query){
-            return $query->where('id', '<>', 86);
-        }])->where("name", "LIKE", "%{$request->name}%")->where('status', 0)->where('role', '<>', 0)->orderBy('users.created_at', 'desc')->get();
+        if (!empty($request->name)) {
+            $results = $results->where("name", "LIKE", "%{$request->name}%");
+        }
 
         if ($request->school) {
-            $searchFromSchool = Chapter::select("id", "name")
-                ->where("chapters.name", "LIKE", "%{$request->school}%")
-                ->leftJoin('users', 'chapters.id', '=', 'users.chapter_id')
-                // ->where('users.status', 1)
-                // ->where('users.role', '<>', 0)
-                ->select('users.*', 'chapters.*', 'users.name AS name', 'users.id AS id', 'chapters.name AS c_name')
-                ->orderBy('users.created_at', 'desc')
-                ->get();
-        }else{
-            $searchFromSchool = collect([]);
+            $campus = Chapter::where("name", "LIKE", "%{$request->school}%")->pluck('id');
+            $results = $results->whereIn('users.chapter_id', $campus);
         }
-       
-        $searchMember = $searchFromSchool->merge($results);
-        $count = $searchMember->count();
 
-        // run this through a service
+        $searchMember = $results->get();
+        $count = $searchMember->count();
         
         return view('frontend.' . frontendTemplate() . '.general_search_results', compact('count','searchMember', ));
     }
@@ -465,4 +451,26 @@ class HomeController extends Controller
         return back()->with('message', 'Submission Added successfully');
         
 	}
+
+    public function uploadAlumni(Request $request){
+        //Handle Passport Upload
+        if ($request->has('image')) {
+            $request['passport'] = $this->uploadImage($request->image, 'frontend/passports', 500, 500);
+        } 
+
+        TempMember::updateOrCreate($request->except(['_token','image']));
+        $request['type'] = 'alumni-upload';
+        $email = [
+            'subject' => 'Thank you for submitting your details',
+            'recipient_name' => $request['name'],
+            'recipient' => $request['email'],
+            'type' => 'email',
+            'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($request),
+        ];
+
+        $this->logEmail($email);
+        
+        return back()->with('message', 'Submission Added successfully, we have sent you an email with the next steps');
+
+    }
 }

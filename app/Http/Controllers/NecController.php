@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Nec;
+use App\Models\ArchivedNec;
 use Illuminate\Http\Request;
 
 class NecController extends Controller
@@ -16,6 +17,36 @@ class NecController extends Controller
         $count = 1;
         return view('admin.nec.index')->with('nec', $nec)->with('count', $count);
 
+    }
+
+    public function archiveNec(Request $request){
+        $from = $request->from;
+        $to = $request->to;
+
+        if($from < $to){
+            return back()->with('error', 'From cannot be lesser');
+        }
+
+        if($from == date('Y')){
+            $nec = Nec::where('tenure', $from)->get();
+            foreach($nec as $n){
+                $data = $n->toArray();
+                $data['tenure'] = $to;
+                unset($data['id']);
+                unset($data['created_at']);
+                unset($data['updated_at']);
+                
+                ArchivedNec::create($data);
+                // $n->delete();
+            }
+        }else{
+            $nec = ArchivedNec::where('tenure', $from)->get();
+            foreach ($nec as $n) {
+                $n->update(['tenure' => $to]);
+            }
+        }
+
+        return back()->with('message', 'Archive successful');
     }
 
     /**

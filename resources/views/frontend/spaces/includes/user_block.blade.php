@@ -7,13 +7,7 @@
         <div class="card-body" style="height: 350px;">
             <a href="{{ route('user.single', $user->slug) }}"><h2 class="h4 card-title mb-2">{{ ucfirst($user->name) }}</h2></a>
             @if($user->stakeholder)
-                {{-- @if(!in_array($user->stakeholder->role, $unused) )
-                    @if($user->stakeholder->role == 'Portfolio')
-                    <strong style="color:green">GSF National {{ $user->stakeholder->role }}</strong>
-                    @else 
-                    <strong style="color:green">{{ $user->stakeholder->role }} {{ $user->stakeholder->portfolio ? ', GSF '.$user->stakeholder->portfolio  : ''}}</strong>
-                    @endif
-                @endif --}}
+                
                 @if($user->stakeholder->role == 'President' && !is_null($user->stakeholder->chapter_id))<span class="portfolio">President, </span>{{ $user->stakeholder->chapter->name ?? 'N/A' }}@endif
                 @if($user->stakeholder->role == 'Zonal Pastor' && !is_null($user->stakeholder->zone_id))<span class="portfolio">Zonal Pastor, </span>{{ $user->stakeholder->zone->name ?? 'N/A' }}@endif
                 @if($user->stakeholder->role == 'Field Pastor' && !is_null($user->stakeholder->field_id)) <span class="portfolio">Field Pastor, </span>{{ $user->stakeholder->field->name ?? 'N/A' }}@endif

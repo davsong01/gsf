@@ -54,7 +54,7 @@
                         <div class="col-12 col-lg-5">
                             <div class="form-group form-group-lg mb-lg-0">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="input-group-text"><span class="fas fa-user"></span></span></div><input id="name" name="name" type="text" class="form-control" placeholder="Type a name" required>
+                                    <div class="input-group-prepend"><span class="input-group-text"><span class="fas fa-user"></span></span></div><input id="name" name="name" type="text" class="form-control" placeholder="Type a name">
                                 </div>
                             </div>
                         </div>

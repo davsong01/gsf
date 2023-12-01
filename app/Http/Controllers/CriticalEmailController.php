@@ -79,6 +79,12 @@ class CriticalEmailController extends Controller
                 </p><br><br>
                 Kindly sign in to approve listing
                 ";
+
+            case 'alumni-upload';
+                $content = "Dear " . $data['name'] . ", <br><br>
+                    We have successfully received your details. <br><br>We are now processing your submission and you will will be notified via email once we complete the verification process. Thank you<br><br>
+                    ";
+
                 default:
                 # code...
                 break;

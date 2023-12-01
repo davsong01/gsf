@@ -106,7 +106,7 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/people/programs', 'programs')->name('people.programs');
     // Homepage search
     Route::get('general-search', 'generalSearch')->name('general.search');
-    Route::get('alumni/search', 'alumniSearch')->name('alumni.search');
+    Route::get('search-alumni', 'alumniSearch')->name('search.alumni');
     Route::get('member/search', 'memberSearch')->name('member.search');
    
 
@@ -162,6 +162,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     // Official
     Route::resource('nec', NecController::class);
+    Route::get('archive-nec', [NecController::class, 'archiveNec'])->name('nec.archive');
+    
     Route::get('nec-delete/{id}', [NecController::class, 'delete'])->name('nec.delete');
     Route::resource('users', UserController::class);
     Route::controller(UserController::class)->group(function () {
@@ -342,6 +344,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('payouts', PayoutController::class);
     Route::resource('donations', DonationController::class);
 
+    Route::post('upload-alumni/{type}', [HomeController::class, 'uploadAlumni'])->name('upload-alumni');
 });
 
 //Get signature Image

@@ -15,7 +15,12 @@
                     </div>
                 </div>
                 <ul class="navbar-nav navbar-nav-hover justify-content-center">
-                @foreach(menu() as $m)
+                    <li class="nav-item">
+                        <a target="_blank" href="https://gsfnational.org" class="nav-link" aria-expanded="false">
+                            <span class="nav-link-inner-text mr-1">GSF Home</span>
+                        </a>
+                    </li>
+                    @foreach(menu() as $m)
                     <li class="nav-item">
                         <a href="{{route($m['route'])}}" class="nav-link" aria-expanded="false">
                             <span class="nav-link-inner-text mr-1">{{$m['name']}}</span>
