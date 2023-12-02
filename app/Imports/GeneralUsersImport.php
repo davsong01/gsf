@@ -64,12 +64,15 @@ class GeneralUsersImport extends Controller implements ToModel, WithHeadingRow
 			'graduation_year' => trim($row['year_of_graduation']),
 			'course' => trim($row['course']),
 			'program' => trim($row['program']),
+			'marital_status' => trim($row['marital_status']),
+			'date_of_birth' => trim($row['date_of_birth']),
 		];
 		
-		$user = TempMember::updateOrCreate($upload);
-
-		return $user;
-
+		if(!empty($upload['name'])){
+			$user = TempMember::updateOrCreate($upload);
+			return $user;
+		}
+	
 	}
 
 	private function getRole($role){

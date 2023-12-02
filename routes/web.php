@@ -176,6 +176,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     
     Route::get('nec-delete/{id}', [NecController::class, 'delete'])->name('nec.delete');
     Route::resource('users', UserController::class);
+    Route::get('donations-all', [DonationController::class, 'allDonations'])->name('donations.all');
+
     Route::get('listing-pending', [UserController::class, 'pendingListing']);
     Route::controller(UserController::class)->group(function () {
         Route::post('allusers', 'allUsers' )->name('users.all');
@@ -354,7 +356,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('payouts', PayoutController::class);
     Route::resource('donations', DonationController::class);
-    Route::get('donations-all', [DonationController::class, 'allDonations'])->name('donations.all');
 
 });
 

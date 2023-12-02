@@ -17,6 +17,13 @@ class DonationController extends Controller
      * @return \Illuminate\Http\Response
      */
 
+    public function allDonations(Request $request){
+        $count = 1;
+        $donations = Donation::where('type', 'donation')->orWhere('type','annual-due')->get();
+        
+        return view('admin.donations.otherdonation', compact('donations', 'count'));
+    }
+
     public function redirectToGateway(Request $request)
     {
         $setting = GeneralSetting::first();
