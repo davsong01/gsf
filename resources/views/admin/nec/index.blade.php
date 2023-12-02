@@ -83,7 +83,7 @@
 					<form action="{{ route('nec.archive')}}" method="GET">
 						@csrf
 						<?php 
-							$from = range(date('1982'), date('Y') + 2);
+							$from = range(date('1982'), date('Y'));
 							$to = range(date('1982'), date('Y'));
 						?>
 						<div class="row">
@@ -102,9 +102,9 @@
 									<label for="to">To Archived Tenure of</label>
 									<select name="to" class="form-control" id="to" required>
 										@foreach($to as $f)
-										@if(!in_array($f, range(date('Y'), date('Y'))))
+										{{-- @if(!in_array($f, range(date('Y'), date('Y')))) --}}
 										<option value="{{$f}}">{{$f}}</option>
-										@endif
+										{{-- @endif --}}
 										@endforeach
 									</select>
 								</fieldset>

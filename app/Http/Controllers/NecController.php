@@ -31,7 +31,7 @@ class NecController extends Controller
             $nec = Nec::where('tenure', $from)->get();
             foreach($nec as $n){
                 $data = $n->toArray();
-                $data['tenure'] = $to;
+                $data['tenure'] = $to.'/'.$to + 2;
                 unset($data['id']);
                 unset($data['created_at']);
                 unset($data['updated_at']);
