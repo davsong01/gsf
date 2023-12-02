@@ -38,6 +38,14 @@ class UserController extends Controller
 		
 	}
 
+	public function pendingListing()
+	{
+		if (auth()->user()->isAdmin()) { // Only sub admins who are members
+			return view('admin.users.index');
+		} else abort(404);
+	}
+
+	
 	public function allUsers(Request $request){
 		// The Traits are used in this function
 		$count = 1;

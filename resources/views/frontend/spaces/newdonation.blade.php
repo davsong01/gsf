@@ -30,16 +30,17 @@
           <div class="col-12">
             <div class="text-center text-md-center mb-5 mt-md-0 text-white" style="margin-top:20px">
               <h1 class="mb-0 h3" style="color:black">Cheerful Donation</h1> <br>
+                @include('includes.alerts')
+
               <blockquote>"For God so loved the world that he gave ..." (John 3:16)</blockquote>
               <p class="text-center text-md-center mb-5 mt-md-0" style="color:black">
-                 God gave up his Son, Jesus Christ, who left behind the glorious riches of heaven, to come to earth. Jesus loved us with compassion and empathy. He willingly gave up his life. He loved the world so much that he died to give us eternal life.Is there any better way to learn how to be a voluntary and cheerful giver than to observe the way Jesus gave? Jesus never once complained about the sacrifices he made. <br>Our heavenly Father loves to bless his children with good gifts. Likewise, God desires to see his own nature duplicated in his children. Cheerful giving is God's grace revealed through us. Here is an opportunity to practise God's own nature by willingly giving to support God's work through the GOFAMINT Student's Fellowship
+                 God gave up his Son, Jesus Christ, who left behind the glorious riches of heaven, to come to earth. Jesus loved us with compassion and empathy. He willingly gave up his life. He loved the world so much that he died to give us eternal life.Is there any better way to learn how to be a voluntary and cheerful giver than to observe the way Jesus gave? Jesus never once complained about the sacrifices he made. <br>Our heavenly Father loves to bless his children with good gifts. Likewise, God desires to see his own nature duplicated in his children. Cheerful giving is God's grace revealed through us. Here is an opportunity to practise God's own nature by willingly giving to support God's work through the GOFAMINT Students' Fellowship
               </p>
             </div>
           </div>
           <div class="col-12 d-flex align-items-center justify-content-center" style="margin-bottom:20px">
             <div class="signin-inner mt-3 mt-lg-0 bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-900">
-                @include('includes.alerts')
-                <form action="{{ route('newalumni.save') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('newdonation.save') }}" method="POST" enctype="multipart/form-data">
                   @csrf
                   <div class="row">
                     <div class="col-md-12">
@@ -58,24 +59,42 @@
 
                       <div class="mb-4">
                           <label for="campus">Campus (Optional)</label>
-                          <select name="campus" id="campus" class="form-control select2" required aria-label="Campus" >
+                          <select name="campus" id="campus" class="form-control select2" aria-label="Campus" >
+                            <option value="" selected>Select...</option>
                             @foreach(\App\Models\Chapter::where('id','<>',86)->get() as $chapter)
                               <option value="{{$chapter->id}}" {{ old('campus') == $chapter->id ? 'selected' : '' }}>{{ $chapter->name }}</option>
                             @endforeach
                           </select>
                       </div> 
                       <div class="mb-4">
+                          <label for="type">Are you an Alumni</label>
+                          <select name="membership_status" id="membership_status" class="form-control" required aria-label="membership_status" >
+                            <option value="Alumni" {{ old('membership_status') == 'Alumni' ? 'selected' : '' }}>Yes</option>
+                            <option value="Student" {{ old('membership_status') == 'Stadent' ? 'selected' : '' }}>No</option>
+                          </select>
+                      </div>  
+                      <div class="mb-4">
                           <label for="type">Donation Type</label>
                           <select name="type" id="type" class="form-control" required aria-label="type" >
-                            <option value="" {{ old('type') == 'donation' ? 'selected' : '' }}>{{ $chapter->name }}</option>
+                            <option value="donation" {{ old('type') == 'donation' ? 'selected' : '' }}>Donation</option>
+                            <option value="annual-due" {{ old('type') == 'annual-due' ? 'selected' : '' }}>Annual Due</option>
                           </select>
-                      </div>                    
+                      </div>  
+                      <div class="mb-4">
+                        <label for="amount">Amount</label>
+                        <input class="form-control" required id="amount" name="amount" value="{{old('amount')}}" placeholder="Enter Amount" type="text" aria-label="amount">
+                      </div>
+
+                      <div class="mb-4">
+                        <label for="remarks">Remarks</label>
+                        <textarea class="form-control"  name="remarks" id="" cols="30" rows="4" value="{{old('remarks')}}"  placeholder="Enter remarks" >{{old('remarks')}}</textarea>
+                      </div>
                     </div>
                   </div>
 
                   <div class="row">
                     <div class="col-md-12">
-                      <button type="submit" class="btn btn-block btn-primary">Submit details</button>
+                      <button type="submit" class="btn btn-block btn-primary">Make payment</button>
                     </div>
                   </div>
                   

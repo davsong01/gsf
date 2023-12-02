@@ -22,7 +22,7 @@
 @if(session()->get('warning'))
 <div class="alert alert-warning" role="alert">
         <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <strong>Hey!</strong> {{ session()->get('warning')}}
+        {{ session()->get('warning')}}
       </div>
 @endif
 

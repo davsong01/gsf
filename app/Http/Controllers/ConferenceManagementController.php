@@ -645,7 +645,7 @@ class ConferenceManagementController extends Controller
 	}
 
 	public function getAdminParticipantSample(Request $request,$type){
-	
+		
 		$path = public_path() . '/frontend/exportsamples/import'. Str::lower($type).'.xlsx';
 		
 		if (file_exists($path)) {

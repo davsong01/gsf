@@ -98,10 +98,40 @@ class CriticalEmailController extends Controller
                 Kindly sign in to approve listing
                 ";
             break;
+            case 'new_mewmber_listing_multiple':
+                $level = $data['status'] == 0 ? 'Student' : 'Alumni';
+                $content = "<p>Dear Admin, <br>
+                A new Listing has been submmitted on GSF Directory website via nultiple upload<br><br>
+                
+                </p><br><br>
+                Kindly sign in to approve listings
+                ";
+            break;
+
             case 'alumni-upload';
                 $content = "Dear " . $data['name'] . ", <br><br>
                     We have successfully received your details. <br><br>We are now processing your submission and you will will be notified via email once we complete the verification process. Thank you<br><br>
                     ";
+            break;
+            case 'donation_thank_you_mail':
+                $content = "Dear " . $data['name'] . "<br>
+                Thank you for your contribution of &#8358;" . number_format($data['amount']) . " to GSF. <br><br>
+                You are much appreciated and God bless you<br><br>Please find transaction ID of this teansaction below: <br><br>
+                <strong>Transaction ID: </strong>" . $data['transid'] . "<br><br>Thanks,<br>";
+                # code...
+                break;
+            case 'admin_donation_general_notification':
+                $content = "Dear Admin, <br><br>A new payment for " . $data['type'] . " has just been made. <br><br>Please find details below:<br><br>
+                <strong>Name: </strong> " . $data['name'] . "<br>
+                <strong>Email: </strong> " . $data['email'] . "<br>
+                <strong>Phone: </strong> " . $data['phone'] . "<br>
+                <strong>Type: </strong> " . $data['type'] . "<br>
+                <strong>Status: </strong> " . $data['membership_status'] . "<br>
+                <strong>Amount Paid: </strong> &#8358;" . number_format($data['amount']) . "<br>
+                <strong>Date: </strong>" . $data['created_at'] . "<br>
+                <strong>Transaction ID: </strong>" . $data['transid'] . "<br><br>Thanks,<br>";
+                # code...
+                break;
 
                 default:
                 # code...

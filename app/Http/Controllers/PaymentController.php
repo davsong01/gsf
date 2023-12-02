@@ -366,7 +366,7 @@ class PaymentController extends Controller
 			return view('frontend.conference.donationthankyou', compact('data', 'conference_year'));
 		}
 	}
-	public function queryPaystack($request,$setting)
+	public function queryPaystack($request,$setting, $callback=null)
 	{
 		$url = "https://api.paystack.co/transaction/initialize";
 		// Convert amount using payment mode exchange rate
@@ -376,7 +376,7 @@ class PaymentController extends Controller
 			'email' => $request['email'],
 			'amount' => $request['amount'],
 			'reference' =>  $request['transid'],
-			'callback_url' => url('/') . '/payment/callback',
+			'callback_url' => $callback ?? url('/') . '/payment/callback',
 			'currency' => $request['currency'],
 			'metadata'=> $metadata,
 		];

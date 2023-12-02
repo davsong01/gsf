@@ -109,16 +109,19 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('search-alumni', 'alumniSearch')->name('search.alumni');
     Route::get('member/search', 'memberSearch')->name('member.search');
    
-
     Route::get('newalumni', 'newAlumni')->name('newalumni');
     Route::post('newalumni', 'saveNewAlumni')->name('newalumni.save');
     Route::get('conference-registration/{page?}', 'regPage')->name('conference.registration');
     // Route::post('/registration/{type}', 'registrationType')->name('registration');
 
     Route::get('newdonation', 'newDonation')->name('newdonation');
-    Route::post('newdonation', 'saveNewDonation')->name('newdonation.save');
-
+    Route::post('upload-alumni/{type}', [HomeController::class, 'uploadAlumni'])->name('upload-alumni');
+    Route::get('upload-multiple', [HomeController::class, 'uploadMultiple'])->name('upload.multiple');
+    
+    Route::get('sample-listing', [HomeCOntroller::class, 'getListingSample'])->name('sample-listing');
+    
 });
+Route::post('newdonation', [DonationController::class, 'redirectToGateway'])->name('newdonation.save');
 
 Route::controller(StakeholderLoginController::class)->group(function () {
     //Stakeholder Account
@@ -156,6 +159,8 @@ Route::get('/nec/registration/portal/pay', [ConferenceController::class, 'necReg
 
 Route::post('/pay', [PaymentController::class, 'redirectToGateway'])->name('pay');
 Route::get('/payment/callback', [PaymentController::class, 'handleGatewayCallback']);
+Route::get('/payment/donation-callback', [DonationController::class, 'handleDonationGatewayCallback']);
+
 
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', [AccountController::class, 'index'])->name('account');
@@ -169,6 +174,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     
     Route::get('nec-delete/{id}', [NecController::class, 'delete'])->name('nec.delete');
     Route::resource('users', UserController::class);
+    Route::get('listing-pending', [UserController::class, 'pendingListing']);
     Route::controller(UserController::class)->group(function () {
         Route::post('allusers', 'allUsers' )->name('users.all');
         Route::get('trashedusers', 'trashedUsers')->name('users.trashed');
@@ -346,8 +352,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('payouts', PayoutController::class);
     Route::resource('donations', DonationController::class);
+    Route::get('donations-all', [DonationController::class, 'allDonations'])->name('donations.all');
 
-    Route::post('upload-alumni/{type}', [HomeController::class, 'uploadAlumni'])->name('upload-alumni');
 });
 
 //Get signature Image

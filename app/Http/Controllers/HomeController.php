@@ -12,16 +12,18 @@ use App\Models\Chapter;
 use App\Models\Setting;
 use App\Models\TempUser;
 use App\Models\NewListing;
+use App\Models\TempMember;
 use App\Models\Stakeholder;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\GeneralSetting;
 use App\Mail\NotificationEmail;
 use App\Models\ConferenceEdition;
-use App\Models\TempMember;
+use App\Imports\GeneralUsersImport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
 
 class HomeController extends Controller
 {
@@ -450,7 +452,7 @@ class HomeController extends Controller
         $email = [
             'subject' => 'New Listing',
             'recipient_name' => 'Admin',
-            'type' => $data['type'],
+            'type' => 'conference_bulk_email',
             'recipient' => $setting->official_email,
             'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
         ];
@@ -461,41 +463,105 @@ class HomeController extends Controller
         
 	}
 
-    public function uploadAlumni(Request $request){
+    public function uploadAlumni(Request $request, $type){
         //Handle Passport Upload
         $setting = GeneralSetting::first();
+        if($type == 'single'){
+            if ($request->has('image')) {
+                $request['passport'] = $this->uploadImage($request->image, 'frontend/passports', 500, 500);
+            } 
+    
+            TempMember::updateOrCreate($request->except(['_token','image']));
+            $request['type'] = 'alumni-upload';
+            $request['chapter'] = Chapter::find($request->chapter)->name;
 
-        if ($request->has('image')) {
-            $request['passport'] = $this->uploadImage($request->image, 'frontend/passports', 500, 500);
-        } 
+            $email = [
+                'subject' => 'Thank you for submitting your details',
+                'recipient_name' => $request['name'],
+                'recipient' => $request['email'],
+                'type' => 'conference_bulk_email',
+                'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($request),
+            ];
 
-        TempMember::updateOrCreate($request->except(['_token','image']));
-        $request['type'] = 'alumni-upload';
-        $request['chapter'] = Chapter::find($request->chapter)->name;
-        
-        $email = [
-            'subject' => 'Thank you for submitting your details',
-            'recipient_name' => $request['name'],
-            'recipient' => $request['email'],
-            'type' => 'email',
-            'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($request),
-        ];
+            $this->logEmail($email);
 
-        $this->logEmail($email);
+            // Send notification to admin
+            $request['type'] = 'new_mewmber_listing';
+            $email2 = [
+                'subject' => $request['name'] . ' has just submitted details on GSF alumni page',
+                'recipient_name' => $request['Admin'],
+                'recipient' => $setting->official_email,
+                'type' => 'conference_bulk_email',
+                'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($request),
+            ];
 
-        // Send notification to admin
-        $request['type'] = 'new_mewmber_listing';
-        $email2 = [
-            'subject' => $request['name']. ' has just submitted details on GSF alumni page',
-            'recipient_name' => $request['Admin'],
-            'recipient' => $setting->official_email,
-            'type' => 'email',
-            'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($request),
-        ];
-        
-        $this->logEmail($email2);
-        
+            $this->logEmail($email2);
+
+        }else{
+            $data = $request->all();
+            $data['chapter'] = Chapter::where('id', $request->chapter)->first();
+            
+            try {
+                Excel::import(new GeneralUsersImport($data), request()->file('file'));
+            } catch (\Illuminate\Database\QueryException $ex) {
+                $error = $ex->getMessage();
+                return back()->with('error', $error);
+            }
+            // send email to uploader
+            $request['type'] = 'alumni-upload';
+            $request['chapter'] = Chapter::find($request->chapter)->name;
+
+            $email = [
+                'subject' => 'Thank you for submitting your details',
+                'recipient_name' => $request['name'],
+                'recipient' => $request['email'],
+                'type' => 'conference_bulk_email',
+                'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($request),
+            ];
+
+            $this->logEmail($email);
+            // Send notification to admin
+            $request['type'] = 'new_mewmber_listing_multiple';
+            $email2 = [
+                'subject' => $request['name'] . ' has just submitted details on GSF alumni page',
+                'recipient_name' => $request['Admin'],
+                'recipient' => $setting->official_email,
+                'type' => 'conference_bulk_email',
+                'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($request),
+            ];
+
+            $this->logEmail($email2);
+
+        }
+                
         return back()->with('message', 'Submission Added successfully, we have sent you an email with the next steps');
 
     }
+
+    public function uploadMultiple(){
+        $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+        $portfolios = $this->getCommunityPortfolios();
+        $sessions = range(date('Y'), date('1982'));
+
+        return view('frontend.' . frontendTemplate() . '.newmultiple', compact('chapters', 'portfolios', 'sessions'));
+    }
+
+    public function processUploadMultiple(Request $request)
+    {
+        dd($request->all());
+        $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+        $portfolios = $this->getCommunityPortfolios();
+        $sessions = range(date('Y'), date('1982'));
+
+        return view('frontend.' . frontendTemplate() . '.newmultiple', compact('chapters', 'portfolios', 'sessions'));
+    }
+
+    public function getListingSample(Request $request)
+    {
+        $path = public_path() . '/frontend/exportsamples/generalimport.xlsx';
+       
+        return response()->download($path);
+
+    }
+
 }
