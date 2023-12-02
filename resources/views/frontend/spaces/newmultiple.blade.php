@@ -59,7 +59,14 @@
 
 								        </div>
                         <div class="col-md-12 col-sm-12">  
-                                                     
+                          <fieldset class="form-group">
+                                <label for="name">Your Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" placeholder="Enter name">
+                            </fieldset>         
+                            <fieldset class="form-group">
+                                <label for="email">Your Email</label>
+                                <input type="text" class="form-control" id="email" name="email" value="{{ old('email') }}" placeholder="Enter email">
+                            </fieldset>        
                           <fieldset class="form-group">
                             <label for="chapter">Campus</label>
                             <select class="form-control" name="chapter" id="chapter" required>
