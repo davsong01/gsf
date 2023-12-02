@@ -16,7 +16,6 @@
 							<a href="{{ route('nec.create') }}" class="btn btn-primary mt-1">Add new</a>
                             <button type="button" class="btn btn-info mt-1" data-toggle="modal" data-target="#myModal" title="Change reference ID"> <i class="fa fa-cycle"></i>Move NEC to archive</button>
 						</div>
-						
 					</div>
 					<div class="card-content">
 						<div class="card-body card-dashboard">
@@ -80,7 +79,7 @@
 
 				<!-- Modal body -->
 				<div class="modal-body">
-					<form action="{{ route('nec.archive')}}" method="GET">
+					<form action="{{ route('nec.archive')}}" method="POST">
 						@csrf
 						<?php 
 							$from = range(date('1982'), date('Y'));

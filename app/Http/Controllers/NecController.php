@@ -41,7 +41,7 @@ class NecController extends Controller
             $count = 0;
             // dd($nec.$from . '/' . $from + 2);
             foreach($nec as $n){
-                $count +1;
+                $count = $count+1;
                 $data = $n->toArray();
                 $data['tenure'] = $to.'/'.$to + 2;
                 unset($data['id']);
