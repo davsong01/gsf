@@ -28,7 +28,7 @@ class NecController extends Controller
         }
 
         if($from == date('Y')){
-            $nec = Nec::where('tenure', $from)->get();
+            $nec = Nec::where('tenure', $from .'/'. $from+2)->get();
             foreach($nec as $n){
                 $data = $n->toArray();
                 $data['tenure'] = $to.'/'.$to + 2;
