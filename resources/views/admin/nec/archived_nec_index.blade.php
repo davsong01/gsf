@@ -11,7 +11,7 @@
 			<div class="col-12">
 				<div class="card">
 					<div class="card-header">
-						<h4 class="card-title">All Nec Members</h4>
+						<h4 class="card-title">All Archived Nec Members</h4>
 						<div class="">
 							<a href="{{ route('nec.create') }}" class="btn btn-primary mt-1">Add new</a>
                             <button type="button" class="btn btn-info mt-1" data-toggle="modal" data-target="#myModal" title="Change reference ID"> <i class="fa fa-cycle"></i>Move NEC to archive</button>
@@ -73,10 +73,10 @@
 			<div class="modal-content">
 
 				<!-- Modal Header -->
-				<div class="modal-header">
+				{{-- <div class="modal-header">
 					<h4 class="modal-title">Move NEC members to archive</h4>
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
-				</div>
+				</div> --}}
 
 				<!-- Modal body -->
 				<div class="modal-body">

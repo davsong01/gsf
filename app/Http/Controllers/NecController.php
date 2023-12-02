@@ -16,37 +16,51 @@ class NecController extends Controller
         $nec = Nec::orderBy('order', 'ASC')->get();
         $count = 1;
         return view('admin.nec.index')->with('nec', $nec)->with('count', $count);
-
     }
+
+    public function archivedNec()
+    {
+        $nec = ArchivedNec::orderBy('order', 'ASC')->get();
+        $count = 1;
+        return view('admin.nec.archived_nec_index')->with('nec', $nec)->with('count', $count);
+    }
+
+    
 
     public function archiveNec(Request $request){
         $from = $request->from;
         $to = $request->to;
+       
+        // if($from < $to){
+        //     return back()->with('error', 'From cannot be lesser');
+        // }
 
-        if($from < $to){
-            return back()->with('error', 'From cannot be lesser');
-        }
-
-        if($from == date('Y')){
+        // if($from == date('Y')){
             $nec = Nec::where('tenure', $from .'/'. $from+2)->get();
+            // dd($nec, $from . '/' . $from + 2);
+            $count = 0;
+            // dd($nec.$from . '/' . $from + 2);
             foreach($nec as $n){
+                $count +1;
                 $data = $n->toArray();
                 $data['tenure'] = $to.'/'.$to + 2;
                 unset($data['id']);
                 unset($data['created_at']);
                 unset($data['updated_at']);
                 
-                ArchivedNec::create($data);
+                if(!empty($data['name'])){
+                    ArchivedNec::create($data);
+                }
                 // $n->delete();
             }
-        }else{
-            $nec = ArchivedNec::where('tenure', $from)->get();
-            foreach ($nec as $n) {
-                $n->update(['tenure' => $to]);
-            }
-        }
-
-        return back()->with('message', 'Archive successful');
+        // }else{
+        //     $nec = ArchivedNec::where('tenure', $from)->get();
+        //     foreach ($nec as $n) {
+        //         $n->update(['tenure' => $to]);
+        //     }
+        // }
+            // dd($nec);
+        return back()->with('message', $count. ' Archive successfully moved');
     }
 
     /**

@@ -170,6 +170,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     // Official
     Route::resource('nec', NecController::class);
+    
+    Route::get('archived-nec', [NecController::class, 'archivedNec'])->name('archive.nec.index');
     Route::get('archive-nec', [NecController::class, 'archiveNec'])->name('nec.archive');
     
     Route::get('nec-delete/{id}', [NecController::class, 'delete'])->name('nec.delete');
