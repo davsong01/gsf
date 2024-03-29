@@ -15,6 +15,7 @@ use App\Exports\UsersExport;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\TempMember;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -41,7 +42,7 @@ class UserController extends Controller
 	public function pendingListing()
 	{
 		if (auth()->user()->isAdmin()) { // Only sub admins who are members
-			return view('admin.users.index');
+			return view('admin.listings.index');
 		} else abort(404);
 	}
 
@@ -113,6 +114,7 @@ class UserController extends Controller
 		echo json_encode($json_data); 
 	}
 
+	
 	public function trashedUsers()
 	{
 		$count = 1;

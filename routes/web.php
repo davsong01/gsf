@@ -178,7 +178,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('users', UserController::class);
     Route::get('donations-all', [DonationController::class, 'allDonations'])->name('donations.all');
 
-    Route::get('listing-pending', [UserController::class, 'pendingListing']);
+    Route::get('listing-pending', [UserController::class, 'pendingListing'])->name('listing-pending');
+    // Route::get('trashedusers', 'trashedUsers')->name('users.trashed');
+    // Route::get('deleteusers/{id}', 'delete')->name('users.delete');
+
     Route::controller(UserController::class)->group(function () {
         Route::post('allusers', 'allUsers' )->name('users.all');
         Route::get('trashedusers', 'trashedUsers')->name('users.trashed');
