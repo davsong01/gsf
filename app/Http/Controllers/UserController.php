@@ -9,13 +9,14 @@ use App\Models\Chapter;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Mail\WelcomeMail;
-use App\Models\ConferenceEdition;
+use App\Models\TempMember;
 use Illuminate\Support\Str;
 use App\Exports\UsersExport;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
-use App\Models\TempMember;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -41,8 +42,13 @@ class UserController extends Controller
 
 	public function pendingListing()
 	{
-		if (auth()->user()->isAdmin()) { // Only sub admins who are members
-			return view('admin.listings.index');
+		if (auth()->user()->isAdmin()) { 
+			$pending = TempMember::with('campus')->orderBy('created_at','DESC')->get();
+			$chapters = Chapter::where('id', '!=', 86)->get();
+			$portfolios = app('App\Http\Controllers\Controller')->getCommunityPortfolios();
+			
+			$counter = 1;
+			return view('admin.listings.index', compact('pending','counter','chapters', 'portfolios'));
 		} else abort(404);
 	}
 
@@ -114,7 +120,7 @@ class UserController extends Controller
 		echo json_encode($json_data); 
 	}
 
-	
+
 	public function trashedUsers()
 	{
 		$count = 1;
@@ -452,4 +458,76 @@ class UserController extends Controller
 		
 	}
 
+	public function approvePendingUser(TempMember $user){
+		$data = $user->toArray();
+		// dd(Carbon::parse($user->date_of_birth));
+		$data['password'] = Hash::make($user->phone);
+		$data['passport'] = $user->passport;
+		$data['matric_year'] = $user->matriculation_year;
+		// $data['dob'] = $user->date_of_birth;
+		$data['slug'] = Str::slug($user->name);
+		$data['chapter_id'] = $user->chapter;
+		$data['status'] = $user->status ?? 0;
+		$data['role'] = 2;
+		unset($data['chapter']);
+		unset($data['marital_status']);
+		unset($data['matriculation_year']);
+		unset($data['date_of_birth']);
+		unset($data['id']);
+		
+		try {
+			$new_user = User::create($data);
+			$data['family_id'] = $this->createFamilyId($new_user);
+
+			$data['type'] = 'approve_listing';
+				//send email to participant
+			$email = [
+				'subject' => 'Welcome to GSF Directory Website',
+				'recipient_name' => $data['name'],
+				'recipient' => $data['email'],
+				'type' => $data['type'],
+				'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
+			];
+			
+			$this->logEmail($email);
+
+			$user->delete();
+		} catch (\Exception $e) {
+			return back()->with('error', $e->getMessage());
+		}
+
+		
+
+		return redirect(route('listing-pending'))->with('message', 'Approval succesful');
+	}
+
+	public function rejectPendingUser(TempMember $user)
+	{
+		$data = $user->toArray();
+		
+		try {
+			$data['type'] = 'reject_listing';
+			//send email to participant
+			$email = [
+				'subject' => 'Approval to GSF Directory failed!',
+				'recipient_name' => $data['name'],
+				'recipient' => $data['email'],
+				'type' => $data['type'],
+				'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
+			];
+
+			$this->logEmail($email);
+
+			$user->delete();
+		} catch (\Exception $e) {
+			return back()->with('error', $e->getMessage());
+		}
+
+		return redirect(route('listing-pending'))->with('message', 'Listing rejected');
+	}
+	
+	public function deletePendingUser(TempMember $user){
+		$user->delete();
+		return back()->with('message', 'Delete Successful');
+	}
 }

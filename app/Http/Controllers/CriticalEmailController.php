@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CriticalEmail;
+use app\Models\Setting;
 use Illuminate\Http\Request;
+use App\Models\CriticalEmail;
+use App\Models\GeneralSetting;
 
 class CriticalEmailController extends Controller
 {
@@ -107,7 +109,6 @@ class CriticalEmailController extends Controller
                 Kindly sign in to approve listings
                 ";
             break;
-
             case 'alumni-upload';
                 $content = "Dear " . $data['name'] . ", <br><br>
                     We have successfully received your details. <br><br>We are now processing your submission and you will will be notified via email once we complete the verification process. Thank you<br><br>
@@ -132,8 +133,21 @@ class CriticalEmailController extends Controller
                 <strong>Transaction ID: </strong>" . $data['transid'] . "<br><br>Thanks,<br>";
                 # code...
                 break;
-
-                default:
+            case 'approve_listing':
+                $account = "<a style='color: white;text-decoration: none;background-color: #29166f;padding: 7px;border-radius: 5px;' href='" . url('/').'/login'. "'>Login</a>";
+                $content = "<p>Dear " . $data['name'].
+                ", <br>
+                Your details have been added to the GSF Directory website<br><br>
+                Kindly login to you dashboard with the following details to re-view your profile: <br><br><strong>Family ID: </strong>" . $data['family_id'] . "<br>
+                <strong>Password: </strong>" . $data['phone'] . "<br><br>You can login and change your password for confidential reasons<br><br>" . $account . "<br><br>Thanks.";
+                break;
+            case 'reject_listing':
+                $content = "<p>Dear " . $data['name'] .
+                ", <br>For some reason, trying to add your details to the GSF Directory website failed<br><br>
+                If you think this is an error, kindly reach out to GSF IT support or reach us via email at: ".GeneralSetting::first()->value('official_email')." <br><br>Warm Regards.";
+                break;
+            
+            default:
                 # code...
                 break;
             }

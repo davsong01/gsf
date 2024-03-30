@@ -177,13 +177,17 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('nec-delete/{id}', [NecController::class, 'delete'])->name('nec.delete');
     Route::resource('users', UserController::class);
     Route::get('donations-all', [DonationController::class, 'allDonations'])->name('donations.all');
-
     Route::get('listing-pending', [UserController::class, 'pendingListing'])->name('listing-pending');
     // Route::get('trashedusers', 'trashedUsers')->name('users.trashed');
     // Route::get('deleteusers/{id}', 'delete')->name('users.delete');
 
     Route::controller(UserController::class)->group(function () {
         Route::post('allusers', 'allUsers' )->name('users.all');
+        Route::post('allpending', 'allPendingUsers' )->name('users.pending');
+        Route::get('approve-pending/{user}', 'approvePendingUser' )->name('user.single.approve');
+        Route::get('approve-pending/{user}', 'approvePendingUser' )->name('user.single.approve');
+        Route::get('reject-pending/{user}', 'rejectPendingUser' )->name('user.single.reject');
+        Route::get('delete-pending/{user}', 'deletePendingUser' )->name('user.single.delete');
         Route::get('trashedusers', 'trashedUsers')->name('users.trashed');
         Route::get('deleteusers/{id}', 'delete')->name('users.delete');
         Route::get('restoreuser/{id}', 'restore')->name('users.restore');

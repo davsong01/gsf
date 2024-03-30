@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 @section('title', 'Community Users')
 @section('active')
-<li class="breadcrumb-item">GSF Community users</li>
+<li class="breadcrumb-item">Pending Listing</li>
 @endsection
 @section('content')
 <div class="content-body">
@@ -11,10 +11,10 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">All Users</h4>
+                        <h4 class="card-title">All Listing</h4>
                         <div class="">
-                            <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
-                            <a href="{{ route('users.import.index') }}" class="btn btn-primary mt-1">Import</a>
+                            {{-- <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new</a>
+                            <a href="{{ route('users.import.index') }}" class="btn btn-primary mt-1">Import</a> --}}
                             @if(auth()->user()->isAdmin())<a href="" class="btn btn-primary mt-1">Export</a>@endif
                         </div>
                         @include('includes.alerts')
@@ -35,6 +35,11 @@
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
+                                    <tbody>
+                                        <tr>
+                                            
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -50,7 +55,7 @@
             "processing": true,
             "serverSide": true,
             "ajax":{
-                     "url": "{{ route('users.pending.all')}}",
+                     "url": "{{ route('users.all')}}",
                      "dataType": "json",
                      "type": "POST",
                      "data":{ _token: "{{csrf_token()}}"}
