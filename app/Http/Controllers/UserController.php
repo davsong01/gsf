@@ -530,4 +530,5 @@ class UserController extends Controller
 		$user->delete();
 		return back()->with('message', 'Delete Successful');
 	}
+	
 }
