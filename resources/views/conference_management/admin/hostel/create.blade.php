@@ -48,16 +48,30 @@
                                             <option value="Nec" {{ old('level')  == 'Nec' ? 'selected' : ''}}>Nec</option>
                                         </select>
                                     </fieldset>
+                                    <fieldset class="form-group">
+                                        <label for="field">Fields (Optional)</label>
+                                        <select class="form-control" name="field_ids[]" id="field" multiple>
+                                            @foreach($fields as $field)
+                                            <option value="{{ $field->id }}">{{ $field->name }}</option>
+                                            @endforeach
 
+                                        </select>
+                                    </fieldset>
+                                    <fieldset class="form-group">
+                                        <label for="chapter">Chapters (Optional)</label>
+                                        <select class="form-control" name="chapter_ids[]" id="chapter" multiple>
+                                            @foreach($chapters as $chapter)
+                                            <option value="{{ $chapter->id }}">{{ $chapter->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </fieldset>
+                                    
                                     <fieldset class="form-group">
                                         <label for="capacity">Capacity</label>
                                         <input type="number" id="capacity" min="1" name="capacity" class="form-control" value="{{ old('capacity') }}" required>
                                     </fieldset>
                                 
                                 </div>
-
-                            
-                                
                             </div>
                             <div class="row">
                                 <div class="col-md-12 col-sm-12">

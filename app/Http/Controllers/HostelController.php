@@ -20,11 +20,11 @@ class HostelController extends Controller
         $count = 1;
         
         if(auth()->user()->role == 1){
-            $hostels = Hostel::with('fields')->where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
+            $hostels = Hostel::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
 
-            $hostels->each(function ($hostels) {
-                $hostels->fields = Field::whereIn('id', $hostels->field_ids)->get();
-                $hostels->chapters = Chapter::whereIn('id', $hostels->chapter_ids)->get();
+            $hostels->each(function ($hostel) {
+                $hostel->fields = Field::whereIn('id', $hostel->field_ids)->get();
+                $hostel->chapters = Chapter::whereIn('id', $hostel->chapter_ids)->get();
             });
             return view('conference_management.admin.hostel.index', compact('hostels', 'count','edition'));
         }return abort(404);
@@ -72,8 +72,8 @@ class HostelController extends Controller
             'level' => $data['level'],
             'capacity' => $data['capacity'],
             'conference_edition_id' => $data['edition'],
-            'field_ids' => json_encode($data['field_ids']),
-            'chapter_ids' => json_encode($data['chapter_ids']),
+            'field_ids' => $data['field_ids'] ?? NULL,
+            'chapter_ids' => $data['chapter_ids'] ?? NULL,
         ]);
 
         return redirect(route('hostels.index',['edition'=>$request->edition]))->with('message', 'Hostel succesfully created');
@@ -95,9 +95,6 @@ class HostelController extends Controller
 
     public function update(Request $request, Hostel $hostel)
     {
-        $request['field_ids'] = json_encode($request['field_ids']);
-        $request['chapter_ids'] = json_encode($request['chapter_ids']);
-
         $hostel->update($request->except('edition_id'));
         return back()->with('message', 'Update successful!');
     }

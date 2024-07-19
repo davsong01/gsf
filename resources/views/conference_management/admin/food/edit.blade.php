@@ -13,7 +13,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                     <div class="card-header">
+                    <div class="card-header">
                         <h4 class="card-title">Update: {{ $food->name }}</h4>
                         <a href="{{ route('foodusers.export',['id'=>$food->id, 'edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export Foodstand Participants</a>                        
                         
@@ -42,7 +42,7 @@
                                         <option value="Nec" {{ $food->level == 'Nec' ? 'selected' : ''}}>Nec</option>
                                     </select>
                                 </fieldset>
-                               
+                            
                                 <fieldset class="form-group">
                                     <label for="field_ids">Fields (Optional)</label>
                                     <select class="form-control" name="field_ids[]" id="field_ids" multiple>

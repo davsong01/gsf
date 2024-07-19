@@ -12,6 +12,10 @@ class Hostel extends Model
 {
 
     protected $guarded = [];
+    protected $casts = [
+        'field_ids' => 'array',
+        'chapter_ids' => 'array',
+    ];
     
     public function user(){
         return $this->hasMany(User::class);
@@ -22,6 +26,16 @@ class Hostel extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function getFieldIdsAttribute($value)
+    {
+        return $value ? json_decode($value, true) : [];
+    }
+
+    public function getChapterIdsAttribute($value)
+    {
+        return $value ? json_decode($value, true) : [];
+    }
+
     public function getFieldsAttribute()
     {
         return Field::whereIn('id', $this->field_ids)->get();
@@ -29,6 +43,6 @@ class Hostel extends Model
 
     public function getChaptersAttribute()
     {
-        return Chapter::whereIn('id', $this->chapters_ids)->get();
+        return Chapter::whereIn('id', $this->chapter_ids)->get();
     }
 }

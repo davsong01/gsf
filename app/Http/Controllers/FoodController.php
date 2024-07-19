@@ -53,8 +53,8 @@ class FoodController extends Controller
             'level' => $data['level'],
             'capacity' => $data['capacity'],
             'conference_edition_id' => $data['edition'],
-            'field_ids' => json_encode($data['field_ids']),
-            'chapter_ids' => json_encode($data['chapter_ids']),
+            'field_ids' => $data['field_ids'] ?? NULL,
+            'chapter_ids' => $data['chapter_ids'] ?? NULL,
         ]);
 
         return redirect(route('foods.index',['edition'=>$request->edition]))->with('message', 'Food Stand succesfully created');

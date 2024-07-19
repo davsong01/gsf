@@ -49,7 +49,24 @@
                                             <option value="Nec" {{ $hostel->level == 'Nec' ? 'selected' : ''}}>Nec</option>
                                         </select>
                                     </fieldset>
-
+                                    <fieldset class="form-group">
+                                    <label for="field_ids">Fields (Optional)</label>
+                                    <select class="form-control" name="field_ids[]" id="field_ids" multiple>
+                                        <option value="">Select</option>
+                                        @foreach($fields as $field)
+                                        <option value="{{ $field->id }}" {{ in_array($field->id, $hostel->fields->pluck('id')->toArray()) ? 'selected':'' }}>{{ $field->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </fieldset>
+                                <fieldset class="form-group">
+                                    <label for="chapter_ids">Chapters (Optional)</label>
+                                    <select class="form-control" name="chapter_ids[]" id="chapter_ids" multiple>
+                                        <option value="">Select</option>
+                                        @foreach($chapters as $chapter)
+                                        <option value="{{ $chapter->id }}" {{ in_array($chapter->id, $hostel->chapters->pluck('id')->toArray()) ? 'selected':'' }}>{{ $chapter->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </fieldset>
                                     <fieldset class="form-group">
                                         <label for="capacity">Capacity</label>
                                         <input type="number" id="capacity" name="capacity" class="form-control" value="{{ old('capacity') ?? $hostel->capacity }}" required>

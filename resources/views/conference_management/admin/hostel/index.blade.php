@@ -22,11 +22,10 @@
                                         <tr>
                                             <th>S/N</th>
                                             <th>Name</th>
-                                            <th>Type</th>
+                                            <th>Gender</th>
                                             <th>Level</th>
-                                            <th>Capacity</th>
-                                            <th>Allocation</th>
-                                            <th>Allotted</th>
+                                            <th>Fields</th>
+                                            <th>Chapters</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -34,18 +33,35 @@
                                         @foreach($hostels as $hostel)
                                         <tr>
                                             <td>{{ $count++ }}</td>
-                                            <td>{{ $hostel->name }}</td>
+                                           <td>
+                                                {{ $hostel->name }} <br>
+                                               <strong>Capacity: </strong>{{$hostel->capacity}} <br>
+                                               <strong>Allocation: </strong>{{$hostel->allocation}} <br>
+                                               <strong>Allotted: </strong>{{$hostel->payments->count()}}
+                                            </td>
                                             <td>{{ $hostel->type }}</td>
                                             <td>{{ $hostel->level }}</td>
-                                            <td>{{ $hostel->capacity }}</td>
-                                            <td>{{ $hostel->allocation }}</td>
-                                            <td>{{ $hostel->payments->count() }}</td>
+                                            <td>
+                                                @if($hostel->fields)
+                                                @foreach ($hostel->fields as $field)
+                                                   <small> {{" - " . $field->name . "\n"}} <br></small>
+                                                @endforeach
+                                                <br>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($hostel->chapters)
+                                                @foreach ($hostel->chapters as $chapter)
+                                                   <small> {{" - " . $chapter->name . "\n"}}<br></small>
+                                                @endforeach
+                                                <br>
+                                                @endif
+                                            </td>
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                            <a class="actions" data-toggle="tooltip" title="View/Update hostel details" href="{{ route('hostels.edit', ['hostel'=>$hostel->id, 'edition'=>$edition->id, ]) }}"> <i class="bx bxs-edit actions"></i>
-                                            </a>
+                                                <a class="actions" data-toggle="tooltip" title="View/Update hostel details" href="{{ route('hostels.edit', ['hostel'=>$hostel->id, 'edition'=>$edition->id, ]) }}"> <i class="bx bxs-edit actions"></i></a>
+                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Hostel" href="{{ route('hostels.delete', ['id'=>$hostel->id,'edition'=>$edition->id]) }}"> <i style="padding: 5px;" class="fa fa-trash"></i></a>
+                                            </td>
                                            
-                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Hostel" href="{{ route('hostels.delete', ['id'=>$hostel->id,'edition'=>$edition->id]) }}"> <i style="padding: 5px;" class="fa fa-trash"></i></
-                                            </a>
                                         </tr>
                                       
                                         @endforeach

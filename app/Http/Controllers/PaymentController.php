@@ -2,14 +2,14 @@
 namespace App\Http\Controllers;
 use PDF;
 
+use Carbon\Carbon;
 use App\Models\User;
+use App\Mail\AdminMail;
 use App\Models\Chapter;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\Donation;
 use App\Models\TempUser;
-use Carbon\Carbon;
-use App\Mail\AdminMail;
 use App\Mail\WelcomeMail;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -18,6 +18,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
+use App\Services\HostelAllocationService;
+use App\Services\ServicePointAllocationService;
 
 class PaymentController extends Controller
 
@@ -234,15 +236,20 @@ class PaymentController extends Controller
 
 				// Assign Automatic foodstand and hostel
 				if (in_array($payment->level, ['Participant', 'Alumni', 'Nec','Moderator'])) {
-					$hostel = $this->assignHostel($data, $setting);
-					$food = $this->assignFoodStand($data['level'], $data['chapter']);
+					$hostel_allocation = HostelAllocationService::assignHostel($data);
+					dd($hostel_allocation);
 					
+					$food = ServicePointAllocationService::assignFoodStand($data);
 					$data['hostel_id'] = $hostel->id ?? null;
 					$data['hostel'] = $hostel->name ?? null;
 					$data['food_id'] = $food->id ?? null;
 					$data['foodstand'] = $food->name ?? null;
 
 					$payment->update([
+						'hostel_allocation_number' => '',
+						'hostel_allocation_type' => '',
+						'service_point_allocation_number' => '',
+						'service_point_allocation_type' => '',
 						'hostel_id' => $data['hostel_id'] ?? null,
 						'food_id' => $data['food_id'] ?? null
 					]);

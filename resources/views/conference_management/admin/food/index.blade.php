@@ -22,6 +22,7 @@
                                         <tr>
                                             <th>S/N</th>
                                             <th>Name</th>
+                                            <th>Gender</th>
                                             <th>Level</th>
                                             <th>Fields</th>
                                             <th>Chapters</th>
@@ -38,6 +39,8 @@
                                                <strong>Allocation: </strong>{{$food->allocation}} <br>
                                                <strong>Allotted: </strong>{{$food->payments->count()}}
                                             </td>
+                                            <td>{{ $food->type }}</td>
+
                                             <td>{{$food->level}}</td>
                                             <td>
                                                 @if($food->fields)

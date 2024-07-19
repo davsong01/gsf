@@ -14,7 +14,6 @@ class Food extends Model
         'chapter_ids' => 'array',
     ];
     
-
     public function user(){
         return $this->hasMany(User::class);
     }
