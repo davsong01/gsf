@@ -12,6 +12,8 @@ if (!function_exists("hostelAssignmentTypes")) {
             'random' => 'Random (Category Exclusive)',
             'based_on_chapter' => 'Based On Chapter (Category Exclusive)',
             'based_on_field' => 'Based On Field (Category Exclusive)',
+            'based_on_chapter_with_category' => 'Based On Chapter (Category Inclusive)',
+            'based_on_field_with_category' => 'Based On Field (Category Inclusive)' 
         ];
     }
 }
@@ -25,6 +27,8 @@ if (!function_exists("servicePointAssignmentTypes")) {
             'based_on_chapter' => 'Based On Chapter (Category Exclusive)',
             'based_on_field' => 'Based On Field (Category Exclusive)',
             'based_on_gender' => 'Based On Gender (Category Exclusive)',
+            'based_on_chapter_with_category' => 'Based On Chapter (Category Inclusive)',
+            'based_on_field_with_category' => 'Based On Field (Category Inclusive)'
         ];
     }
 }

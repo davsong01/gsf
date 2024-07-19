@@ -85,6 +85,7 @@
                                         
                                     </fieldset>
                                 </div>
+                                {{-- {{dd($edition)}} --}}
                                 <div class="col-sm-6 col-md-6">
                                     <label for="start_date">Conference Start Date</label>
                                     <fieldset class="form-group ">
@@ -96,7 +97,6 @@
                                     <label for="end_date">Conference End Date</label>
                                     <fieldset class="form-group ">
                                         <input type="date" class="form-control" name="end_date" value="{{ old('end_date') ?? $edition->end_date }}" id="end_date">
-                                       
                                     </fieldset>
                                 </div>
                                 <div class="col-sm-6 col-md-6">

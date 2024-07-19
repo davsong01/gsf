@@ -1,6 +1,5 @@
-@extends('frontend.conference.template1.index')
-
-@section('sec-content')
+@extends('frontend.conference.template2.app')
+@section('content')
 <!-- Contact Start -->
 <div class="contact">
     <div class="container mt-125">

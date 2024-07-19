@@ -1,3 +1,7 @@
+<?php 
+$setting = activeConferenceEdition();
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 

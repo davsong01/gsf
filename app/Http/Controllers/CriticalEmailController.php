@@ -19,16 +19,19 @@ class CriticalEmailController extends Controller
                     <strong>Name: </strong>".$data['name']."<br>
                     <strong>Email: </strong>". $data['email']."<br>
                     <strong>Phone: </strong>". $data['phone']."<br>
-                    <strong>Amount Paid: </strong> &#8358;". $data['amount'] . "<br><br>
+                    <strong>Amount Paid: </strong> &#8358;". number_format($data['amount']) . "<br><br>
                     <strong>Allocation Details:</strong><br>";
 
-                if(isset($data['hostel']) && !empty($data['hostel'])){
-                    $content .= "<strong>Allocated Hostel: </strong>".$data['hostel']."<br>";
+                if(isset($data['allocated_hostel_data']) && !empty($data['allocated_hostel_data'])){
+                    $content .= "<strong>Allocated Hostel: </strong>".$data['allocated_hostel_data']['hostel_name']."<br>
+                    Hostel Allocation Number: ". $data['allocated_hostel_data']['hostel_allocation_number']."<br>";
                 }
 
-                if (isset($data['foodstand']) && !empty($data['foodstand'])) {
-                    $content .= "<strong>Allocated Foodstand: </strong>" . $data['foodstand'] . "<br><br>";
+                if (isset($data['allocated_service_point_data']) && !empty($data['allocated_service_point_data'])) {
+                    $content .= "<br><strong>Allocated Service Point: </strong>" . $data['allocated_service_point_data']['service_point_allocation_name'] . "<br>
+                    Serivce Point Allocation Number: " . $data['allocated_service_point_data']['service_point_allocation_number'] . "<br><br>";
                 }
+
                 $content .= "Kindly login to you dashboard with the following details to view your profile and print ID card: <br><br><strong>Family ID: </strong>".$data['family_id']."<br>
                     <strong>Password: </strong>".$data['phone']. "<br><br>You can login and change your password for confidential reasons<br><br>". $account."<br><br>Thanks.";
                 # code...

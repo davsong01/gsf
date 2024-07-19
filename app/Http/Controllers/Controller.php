@@ -34,12 +34,8 @@ class Controller extends BaseController
     
     public function __construct(Request $request = null)
     {
-        $this->edition = ConferenceEdition::where('status', 'active')->where('close_registration', '>', date('Y-m-d'))->first();
+        $this->edition = activeConferenceEdition();
         
-        if($request && $request->has('edition')){
-            $this->edition = ConferenceEdition::where('id',$request->edition)->first();
-        }
-
     }
     protected function getMonths()
     {

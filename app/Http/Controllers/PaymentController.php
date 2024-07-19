@@ -237,33 +237,34 @@ class PaymentController extends Controller
 				// Assign Automatic foodstand and hostel
 				if (in_array($payment->level, ['Participant', 'Alumni', 'Nec','Moderator'])) {
 					$hostel_allocation = HostelAllocationService::assignHostel($data);
-					dd($hostel_allocation);
 					
-					$food = ServicePointAllocationService::assignFoodStand($data);
-					$data['hostel_id'] = $hostel->id ?? null;
-					$data['hostel'] = $hostel->name ?? null;
-					$data['food_id'] = $food->id ?? null;
-					$data['foodstand'] = $food->name ?? null;
+					$service_point = ServicePointAllocationService::assignFoodStand($data);
+					// $data['hostel_id'] = $hostel_allocation['hostel_id'] ?? null;
+					// $data['allocated_hostel_data'] = $hostel_allocation['hostel_name'] ?? null;
+					// $data['food_id'] = $service_point['service_point_allocation_id'] ?? null;
+					// $data['allocated_service_point'] = $service_point['service_point_allocation_name'] ?? null;
+					$data['allocated_hostel_data'] = $hostel_allocation;
+					$data['allocated_service_point_data'] = $service_point;
 
 					$payment->update([
-						'hostel_allocation_number' => '',
-						'hostel_allocation_type' => '',
-						'service_point_allocation_number' => '',
-						'service_point_allocation_type' => '',
+						'hostel_allocation_number' => $hostel_allocation['hostel_allocation_number'],
+						'hostel_allocation_type' => $hostel_allocation['hostel_allocation_type'],
+						'service_point_allocation_number' => $service_point['service_point_allocation_number'],
+						'service_point_allocation_type' => $service_point['service_point_allocation_type'],
 						'hostel_id' => $data['hostel_id'] ?? null,
 						'food_id' => $data['food_id'] ?? null
 					]);
 				}
-
+				
 				$this->createFamilyId($user, $extras['ledge']);
-
+				
 				if ($payment->level == 'Moderator') {
 					$payment->update([
 						'uploaded_by' => $user->id,
-						'response' => isset($paymentDetails) ? json_encode($paymentDetails) : null,
+						'api_response' => isset($paymentDetails) ? json_encode($paymentDetails) : null,
 					]);
 				}
-
+				
 				$data['family_id'] = $user->family_id;
 				$data['chapter'] = isset($participant->campus->name) ? $participant->campus->name : '';
 				

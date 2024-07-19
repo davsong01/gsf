@@ -39,7 +39,7 @@ class ConferenceManagementController extends Controller
 			$count = 1;
 			return view('conference_management.admin.editions.index', compact('editions','count'));
 		}else{
-			$edition = $this->edition ?? ConferenceEdition::where('status','active')->orderBy('created_at','DESC')->first();
+			$edition = activeConferenceEdition();
 			
 			if(auth()->user()->payments->count() > 0){
 				if(auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)){

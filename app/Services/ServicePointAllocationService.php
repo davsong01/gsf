@@ -2,53 +2,133 @@
 
 namespace App\Services;
 
-use Rap2hpoutre\FastExcel\FastExcel;
+use App\Models\Food;
 use Illuminate\Support\Collection;
+use Rap2hpoutre\FastExcel\FastExcel;
 
 class ServicePointAllocationService
 {
-    public function assignFoodStand($data)
+    static function assignFoodStand($data)
     {
         $setting = activeConferenceEdition();
-        $level = $data['level'];
+
+        $level = $data['level'] == 'Moderator' ? 'Participant' : $data['level'];
         $sex = $data['sex'];
 
-        $level = $level == 'Moderator' ? 'Participant' : $level;
-        
+        $res = [
+            'service_point_allocation_id' => null,
+            'service_point_allocation_number' => null,
+            'service_point_allocation_type' => null,
+            'service_point_allocation_name' => null
+        ];
 
-        // $chapter = isset($chapter) && !empty($chapter) ? Chapter::where('id',$chapter)->first
+        $level = $level == 'Moderator' ? 'Participant' : $level;
+
         if (in_array($level, ['Official', 'Medical', 'Official'])) {
             $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->first();
         } else {
-            if (isset($setting->random_foodstand) && $setting->random_foodstand == "yes") {
-                $foodstand = Food::where(['level' => $level])->whereRaw('allocation < capacity')->inRandomOrder()->first();
-            } else {
-                if (!empty($chapter)) {
-                    $campus = Chapter::where('id', $chapter)->first();
-                    $field_id = $campus->field->id ?? null;
-
-                    if ($setting->foodstand_field_assignment == 'yes') {
-                        // Others foodstand
-                        if (in_array($chapter, [86])) {
-                            $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->whereNull('field_id')->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
-                        } else {
-
-                            // According to fields
-                            $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->where('field_id', $field_id)->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
-                        }
-                    } else {
-                        $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
-                    }
-                } else {
-                    $foodstand = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
-                }
+            // 'full-random' => 'Fully Randomized (Gender Exclusive)' - in random order, irrespective of category/level
+            // 'random' => 'Random (Category Exclusive)' - in random order, differently for male and female, and for levels,
+            // 'based_on_chapter' => 'Based On Chapter (Category Exclusive) - based on the chapter and differently for levels',
+            // 'based_on_field' => 'Based On Field (Category Exclusive) - based on the field and differently for levels',
+            //  'based_on_chapter_with_category' => 'Based On Chapter With (Category Inclusive) - based on the chapter, irrespective of category/level',
+            // 'based_on_field_with_category' => 'Based On Field (Category Inclusive) - based on the field ,irrespective of category/level',
+            if (isset($setting->service_point_assignment_type) && $setting->service_point_assignment_type == "full-random") {
+                $allocation_type = $setting->service_point_assignment_type;
+                $food = Food::where(['conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
             }
+
+            if (isset($setting->service_point_assignment_type) && $setting->service_point_assignment_type == "random") {
+                $allocation_type = $setting->service_point_assignment_type;
+                $food = Food::where(['level' => $level, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
+            }
+
+            if (isset($setting->service_point_assignment_type) && $setting->service_point_assignment_type == "based_on_chapter") {
+                $allocation_type = $setting->service_point_assignment_type;
+
+                $chapter_id_json = json_encode((string) $data['chapter']);
+                $food = Food::where([
+                    'conference_edition_id' => $setting->id,
+                ])
+                    ->whereRaw('JSON_CONTAINS(chapter_ids, ?)', [$chapter_id_json])
+                    ->whereRaw('allocation < capacity')
+                    ->first();
+            }
+
+            if (isset($setting->service_point_assignment_type) && $setting->service_point_assignment_type == "based_on_field") {
+                $allocation_type = $setting->service_point_assignment_type;
+
+                $field_id_json = json_encode((string) $data['field_id']);
+                $food = Food::where([
+                    'conference_edition_id' => $setting->id,
+                ])
+                    ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
+                    ->whereRaw('allocation < capacity')
+                    ->first();
+            }
+
+
+            if (isset($setting->service_point_assignment_type) && $setting->service_point_assignment_type == "based_on_chapter_with_category") {
+                $allocation_type = $setting->service_point_assignment_type;
+
+                $field_id_json = json_encode((string) $data['field_id']);
+                $food = Food::where([
+                    'level' => $level,
+                    'conference_edition_id' => $setting->id,
+                ])
+                    ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
+                    ->whereRaw('allocation < capacity')
+                    ->first();
+            }
+
+            if (isset($setting->service_point_assignment_type) && $setting->service_point_assignment_type == "based_on_field_with_category") {
+                $allocation_type = $setting->service_point_assignment_type;
+
+                $field_id_json = json_encode((string) $data['field_id']);
+                $food = Food::where([
+                    'type' => $sex,
+                    'level' => $level,
+                    'conference_edition_id' => $setting->id,
+                ])
+                    ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
+                    ->whereRaw('allocation < capacity')
+                    ->first();
+            }
+
+            if (empty($food)) {
+                $allocation_type = 'SYSTEM-PICKED';
+                $food = Food::where(['level' => $level, 'conference_edition_id' => $setting->id
+                ])->whereRaw('allocation < capacity')->inRandomOrder()->first();
+            }
+
+
+            if (isset($food) && !empty($food)) {
+                $allocation_number = $food->allocation + 1;
+                $food->update(['allocation' => $allocation_number]);
+
+                $food_number = Self::generateServicePointNumber($food);
+
+                $res = [
+                    'service_point_allocation_id' => $food->id,
+                    'service_point_allocation_number' => $food_number,
+                    'service_point_allocation_type' => $allocation_type,
+                    'service_point_allocation_name' => $food->name,
+                ];
+            }
+            
+            return $res;
         }
 
-        if (isset($foodstand) && !empty($foodstand)) {
-            $foodstand->update(['allocation' => $foodstand->allocation + 1]);
-        }
-
-        return $foodstand ?? null;
     }
+
+    static function generateServicePointNumber($point)
+    {
+        // first 2 letters of point name and last letter plus current allocation
+        $first_two_letters = substr($point->name, 0, 2);
+        $last_letter = substr($point->name, -1);
+
+        $number = str_replace(' ', '', strtoupper($first_two_letters . $last_letter) . '-' . $point->allocation);
+        return $number;
+    }
+
 }
