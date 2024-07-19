@@ -24,10 +24,12 @@ class PaymentController extends Controller
 {
 	public function redirectToGateway(Request $request)
 	{
-		$setting = $this->conferenceEdition();
-		
+		$setting = activeConferenceEdition();
+		$this->frontend = frontendTemplate();
+
 		if ($setting->close_registration < now()) {
-			return redirect(url('/registration/#register'))->with('warning', 'Registration for this program has closed');
+			return back()->with('warning', 'Registration for this program has closed');
+			// return redirect(url('/registration/#register'))->with('warning', 'Registration for this program has closed');
 		}
 		
 		$this->validate($request, [
@@ -54,7 +56,7 @@ class PaymentController extends Controller
 			]);
 
 			if ($request->amount <> ($setting->registration_fee)) {
-				return redirect(url('/registration/#register'))->with('error', 'Invalid amount');
+				return back()->with('error', 'Invalid amount');
 			}
 		}
 
@@ -63,11 +65,11 @@ class PaymentController extends Controller
 			$request['amount'] = $setting->registration_fee * $request->participants;
 			
 			if($request->participants < 2){
-				return redirect(url('/registration/#register'))->with('error', 'You can only register minimum of 2 participants as a fellowship, kindly register as an individual');
+				return back()->with('error', 'You can only register minimum of 2 participants as a fellowship, kindly register as an individual');
 			}
 			//check amount
 			if ($request->amount <> ($setting->registration_fee * $request->participants)) {
-				return redirect(url('/registration/#register'))->with('error', 'Invalid amount');
+				return back()->with('error', 'Invalid amount');
 			}
 		}
 		
@@ -124,7 +126,6 @@ class PaymentController extends Controller
 			}
 		
 		} catch (\Exception $e) {
-			
 			return redirect(url('/registration/#register'))->with('error', $e . 'Transaction token has expired or details not correct. Please refresh the page and try again');
 		}
 	}
@@ -132,12 +133,11 @@ class PaymentController extends Controller
 	public function handleGatewayCallback(Request $request, $admin="", $transfer_confirm="",$onsite_confirm="")
 	{
 		$reference = $request->reference;
-		$setting = $this->conferenceEdition();
+		$setting = activeConferenceEdition();
 		$conference_year = Carbon::parse($setting->start_date)->year;
 
 		$paymentDetails = $this->verify($reference, $setting);
 		
-
 		if ((isset($paymentDetails) && $paymentDetails->status === 'success') || !empty($transfer_confirm) || !empty($onsite_confirm)) {
 			//get participant details
 			if(!empty($transfer_confirm) || !empty($onsite_confirm)){
@@ -229,12 +229,14 @@ class PaymentController extends Controller
 				
 				$user = $this->createUser($data);
 				$payment = $this->createPayment($data, $user);
+				$chapter = Chapter::with('field:id,name')->select('id', 'field_id')->where('id', $data['chapter'])->first();
+				$data['field_id'] = !empty($chapter->field) ? $chapter->field->id : null;
 
 				// Assign Automatic foodstand and hostel
 				if (in_array($payment->level, ['Participant', 'Alumni', 'Nec','Moderator'])) {
-					$hostel = $this->assignHostel($data['level'], $data['sex']);
+					$hostel = $this->assignHostel($data, $setting);
 					$food = $this->assignFoodStand($data['level'], $data['chapter']);
-
+					
 					$data['hostel_id'] = $hostel->id ?? null;
 					$data['hostel'] = $hostel->name ?? null;
 					$data['food_id'] = $food->id ?? null;
@@ -341,8 +343,7 @@ class PaymentController extends Controller
 				// return view('frontend.conference.thankyou', compact('data', 'conference_year'));
 			}
 		} else {
-
-		if($admin !== 'admin'){
+			if($admin !== 'admin'){
 				dd('Transaction failed! We have not received any money from you.');
 			} else {
 				return $paymentDetails ?? $payment;

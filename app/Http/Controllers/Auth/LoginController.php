@@ -7,6 +7,7 @@ use App\Models\GeneralSetting;
 use Illuminate\Support\Carbon;
 use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 class LoginController extends Controller
@@ -31,7 +32,7 @@ class LoginController extends Controller
      */
     public function __construct(Request $request)
     {
-        $this->conference = ConferenceEdition::where('status', 'active')->where('close_registration', '>', date('Y-m-d'))->first();
+        $this->conference = activeConferenceEdition();
         $this->middleware('guest')->except('logout');
     }
 
@@ -45,9 +46,9 @@ class LoginController extends Controller
       if ($this->conference) {
         $setting = $this->conference;
         $conference_year = Carbon::parse($setting->start_date)->year;
-        
+        // dd(Hash::make('12345678'));
         return view('frontend.conference.template' . $this->conference->template_id . '.login')
-          ->with('conference', $this->conference);
+          ->with('setting', $this->conference);
       } else {
         return view('frontend.' . frontendTemplate() . '.login');
 

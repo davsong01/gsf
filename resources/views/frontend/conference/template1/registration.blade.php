@@ -1,5 +1,6 @@
 @extends('frontend.conference.template1.index')
 @section('css')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .form-control{
         padding-left: 10px !important;
@@ -70,10 +71,10 @@
                             </div>
                             @if($type == 1 or $type == 2)
                             <div class="control-group">
-                                <label for="chapter">GSF Campus/GOFAMINT Assesmbly</label> <small style="color:blue">(Please Select "other" if you
+                                <label for="chapter">Campus/Assesmbly</label> <small style="color:blue">(Please Select "other" if you
                                     are registering from an assembly)</small><br>
                                 <select name="chapter" class="chapter form-control" required>
-                                    <option value="">--Select Campus</option>
+                                    <option value="">--Select--</option>
                                     @foreach($chapters as $chapter)
                                     <option value="{{ $chapter->id }}" {{ old('chapter') == $chapter->id ? 'selected' : ''}}>
                                         {{ $chapter->name }}</option>

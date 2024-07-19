@@ -308,26 +308,38 @@ class Controller extends BaseController
         return 'GSF-' . date('Ym') . '-' . rand(99999, 11111);
     }
 
-    public function assignHostel($level, $sex, $setting = null)
+    public function assignHostel($data, $setting = null)
     {
-        $setting = $setting ?? $this->conferenceEdition();
+        $setting = $setting ?? activeConferenceEdition();
+        $level = $data['level'];
+        $sex = $data['sex'];
 
         if (in_array($level, ['Official', 'Medical', 'Official'])) {
             $hostel = Hostel::where(['level' => $level, 'conference_edition_id' => $setting->id])->first();
         } else {
-            if (isset($setting->random_hostel) && $setting->random_hostel == "yes") {
-                if($level == 'Moderator'){
-                    $hostel = Hostel::where(['level' => 'Participant', 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
-                }else{
-                    $hostel = Hostel::where(['level' => $level, 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
-                }
-            } else {
-                if ($level == 'Moderator') {
-                    $hostel = Hostel::where(['level' => 'Participant', 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
-                }else{
-                    $hostel = Hostel::where(['level' => $level, 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
-                }
+            // 'full-random' => 'Fully Randomized (Gender Exclusive)' - in random order, diferently for male and female, irrespective of category/level,
+            // 'random' => 'Random (Category Exclusive)' - in random order, differently for male and female, and for levels,
+            // 'based_on_chapter' => 'Based On Chapter (Category Exclusive) - based on the chapter and differently for levels and gender',
+            // 'based_on_field' => 'Based On Field (Category Exclusive) - based on the field and differently for levels and gender',
+            $level = $level == 'Moderator' ? 'Participant' : $level;
+
+            if (isset($setting->hostel_assignment_type) && $setting->hostel_assignment_type == "random") {
+                $hostel = Hostel::where(['type' => $sex, 'level' => $level,'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
             }
+
+            if (isset($setting->hostel_assignment_type) && $setting->hostel_assignment_type == "full-random") {
+                $hostel = Hostel::where(['type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
+            }
+
+            if (isset($setting->hostel_assignment_type) && $setting->hostel_assignment_type == "based_on_chapter") {
+                $hostel = Hostel::where(['type' => $sex, 'conference_edition_id' => $setting->id, 'chapter_id'])
+                ->whereJsonContains('field_ids', $data['field_id']) 
+                ->whereRaw('allocation < capacity')->inRandomOrder()->first();
+            }
+
+
+            $hostel = Hostel::where(['level' => $level, 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->orderBy('allocation', 'desc')->first();
+
             if (isset($hostel) && !empty($hostel)) {
                 $hostel->update(['allocation' => $hostel->allocation + 1]);
             }

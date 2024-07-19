@@ -1,7 +1,7 @@
 @extends('layouts.conference')
 @section('title', 'Update foodstand')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('foods.index',['edition'=>$edition->id]) }}">Foodstands</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('foods.index',['edition'=>$edition->id]) }}">Service Points</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Update foodstand</li>
@@ -42,15 +42,26 @@
                                         <option value="Nec" {{ $food->level == 'Nec' ? 'selected' : ''}}>Nec</option>
                                     </select>
                                 </fieldset>
+                               
                                 <fieldset class="form-group">
-                                    <label for="field">Field</label>
-                                    <select class="form-control" name="field_id" id="field">
-                                        <option value="">-- Select option --</option>
+                                    <label for="field_ids">Fields (Optional)</label>
+                                    <select class="form-control" name="field_ids[]" id="field_ids" multiple>
+                                        <option value="">Select</option>
                                         @foreach($fields as $field)
-                                        <option value="{{ $field->id }}" {{ $food->field_id == $field->id ? 'selected':'' }}>{{ $field->name }}</option>
+                                        <option value="{{ $field->id }}" {{ in_array($field->id, $food->fields->pluck('id')->toArray()) ? 'selected':'' }}>{{ $field->name }}</option>
                                         @endforeach
                                     </select>
                                 </fieldset>
+                                <fieldset class="form-group">
+                                    <label for="chapter_ids">Chapters (Optional)</label>
+                                    <select class="form-control" name="chapter_ids[]" id="chapter_ids" multiple>
+                                        <option value="">Select</option>
+                                        @foreach($chapters as $chapter)
+                                        <option value="{{ $chapter->id }}" {{ in_array($chapter->id, $food->chapters->pluck('id')->toArray()) ? 'selected':'' }}>{{ $chapter->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </fieldset>
+
                                 <fieldset class="form-group">
                                     <label for="capacity">Capacity</label>
                                     <input type="number" id="capacity" name="capacity" class="form-control" value="{{ old('capacity') ?? $food->capacity }}" required>

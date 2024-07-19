@@ -40,7 +40,7 @@ class ConferenceSettingController extends Controller
     public function resetData(){
         //Delete all payments
         Payment::truncate();
-        //Empty Foodstands
+        //Empty Service Points
         Food::truncate();
         //Empty Hostels
         Hostel::truncate();

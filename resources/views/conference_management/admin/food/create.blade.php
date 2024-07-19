@@ -1,7 +1,7 @@
 @extends('layouts.conference')
 @section('title', 'New Food stand')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('foods.index',['edition'=>$edition->id]) }}">Food Stands</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('foods.index',['edition'=>$edition->id]) }}">Service Points</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Create foodstand</li>
@@ -42,15 +42,23 @@
                                         </select>
                                     </fieldset>
                                     <fieldset class="form-group">
-                                        <label for="field">Field</label>
-                                        <select class="form-control" name="field_id" id="field">
-                                            <option value="">-- Select option --</option>
+                                        <label for="field">Fields (Optional)</label>
+                                        <select class="form-control" name="field_ids[]" id="field" multiple>
                                             @foreach($fields as $field)
                                             <option value="{{ $field->id }}">{{ $field->name }}</option>
                                             @endforeach
 
                                         </select>
                                     </fieldset>
+                                    <fieldset class="form-group">
+                                        <label for="chapter">Chapters (Optional)</label>
+                                        <select class="form-control" name="chapter_ids[]" id="chapter" multiple>
+                                            @foreach($chapters as $chapter)
+                                            <option value="{{ $chapter->id }}">{{ $chapter->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </fieldset>
+                                    
                                     <fieldset class="form-group">
                                         <label for="capacity">Capacity</label>
                                         <input type="number" id="capacity" min="1" name="capacity" class="form-control" value="{{ old('capacity') }}" required>

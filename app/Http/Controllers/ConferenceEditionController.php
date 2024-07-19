@@ -60,7 +60,7 @@ class ConferenceEditionController extends Controller
         
         // Check if existing active
         $active = ConferenceEdition::where('status','active')->count();
-
+        
         if(isset($active) && $active > 0){
             $data['status'] = 'inactive';
         }
@@ -86,7 +86,7 @@ class ConferenceEditionController extends Controller
             $completed_registration = $edition->payments->where('registration_status', 'Complete')->count();
             $donations = Donation::where('conference_edition_id',$id)->sum('amount');
             $materials = Material::where('conference_edition_id',$id)->count();
-          
+            
             return view('conference_management.admin.index', compact('registered_participants', 'pending_registration', 'completed_registration', 'total', 'donations', 'materials', 'edition'));
         }
     }
@@ -131,7 +131,7 @@ class ConferenceEditionController extends Controller
         if($request->has('ban')){
 			$request['banner'] = $this->uploadImage($request->ban, 'frontend/img/site');
         }
-   
+
         if ($request->has('logo')) {
 			$request['conference_logo'] = $this->uploadImage($request->logo, 'frontend/img/site');
         }
@@ -139,7 +139,7 @@ class ConferenceEditionController extends Controller
         if ($request->has('favicon')) {
             $request['conference_favicon'] = $this->uploadImage($request->favicon, 'frontend/img/site');
         }
-
+        
         $edition->update($request->except(['ban','logo','favicon']));
         return back()->with('message', 'Operation Successful');
     }

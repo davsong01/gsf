@@ -36,14 +36,14 @@ class FieldController extends Controller
         $field = Field::create([
             'name' => $data['name'],
         ]);
-
+        
         return redirect(route('fields.index'))->with('message', 'Field succesfully created');
     }
 
     public function update(Request $request, Field $field)
     {
         $field->update($request->all());
-       
+    
         return redirect()->back()->with('message', 'Update successful!');
     }
 

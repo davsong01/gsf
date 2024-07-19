@@ -288,143 +288,8 @@
                 </div>
               </div>
             </div>
-            {{-- <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“”</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">"”.</p>
-                </div>
-              </div>
-            </div> --}}
           </div>
         </div>
-        {{-- <div class="carousel-item" data-bs-interval="2000">
-          <div class="row h-100">
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“”.</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“”</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                  </div>
-                  <p class="card-text pt-3 testi">"”.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="carousel-item">
-          <div class="row h-100">
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“”.</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“”</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">"”.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> --}}
       </div>
       <div class="row px-3 px-md-0 mt-4">
         <div class="col-6 position-relative">
@@ -463,12 +328,11 @@
 @section('script')
     <script>
       // In your Javascript (external .js resource or <script> tag)
-       $(document).ready(function() {
-          $('.js-example-basic-single').select2();
+      $(document).ready(function() {
+        $('.js-example-basic-single').select2();
       });
     $('#chapterind').select2({
         dropdownParent: $('#singleModal')
     });
-    
     </script>
 @endsection

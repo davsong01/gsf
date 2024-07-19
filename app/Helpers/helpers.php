@@ -1,6 +1,41 @@
 <?php
 
 use App\Models\GeneralSetting;
+use Illuminate\Support\Carbon;
+use App\Models\ConferenceEdition;
+
+if (!function_exists("hostelAssignmentTypes")) {
+    function hostelAssignmentTypes()
+    {
+        return [
+            'full-random' => 'Fully Randomized (Gender Exclusive)',
+            'random' => 'Random (Category Exclusive)',
+            'based_on_chapter' => 'Based On Chapter (Category Exclusive)',
+            'based_on_field' => 'Based On Field (Category Exclusive)',
+        ];
+    }
+}
+
+if (!function_exists("servicePointAssignmentTypes")) {
+    function servicePointAssignmentTypes()
+    {
+        return [
+            'full-random' => 'Fully Randomized',
+            'random' => 'Random (Category Exclusive)',
+            'based_on_chapter' => 'Based On Chapter (Category Exclusive)',
+            'based_on_field' => 'Based On Field (Category Exclusive)',
+            'based_on_gender' => 'Based On Gender (Category Exclusive)',
+        ];
+    }
+}
+
+if (!function_exists("activeConferenceEdition")) {
+    function activeConferenceEdition()
+    {
+        $conference = ConferenceEdition::where('status', 'active')->where('close_registration', '>', date('Y-m-d'))->first();
+        return $conference;
+    }
+}
 
 if (!function_exists("menu")) {
     function menu(){
@@ -45,3 +80,34 @@ if (!function_exists("frontendTemplate")) {
     }
 }
 
+if (!function_exists("getDayWithSuffix")) {
+    function getDayWithSuffix($day)
+    {
+        if (!in_array(($day % 100), array(11, 12, 13))) {
+            switch ($day % 10) {
+                case 1:
+                    return $day . 'st';
+                case 2:
+                    return $day . 'nd';
+                case 3:
+                    return $day . 'rd';
+            }
+        }
+        return $day . 'th';
+    }
+}
+
+if (!function_exists("formatDates")) {
+    function formatDates($start, $end)
+    {
+        $startDate = Carbon::parse($start);
+        $endDate = Carbon::parse($end);
+
+        $startDay = getDayWithSuffix($startDate->day);
+        $endDay = getDayWithSuffix($endDate->day);
+
+        $monthYear = $startDate->format('F, Y');
+
+        return "{$startDay} - {$endDay} {$monthYear}";
+    }
+}

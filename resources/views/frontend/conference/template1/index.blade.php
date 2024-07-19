@@ -63,23 +63,24 @@
               <li class="nav-item"><a class="nav-link" href="{{ url('/').'#register' }}">Register </a></li>
             </ul>                   
             @auth
-                <a href="/account"  class="btn btn-outline-danger rounded-pill order-0" >My Account</a>
-                <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <button class="btn btn-link text-1000 fw-medium order-1 order-lg-0" type="button">Log out</button>
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>  
-                @endauth
-                @guest
-                <a href="{{ '/login' }}" class="btn btn-outline-danger rounded-pill order-0" type="submit">Login</a>
-                @endguest
+            <a href="/account"  class="btn btn-outline-danger rounded-pill order-0" >My Account</a>
+            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <button class="btn btn-link text-1000 fw-medium order-1 order-lg-0" type="button">Log out</button>
+            </a>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>  
+            @endauth
+            @guest
+            <a href="{{ '/login' }}" class="btn btn-outline-danger rounded-pill order-0" type="submit">Login</a>
+            @endguest
           </div>
         </div>
       </nav>
       
         @yield('sec-content')
     </main>
+    
     @include('frontend.conference.template1.footer')
     <script src="{{ asset('conference_templates/template1/vendors/@popperjs/popper.min.js')}}"></script>
     <script src="{{ asset('conference_templates/template1/vendors/bootstrap/bootstrap.min.js')}}"></script>

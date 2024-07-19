@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Moels\Chapter;
-use App\Moels\ConferenceEdition;
 use App\Moels\Setting;
-use Carbon\Carbon;
+use App\Models\Chapter;
 use Illuminate\Http\Request;
+use App\Models\GeneralSetting;
+use Illuminate\Support\Carbon;
+use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
 
 class ConferenceController extends Controller
@@ -14,14 +15,17 @@ class ConferenceController extends Controller
     public function index()
     {
         $chapters = Chapter::orderBy('name')->get();
-        $setting = $this->conferenceEdition();
+        $setting = ConferenceEdition::where('status', 'active')->where('close_registration', '>', date('Y-m-d'))->first();
+        $frontend = GeneralSetting::first()->frontend_template;
+        
         $conference_year = Carbon::parse($setting->start_date)->year;
         $alumnis_amount = [
             'alumni_registration_fee' => $setting->alumni_registration_fee,
             'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
         ];
+
+        return view('frontend.conference.template'. $setting->template_id.'.welcome');
         
-        return view('frontend.conference.welcome', compact('chapters', 'setting', 'conference_year', 'alumnis_amount'));
     }
     
     public function thankyou()

@@ -1,7 +1,7 @@
 @extends('layouts.conference')
-@section('title', 'Food Stands')
+@section('title', 'Service Points')
 @section('active')
-<li class="breadcrumb-item">Food Stands</li>
+<li class="breadcrumb-item">Service Points</li>
 @endsection
 @section('content2')
 <div class="content-body">
@@ -11,7 +11,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">All Foodstands for {{ $edition->conference_theme }}</h4>
+                        <h4 class="card-title">All Service Points for {{ $edition->conference_theme }}</h4>
                         <a href="{{ route('foods.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Food Stand</a>
                     </div>
                     <div class="card-content">
@@ -23,9 +23,8 @@
                                             <th>S/N</th>
                                             <th>Name</th>
                                             <th>Level</th>
-                                            <th>Capacity</th>
-                                            <th>Allocation</th>
-                                            <th>Allotted</th>
+                                            <th>Fields</th>
+                                            <th>Chapters</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -33,16 +32,31 @@
                                         @foreach($foods as $food)
                                         <tr>
                                             <td>{{ $count++ }}</td>
-                                            <td>{{ $food->name }} 
-                                                @if($food->field)
+                                            <td>
+                                                {{ $food->name }} <br>
+                                               <strong>Capacity: </strong>{{$food->capacity}} <br>
+                                               <strong>Allocation: </strong>{{$food->allocation}} <br>
+                                               <strong>Allotted: </strong>{{$food->payments->count()}}
+                                            </td>
+                                            <td>{{$food->level}}</td>
+                                            <td>
+                                                @if($food->fields)
+                                                @foreach ($food->fields as $field)
+                                                   <small> {{" - " . $field->name . "\n"}} <br></small>
+                                                @endforeach
                                                 <br>
-                                                <strong>Field: </strong>{{ $food->field->name }}
+                                                @endif
+
+                                            </td>
+                                            <td>
+                                                @if($food->chapters)
+                                                @foreach ($food->chapters as $chapter)
+                                                   <small> {{" - " . $chapter->name . "\n"}}<br></small>
+                                                @endforeach
+                                                <br>
                                                 @endif
                                             </td>
-                                            <td>{{ $food->level }}</td>
-                                            <td>{{ $food->capacity }}</td>
-                                            <td>{{ $food->allocation }}</td>
-                                            <td>{{ $food->payments->count() }}</td>
+                                            
                                             
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Update food details" href="{{ route('foods.edit', ['food'=>$food->id,'edition'=>$edition->id]) }}"> <i class="bx bxs-edit actions"></i>

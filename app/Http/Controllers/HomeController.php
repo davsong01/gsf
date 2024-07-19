@@ -4,25 +4,15 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Nec;
-use App\Models\Post;
 use App\Models\User;
 use App\Models\Event;
-use App\Models\Payout;
 use App\Models\Chapter;
-use App\Models\Setting;
-use App\Models\TempUser;
 use App\Models\NewListing;
 use App\Models\TempMember;
 use App\Models\Stakeholder;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\GeneralSetting;
-use App\Mail\NotificationEmail;
-use App\Models\ConferenceEdition;
 use App\Imports\GeneralUsersImport;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 
 class HomeController extends Controller
@@ -31,8 +21,8 @@ class HomeController extends Controller
     private $frontend;
     public function __construct()
     {
-        $this->conference = ConferenceEdition::where('status','active')->where('close_registration','>', date('Y-m-d'))->first();
-        $this->frontend = GeneralSetting::first()->frontend_template;
+        $this->conference = activeConferenceEdition();
+        $this->frontend = frontendTemplate();
         
         if (!isset($this->conference) && empty($this->conference)) {
             return true;
@@ -44,18 +34,20 @@ class HomeController extends Controller
     public function index() {
         $events = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', '<>', 0)->limit(6)->get();
         $national = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', 0)->limit(3)->get();
-       
+        
         if($this->conference){
             $chapters = Chapter::orderBy('name')->get();
             $setting = $this->conference;
+            
             $conference_year = Carbon::parse($setting->start_date)->year;
             $alumnis_amount = [
                 'alumni_registration_fee' => $setting->alumni_registration_fee,
                 'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
             ];
-        
+            
             return view('frontend.conference.template'. $this->conference->template_id.'.welcome')
                 ->with('events',$events)
+                ->with('setting',$setting)
                 ->with('national',$national)
                 ->with('conference', $this->conference)
                 ->with('conference_year', $conference_year)
@@ -73,7 +65,7 @@ class HomeController extends Controller
                 if($user->role == 'Field Pastor' && !is_null($user->field_id)){
                     $user->office = "Field Pastor, ". $user->field->name ?? 'N/A';
                 } 
-               
+            
                 if($user->role == 'Portfolio'){
                     $user->office = "GSF National ".$user->portfolio;
                 } 
@@ -85,9 +77,9 @@ class HomeController extends Controller
 
     public function regPage($type)
     {
-        if (isset($type) and $this->conference) {
+        if (isset($type) && $this->conference) {
             $chapters = Chapter::orderBy('name')->get();
-            $setting = $this->conferenceEdition();
+            $setting = $this->conference;
             $conference_year = Carbon::parse($setting->start_date)->year;
             $alumnis_amount = [
                 'alumni_registration_fee' => $setting->alumni_registration_fee,
@@ -95,13 +87,6 @@ class HomeController extends Controller
             ];
         
             return view('frontend.conference.template'. $this->conference->template_id.'.registration',compact('chapters','setting','conference_year','alumnis_amount','type'));
-            // }
-            // if ($type == 2) {
-            //     return view('frontend.conference.template' . $this->conference->template_id . '.registration', compact('chapters', 'setting', 'conference_year', 'alumnis_amount'));
-            // }
-            // if ($type == 3) {
-            //     return view('frontend.conference.template' . $this->conference->template_id . '.registration', compact('chapters', 'setting', 'conference_year', 'alumnis_amount'));
-            // }
         } else {
             return abort(404);
         }

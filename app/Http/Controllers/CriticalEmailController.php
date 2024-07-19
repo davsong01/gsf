@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use app\Models\Setting;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Models\CriticalEmail;
 use App\Models\GeneralSetting;
