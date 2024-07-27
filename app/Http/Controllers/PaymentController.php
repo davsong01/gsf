@@ -51,13 +51,14 @@ class PaymentController extends Controller
 		$type = $type['type'] ?? $request->type;
 		
 		//Validate individual registration
-		if (isset($type['type']) && $type['type'] == '1') {
+		if (isset($type) && $type == '1') {
 			//check amount
+			
 			$this->validate($request, [
 				'gender' => 'required',
 			]);
 
-			if ($request->amount <> ($setting->registration_fee)) {
+			if ($request->amount <> $setting->registration_fee) {
 				return back()->with('error', 'Invalid amount');
 			}
 		}
@@ -99,6 +100,7 @@ class PaymentController extends Controller
 				"phone" => "required",
 				"amount"=>"required"
 			]);
+
 		}
 		
 		$request['transid'] = $this->generateTransactionId();
@@ -109,7 +111,6 @@ class PaymentController extends Controller
 		}
 
 		$request['transid'] = $tempUser->transid;
-
 		$request['conference_edition_id'] = $setting->id;
 		$request['currency'] = 'NGN';
 		
@@ -165,6 +166,8 @@ class PaymentController extends Controller
 				$data['payment_type'] = "PAYSTACK";
 				$data['conference_edition_id'] = $participant->conference_edition_id;
 				$data['chapter'] = $participant->chapter_id ?? null;
+				$data['field_id'] = $participant->field_id ?? null;
+				$data['remarks'] = $participant->remarks ?? null;
 
 				$type = isset($paymentDetails) ? $paymentDetails->metadata->type : $participant->type;
 				$extras = $this->getExtras($type, $setting, $data['amount']);
@@ -177,13 +180,12 @@ class PaymentController extends Controller
 				//Donations
 				if (isset($paymentDetails->metadata->type) && $paymentDetails->metadata->type == '5') {
 					//copy details to donations table
-					$donation = Donation::Create([
+					$donation = Donation::UpdateOrCreate(['name' => $data['name'],'email' => $data['email']],[
 						'name' => $data['name'],
 						'email' => $data['email'],
-						'name' => $data['name'],
 						'phone' => $data['phone'],
 						'amount' => $data['amount'],
-						'amount' => $data['amount'],
+						'remarks' => $data['remarks'] ?? null,
 						'state' => $participant->state,
 						'transid' => $paymentDetails->reference,
 						'conference_edition_id' => $participant->conference_edition_id,
@@ -219,7 +221,7 @@ class PaymentController extends Controller
 					$this->logEmail($email);
 					//Todo: make this return redirect to
 					$data['edition'] = $setting;
-
+					
 					if($admin !== 'admin'){
 						return $this->donationThankYouPage($data, $conference_year);
 					}else{
@@ -232,8 +234,8 @@ class PaymentController extends Controller
 				$user = $this->createUser($data);
 				$payment = $this->createPayment($data, $user);
 				$chapter = Chapter::with('field:id,name')->select('id', 'field_id')->where('id', $data['chapter'])->first();
-				$data['field_id'] = !empty($chapter->field) ? $chapter->field->id : null;
-
+				$data['field_id'] = !empty($chapter->field) ? $chapter->field->id : (!empty($data['field_id']) ? $data['field_id'] : null);
+				
 				// Assign Automatic foodstand and hostel
 				if (in_array($payment->level, ['Participant', 'Alumni', 'Nec','Moderator'])) {
 					$hostel_allocation = HostelAllocationService::assignHostel($data);
@@ -251,8 +253,8 @@ class PaymentController extends Controller
 						'hostel_allocation_type' => $hostel_allocation['hostel_allocation_type'],
 						'service_point_allocation_number' => $service_point['service_point_allocation_number'],
 						'service_point_allocation_type' => $service_point['service_point_allocation_type'],
-						'hostel_id' => $data['hostel_id'] ?? null,
-						'food_id' => $data['food_id'] ?? null
+						'hostel_id' => $hostel_allocation['hostel_id'],
+						'food_id' => $service_point['service_point_allocation_id']
 					]);
 				}
 				
@@ -458,6 +460,7 @@ class PaymentController extends Controller
 	public function createTempUser($data){
 		$type = isset($data['metadata']) && !empty($data['metadata']) ? json_decode($data['metadata'], true) : [];
 		$type = !empty($type) ? $type['type'] : null;
+		
 		$setting = $this->conferenceEdition();
 		// Check if email already exists with a payment corresponding to this edition
 		if(!in_array($type, [5])){
@@ -481,6 +484,7 @@ class PaymentController extends Controller
 			'phone' => $data['phone'],
 			'type' => $type ?? null,
 			'chapter_id' => $data['chapter'] ?? NULL,
+			'field_id' => $data['field_id'] ?? NULL,
 			'state' => $data['state'] ?? null,
 			'transid' => $data['transid'] ?? NULL,
 			'status' => 'Initiated',
@@ -488,6 +492,7 @@ class PaymentController extends Controller
 			'conference_edition_id' => $setting->id,
 			'location' => $location ?? null,
 			'amount' => $amount ?? null,
+			'remarks' => $data['remarks'] ?? null,
 		]);
 
 		return $temp;

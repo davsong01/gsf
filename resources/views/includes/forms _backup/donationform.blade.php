@@ -38,7 +38,6 @@
 							<input type="number" class="form-control" id="donations" name="donations" value="{{ old('donations') }}"
 								placeholder="Amount you want to donate" min="1000" required="required">
 						</div>
-
 						<br>
 						{{-- <input type="hidden" name="orderID" value="345"> --}}
 						<input type="hidden" name="amount" id="amount" value="">

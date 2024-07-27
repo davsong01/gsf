@@ -1,3 +1,6 @@
+<?php 
+	$setting = $payment->edition;
+?>
 @extends('layouts.dashboard')
 @section('title', 'Print ID')
 @section('item')
@@ -103,12 +106,14 @@
 											<strong style="font-weight: bold; font-size:10px">Campus: </strong><span style="font-weight:20px; font-size:10px">{{ $user->campus->name  }}</span>
 											@endif
 											<hr style="margin-top: 1rem;margin-bottom: 1rem; border-top: 1px solid #DFE3E7;">
-											
-											<h3 style="font-size:15px; font-weight:lighter;"> <strong>Hostel:</strong>
-												{{ isset($payment->hostel->name) ? $payment->hostel->name : 'N/A'  }}</h3>
-											<h3 style="font-size:15px; font-weight:lighter"> <b>Food Stand:</b>
-												{{ isset($payment->food->name) ? $payment->food->name : 'N/A'  }}</h3>
-											
+											@if(!empty($payment->hostel))
+											<h3 style="font-size:15px; font-weight:lighter;"> <strong>Hostel Name:</strong>
+												{{ isset($payment->hostel->name) ? $payment->hostel->name : 'N/A'  }} <small>/{{ $payment->hostel_allocation_number }}</small></h3>
+											@endif
+											@if(!empty($payment->food))
+												<h3 style="font-size:15px; font-weight:lighter"> <b>Service Point:</b>
+													{{ isset($payment->food->name) ? $payment->food->name : 'N/A'  }}<small>/{{ $payment->service_point_allocation_number }}</small></h3>
+											@endif
 										</div>
 										<div class="card-footer">
 											<small style="color:black">

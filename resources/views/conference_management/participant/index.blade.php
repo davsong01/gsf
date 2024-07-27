@@ -11,11 +11,11 @@
 			@foreach(auth()->user()->payments->sortBy('created_at') as $payment)
 			
 			<div class="col-md-6 col-sm-12">
-				<div class="card" style="background-color: {{ $payment->edition->id == $setting->id ? 'green':'gray;'}}">
+				<div class="card" style="background-color: {{ $payment->edition->id == $edition->id ? 'green':'gray;'}}">
 					<a href="{{ route('conferencemanagement.show', ['conferencemanagement'=>$payment->id, 'edition'=>$payment->conference_edition_id]) }}">
 					<div class="card-header d-flex justify-content-between align-items-center">
 						<h4 class="card-title" style="color: white;">{{ $payment->edition->conference_theme }} conference <br><span style="color:{{ $payment->edition->status == 'active' ? 'black' : '#b30e0e'}}"> {{ $payment->edition->status }}</span></h4> <br>
-						<small style="color:{{ $payment->edition->id == App\ConferenceEdition::where('status', 'active')->first()->value('id') ? 'white':'black'}}">{{ $payment->edition->start_date .' to '.$payment->edition->end_date }}<br> <span style="color:yellow">{{ $payment->level }}</span> </small>
+						<small style="color:{{ $payment->edition->id == $edition->id ? 'white':'black'}}">{{ formatDates($payment->edition->start_date, $payment->edition->end_date) }}<br> <span style="color:yellow">{{ $payment->level }}</span> </small>
 					</div>
 					<div class="card-content">
 						<div class="card-body">

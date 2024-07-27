@@ -1,89 +1,83 @@
-@extends('frontend.conference.template1.index')
+@extends('frontend.conference.template2.app')
 @section('css')
 <style>
-    .form-control {
-        padding-left: 10px !important;
+    .divider:after,
+    .divider:before {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #eee;
     }
 
-    .select2-selection__rendered {
-        line-height: 31px !important;
+    .h-custom {
+        height: calc(100% - 73px);
     }
 
-    .select2-container .select2-selection--single {
-        height: 35px !important;
+    <blade media|%20(max-width%3A%20450px)%20%7B>.h-custom {
+        height: 100%;
     }
-
-    .select2-selection__arrow {
-        height: 34px !important;
-    }
-    .close{
-        background: red !important;
-        color: white !important;
-        border-radius: unset !important;
-        box-shadow: unset !important;
-        padding: 6px !important;
-        border: unset !important;
-        height: 38px !important;
-        width: 38px !important;
     }
 </style>
 @endsection
-@section('sec-content')
-<section class="bg-100 py-7" id="register">
-    <div class="container-lg small-container">
-        
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-5 text-center mb-3">
-                <h2>Login</h2>
-            </div>
+@section('content')
+<div id="page-banner-area" class="page-banner-area"
+    style="background-image:url({{ asset('conference_templates/template2/images/hero_area/banner_bg.jpg') }})">
+    <!-- Subpage title start -->
+    <div class="page-banner-title">
+        <div class="text-center">
+            <h2>Login</h2>
         </div>
-        @include('includes.alerts')
-        <div class="row h-100 justify-content-center">
-            <div class="contact-form">
-                <form action="{{ route('login') }}" method="POST">
-                    @csrf
-                    <div class="control-group">
-                        <label>Family ID</label>
-                        <input type="text" class="form-control id="family_id"
-                            name="family_id" placeholder="Enter your family ID" required="required" value="{{ old('family_id') }}">
-                    </div>
-                    <div class="control-group">
-                        <label>Password</label>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required="required">
-                        
-                    </div>
+    </div><!-- Subpage title end -->
+</div><!-- Page Banner end -->
+
+<div class="">
+    <section class="vh-100">
+        <div class="container-fluid h-custom">
+            <div class="row d-flex justify-content-center align-items-center h-100">
                 
-                    <div class="form-group-icon mb15 mt-3">
-                        <small onclick="newFunction()" style="cursor: pointer;">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="check">
-                                <label class="form-check-label" for="check">
-                                    Show password
+                <div class="col-md-9 col-lg-6 col-xl-5">
+                    <img src="{{ asset($setting->banner)}}"
+                        class="img-fluid" alt="Sample image">
+                </div>
+                <div class="col-md-8 col-lg-6 col-xl-4">
+                    @include('includes.alerts')
+                    <form action="{{ route('login') }}" method="POST">
+                        @csrf
+                        {{-- <div class="divider d-flex align-items-center my-4">
+                            <p class="text-center fw-bold mx-3 mb-0"></p>
+                        </div> --}}
+                        <!-- Email input -->
+                        <div data-mdb-input-init class="form-outline mb-4">
+                            <label class="form-label" for="family_id">Family ID</label>
+                            <input required type="text" id="family_id" name="family_id" class="form-control form-control-lg"
+                                placeholder="Enter your family ID" value="{{ old('family_id') }}">
+                        </div>
+
+                        <!-- Password input -->
+                        <div data-mdb-input-init class="form-outline mb-3">
+                            <label class="form-label" for="password">Password</label>
+                            <input type="password" id="password" name="password" class="form-control form-control-lg"
+                                placeholder="Enter password" />
+   
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <!-- Checkbox -->
+                            <div class="form-check mb-0">
+                                <input class="" type="checkbox" value="" name="" id="check" />
+                                <label class="" for="">
+                                    <span onclick="newFunction()" style="cursor: pointer;">Show Password</span>
                                 </label>
                             </div>
-                        </small>
-                        <small>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="rm">
-                                <label class="form-check-label" for="rm" name="remember_me">
-                                    Remember Me
-                                </label>
-                            </div>
-                            {{-- <input type="checkbox" name="remember_me" id="rm">  --}}
-                        </small>
-                    </div>
-                    <input style="margin-top:20px" type="submit" value="Login" h
+                        </div>
+                        <input style="margin-top:20px;width: 100%;" type="submit" value="Login" h
                         class="btn btn-danger hover-top btn-glow rounded-pill border-0">
-                </form>
-                <div class="text-right"><a href="password/reset" class="card-link"><small>Forgot Password?</small></a>
+                    </form>
                 </div>
             </div>
         </div>
-    </div>
-    </div>
-    </div>
-</section>
 
+    </section>
 @endsection
 @section('script')
 <script>

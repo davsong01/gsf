@@ -1,474 +1,791 @@
-@extends('frontend.conference.template2.index')
-@section('css')
-<style>
-  .close{
-    padding: 5px;
-    background: red;
-    border-radius: 50%;
-    height: ;
-    color: white;
-    border: 1px solid;
-    width: 35px; 
-  }
+@extends('frontend.conference.template2.app')
+@section('content')
+      <!-- banner start-->
+      <section class="hero-area">
+         <div class="banner-item" style="background-image:url('{{ asset('conference_templates/template2/images/hero_area/banner_bg.jpg')}}')">
+            <div class="container">
+               <div class="row">
+      <div class="col-lg-8">
+          <div class="banner-content-wrap">
 
-  .testi{
-    font-size: 14px;
-  }
+            <p class="banner-info wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="500ms">{{$setting->slug }}</p>
+            <h1 class="banner-title wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="700ms" style="margin-bottom: 0px;">{{ $setting->conference_theme }}</h1>
+            <p class="banner-info wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="500ms" style="margin-bottom: 50px;color:yellow">{{ formatDates($setting->start_date, $setting->end_date) }}</p>
+            
+            <div class="countdown wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="800ms">
+                <div class="counter-item">
+                  <i class="icon icon-ring-1Asset-1"></i>
+                  <span class="days">00</span>
+                  <div class="smalltext">Days</div>
 
-  .bi.bi-check-circle-fill {
-    margin-top: 3px;
-  }
-</style>
-@endsection
-@section('sec-content')
-<section class="pb-6" id="details" style="margin-top:50px">
+                </div>
+                <div class="counter-item">
+                  <i class="icon icon-ring-4Asset-3"></i>
+                  <span class="hours">00</span>
+                  <div class="smalltext">Hours</div>
+                </div>
+                <div class="counter-item">
+                  <i class="icon icon-ring-3Asset-2"></i>
+                  <span class="minutes">00</span>
+                  <div class="smalltext">Minutes</div>
+                </div>
+                <div class="counter-item">
+                  <i class="icon icon-ring-4Asset-3"></i>
+                  <span class="seconds">00</span>
+                  <div class="smalltext">Seconds</div>
+                </div>
+            </div>
+            <!-- Countdown end -->
+            <div class="banner-btn wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="800ms">
+                <a href="#register" class="btn">Register now</a>
+            </div>
 
-  <div class="container">
-    <div class="row flex-center">
-      <div class="col-lg-6 col-md-5 order-md-1"><img class="img-fluid" src="{{ !empty($conference->banner) ? $conference->banner : asset('conference_templates/template1/assets/img/illustrations/1.png')}}" alt="" /></div>
-      <div class="col-md-7 col-lg-6 mt-5 text-center text-md-start">
-        <h1 class="fw-medium">{{ $conference->conference_theme }}</span></h1>
-        <p class="mt-3 mb-4">{!! $conference->conference_overview !!} </p><a class="btn btn-lg btn-danger hover-top btn-glow" href="#register">Grab your slot </a>
+          </div>
+          <!-- Banner content wrap end -->
+      </div><!-- col end-->
+      <div class="col-lg-4 align-self-end">
+          <div class="banner-img">
+            {{-- <img src="{{ asset('conference_templates/template2/images/hero_area/banner_img.png') }}" alt=""> --}}
+          </div>
       </div>
-    </div>
-  </div>
-  <!-- end of .container-->
+    </div><!-- row end-->
+</div>
+<!-- Container end -->
+</div>
+<!-- banner slice image-->
+<div class="tiles">
+<div class="tile" data-scale="1.1" data-image="{{ asset('conference_templates/template2/images/hero_area/banner_slices.png')}}"></div>
+</div>
 </section>
-<section class="py-4">
-  <div class="container">
-    <div class="card py-5 border-0 shadow-sm">
-      <div class="card-body">
-        <div class="row">
-          <div class="col-4">
-            <div class="border-end d-flex justify-content-md-center">
-              <div class="mx-2 mx-md-0 me-md-5">
-                <div class="badge badge-circle bg-soft-danger">
-                  <svg class="bi bi-person-fill" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#F53838" viewBox="0 0 16 16">
-                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
-                  </svg>
-                </div>
-              </div>
-              <div>
-                <p class="fw-bolder text-1000 mb-0">6,000+ </p>
-                <p class="mb-0">Participants</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="border-end d-flex justify-content-md-center">
-              <div class="mx-2 mx-md-0 me-md-5">
-                <div class="badge badge-circle bg-soft-danger">
-                  <svg class="bi bi-geo-alt-fill" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#F53838" viewBox="0 0 16 16">
-                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"></path>
-                  </svg>
-                </div>
-              </div>
-              <div>
-                <p class="fw-bolder text-1000 mb-0">30+ </p>
-                <p class="mb-0">Ministers </p>
-              </div>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="d-flex justify-content-md-center">
-              <div class="mx-2 mx-md-0 me-md-5">
-                <div class="badge badge-circle bg-soft-danger">
-                  <svg class="bi bi-hdd-stack-fill" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#F53838" viewBox="0 0 16 16">
-                    <path d="M2 9a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2H2zm.5 3a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm2 0a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zM2 2a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2zm.5 3a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm2 0a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"></path>
-                  </svg>
-                </div>
-              </div>
-              <div>
-                <p class="fw-bolder text-1000 mb-0">20+ </p>
-                <p class="mb-0">Sessions </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- end of .container-->
+<!-- banner end-->
 
-</section>
-
-<section class="pt-4 pt-md-6" id="expectation">
-
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-md-5 col-lg-7 text-lg-center"><img style="width:500px" class="img-fluid mb-5 mb-md-0" src="{{ asset('conference_templates/template1/assets/img/illustrations/2.jpg')}}" alt="" /></div>
-      <div class="col-md-7 col-lg-5 text-center text-md-start">
-        <h2>What to expect <br /></h2>
-        <p>This edition of the GSF Bienniel Conference is packaged with:</p>
-        <div class="d-flex">
-          <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
-          </svg>
-          <p class="ms-2">Powerful Davidic worship experience</p>
-        </div>
-        <div class="d-flex">
-          <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
-          </svg>
-          <p class="ms-2">Bible exposition & Word explosion</p>
-        </div>
-        <div class="d-flex">
-          <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
-          </svg>
-          <p class="ms-2">Salvation & Healing</p>
-        </div>
-        <div class="d-flex">
-          <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
-          </svg>
-          <p class="ms-2">Delivarance from any kind of bondage </p>
-        </div>
-        <div class="d-flex">
-          <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
-          </svg>
-          <p class="ms-2">Relationship & Marriage talk</p>
-        </div>
-        <div class="d-flex">
-          <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
-          </svg>
-          <p class="ms-2">Miracle signs & wonders</p>
-        </div>
-        <div class="d-flex">
-          <svg class="bi bi-check-circle-fill" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2FAB73" viewBox="0 0 16 16">
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
-          </svg>
-          <p class="ms-2">and lots more</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- end of .container-->
-</section>
-
-<section class="bg-100 py-7" id="register">
-  <div class="container-lg">
-    <div class="row justify-content-center">
-      <div class="col-md-8 col-lg-5 text-center mb-3">
-        <h2>Register</h2>
-        <p>Choose registration type</p>
-      </div>
-    </div>
-    <div class="row h-100 justify-content-center">
-      <div class="col-md-4 pt-4 px-md-2 px-lg-3">
-        <div class="card h-100">
-          <div class="card-body d-flex flex-column justify-content-around mx-auto">
-            <div class="text-center pt-5">
-              <h5 class="my-4">Single Registration</h5>
-            </div>
-            <ul class="list-unstyled">
-              <li class="mb-3"><span class="me-2">
-                  <svg class="bi bi-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2FAB73" viewBox="0 0 16 16">
-                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
-                  </svg></span>Undergraduate
-              </li>
-              <li class="mb-3"><span class="me-2">
-                  <svg class="bi bi-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2FAB73" viewBox="0 0 16 16">
-                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
-                  </svg></span>SSS Student
-              </li>
-              <li class="mb-3"><span class="me-2">
-                  <svg class="bi bi-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2FAB73" viewBox="0 0 16 16">
-                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
-                  </svg></span>Youth
-              </li>
-            </ul>
-            <div class="text-center my-5">
-              <h2 class="mb-3">&#8358;{{ number_format($setting->registration_fee) }}
-              </h2>
-              <a href="{{ route('conference.registration',1) }}" h class="btn btn-danger hover-top btn-glow rounded-pill border-0" type="submit">Register</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      @if(isset($setting->lock_online_payment) && $setting->lock_online_payment == 'no')
-      <div class="col-md-4 pt-4 px-md-2 px-lg-3">
-        <div class="card h-100">
-          <div class="card-body d-flex flex-column justify-content-around mx-auto">
-            <div class="text-center pt-5">
-              <h5 class="my-4">Mass Registration</h5>
-            </div>
-            <ul class="list-unstyled">
-              <li class="mb-3"><span class="me-2">
-                  <svg class="bi bi-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2FAB73" viewBox="0 0 16 16">
-                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
-                  </svg></span>2 or more Undergraduates
-              </li>
-              <li class="mb-3"><span class="me-2">
-                  <svg class="bi bi-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2FAB73" viewBox="0 0 16 16">
-                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
-                  </svg></span>2 or more SSS Students
-              </li>
-              <li class="mb-3"><span class="me-2">
-                  <svg class="bi bi-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2FAB73" viewBox="0 0 16 16">
-                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
-                  </svg></span>2 or more Youths
-              </li>
-            </ul>
-            <div class="text-center my-5">
-              <h2 class="mb-3">&#8358;{{ number_format($setting->registration_fee) }}
-                <span class="text-900"><small>/Participant</small></span>
-              </h2>
-              <a href="{{ route('conference.registration',2) }}" h class="btn btn-danger hover-top btn-glow rounded-pill border-0" type="submit">Register</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      @endif
-       <div class="col-md-4 pt-4 px-md-2 px-lg-3">
-        <div class="card h-100">
-          <div class="card-body d-flex flex-column justify-content-around mx-auto">
-            <div class="text-center pt-5">
-              <h5 class="my-4">Alumni Registration</h5>
-            </div>
-            <ul class="list-unstyled">
-              <li class="mb-3"><span class="me-2">
-                  <svg class="bi bi-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2FAB73" viewBox="0 0 16 16">
-                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
-                  </svg></span>GSF Alumni
-              </li>
-              <li class="mb-3"><span class="me-2">
-                  <svg class="" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2FAB73" viewBox="0 0 16 16">
-                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
-                  </svg></span>Youth Corpers
-              </li>
-              <li class="mb-3"><span class="me-2">
-                  <svg class="bi bi-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2FAB73" viewBox="0 0 16 16">
-                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
-                  </svg></span>Senior Friends
-              </li>
-            </ul>
-            <div class="text-center my-5">
-              <h2 class="mb-3">&#8358;{{ number_format($setting->new_alumni_registration_fee) }} - &#8358;{{ number_format($setting->alumni_registration_fee) }}
-              </h2>
-              <a href="{{ route('conference.registration',3) }}" h class="btn btn-danger hover-top btn-glow rounded-pill border-0" type="submit">Register</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- end of .container-->
-</section>
-<!-- ============================================-->
-<!-- <section> begin ============================-->
-<section class="py-7" id="testimonies">
-
-  <div class="container">
-    <div class="row flex-center">
-      <div class="col-md-8 text-center">
-        <h2>Testimonies from previous conferences</h2>
-        <p>Rev.12.11 - And they overcame him by the blood of the Lamb, and by the word of their testimony; and they loved not their lives unto the death. <br> <br> Here are the beautiful manifestations of what the Lord has done at the previous conference, God awaits you this year to have a share of yours. <br>See you there!</p>
-      </div>
-    </div>
-    <div class="carousel slide pt-6" id="carouselExampleDark" data-bs-ride="carousel">
-      <div class="carousel-inner">
-        <div class="carousel-item active" data-bs-interval="10000">
-          <div class="row h-100">
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium">David</h6>
-                        <p class="fs--2 fw-normal mb-0">Lagos, Nigeria</p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“During the last GSF Conference (ABOVE ONLY), I asked God to take me higher from single to married and today, I am happily married to the love of my life. Halleluyah"</p>
-                </div>
-              </div>
-            </div>
-            {{-- <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“”</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">"”.</p>
-                </div>
-              </div>
-            </div> --}}
-          </div>
-        </div>
-        {{-- <div class="carousel-item" data-bs-interval="2000">
-          <div class="row h-100">
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“”.</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“”</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                  </div>
-                  <p class="card-text pt-3 testi">"”.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="carousel-item">
-          <div class="row h-100">
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“”.</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">“”</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <div class="flex-1 ms-0">
-                        <h6 class="mb-0 fs--1 text-1000 fw-medium"></h6>
-                        <p class="fs--2 fw-normal mb-0"></p>
-                      </div>
-                    </div>
-                    
-                  </div>
-                  <p class="card-text pt-3 testi">"”.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> --}}
-      </div>
-      <div class="row px-3 px-md-0 mt-4">
-        <div class="col-6 position-relative">
-          <ol class="carousel-indicators">
-            <li class="active" data-bs-target="#carouselExampleDark" data-bs-slide-to="0"></li>
-            <li data-bs-target="#carouselExampleDark" data-bs-slide-to="1"></li>
-            <li data-bs-target="#carouselExampleDark" data-bs-slide-to="2"></li>
-          </ol>
-        </div>
-        <div class="col-6 position-relative"><a class="carousel-control-prev carousel-icon z-index-2" href="#carouselExampleDark" role="button" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></a><a class="carousel-control-next carousel-icon z-index-2" href="#carouselExampleDark" role="button" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></a></div>
-      </div>
-    </div>
-  </div>
-  <!-- end of .container-->
-
-</section>
-<section class="py-5 z-index-1" style="margin-bottom: 1rem">
-  <div class="container" id="donate">
-    <div class="card py-5 px-5 border-0 shadow-sm" style="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px !important;">
-      <div class="card-body">
-        <div class="row flex-center">
-          <div class="col-12 col-lg-6 text-lg-start">
-            <h2>Special <br />Support</h2>
-            <p class="mb-lg-0">You can support the conference online</p>
-          </div>
-          <div class="col-12 col-lg-6 text-lg-end"><a class="btn btn-lg btn-danger hover-top btn-glow text-end" href="{{route('conference.registration',5) }}"type="submit">Donate Now</a></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- end of .container-->
-
-</section>
-
-@endsection 
-@section('script')
-    <script>
-      // In your Javascript (external .js resource or <script> tag)
-       $(document).ready(function() {
-          $('.js-example-basic-single').select2();
-      });
-    $('#chapterind').select2({
-        dropdownParent: $('#singleModal')
-    });
+<!-- ts intro start -->
     
-    </script>
+<section id="details" class="ts-intro-item section-bg">
+    <div class="container">
+      <div class="row">
+          <div class="col-lg-4 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="300ms">
+            <div class="intro-left-content">
+                <h2 class="column-title">
+                  <span>Unlock the Future</span>
+                  Why Attend The {{ $setting->conference_theme }} Conference
+                </h2>
+                <p>
+                  Experience transformative spiritual growth, business insights, healing, and powerful prayer sessions at the Oracle Conference—an opportunity for students and youth to deepen faith, gain skills, and connect with a supportive community, fostering holistic development and lasting inspiration.
+                </p>
+                <a href="#register" class="btn">Register Now</a>
+            </div>
+          </div><!-- col end-->
+          <div class="col-lg-8">
+            <div class="row">
+                <div class="col-lg-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="400ms">
+                  <div class="single-intro-text mb-30">
+                      <i class="icon icon-speaker"></i>
+                      <h3 class="ts-title">Great Speakers</h3>
+                      <p>
+                        Experience profound teachings and guidance from esteemed spiritual and quality ministers at the Oracle Conference.
+                      </p>
+                      <span class="count-number">01</span>
+                  </div><!-- single intro text end-->
+                </div><!-- col end-->
+                <div class="col-lg-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="500ms">
+                  <div class="single-intro-text mb-30">
+                      <i class="icon icon-netwrorking"></i>
+                      <h3 class="ts-title">New People</h3>
+                      <p>
+                        Connect with like-minded individuals and share your values at the Oracle Conference. Build lasting friendships and a supportive community.
+                      </p>
+                      <span class="count-number">02</span>
+                  </div><!-- single intro text end-->
+
+                </div><!-- col end-->
+                <div class="col-lg-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="600ms">
+                  <div class="single-intro-text mb-30">
+                      <i class="icon icon-people"></i>
+                      <h3 class="ts-title">Networking</h3>
+                      <p>
+                        Network with global peers and industry leaders at the Oracle Conference.
+                      </p>
+                      <span class="count-number">03</span>
+                  </div><!-- single intro text end-->
+                </div><!-- col end-->
+                <div class="col-lg-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="700ms">
+                  <div class="single-intro-text mb-30">
+                      <i class="icon icon-fun"></i>
+                      <h3 class="ts-title">Have Fun</h3>
+                      <p>
+                        Experience unparalleled fun and excitement at the Oracle Conference <br><br>
+                      </p>
+                      <span class="count-number">04</span>
+                  </div><!-- single intro text end-->
+                </div><!-- col end-->
+            </div>
+          </div><!-- col end-->
+
+      </div><!-- row end-->
+    </div><!-- container end-->
+</section>
+<!-- ts intro end-->
+
+<!-- ts speaker start-->
+<section id="ts-speakers" class="ts-speakers" style="background-image:url(images/speakers/speaker_bg.png)">
+    <div class="container">
+      <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <h2 class="section-title text-center">
+                <span>Key</span>Speakers
+            </h2>
+          </div><!-- col end-->
+      </div><!-- row end-->
+      <div class="row">
+          <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="400ms">
+            <div class="ts-speaker">
+                <div class="speaker-img">
+                  <img class="img-fluid" src="{{ asset('conference_templates/template2/images/speakers/speaker1.jpg')}}" alt="">
+                  <a href="#popup_1" class="view-speaker ts-image-popup" data-effect="mfp-zoom-in">
+                      <i class="icon icon-plus"></i>
+                  </a>
+                </div>
+                <div class="ts-speaker-info">
+                  <h3 class="ts-title"><a href="#">David Robert</a></h3>
+                  <p>
+                      Founder, Btech Ltd
+                  </p>
+                </div>
+            </div>
+            <!-- popup start-->
+            <div id="popup_1" class="container ts-speaker-popup mfp-hide">
+                <div class="row">
+                  <div class="col-lg-6">
+                      <div class="ts-speaker-popup-img">
+                        <img src="{{ asset('conference_templates/template2/images/speakers/speaker1.jpg')}}" alt="">
+                      </div>
+                  </div><!-- col end-->
+                  <div class="col-lg-6">
+                      <div class="ts-speaker-popup-content">
+                        <h3 class="ts-title">David Robert</h3>
+                        <span class="speakder-designation">Cheif Architecture</span>
+                        <p>
+                            Some biography extract... World is committed to making participation in the event a harass ment free experience
+                            for everyone, regardless of level experience gender, gender identity and expression
+                        </p>
+                        <h4 class="session-name">
+                            Sessions by David
+                        </h4>
+                        <div class="row">
+                            <div class="col-lg-12">
+                              <div class="speaker-session-info">
+                                
+                                  <span>Go in this thy Might </span>
+                                  <p>
+                                    (Judges 6:14)
+                                  </p>
+                              </div>
+                            </div>
+                            
+                        </div>
+                        <div class="ts-speakers-social">
+                            <a target="_blank" href="#"><i class="fa fa-facebook"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-twitter"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-instagram"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-google-plus"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-linkedin"></i></a>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+            </div>
+          </div> <!-- col end-->
+          <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="500ms">
+            <div class="ts-speaker">
+                <div class="speaker-img">
+                  <img class="img-fluid" src="{{ asset('conference_templates/template2/images/speakers/speaker2.jpg')}}" alt="">
+                  <a href="#popup_2"  class="view-speaker ts-image-popup" data-effect="mfp-zoom-in"><i class="icon icon-plus"></i></a>
+                </div>
+                <div class="ts-speaker-info">
+                  <h3 class="ts-title"><a href="#">David Roberts</a></h3>
+                  <p>
+                      Lead Designer, Payol
+                  </p>
+                </div>
+            </div>
+            <!-- popup start-->
+            <div id="popup_2" class="container ts-speaker-popup mfp-hide">
+                <div class="row">
+                  <div class="col-lg-6">
+                      <div class="ts-speaker-popup-img">
+                        <img src="{{ asset('conference_templates/template2/images/speakers/speaker2.jpg')}}" alt="">
+                      </div>
+                  </div><!-- col end-->
+                  <div class="col-lg-6">
+                      <div class="ts-speaker-popup-content">
+                        <h3 class="ts-title">David Robert</h3>
+                        <span class="speakder-designation">Cheif Architecture</span>
+                        <p>
+                            Some biography extract... World is committed to making participation in the event a harass ment free experience
+                            for everyone, regardless of level experience gender, gender identity and expression
+                        </p>
+                        <h4 class="session-name">
+                            Sessions by David
+                        </h4>
+                        <div class="row">
+                            <div class="col-lg-12">
+                              <div class="speaker-session-info">
+                                
+                                  <span>Go in this thy Might </span>
+                                  <p>
+                                    (Judges 6:14)
+                                  </p>
+                              </div>
+                            </div>
+                            
+                        </div>
+                        <div class="ts-speakers-social">
+                            <a target="_blank" href="#"><i class="fa fa-facebook"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-twitter"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-instagram"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-google-plus"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-linkedin"></i></a>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+            </div>
+          </div> <!-- col end-->
+          <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="600ms">
+            <div class="ts-speaker">
+                <div class="speaker-img">
+                  <img class="img-fluid" src="{{ asset('conference_templates/template2/images/speakers/speaker3.jpg')}}" alt="">
+                  <a href="#popup_3" class="view-speaker ts-image-popup" data-effect="mfp-zoom-in">
+                  <i class="icon icon-plus"></i></a>
+                </div>
+                <div class="ts-speaker-info">
+                  <h3 class="ts-title"><a href="#">Sewanu Oriyomi</a></h3>
+                  <p>
+                      Developer Expert
+                  </p>
+                </div>
+            </div>
+            <!-- popup start-->
+            <div id="popup_3" class="container ts-speaker-popup mfp-hide">
+                <div class="row">
+                  <div class="col-lg-6">
+                      <div class="ts-speaker-popup-img">
+                        <img src="{{ asset('conference_templates/template2/images/speakers/speaker3.jpg')}}" alt="">
+                      </div>
+                  </div><!-- col end-->
+                  <div class="col-lg-6">
+                      <div class="ts-speaker-popup-content">
+                        <h3 class="ts-title">David Robert</h3>
+                        <span class="speakder-designation">Cheif Architecture</span>
+                        <p>
+                            Some biography extract... World is committed to making participation in the event a harass ment free experience
+                            for everyone, regardless of level experience gender, gender identity and expression
+                        </p>
+                        <h4 class="session-name">
+                            Sessions by David
+                        </h4>
+                        <div class="row">
+                            <div class="col-lg-12">
+                              <div class="speaker-session-info">
+                                
+                                  <span>Go in this thy Might </span>
+                                  <p>
+                                    (Judges 6:14)
+                                  </p>
+                              </div>
+                            </div>
+                            
+                        </div>
+                        <div class="ts-speakers-social">
+                            <a target="_blank" href="#"><i class="fa fa-facebook"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-twitter"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-instagram"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-google-plus"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-linkedin"></i></a>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+            </div>
+          </div> <!-- col end-->
+          <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="700ms">
+            <div class="ts-speaker">
+                <div class="speaker-img">
+                  <img class="img-fluid" src="{{ asset('conference_templates/template2/images/speakers/speaker1.jpg')}}" alt="">
+                  <a href="#popup_4" class="view-speaker ts-image-popup" data-effect="mfp-zoom-in">
+                              <i class="icon icon-plus"></i>
+                          </a>
+                </div>
+                <div class="ts-speaker-info">
+                  <h3 class="ts-title"><a href="#">Semedoh Henriken</a></h3>
+                  <p>
+                      Founder, Cards
+                  </p>
+                </div>
+            </div>
+            <!-- popup start-->
+            <div id="popup_4" class="container ts-speaker-popup mfp-hide">
+                <div class="row">
+                  <div class="col-lg-6">
+                      <div class="ts-speaker-popup-img">
+                        <img src="{{ asset('conference_templates/template2/images/speakers/speaker1.jpg')}}" alt="">
+                      </div>
+                  </div><!-- col end-->
+                  <div class="col-lg-6">
+                      <div class="ts-speaker-popup-content">
+                        <h3 class="ts-title">David Robert</h3>
+                        <span class="speakder-designation">Cheif Architecture</span>
+                        <p>
+                            Some biography extract... World is committed to making participation in the event a harass ment free experience
+                            for everyone, regardless of level experience gender, gender identity and expression
+                        </p>
+                        <h4 class="session-name">
+                            Sessions by David
+                        </h4>
+                        <div class="row">
+                            <div class="col-lg-12">
+                              <div class="speaker-session-info">
+                                  <span>Go in this thy Might </span>
+                                  <p>
+                                    (Judges 6:14)
+                                  </p>
+                              </div>
+                            </div>
+                        </div>
+                        <div class="ts-speakers-social">
+                            <a target="_blank" href="#"><i class="fa fa-facebook"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-twitter"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-instagram"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-google-plus"></i></a>
+                            <a target="_blank" href="#"><i class="fa fa-linkedin"></i></a>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+            </div>
+          </div>
+
+          
+      </div>
+    </div>
+
+    <!-- shap img-->
+    <div class="speaker-shap">
+      <img class="shap1" src="{{ asset('conference_templates/template2/images/shap/home_speaker_memphis1.png')}}" alt="">
+      <img class="shap2" src="{{ asset('conference_templates/template2/images/shap/home_speaker_memphis2.png')}}" alt="">
+      <img class="shap3" src="{{ asset('conference_templates/template2/images/shap/home_speaker_memphis3.png')}}" alt="">
+    </div>
+    <!-- shap img end-->
+</section>
+<!-- ts speaker end-->
+
+<!-- ts experience start-->
+<section id="ts-experiences" class="ts-experiences">
+    <div class="container-fluid">
+      <div class="row">
+          <div class="col-lg-6 no-padding">
+
+
+            <div class="exp-img image-container">
+              <img class="img-fluid" src="{{ asset($setting->banner)}}" alt=""> 
+            </div>
+          </div><!-- col end-->
+          <div class="col-lg-6 no-padding align-self-center wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="500ms">
+            <div class="ts-exp-wrap">
+                <div class="ts-exp-content">
+                  <h2 class="column-title">
+                      
+                      <span>Get Experience</span>
+                      Shift your perspective on
+                      life perspectives
+                  </h2>
+                  <p>
+                      How  you transform your business as technology, consumer, habits industry dynamic s change? Find out from those leading the charge.
+                  </p>
+                </div>
+            </div>
+
+          </div><!-- col end-->
+      </div><!-- row end-->
+    </div><!-- container fluid end-->
+</section>
+<!-- ts experience end-->
+
+<!-- ts experience start-->
+  <section class="ts-schedule">
+    <div class="container">
+      <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <h2 class="section-title">
+                <span>Schedule Details</span>
+                Event Schedules
+            </h2>
+            <div class="ts-schedule-nav">
+                <ul class="nav nav-tabs justify-content-center" role="tablist">
+                  <li class="nav-item">
+                      <a class="active" title="Click Me" href="#day1" role="tab" data-toggle="tab">
+                        <h3>17th April</h3>
+                        <span>Thursday</span>
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="" href="#date2" title="Click Me" role="tab" data-toggle="tab">        
+                        <h3>18th April</h3>
+                        <span>Friday</span>
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="" href="#date3" title="Click Me" role="tab" data-toggle="tab">
+                        <h3>19th April</h3>
+                        <span>Saturday</span>
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="" href="#date3" title="Click Me" role="tab" data-toggle="tab">
+                        <h3>20th April</h3>
+                        <span>Sunday</span>
+                      </a>
+                  </li>
+                </ul>
+                <!-- Tab panes -->
+            </div>
+          </div><!-- col end-->
+
+      </div><!-- row end-->
+      <div class="row">
+          <div class="col-lg-12">
+            <div class="tab-content schedule-tabs schedule-tabs-item">
+                <div role="tabpanel" class="tab-pane active" id="day1">
+                  <div class="row">
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-left">
+                            {{-- <img class="schedule-slot-speakers" src="images/speakers/speaker1.jpg" alt=""> --}}
+                            {{-- <span class="schedule-slot-time">10.30 - 11.30 AM</span> --}}
+                            <h3 class="schedule-slot-title">Opening Intercession</h3>
+                            {{-- <h4 class="schedule-slot-name">@ Henrikon Rebecca</h4> --}}
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-right">
+                              {{-- <img class="schedule-slot-speakers" src="images/speakers/speaker2.jpg" alt=""> --}}
+                            {{-- <span class="schedule-slot-time">11.30 - 12.30 PM</span> --}}
+                            <h3 class="schedule-slot-title">Prophetic Worship</h3>
+                            {{-- <h4 class="schedule-slot-name">@ Johnsson Agaton</h4> --}}
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-left">
+                              {{-- <img class="schedule-slot-speakers" src="images/speakers/speaker3.jpg" alt=""> --}}
+                            {{-- <span class="schedule-slot-time">12.30 - 01.30 PM</span> --}}
+                            <h3 class="schedule-slot-title">Drama</h3>
+                            {{-- <h4 class="schedule-slot-name">@ Lundryn Melisa</h4> --}}
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-right">
+                              {{-- <img class="schedule-slot-speakers" src="images/speakers/speaker4.jpg" alt=""> --}}
+                            {{-- <span class="schedule-slot-time">01.30 - 02.30 PM</span> --}}
+                            <h3 class="schedule-slot-title">Power from on High</h3>
+                            {{-- <h4 class="schedule-slot-name">@ Fredric Martinsson</h4> --}}
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                  </div><!-- row end-->
+                  
+                </div><!-- tab pane end-->
+
+                <div role="tabpanel" class="tab-pane" id="date2">
+                  <div class="row">
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-left">
+                            <h3 class="schedule-slot-title">Prayer Walk</h3>
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-right">
+                            <h3 class="schedule-slot-title">Teaching</h3>
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-left">
+                            <h3 class="schedule-slot-title">AI and your Career!</h3>
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-right">
+                            <h3 class="schedule-slot-title">From Babylon to Zion</h3>
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                  </div><!-- row end-->
+                </div>
+                <div role="tabpanel" class="tab-pane" id="date3">
+                  <div class="row">
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-left">
+                            <h3 class="schedule-slot-title">Business Strategy catchups</h3>
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-right">
+                            <h3 class="schedule-slot-title">Variety Night</h3>
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-left">
+                            <h3 class="schedule-slot-title">Teaching</h3>
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-right">
+                            <h3 class="schedule-slot-title">Handing over ceremony</h3>
+                            <p>
+                              How you transform your business technolog consumer habits industry dynamics change
+                              Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                  </div><!-- row end-->
+                </div>
+            </div>
+
+          </div>
+      </div>
+    </div><!-- container end-->
+</section>
+<!-- ts experience end-->
+
+<!-- ts pricing start-->
+<section id="register" class="ts-pricing gradient" style="background-image: url({{ asset('conference_templates/template2/images/pricing/pricing_img.jpg')}})">
+    <div class="container">
+      <div class="row">
+          <div class="col-lg-12">
+            <h2 class="section-title white">
+                <span>Register</span>
+                Choose registration type
+            </h2>
+          </div><!-- section title end-->
+      </div><!-- col end-->
+      <!-- row end-->
+      <div class="row">
+          <div class="col-lg-4 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="400ms">
+            <div class="pricing-item">
+                <img class="pricing-dot " src="{{ asset('conference_templates/template2/images/pricing/dot.png')}}" alt="">
+                <div class="ts-pricing-box">
+                  <div class="ts-pricing-header">
+                      <h2 class="ts-pricing-name">Single Registration</h2>
+                      <h3 class="ts-pricing-price">
+                        <span class="currency">&#8358;</span>{{ number_format($setting->registration_fee) }}
+                        <span class="text-900"><small><br></small><br></span>
+                      </h3>
+                  </div>
+                  <div class="ts-pricing-progress">
+                      <p class="amount-progres-text">
+                        Undergraduate <br>
+                        SSS Student <br>
+                        Youth <br>
+                      </p>
+                      <div class="ts-progress">
+                        <div class="ts-progress-inner" style="width: 100%"></div>
+                      </div>
+                  </div>
+                  <div class="promotional-code">
+                      <a href="{{ route('conference.registration',1) }}" class="btn pricing-btn">Register Now</a>
+                      <p class="vate-text"><small>Free Feeding, Accomodation</small></p>
+                  </div>
+                </div><!-- ts pricing box-->
+                <img class="pricing-dot1 " src="{{ asset('conference_templates/template2/images/pricing/dot.png')}}" alt="">
+            </div>
+          </div><!-- col end-->
+          @if(isset($setting->lock_online_payment) && $setting->lock_online_payment == 'no')
+          <div class="col-lg-4 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="500ms">
+            <div class="pricing-item">
+                <img class="pricing-dot " src="{{ asset('conference_templates/template2/images/pricing/dot.png')}}" alt="">
+                <div class="ts-pricing-box">
+                  <span class="big-dot"></span>
+                  <div class="ts-pricing-header">
+                      <h2 class="ts-pricing-name">Mass Registration</h2>
+                      <h3 class="ts-pricing-price">
+                        <span class="currency">&#8358;</span>{{ number_format($setting->registration_fee) }}
+                        <span class="text-900"><small>/Participant</small></span>
+                      </h3>
+                  </div>
+                  <div class="ts-pricing-progress">
+                      <p class="amount-progres-text">
+                        2 or more Undergraduates <br>
+                        2 or more SSS Students <br>
+                        2 or more Youths <br>
+                      </p>
+                      <div class="ts-progress">
+                        <div class="ts-progress-inner" style="width: 100%"></div>
+                      </div>
+                  </div>
+                  <div class="promotional-code">
+                      <a href="{{ route('conference.registration',2) }}" class="btn pricing-btn">Register Now</a>
+                      <p class="vate-text"><small>Free Feeding, Accomodation</small></p>
+                  </div>
+                </div><!-- ts pricing box-->
+                <img class="pricing-dot1" src="{{ asset('conference_templates/template2/images/pricing/dot.png')}}" alt="">
+            </div>
+          </div><!-- col end-->
+          @endif
+
+          <div class="col-lg-4 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="600ms">
+            <div class="pricing-item">
+                <img class="pricing-dot " src="{{ asset('conference_templates/template2/images/pricing/dot.png')}}" alt="">
+                <div class="ts-pricing-box">
+                  <span class="big-dot"></span>
+                  <div class="ts-pricing-header">
+                      <h2 class="ts-pricing-name">Alumni Registration</h2>
+                      <h3 class="ts-pricing-price">
+                        <span class="currency">&#8358;</span>{{ number_format($setting->new_alumni_registration_fee) }} - &#8358;{{ number_format($setting->alumni_registration_fee) }}
+                      </h3>
+                  </div>
+                  <div class="ts-pricing-progress">
+                      <p class="amount-progres-text">
+                        GSF Alumni <br>
+                        Youth Corpers <br>
+                        Senior Friends<br>
+                      </p>
+                      <div class="ts-progress">
+                        <div class="ts-progress-inner" style="width: 100%"></div>
+                      </div>
+                  </div>
+                  <div class="promotional-code">
+                      <a href="{{ route('conference.registration',3) }}" class="btn pricing-btn">Register Now</a>
+                      <p class="vate-text"><small>Free Feeding, Accomodation</small></p>
+                  </div>
+                </div><!-- ts pricing box-->
+                <img class="pricing-dot1 " src="{{ asset('conference_templates/template2/images/pricing/dot.png')}}" alt="">
+            </div>
+          </div><!-- col end-->
+      </div>
+    </div><!-- container end-->
+    <div class="speaker-shap wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="400ms">
+      <img class="shap2" src="{{ asset('conference_templates/template2/images/shap/pricing_memphis1.png')}}" alt="">
+    </div>
+</section>
+<section id="faq" class="ts-faq-sec">
+    <div class="container">
+      <div class="row">
+          <div class="col-lg-12">
+            <div class="faq-content">
+                  <h2 class="column-title">
+                      Frequently asked Questions
+                  </h2>
+                  <div class="panel-group faq-item" id="accordion1" role="tablist" aria-multiselectable="true">
+
+                      <div class="panel faq-list panel-default">
+                        <div class="panel-heading" role="tab" id="heading5">
+                            <h4 class="panel-title">
+                              <a role="button" class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                                        1. When will the Conference start?
+                              </a>
+                            </h4>
+                        </div>
+                        <div id="collapse5" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading5">
+                            <div class="panel-body">
+                                  How  you transform your business as technology, consumer, habits industry dynamic
+                                  s change? Find out from those leading the charge.
+                            </div>
+                        </div>
+                      </div>
+
+                      <div class="panel faq-list panel-default">
+                        <div class="panel-heading" role="tab" id="heading6">
+                            <h4 class="panel-title">
+                              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse6" aria-expanded="false" aria-controls="collapse6">
+                                        2. Where does the conference take place?
+                                    </a>
+                            </h4>
+                        </div>
+                        <div id="collapse6" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading6">
+                            <div class="panel-body">
+                                  How  you transform your business as technology, consumer, habits industry dynamic
+                                  s change? Find out from those leading the charge.
+                            </div>
+                        </div>
+                      </div>
+
+                      <div class="panel faq-list panel-default">
+                        <div class="panel-heading" role="tab" id="heading7">
+                            <h4 class="panel-title">
+                              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse7" aria-expanded="false" aria-controls="collapse7">
+                                  3. How can I get the latest news?
+                              </a>
+                            </h4>
+                        </div>
+                        <div id="collapse7" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading7">
+                            <div class="panel-body">
+                              Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson
+                              ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck
+                              quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on
+                            </div>
+                        </div>
+                      </div>
+                      <div class="panel faq-list panel-default">
+                        <div class="panel-heading" role="tab" id="heading8">
+                            <h4 class="panel-title">
+                              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse8" aria-expanded="false" aria-controls="collapse8">
+                                    4. How can my church sponsor this Event?
+                              </a>
+                            </h4>
+                        </div>
+                        <div id="collapse8" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading8">
+                            <div class="panel-body">
+                                  How  you transform your business as technology, consumer, habits industry dynamic
+                                  s change? Find out from those leading the charge.
+                            </div>
+                        </div>
+                      </div>
+                  </div><!-- panel-group -->
+                </div>
+          </div><!-- col end -->
+      </div><!-- row end-->
+    </div><!-- .container end -->
+</section><!-- End faq section -->
+
 @endsection

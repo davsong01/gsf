@@ -96,7 +96,7 @@ class ServicePointAllocationService
             }
 
             if (empty($food)) {
-                $allocation_type = 'SYSTEM-PICKED';
+                $allocation_type = 'SP-' . $setting->service_point_assignment_type;
                 $food = Food::where(['level' => $level, 'conference_edition_id' => $setting->id
                 ])->whereRaw('allocation < capacity')->inRandomOrder()->first();
             }

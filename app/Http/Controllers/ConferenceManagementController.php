@@ -28,7 +28,6 @@ class ConferenceManagementController extends Controller
 
     public function index(Request $request){
 		// Admin
-		
 		if (auth()->user()->role == 1) {
 			if(auth()->user()->conference_role == 'superadmin'){
 				$editions = ConferenceEdition::all();
@@ -39,7 +38,8 @@ class ConferenceManagementController extends Controller
 			$count = 1;
 			return view('conference_management.admin.editions.index', compact('editions','count'));
 		}else{
-			$edition = activeConferenceEdition();
+			
+			$edition = (object) activeConferenceEdition();
 			
 			if(auth()->user()->payments->count() > 0){
 				if(auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)){
@@ -145,10 +145,8 @@ class ConferenceManagementController extends Controller
 
 	public function show(Payment $conferencemanagement, Request $request){
 		$chapters = Chapter::all();
-		
+		$edition = ConferenceEdition::where('id', $request->edition)->first();
 		$payment = $conferencemanagement;
-		$edition = $this->edition;
-		
 		if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isNec($edition) || auth()->user()->isChoir($edition)) {
 			return view('conference_management.participant.single_payment', compact('edition', 'payment','chapters'));
 		}

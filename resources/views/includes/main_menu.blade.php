@@ -24,8 +24,8 @@
             {{-- Publicity sec menu --}}
                 @include('includes.subadminmenu')
             @endif
-            
-            @if(isset($setting) && $setting->status == 'active')
+                
+            @if(isset($edition) && $edition->status == 'active')
                 @if(auth::user()->role != 1)
                     @include('includes.membermenu')
                 @endif

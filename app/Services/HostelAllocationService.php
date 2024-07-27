@@ -21,7 +21,7 @@ class HostelAllocationService
             'hostel_allocation_type' => null,
             'hostel_name' => null
         ];
-
+        
         if (in_array($level, ['Official', 'Medical', 'Official'])) {
             $hostel = Hostel::where(['level' => $level, 'conference_edition_id' => $setting->id])->first();
         } else {
@@ -31,7 +31,7 @@ class HostelAllocationService
             // 'based_on_field' => 'Based On Field (Category Exclusive) - based on the field and differently for levels and gender',
             //  'based_on_chapter_with_category' => 'Based On Chapter With (Category Inclusive) - based on the chapter, irrespective of category/level',
             // 'based_on_field_with_category' => 'Based On Field (Category Inclusive) - based on the field ,irrespective of category/level',
-
+            
             if (isset($setting->hostel_assignment_type) && $setting->hostel_assignment_type == "full-random") {
                 $allocation_type = $setting->hostel_assignment_type;
                 $hostel = Hostel::where(['type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
@@ -97,7 +97,7 @@ class HostelAllocationService
             }
 
             if(empty($hostel)){
-                $allocation_type = 'SYSTEM-PICKED';
+                $allocation_type = 'SP-'.$setting->hostel_assignment_type;
                 $hostel = Hostel::where(['level' => $level, 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
             }
 

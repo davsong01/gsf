@@ -1,6 +1,7 @@
 @extends('layouts.dashboard')
 @section('title', 'My Account')
 @section('active')
+
 <li class="breadcrumb-item">{{ $edition->conference_theme }} (<strong>{{ $payment->level }}</strong>)</li>
 @endsection
 @section('content')
@@ -47,7 +48,8 @@
 				<h4 class="greeting-text">Your Registration Details</h4>
 			</div>
 			<?php 
-				$state = $payment->edition->id == App\ConferenceEdition::where('status', 'active')->first()->value('id') ? '' : 'disabled';
+			
+				$state = $payment->edition->status == 'active' ? '' : 'disabled';
 			?>
 			<div class="card-content">
 				<div class="card-body">
@@ -104,10 +106,17 @@
 									<label for="phone">Phone</label>
 									<input type="phone" id="phone" name="phone" class="form-control @error('phone')is-invalid @enderror"
 										value="{{ old('phone') ?? auth()->user()->phone }}" required $state>
-
 								</fieldset>
-								
-								
+								<fieldset class="form-group">
+									<label for="sex">Gender</label>
+									<select class="form-control" name="sex" id="sex" required $state>
+										<option value="">--Select Option--</option>
+										<option value="Male" {{ auth()->user()->sex == 'Male' ? 'selected' : ''}}>
+											Male</option>
+										<option value="Female"
+											{{ auth()->user()->sex == 'Female' ? 'selected' : ''}}>Female</option>
+									</select>
+								</fieldset>
 							</div>
 							<div class="col-md-6 col-sm-12">
 								<fieldset class="form-group">
@@ -116,11 +125,23 @@
 										value="{{ ($payment->hostel === NULL) ? 'N/A' : $payment->hostel->name }}" disabled
 										required>
 								</fieldset>
+								<fieldset class="form-group">
+									<label for="hostel_id">Hostel Allocation Number</label>
+									<input type="text" id="hostel_id" class="form-control"
+										value="{{ ($payment->hostel_allocation_number === NULL) ? 'N/A' : $payment->hostel_allocation_number }}" disabled
+										required>
+								</fieldset>
 
 								<fieldset class="form-group">
-									<label for="food_id">Food Stand</label>
+									<label for="food_id">Service Point</label>
 									<input type="text" id="food_id" name="food_id" class="form-control"
 										value="{{ ($payment->food === NULL) ? 'N/A' :$payment->food->name }}" disabled
+										required>
+								</fieldset>
+								<fieldset class="form-group">
+									<label for="food_id">Service Point Allocation Number</label>
+									<input type="text" class="form-control"
+										value="{{ ($payment->service_point_allocation_number === NULL) ? 'N/A' :$payment->service_point_allocation_number }}" disabled
 										required>
 								</fieldset>
 								<fieldset class="form-group">
@@ -129,6 +150,7 @@
 										value="{{ $payment->payment_type }}" disabled required>
 
 								</fieldset>
+								
 								<fieldset class="form-group">
 									<label for="chapter">Campus</label>
 									@if (isset(auth()->user()->chapter_id)) 
@@ -147,17 +169,7 @@
 									<label for="passport">Change Passport <small>(Not more than 200kilobyte | Only jpeg,jpg,png format is accepted)</small></label>
 									<input type="file" accept="image/*" class="form-control" name="passport" id="passport">
 								</fieldset>
-								<fieldset class="form-group">
-									<label for="sex">Gender{{ auth()->user()->sex  }}</label>
-									<select class="form-control @error('sex')is-invalid @enderror" name="sex" id="sex" required $state>
-										<option value="">--Select Option--</option>
-										<option value="Male" {{ auth()->user()->sex == 'Male' ? 'selected' : ''}}>
-											Male</option>
-										<option value="Female"
-											{{ auth()->user()->sex == 'Female' ? 'selected' : ''}}>Female</option>
-									</select>
-
-								</fieldset>
+								
 								<fieldset class="form-group">
 									<label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank
 											except you want to change your password</i></small>
@@ -168,7 +180,7 @@
 							</div>
 						</div>
 						<input type="hidden" name="level" value="{{ $payment->level  }}">
-						@if($payment->edition->id == App\ConferenceEdition::where('status', 'active')->first()->id)
+						@if($payment->edition->status == 'active')
 						<div class="row">
 							<div class="col-md-12 col-sm-12">
 								<button class="btn btn-primary" style="width:100%" type="submit">Update Profile</button>

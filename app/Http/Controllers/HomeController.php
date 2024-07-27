@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Nec;
 use App\Models\User;
 use App\Models\Event;
+use App\Models\Field;
 use App\Models\Chapter;
 use App\Models\NewListing;
 use App\Models\TempMember;
@@ -34,7 +35,6 @@ class HomeController extends Controller
     public function index() {
         $events = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', '<>', 0)->limit(6)->get();
         $national = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', 0)->limit(3)->get();
-        
         if($this->conference){
             $chapters = Chapter::orderBy('name')->get();
             $setting = $this->conference;
@@ -79,14 +79,29 @@ class HomeController extends Controller
     {
         if (isset($type) && $this->conference) {
             $chapters = Chapter::orderBy('name')->get();
+            $fields = Field::orderBy('name')->get();
             $setting = $this->conference;
             $conference_year = Carbon::parse($setting->start_date)->year;
             $alumnis_amount = [
                 'alumni_registration_fee' => $setting->alumni_registration_fee,
                 'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
             ];
-        
-            return view('frontend.conference.template'. $this->conference->template_id.'.registration',compact('chapters','setting','conference_year','alumnis_amount','type'));
+            
+            $title = '';
+
+            if($type == 1){
+                $title = 'Single Registration';
+            }
+
+            if ($type == 2) {
+                $title = 'Mass Registration';
+            }
+
+            if ($type == 3) {
+                $title = 'Alumni Registration';
+            }
+            
+            return view('frontend.conference.template'. $this->conference->template_id.'.registration',compact('title','chapters','setting','conference_year','alumnis_amount','type', 'fields'));
         } else {
             return abort(404);
         }

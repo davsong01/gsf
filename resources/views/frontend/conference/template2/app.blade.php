@@ -1,6 +1,5 @@
 <?php 
-$setting = activeConferenceEdition();
-
+   $setting = activeConferenceEdition();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -211,7 +210,7 @@ $setting = activeConferenceEdition();
 
       <!-- Template custom -->
       <script src="{{ asset('conference_templates/template2/js/main.js')}}"></script>
-      @yield('script')
+         
       <script>
          $(document).ready(function() {
             // var startDate = new Date("2025-04-05T00:00:00");
@@ -240,6 +239,7 @@ $setting = activeConferenceEdition();
             updateTimer(); // Initial call to set the timer immediately
          });
       </script>
+      @yield('script')
    </div>
    <!-- Body inner end -->
 </body>

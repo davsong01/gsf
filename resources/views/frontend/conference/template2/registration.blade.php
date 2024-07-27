@@ -1,8 +1,7 @@
 @extends('frontend.conference.template2.app')
 @section('css')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <style>
     .form-control{
         padding-left: 10px !important;
@@ -20,6 +19,9 @@
         margin-top: 10px;
         margin-bottom: 5px;
     }
+    .select2-container {
+            width: 100% !important;
+        }
 </style>
 @endsection
 {{-- {{dd($setting->conference_logo)}} --}}
@@ -28,7 +30,11 @@
     <!-- Subpage title start -->
     <div class="page-banner-title">
     <div class="text-center">
+        @if($type == 5)
+        <h2>Donate</h2>
+        @else
         <h2>Register</h2>
+        @endif
     </div>
     </div><!-- Subpage title end -->
 </div><!-- Page Banner end -->
@@ -39,14 +45,21 @@
     <div class="row">
         <div class="col-lg-12">
                 <h2 class="column-title">
-                    {{-- <span>Register</span> --}}
+                    <span>{{$title}}</span>
+                    @if($type != 5)
                     Kindly fill form below and click the payment button
+                    @else
+                    Kindly fill form below and click the make donation button
+
+                    @endif
                 </h2>
             <div class="intro-content-text">
-                @if(isset($setting->lock_online_payment) && $setting->lock_online_payment == 'yes')
-                <div class="alert alert-warning" role="alert">
-                    <strong>NOTE:</strong> Online Payment has closed. Please fill the form below and pay at the venue.
-                </div>
+                @if($type != 5)
+                    @if(isset($setting->lock_online_payment) && $setting->lock_online_payment == 'yes')
+                    <div class="alert alert-warning" role="alert">
+                        <strong>NOTE:</strong> Online Payment has closed. Please fill the form below and pay at the venue.
+                    </div>
+                    @endif
                 @endif
                 <form action="{{ route('pay') }}" method="POST">
                     @csrf
@@ -82,11 +95,11 @@
                             </div>
 
                             @if($type == 1 or $type == 2)
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="control-group">
-                                    <label class="form-label" for="chapter">GSF Campus/GOFAMINT Assesmbly</label> <small style="color:blue">(Select "other" if you
+                                    <label class="form-label" for="chapter">GSF Campus</label> <small style="color:blue">(Select "other" if you
                                         are registering from an assembly)</small><br>
-                                    <select name="chapter" class="chapter form-control" required>
+                                    <select name="chapter" id="chapter" class="select2 form-control" required>
                                         <option value="">--Select Campus</option>
                                         @foreach($chapters as $chapter)
                                         <option value="{{ $chapter->id }}" {{ old('chapter') == $chapter->id ? 'selected' : ''}}>
@@ -95,10 +108,24 @@
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="col-md-6" id="field-div" style="display:none">
+                                <div class="control-group">
+                                    <label class="form-label" for="field_id">Field/State</label><br>
+                                    <select name="field_id" id="field_id" class="select2 form-control">
+                                        <option value="">--Select Field/State</option>
+                                        @foreach($fields as $field)
+                                        <option value="{{ $field->id }}" {{ old('field') == $field->id ? 'selected' : ''}}>
+                                            {{ $field->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            
                             @endif
                         
                             @if($type == 2)
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="control-group">
                                     <label class="form-label">No of Participants you want to register</label>
                                     <input type="number" class="form-control" id="participants" name="participants"
@@ -108,7 +135,7 @@
                             @endif
 
                             @if($type == 3)
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="control-group">
                                     <label class="form-label">Old alumni/New alumni?</label>
                                     <select name="alumni_type" class="form-control select2"
@@ -117,6 +144,18 @@
                                         <option value="">Select alumni type</option>
                                         <option value="new_alumni_registration_fee">Fresh Graduate/Alumni (&#8358;{{ $setting->new_alumni_registration_fee }}) </option>
                                         <option value="alumni_registration_fee">Old Alumni (&#8358;{{ $setting->alumni_registration_fee }})</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="control-group">
+                                    <label class="form-label" for="field_id">Field/State</label><br>
+                                    <select name="field_id" id="field_id" class="select2 form-control" required>
+                                        <option value="">--Select Field/State</option>
+                                        @foreach($fields as $field)
+                                        <option value="{{ $field->id }}" {{ old('field') == $field->id ? 'selected' : ''}}>
+                                            {{ $field->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
@@ -146,12 +185,68 @@
                             });
                         </script>
                         @endif
-                    
+                        @if($type == 5)
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="control-group">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" class="form-control form-control-name" id="name"
+                                    name="name" placeholder="Enter your full name" required="required">
+                                </div>
+                                <div class="control-group">
+                                    <label class="form-label">Phone</label>
+                                    <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" placeholder="Enter your phone number" required="required">
+                                </div>
+                                <div class="control-group">
+                                    <label class="form-label">Amount</label>
+                                    <input type="amount" class="form-control form-control-name" id="amount"
+                                        name="amount" placeholder="Enter amount to donate" required>
+                                </div>
+                                
+                                
+                            </div>
+                            <div class="col-md-6">
+                                <div class="control-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control form-control-name" id="email"
+                                        name="email" placeholder="Enter your email" required="required">
+                                </div>
+                                <div class="control-group">
+                                    <label class="form-label" for="field_id">Field/State</label><br>
+                                    <select name="field_id" id="field_id" class="select2 form-control">
+                                        <option value="">--Select Field/State</option>
+                                        @foreach($fields as $field)
+                                        <option value="{{ $field->id }}" {{ old('field') == $field->id ? 'selected' : ''}}>
+                                            {{ $field->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label class="form-label">Remarks</label>
+                                    <textarea name="remarks" class="form-control" id="" cols="30" rows="10" placeholder="Enter remarks"></textarea>
+                                </div>
+                            </div>
+                            
+                                {{-- <div class="control-group">
+                                    <label class="form-label" for="gender">Gender</label><br>
+                                    <select name="gender" class="form-control" id="gender" required>
+                                        <option value="">--Select</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div> --}}
+                            </div>
+                            
+                        </div> 
+                        @endif
                     @endif
-                    
                     <br>
                     <div class="control-group" style="margin-top:30px">
+                        @if($type != 5)
                         <button class="btn btn-danger hover-top btn-glow rounded-pill border-0" type="submit" style="width:100%">Make Payment</button>
+                        @else    
+                        <button class="btn btn-danger hover-top btn-glow rounded-pill border-0" type="submit" style="width:100%">Make Donation</button>
+                        @endif
                     </div>
                 </form>
             </div>
@@ -162,10 +257,22 @@
 </section>
 @endsection
 @section('script')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('.chapter').select2();
+        $('.select2').select2();
+        $('#chapter').change(function() {
+            if ($('#chapter').val() == '86') {
+                $('#field-div').show();
+                $('#field_id').prop('required', true);
+            } else {
+                $('#field-div').hide();
+                $('#field_id').prop('required', false);
+            }
+        });
     });
+
     $(document).on('select2:open', function(e) {
         window.setTimeout(function () {
             document.querySelector('input.select2-search__field').focus();
