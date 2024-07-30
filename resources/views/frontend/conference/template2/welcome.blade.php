@@ -71,7 +71,7 @@
                   Why Attend The {{ $setting->conference_theme }} Conference
                 </h2>
                 <p>
-                  Experience transformative spiritual growth, business insights, healing, and powerful prayer sessions at the Oracle Conference—an opportunity for students and youth to deepen faith, gain skills, and connect with a supportive community, fostering holistic development and lasting inspiration.
+                  Experience transformative spiritual growth, powerful prayer sessions, marital, professional, academic, business and leadership insights that will distinguish you as a student or young adult with an aim of deepening your faith in Christ, connect you to a vital and supportive community, gain soft skills which will in turn foster holistic development.
                 </p>
                 <a href="#register" class="btn">Register Now</a>
             </div>
@@ -83,7 +83,7 @@
                       <i class="icon icon-speaker"></i>
                       <h3 class="ts-title">Great Speakers</h3>
                       <p>
-                        Experience profound teachings and guidance from esteemed spiritual and quality ministers at the Oracle Conference.
+                        Experience profound teachings and guidance from esteemed spiritual and quality ministers at the Oracle Conference. <br><br>
                       </p>
                       <span class="count-number">01</span>
                   </div><!-- single intro text end-->
@@ -91,7 +91,7 @@
                 <div class="col-lg-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="500ms">
                   <div class="single-intro-text mb-30">
                       <i class="icon icon-netwrorking"></i>
-                      <h3 class="ts-title">New People</h3>
+                      <h3 class="ts-title">Spiritual discipline and discipleship</h3>
                       <p>
                         Connect with like-minded individuals and share your values at the Oracle Conference. Build lasting friendships and a supportive community.
                       </p>
@@ -102,7 +102,7 @@
                 <div class="col-lg-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="600ms">
                   <div class="single-intro-text mb-30">
                       <i class="icon icon-people"></i>
-                      <h3 class="ts-title">Networking</h3>
+                      <h3 class="ts-title">Networking (which will house having fun, meeting new people)</h3>
                       <p>
                         Network with global peers and industry leaders at the Oracle Conference.
                       </p>
@@ -112,7 +112,7 @@
                 <div class="col-lg-6 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="700ms">
                   <div class="single-intro-text mb-30">
                       <i class="icon icon-fun"></i>
-                      <h3 class="ts-title">Have Fun</h3>
+                      <h3 class="ts-title">Unforgettable experiences and encounters</h3>
                       <p>
                         Experience unparalleled fun and excitement at the Oracle Conference <br><br>
                       </p>
