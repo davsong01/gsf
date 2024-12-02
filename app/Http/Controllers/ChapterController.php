@@ -38,7 +38,8 @@ class ChapterController extends Controller
     {
         $chapters = Chapter::where('id','<>',86)->get();
         
-        return view('frontend.conference.campusUpdate', compact('chapters'));
+        return view('frontend.' . frontendTemplate() . '.campusUpdate', compact('chapters'));
+        // return view('frontend.conference.campusUpdate', compact('chapters'));
     }
 
     public function generateNewToken($id){

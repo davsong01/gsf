@@ -84,7 +84,7 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/people/campuses', 'chapters')->name('people.campuses');
     Route::post('search', 'search')->name('search');
     Route::POST('autocompletecampus', 'autocomplete')->name('campus.autocomplete');
-    Route::get('people/singlecampus/{chapter}', 'singleCampus')->name('campus.single');
+    Route::any('people/singlecampus/{chapter?}', 'singleCampus')->name('campus.single');
     Route::get('campus-membersx/{id}', 'studentsByChapter')->name('members.campus');
     Route::get('campus-members/{id}', 'alumniByChapter')->name('alumni.campus');
     

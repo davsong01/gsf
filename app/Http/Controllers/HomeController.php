@@ -303,13 +303,13 @@ class HomeController extends Controller
     }
 
 
-    public function singleCampus(Chapter $chapter){
+    public function singleCampus(){
+        $chapter = Chapter::where('id', request()->chapter)->first();
         
         $nationalevents = Event::where('chapter_id', 0)->get();
         $related = Chapter::where('zone_id', $chapter->zone_id)->orWhere('field_id', $chapter->field->id)->get();
-      
+        
         return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents','chapter','related'));
-
         // return view('frontend.main.single-chapter', compact('chapter', 'nationalevents'));
     }
 
