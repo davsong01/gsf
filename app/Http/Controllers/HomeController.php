@@ -305,7 +305,21 @@ class HomeController extends Controller
 
     public function singleCampus(){
         $chapter = Chapter::where('id', request()->chapter)->first();
+
+        $token = false;
+        $realToken = '';
         
+        if (request()->token) {
+            if ($chapter->token != request()->token) {
+                return back()->with('error', 'Invalid Token for GSF Chapter, Kindly contact the National Publicity Office');
+            }
+
+            $token = true;
+            $realToken = $chapter->token;
+
+            return view('frontend.conference.campusView', compact('chapter', 'token', 'realToken'));
+        }
+
         $nationalevents = Event::where('chapter_id', 0)->get();
         $related = Chapter::where('zone_id', $chapter->zone_id)->orWhere('field_id', $chapter->field->id)->get();
         

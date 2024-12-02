@@ -12,7 +12,7 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-transparent justify-content-center mb-4">
                         <li class="breadcrumb-item text-secondary"><a href="/">Home</a></li>
-                        <li class="breadcrumb-item text-secondary"><a href="{{ route('people.campuses') }}"></a>GSF - Campuses</li>
+                        <li class="breadcrumb-item text-secondary"><a href="{{ route('people.campuses') }}">GSF - Campuses</a></li>
                         <li class="breadcrumb-item text-white active" aria-current="page">GSF - Campus Tracker</li>
                     </ol>
                 </nav>
@@ -28,7 +28,7 @@
             <div class="col-md-12 mt-3 mt-lg-0">
                 <div class="card border-light mt-4 p-3">
                     <h5 class="font-weight-normal">Select GSF campus and click view details</h5>
-                    <form class="mt-3" action="{{ route('campus.single') }}" method="POST">
+                    {{-- <form class="mt-3" action="{{ route('campus.single') }}" method="GET">
                         @csrf
                         <div class="form-group">
                             <select name="chapter" class="form-control select2 chapter" required>
@@ -40,7 +40,22 @@
                             </select>
                         </div>
                         <button class="btn btn-primary submitregistration" type="submit" style="width:100%">View details</button>
+                    </form> --}}
+                    <form class="mt-3" action="{{ route('campus.single') }}" method="GET">
+                        {{-- @csrf <!-- This is unnecessary for GET requests, but you can keep it if it's part of a blade component --> --}}
+                        <div class="form-group">
+                            <select name="chapter" class="form-control select2 chapter" required>
+                                <option value="">--Select Campus--</option>
+                                @foreach($chapters as $chapter)
+                                    <option value="{{ $chapter->id }}" {{ request('chapter') == $chapter->id ? 'selected' : '' }}>
+                                        {{ $chapter->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button class="btn btn-primary submitregistration" type="submit" style="width:100%">View details</button>
                     </form>
+
                 </div>
             </div>
         </div>

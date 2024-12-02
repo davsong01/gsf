@@ -60,7 +60,7 @@ class ChapterController extends Controller
         $chapter = Chapter::findorfail($request->chapter);
         $token = false;
         $realToken = '';
-
+        
         if($request->token){
             if($chapter->token != $request->token){
                 return back()->with('error', 'Invalid Token for GSF Chapter, Kindly contact the National Publicity Office');
