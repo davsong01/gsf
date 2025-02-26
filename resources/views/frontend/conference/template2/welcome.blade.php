@@ -128,7 +128,7 @@
 <!-- ts intro end-->
 
 <!-- ts speaker start-->
-<section id="ts-speakers" class="ts-speakers" style="background-image:url(images/speakers/speaker_bg.png)">
+{{-- <section id="ts-speakers" class="ts-speakers" style="background-image:url(images/speakers/speaker_bg.png)">
     <div class="container">
       <div class="row">
           <div class="col-lg-8 mx-auto">
@@ -377,7 +377,7 @@
       <img class="shap3" src="{{ asset('conference_templates/template2/images/shap/home_speaker_memphis3.png')}}" alt="">
     </div>
     <!-- shap img end-->
-</section>
+</section> --}}
 <!-- ts speaker end-->
 
 <!-- ts experience start-->
