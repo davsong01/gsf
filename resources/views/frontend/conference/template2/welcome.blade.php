@@ -381,7 +381,7 @@
 <!-- ts speaker end-->
 
 <!-- ts experience start-->
-<section id="ts-experiences" class="ts-experiences">
+{{-- <section id="ts-experiences" class="ts-experiences">
     <div class="container-fluid">
       <div class="row">
           <div class="col-lg-6 no-padding">
@@ -404,7 +404,7 @@
           </div><!-- col end-->
       </div><!-- row end-->
     </div><!-- container fluid end-->
-</section>
+</section> --}}
 <!-- ts experience end-->
 
 <!-- ts experience start-->
@@ -491,11 +491,10 @@
                         <div class="schedule-listing-item schedule-right">
                               {{-- <img class="schedule-slot-speakers" src="images/speakers/speaker4.jpg" alt=""> --}}
                             {{-- <span class="schedule-slot-time">01.30 - 02.30 PM</span> --}}
-                            <h3 class="schedule-slot-title">Power from on High</h3>
+                            <h3 class="schedule-slot-title">Short talks</h3>
                             {{-- <h4 class="schedule-slot-name">@ Fredric Martinsson</h4> --}}
                             <p>
-                              How you transform your business technolog consumer habits industry dynamics change
-                              Find out from those leading the charge How you
+                              Breakout sessions to facilitate basic life to life essentials, provide room for cross-interaction between experts and upcoming stars.
                             </p>
                         </div>
                       </div><!-- col end-->
