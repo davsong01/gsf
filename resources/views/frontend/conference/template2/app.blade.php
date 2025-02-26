@@ -113,7 +113,7 @@
                      </li>
                      @endguest
                      <li class="header-ticket nav-item">
-                        <a class="ticket-btn btn" href="#register"> Register Now
+                        <a class="ticket-btn btn" href="#register"> 
                         </a>
                      </li>
                   </ul>

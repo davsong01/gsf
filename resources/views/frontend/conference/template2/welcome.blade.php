@@ -37,7 +37,7 @@
             </div>
             <!-- Countdown end -->
             <div class="banner-btn wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="800ms">
-                <a href="#register" class="btn">Register now</a>
+                <a href="{{ url('/').'#register' }}" class="btn">Register now</a>
             </div>
 
           </div>
