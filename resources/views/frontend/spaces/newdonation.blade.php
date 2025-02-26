@@ -58,7 +58,7 @@
                       </div>
 
                       <div class="mb-4">
-                          <label for="campus">Campus (Optional)</label>
+                          <label for="campus">Alma Mater (Campus - Optional)</label>
                           <select name="campus" id="campus" class="form-control select2" aria-label="Campus" >
                             <option value="" selected>Select...</option>
                             @foreach(\App\Models\Chapter::where('id','<>',86)->get() as $chapter)

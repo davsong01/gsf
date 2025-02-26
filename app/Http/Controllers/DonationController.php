@@ -70,7 +70,6 @@ class DonationController extends Controller
         }
     }
     
-
     public function handleDonationGatewayCallback(Request $request, $admin = "", $transfer_confirm = "", $onsite_confirm = ""){
         $reference = $request->reference;
         $setting = GeneralSetting::first();
@@ -78,10 +77,9 @@ class DonationController extends Controller
         $paymentDetails = app('App\Http\Controllers\PaymentController')->verify($reference, $setting);
         
         if (isset($paymentDetails) && $paymentDetails->status === 'success') {
-           
             //get participant details
             $donation = Donation::where('transid', $request->reference)->whereNull('status')->first();
-           
+            
             if (empty($donation)) {
                 return redirect(route('newdonation'))->with('warning', 'Looks like you have previously made this transaction');
             }
@@ -91,10 +89,16 @@ class DonationController extends Controller
 
             $data = $donation->toArray();
             $data['type'] = 'donation_thank_you_mail';
-           
+
+            // TODO!!! Create new user here
+            // $data = array_merge($data, $this->prepareUserData($data));
+            // $user = $this->createUser($data);
+            // $payment = $this->createPayment($data, $user);
+            // dd($user, $payment);
+
             //send email to participant
             $email = [
-                'subject' => 'Thank you for your contribution towards the Kingdom',
+                'subject' => 'Thank you for your donation.',
                 'recipient_name' => $data['name'],
                 'recipient' => $data['email'],
                 'type' => 'conference_bulk_email',
@@ -113,7 +117,7 @@ class DonationController extends Controller
                 'chapter' => $data['chapter'],
                 'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
             ];
-           
+            
             //send email to official email
             $this->logEmail($email2);
             return redirect(route('newdonation'))->with('message', 'Thank you for this donation');
@@ -122,6 +126,36 @@ class DonationController extends Controller
             return redirect(route('newdonation'))->with('error', 'Looks like something went wrong');
         }
     
+    }
+
+    public function prepareUserData($data){
+        $data['name'] = $data['name'] ?? null;
+        $data['phone'] = $data['phone'] ?? null;
+        $data['sex'] = $data['gender'] ?? null;
+        $data['type'] = $data['type'] ?? null;
+        $data['email'] = $data['email'] ?? null;
+        $data['password'] = bcrypt($data['phone']);
+        $data['amount'] = $data['amount'];
+        $data['transid'] = $data['transid'];
+        $data['payment_type'] = "PAYSTACK";
+        $data['conference_edition_id'] = $data['conference_edition_id'];
+        $data['chapter'] = $data['chapter_id'] ?? null;
+        $data['field_id'] = $data['field_id'] ?? null;
+        $data['remarks'] = $data['remarks'] ?? null;
+
+        $type = $data['type'] ?? null;
+        $extras = $this->getExtras($type, $setting, $data['amount']);
+
+        $data['slot'] = $extras['slot'] ?? null;
+        $ledge = $extras['ledge'] ?? null;
+        $data['level'] = $extras['level'] ?? null;
+        $data['slot_filled'] = $extras['slot_filled'] ?? null;
+
+        return [];
+    }
+
+    public function createUserFromDonation($data){
+
     }
 
     public function index(Request $request, $edition="")
