@@ -385,8 +385,6 @@
     <div class="container-fluid">
       <div class="row">
           <div class="col-lg-6 no-padding">
-
-
             <div class="exp-img image-container">
               <img class="img-fluid" src="{{ asset($setting->banner)}}" alt=""> 
             </div>
@@ -395,17 +393,14 @@
             <div class="ts-exp-wrap">
                 <div class="ts-exp-content">
                   <h2 class="column-title">
-                      
-                      <span>Get Experience</span>
-                      Shift your perspective on
-                      life perspectives
+                    <span>Get Experience</span>
+                      Prophetic Worship
                   </h2>
                   <p>
-                      How  you transform your business as technology, consumer, habits industry dynamic s change? Find out from those leading the charge.
+                    We will pour our spirit and soul out before the throne of grace where all mercies flow. We ascend with the elders, bowing in holy adoration to the one who is above all and call men to seek Him in spirit and truth.
                   </p>
                 </div>
             </div>
-
           </div><!-- col end-->
       </div><!-- row end-->
     </div><!-- container fluid end-->
@@ -477,8 +472,7 @@
                             <h3 class="schedule-slot-title">Prophetic Worship</h3>
                             {{-- <h4 class="schedule-slot-name">@ Johnsson Agaton</h4> --}}
                             <p>
-                              How you transform your business technolog consumer habits industry dynamics change
-                              Find out from those leading the charge How you
+                              We will pour our spirit and soul out before the throne of grace where all mercies flow. We ascend with the elders, bowing in holy adoration to the one who is above all and call men to seek Him in spirit and truth.
                             </p>
                         </div>
                       </div><!-- col end-->
@@ -486,11 +480,10 @@
                         <div class="schedule-listing-item schedule-left">
                               {{-- <img class="schedule-slot-speakers" src="images/speakers/speaker3.jpg" alt=""> --}}
                             {{-- <span class="schedule-slot-time">12.30 - 01.30 PM</span> --}}
-                            <h3 class="schedule-slot-title">Drama</h3>
+                            <h3 class="schedule-slot-title">Spirit-inspired utterances</h3>
                             {{-- <h4 class="schedule-slot-name">@ Lundryn Melisa</h4> --}}
                             <p>
-                              How you transform your business technolog consumer habits industry dynamics change
-                              Find out from those leading the charge How you
+                              God's word which is the agency by which He transform lives will be delivered with accuracy and precision, spirit and power. The Oracle Conference will be filled with lively epistles being written with the pen of the spirit on the heart of the attendees.
                             </p>
                         </div>
                       </div><!-- col end-->
