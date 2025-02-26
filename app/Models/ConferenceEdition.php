@@ -38,7 +38,12 @@ class ConferenceEdition extends Model
 
     public function participantCount()
     {
-        return $this->hasMany(Payment::Class, 'conference_edition_id')->where('level', 'Participant')->orWhere('level', 'Moderator')->count();        
+        return $this->hasMany(Payment::class, 'conference_edition_id')
+        ->where(function ($query) {
+            $query->where('level', 'Participant')
+                  ->orWhere('level', 'Moderator');
+        })
+        ->count();
     }
 
 }

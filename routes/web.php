@@ -164,6 +164,7 @@ Route::get('/payment/donation-callback', [DonationController::class, 'handleDona
 
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', [AccountController::class, 'index'])->name('account');
+    Route::get('/home', [AccountController::class, 'index'])->name('home');
     Route::resource('staff', StakeholderController::class);
     Route::get('staffs/delete/{id}', [StakeholderController::class, 'destroy'])->name('staff.delete');
     Route::resource('email', EmailController::class);
