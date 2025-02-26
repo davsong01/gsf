@@ -728,8 +728,7 @@
                         </div>
                         <div id="collapse5" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading5">
                             <div class="panel-body">
-                                  How  you transform your business as technology, consumer, habits industry dynamic
-                                  s change? Find out from those leading the charge.
+                                  The Conference will commence on Thursday night with a opening session which is often characterized with the power of the Spirit with all-encompassing display of joy.
                             </div>
                         </div>
                       </div>
@@ -744,8 +743,7 @@
                         </div>
                         <div id="collapse6" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading6">
                             <div class="panel-body">
-                                  How  you transform your business as technology, consumer, habits industry dynamic
-                                  s change? Find out from those leading the charge.
+                                  The Conference will hold at the International Gospel City of The Gospel Faith Mission International located at Ogunmakin, Ogun State along Lagos-lbadan Express Way.
                             </div>
                         </div>
                       </div>
@@ -760,9 +758,7 @@
                         </div>
                         <div id="collapse7" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading7">
                             <div class="panel-body">
-                              Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson
-                              ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck
-                              quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on
+                              Please stay connected to our social media handles on Facebook, Instagram and X: gsfnational
                             </div>
                         </div>
                       </div>
@@ -770,14 +766,13 @@
                         <div class="panel-heading" role="tab" id="heading8">
                             <h4 class="panel-title">
                               <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse8" aria-expanded="false" aria-controls="collapse8">
-                                    4. How can my church sponsor this Event?
+                                    4. How can my Church sponsor this event?
                               </a>
                             </h4>
                         </div>
                         <div id="collapse8" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading8">
                             <div class="panel-body">
-                                  How  you transform your business as technology, consumer, habits industry dynamic
-                                  s change? Find out from those leading the charge.
+                                For individual or corporate sponsorship of event, please reach out to the following contacts, +234 805 263 8670, +234 816 447 8392, +234 7013 530858
                             </div>
                         </div>
                       </div>
