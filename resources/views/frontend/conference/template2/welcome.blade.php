@@ -425,19 +425,19 @@
                       </a>
                   </li>
                   <li class="nav-item">
-                      <a class="" href="#date2" title="Click Me" role="tab" data-toggle="tab">        
+                      <a class="" href="#day1" title="Click Me" role="tab" data-toggle="tab">        
                         <h3>18th April</h3>
                         <span>Friday</span>
                       </a>
                   </li>
                   <li class="nav-item">
-                      <a class="" href="#date3" title="Click Me" role="tab" data-toggle="tab">
+                      <a class="" href="#day1" title="Click Me" role="tab" data-toggle="tab">
                         <h3>19th April</h3>
                         <span>Saturday</span>
                       </a>
                   </li>
                   <li class="nav-item">
-                      <a class="" href="#date3" title="Click Me" role="tab" data-toggle="tab">
+                      <a class="" href="#day1" title="Click Me" role="tab" data-toggle="tab">
                         <h3>20th April</h3>
                         <span>Sunday</span>
                       </a>

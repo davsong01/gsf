@@ -50,6 +50,7 @@ class CriticalEmailController extends Controller
                     <strong>Phone: </strong>" . $data[ 'family_id'] . "<br>
                     <strong>Chapter: </strong>" . $data['chapter'] . "<br>
                     <strong>Amount Paid: </strong> &#8358;" . $data['amount'] . "<br><br>Thanks";
+                    
                 break;
 
             case 'admin_donation_notification':

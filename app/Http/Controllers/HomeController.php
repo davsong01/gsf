@@ -14,6 +14,7 @@ use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use App\Models\GeneralSetting;
 use App\Imports\GeneralUsersImport;
+use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 
 class HomeController extends Controller

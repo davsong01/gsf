@@ -288,6 +288,7 @@ class PaymentController extends Controller
 				
 				$this->logEmail($email);
 				// Mail::to($data['email'])->send(new WelcomeMail($data));
+				$data['type'] = 'new_registration';
 				$email = [
 					'subject' => 'New Registration',
 					'type'=> 'new_registration',
