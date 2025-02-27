@@ -425,19 +425,19 @@
                       </a>
                   </li>
                   <li class="nav-item">
-                      <a class="" href="#day1" title="Click Me" role="tab" data-toggle="tab">        
+                      <a class="" href="#date2" title="Click Me" role="tab" data-toggle="tab">        
                         <h3>18th April</h3>
                         <span>Friday</span>
                       </a>
                   </li>
                   <li class="nav-item">
-                      <a class="" href="#day1" title="Click Me" role="tab" data-toggle="tab">
+                      <a class="" href="#date3" title="Click Me" role="tab" data-toggle="tab">
                         <h3>19th April</h3>
                         <span>Saturday</span>
                       </a>
                   </li>
                   <li class="nav-item">
-                      <a class="" href="#day1" title="Click Me" role="tab" data-toggle="tab">
+                      <a class="" href="#date4" title="Click Me" role="tab" data-toggle="tab">
                         <h3>20th April</h3>
                         <span>Sunday</span>
                       </a>
@@ -460,8 +460,7 @@
                             <h3 class="schedule-slot-title">Opening Intercession</h3>
                             {{-- <h4 class="schedule-slot-name">@ Henrikon Rebecca</h4> --}}
                             <p>
-                              How you transform your business technolog consumer habits industry dynamics change
-                              Find out from those leading the charge How you
+                              God who causes and chooses men will by the Spirit of grace and intercession bring men into full stature, praying with all prayer in the Spirit.
                             </p>
                         </div>
                       </div><!-- col end-->
@@ -475,7 +474,7 @@
                               We will pour our spirit and soul out before the throne of grace where all mercies flow. We ascend with the elders, bowing in holy adoration to the one who is above all and call men to seek Him in spirit and truth.
                             </p>
                         </div>
-                      </div><!-- col end-->
+                      </div>
                       <div class="col-lg-6">
                         <div class="schedule-listing-item schedule-left">
                               {{-- <img class="schedule-slot-speakers" src="images/speakers/speaker3.jpg" alt=""> --}}
@@ -508,8 +507,7 @@
                         <div class="schedule-listing-item schedule-left">
                             <h3 class="schedule-slot-title">Prayer Walk</h3>
                             <p>
-                              How you transform your business technolog consumer habits industry dynamics change
-                              Find out from those leading the charge How you
+                              Moment of refreshing breath and health walk in similitude of earlier patriarchs who had Jesus as their ever-assumed goal. We hope to revive your prayer life like a magic, running you by the power of the age to come.
                             </p>
                         </div>
                       </div><!-- col end-->
@@ -517,8 +515,7 @@
                         <div class="schedule-listing-item schedule-right">
                             <h3 class="schedule-slot-title">Teaching</h3>
                             <p>
-                              How you transform your business technolog consumer habits industry dynamics change
-                              Find out from those leading the charge How you
+                              God's word which is the agency by which He transform lives will be delivered with accuracy and precision, spirit and power covering every area of concern and need. The Oracle Conference will be filled with lively epistles being written with the pen of the Spirit on the hearts of the attendees.
                             </p>
                         </div>
                       </div><!-- col end-->
@@ -526,8 +523,7 @@
                         <div class="schedule-listing-item schedule-left">
                             <h3 class="schedule-slot-title">AI and your Career!</h3>
                             <p>
-                              How you transform your business technolog consumer habits industry dynamics change
-                              Find out from those leading the charge How you
+                              Exploration of the power of technology and innovation in bringing to mark the potentials in built for the advancement of kingdom project and visions.
                             </p>
                         </div>
                       </div><!-- col end-->
@@ -535,8 +531,7 @@
                         <div class="schedule-listing-item schedule-right">
                             <h3 class="schedule-slot-title">From Babylon to Zion</h3>
                             <p>
-                              How you transform your business technolog consumer habits industry dynamics change
-                              Find out from those leading the charge How you
+                              Orientation and reorientation sessions that exposes you to how to be a salt and a light, a city mover and a territory taker through God giving influence and labour.
                             </p>
                         </div>
                       </div><!-- col end-->
@@ -548,8 +543,45 @@
                         <div class="schedule-listing-item schedule-left">
                             <h3 class="schedule-slot-title">Business Strategy catchups</h3>
                             <p>
+                              Insightful leveraging of connection, idea and tact. Business, Leadership, Politics and marriage- a lot of wisdom to catch on!
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-right">
+                            <h3 class="schedule-slot-title">Variety Night</h3>
+                            <p>
+                              What about a time to reflect, reminisce, re-evaluate and appreciate ingenuity, talents, kingdom appraisal and Spirit inspired trend.
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-left">
+                            <h3 class="schedule-slot-title">Teaching</h3>
+                            <p>
                               How you transform your business technolog consumer habits industry dynamics change
                               Find out from those leading the charge How you
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-right">
+                            <h3 class="schedule-slot-title">Handing over ceremony</h3>
+                            <p>
+                              New dawn! Here comes new set of leaders who will stirr the work into the next phase. One generation truly shall praise Him to another!
+                            </p>
+                        </div>
+                      </div><!-- col end-->
+                  </div><!-- row end-->
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="date4">
+                  <div class="row">
+                      <div class="col-lg-6">
+                        <div class="schedule-listing-item schedule-left">
+                            <h3 class="schedule-slot-title">Business Strategy catchups</h3>
+                            <p>
+                              Insightful leveraging of connection, idea and tact. Business, Leadership, Politics and marriage- a lot of wisdom to catch on!
                             </p>
                         </div>
                       </div><!-- col end-->
@@ -583,7 +615,6 @@
                   </div><!-- row end-->
                 </div>
             </div>
-
           </div>
       </div>
     </div><!-- container end-->
