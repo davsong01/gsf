@@ -167,7 +167,7 @@
                      <div class="footer-menu text-center mb-25">
                      </div><!-- footer menu end-->
                      <div class="copyright-text text-center">
-                        <p style="text-align:center">If you are having challenges registering, whatsapp: <b style="color:white"> {{ $setting->official_phone }}</b> for assistance/guidance</p>
+                        <p style="text-align:center">If you are having challenges registering, whatsapp: <b style="color:white"> 08143511076, 08168903122, 0701350858</b> for assistance/guidance</p>
 
                         <p>Copyright © {{date('Y')}} <a class="text-900" href="{{ config('app.url') }}" target="_blank">{{ config('app.name') }}</a>. All Rights Reserved.</p>
                      </div>
