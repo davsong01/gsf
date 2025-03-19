@@ -208,6 +208,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('deleteedition/{id}', 'destroy')->name('delete.conference.edition');
         Route::get('showedition/{id}', 'show')->name('show.conference.edition');
         Route::get('clone-edition/{id}', 'clone')->name('clone.conference.edition');
+        Route::get('chart-data/{id}', 'chart')->name('conference.edition.chart');
     });
     Route::resource('conferenceeditions', ConferenceEditionController::class);
 

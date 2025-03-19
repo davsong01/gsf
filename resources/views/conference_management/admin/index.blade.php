@@ -87,6 +87,78 @@
                 </a>
             </div>
         </div>
+
+        <div class="col-sm-12 col-12 dashboard-users-success">
+            <div class="card text-center">
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <canvas id="multiBarChart"></canvas>
+                <script>
+    $(document).ready(function () {
+        const ctx = document.getElementById('multiBarChart').getContext('2d');
+        let chartInstance = null;
+
+        function fetchChartData() {
+            $.ajax({
+                url: '/chart-data/' + "{{$edition->id}}",
+                method: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (!response.labels || !response.datasets) {
+                        // alert('Failed to load chart data properly.');
+                        return;
+                    }
+
+                    updateChart(response.labels, response.datasets);
+                },
+                error: function (xhr, status, error) {
+                    alert('Failed to load chart data.');
+                }
+            });
+        }
+
+        function updateChart(labels, datasets) {
+            if (chartInstance) {
+                chartInstance.destroy(); 
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        },
+                        x: {
+                            stacked: false,
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 90,
+                                minRotation: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fetch and load chart data on page load
+        fetchChartData();
+    });
+</script>
+
+            </div>
+        </div>
     </div>
 </div>
 @endsection

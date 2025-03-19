@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Payment;
 use App\Models\Donation;
 use App\Models\Material;
-use App\Models\ConferenceEdition;
 use Illuminate\Http\Request;
+use App\Models\ConferenceEdition;
 
 class ConferenceEditionController extends Controller
 {
@@ -88,6 +90,71 @@ class ConferenceEditionController extends Controller
             $materials = Material::where('conference_edition_id',$id)->count();
             
             return view('conference_management.admin.index', compact('registered_participants', 'pending_registration', 'completed_registration', 'total', 'donations', 'materials', 'edition'));
+        }
+    }
+
+    public function chart(ConferenceEdition $id)
+    {
+        if (auth()->user()->role == 1) {
+            $data = User::join('payments', 'payments.user_id', '=', 'users.id')
+                ->where('payments.purpose', 'conference')
+                ->where('payments.registration_status', 'Complete')
+                ->leftJoin('hostels', 'hostels.id', '=', 'payments.hostel_id')
+                ->leftJoin('food', 'food.id', '=', 'payments.food_id')
+                ->leftJoin('chapters', 'chapters.id', '=', 'users.chapter_id')
+                ->where('payments.conference_edition_id', $id->id)
+                ->where('users.role', '!=', 1)
+                ->select(
+                    'users.family_id',
+                    'payments.transid',
+                    'payments.registration_status',
+                    'users.name',
+                    'users.email',
+                    'users.phone',
+                    'chapters.name as chapter',
+                    'chapters.id as chapter_id',
+                    'payments.created_at as registration_date',
+                    'payments.amount_paid',
+                    'payments.level',
+                    'hostels.name as hostel',
+                    'food.name as foodstand',
+                    'payments.purpose',
+                    'payments.location'
+                )
+                ->orderBy('users.created_at', 'desc')
+                ->get();
+
+            // Merge "Participant" and "Moderator" as "Participants"
+            $data->transform(function ($item) {
+                if (in_array(strtolower(trim($item->level)), ['participant', 'moderator'])) {
+                    $item->level = 'Participants';
+                }
+                return $item;
+            });
+
+            // Get unique chapters
+            $formattedLabels = [];
+            $formattedData = [
+                'label' => 'Participants',
+                'data' => [],
+                'backgroundColor' => 'rgba(54, 162, 235, 0.6)' // Static color for clarity
+            ];
+
+            foreach ($data->pluck('chapter')->filter()->unique()->values() as $chapter) {
+                $count = $data->filter(function ($item) use ($chapter) {
+                    return strtolower(trim($item->chapter)) === strtolower(trim($chapter)) &&
+                        strtolower(trim($item->level)) === 'participants';
+                })->count();
+
+                // Append count to chapter label (e.g., "Lagos (50)")
+                $formattedLabels[] = "{$chapter} - ({$count})";
+                $formattedData['data'][] = $count;
+            }
+
+            return response()->json([
+                'labels' => $formattedLabels,
+                'datasets' => [$formattedData]
+            ]);
         }
     }
 
