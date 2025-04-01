@@ -8,6 +8,7 @@ use App\Mail\AdminMail;
 use App\Models\Chapter;
 use App\Models\Payment;
 use App\Models\Setting;
+use App\Models\Webhook;
 use App\Models\Donation;
 use App\Models\TempUser;
 use App\Mail\WelcomeMail;
@@ -19,7 +20,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
 use App\Services\HostelAllocationService;
+use App\Services\WebhookVerificationService;
 use App\Services\ServicePointAllocationService;
+use App\Services\WebhookAnalyzerService;
 
 class PaymentController extends Controller
 
@@ -390,6 +393,7 @@ class PaymentController extends Controller
 			'reference' =>  $request['transid'],
 			'callback_url' => $callback ?? url('/') . '/payment/callback',
 			'currency' => $request['currency'],
+			'channels' => ["card", "bank", "apple_pay", "ussd", "qr", "mobile_money", "bank_transfer", "eft"],
 			'metadata'=> $metadata,
 		];
 
@@ -442,7 +446,7 @@ class PaymentController extends Controller
 		
 		$response = curl_exec($curl);
 		$err = curl_error($curl);
-
+		
 		curl_close($curl);
 
 		try {
@@ -451,9 +455,11 @@ class PaymentController extends Controller
 				\Log::info("cURL Error #:" . $err);
 			} else {
 				$response = json_decode($response);
+				
 				return $response->data;
 			}
 		} catch (\Throwable $th) {
+			
 			//throw $th;
 		}
 	}
@@ -499,4 +505,45 @@ class PaymentController extends Controller
 		return $temp;
 	}
 
+	public function dumpWebhook(Request $request){
+		\Log::info(['webhook' => $request->all()]);
+		$provider = $request->provider;
+
+		if(WebhookVerificationService::verifyWebhook($provider, $request->all())['status']){
+			$data = $request->all();
+			
+			Webhook::updateOrCreate([
+				'reference' => $data['data']['reference'],
+			],[
+				'event_type' => $data['event'],
+				'provider' => $provider,
+				'reference' => $data['data']['reference'],
+				'customer_email' => $data['data']['customer']['email'],
+				'payload' => $request->all(),
+			]);
+
+			return response()->json([], 200);
+		}
+	}
+
+	public function analyze(Request $request){
+		// Get all pending payments
+		$pendingPayments = Webhook::where('status', 'pending')->get();
+		
+		if($pendingPayments){
+			foreach($pendingPayments as $payment){
+				$user = TempUser::where('email', $payment->customer_email)->where('status', '!=', 'Complete')->first();
+				$user->transid = $payment->reference;
+				$user->save();
+
+				if(!$user){
+					return false;
+				}
+
+				$request['reference'] = $payment->reference;
+				app('App\Http\Controllers\TempUserController')->requery($user->id, $request, true);
+			}
+
+		}
+	}
 }

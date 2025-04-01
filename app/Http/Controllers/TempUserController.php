@@ -44,20 +44,21 @@ class TempUserController extends Controller
         return back()->with('message','Update Successful');
     }
 
-    public function requery($id, Request $request){
-        if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin'){
+    public function requery($id, Request $request, $bypassAuth = false){
+        if ((auth()->user() && auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') || $bypassAuth == true){
             $temp = TempUser::where('id',$id)->first();
             
             $request->request->add(['reference' => $request->reference]);
             $req = new \App\Http\Controllers\PaymentController();
             $response = $req->handleGatewayCallback($request, 'admin');
+            
             $status = $response->status ?? 'Failed';
-           
+            
             if(isset($response) && !empty($response)){
                 $response = json_encode($response);
                 $temp->update(['gateway_response' => $response]);
             }
-
+            
             if($status == 'abandoned'){
                 $temp->update(['status' => $status]);
                 return back()->with('error','Payment Status: '.$status);

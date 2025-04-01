@@ -159,6 +159,8 @@ Route::get('/nec/registration/portal/pay', [ConferenceController::class, 'necReg
 
 Route::post('/pay', [PaymentController::class, 'redirectToGateway'])->name('pay');
 Route::get('/payment/callback', [PaymentController::class, 'handleGatewayCallback']);
+Route::any('/payment/webhook', [PaymentController::class, 'dumpWebhook']);
+Route::get('/payment/analyze-webhook', [PaymentController::class, 'analyze']);
 Route::get('/payment/donation-callback', [DonationController::class, 'handleDonationGatewayCallback']);
 
 
