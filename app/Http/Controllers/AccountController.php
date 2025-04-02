@@ -55,8 +55,10 @@ class AccountController extends Controller
 			if($president){
 				$president = $president->where('role', 'President')->first();
 			}
+
+			$edition = activeConferenceEdition();
 			
-			return view('admin.users.profile', compact('chapters', 'user', 'president', 'portfolios', 'sessions'));
+			return view('admin.users.profile', compact('chapters', 'user', 'president', 'portfolios', 'sessions','edition'));
 		}
 
 	}

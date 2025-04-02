@@ -542,6 +542,10 @@ class PaymentController extends Controller
 
 				$request['reference'] = $payment->reference;
 				app('App\Http\Controllers\TempUserController')->requery($user->id, $request, true);
+				$payment->update([
+					'status' => 'processed',
+					'processed_at' => now()
+				]);
 			}
 
 		}
