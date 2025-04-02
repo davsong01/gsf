@@ -57,8 +57,8 @@ class HostelAllocationService
 
             if (isset($setting->hostel_assignment_type) && $setting->hostel_assignment_type == "based_on_field") {
                 $allocation_type = $setting->hostel_assignment_type;
-
                 $field_id_json = json_encode((string) $data['field_id']);
+
                 $hostel = Hostel::where([
                     'type' => $sex,
                     'conference_edition_id' => $setting->id,
@@ -97,7 +97,7 @@ class HostelAllocationService
             }
 
             if(empty($hostel)){
-                $allocation_type = 'SP-'.$setting->hostel_assignment_type;
+                $allocation_type = 'HOS-'.$setting->hostel_assignment_type;
                 $hostel = Hostel::where(['level' => $level, 'type' => $sex, 'conference_edition_id' => $setting->id])->whereRaw('allocation < capacity')->inRandomOrder()->first();
             }
 

@@ -242,12 +242,8 @@ class PaymentController extends Controller
 				// Assign Automatic foodstand and hostel
 				if (in_array($payment->level, ['Participant', 'Alumni', 'Nec','Moderator'])) {
 					$hostel_allocation = HostelAllocationService::assignHostel($data);
-					
 					$service_point = ServicePointAllocationService::assignFoodStand($data);
-					// $data['hostel_id'] = $hostel_allocation['hostel_id'] ?? null;
-					// $data['allocated_hostel_data'] = $hostel_allocation['hostel_name'] ?? null;
-					// $data['food_id'] = $service_point['service_point_allocation_id'] ?? null;
-					// $data['allocated_service_point'] = $service_point['service_point_allocation_name'] ?? null;
+					
 					$data['allocated_hostel_data'] = $hostel_allocation;
 					$data['allocated_service_point_data'] = $service_point;
 

@@ -7,19 +7,21 @@ use App\Models\User;
 use App\Models\Hostel;
 use App\Models\Chapter;
 use App\Models\Payment;
-use App\Models\CriticalEmail;
 use App\Mail\WelcomeMail;
-use App\Models\ConferenceEdition;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
+use App\Models\CriticalEmail;
+use App\Models\ConferenceEdition;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ConferenceUsersImport;
+use App\Services\HostelAllocationService;
+use App\Services\ServicePointAllocationService;
 use App\Http\Controllers\CriticalEmailController;
 
 class ConferenceManagementController extends Controller
@@ -119,8 +121,10 @@ class ConferenceManagementController extends Controller
 
 			if ($edition->foodstand_field_assignment == 'yes' && in_array($moderator->user->chapter_id, [86])) {
 				$foods = Food::where(['conference_edition_id' => $edition->id, 'level' => 'Participant', 'off_campus' => 'yes'])->where('capacity', '>', 'allocation')->orderBy('name')->get();
+
+				Food::where(['level' => 'Participant', 'conference_edition_id' => $edition->id,])->where('capacity', '>', 'allocation')->orderBy('name')->get();
 			} else {
-				$foods = Food::where(['conference_edition_id' => $edition->id, 'level' => 'Participant', 'off_campus' => 'no'])->where('capacity', '>', 'allocation')->orderBy('name')->get();
+				$foods = Food::where(['conference_edition_id' => $edition->id, 'level' => 'Participant'])->where('capacity', '>', 'allocation')->orderBy('name')->get();
 			}
 
 			return view('conference_management.moderator.users.edit', compact('user', 'hostels', 'foods', 'chapters', 'edition','payment'));
@@ -208,7 +212,7 @@ class ConferenceManagementController extends Controller
 		
 		$setting = ConferenceEdition::find($request->edition);
 		$data['conference_edition_id'] = $setting->id;
-
+		
 		//Store block for Admin
 		if (auth()->user()->role == 1) {	
 			if(!isset($data['uploaded_by'])){
@@ -222,10 +226,6 @@ class ConferenceManagementController extends Controller
 			$data['type'] = $this->getType($request);
 			// Assign hostel
 			// (You may want to check if gender is the same as hostel gender)
-			// Assign Foodstand and Hostel
-			
-			$data['hostel_id'] = $this->assignHostel($data['level'], $data['sex'], $setting);
-			$data['food_id'] = $this->assignFoodStand($data['level'], $data['chapter'],$setting);
 			
 			// Extras
 			$extras = $this->getExtras($data['type'], $setting);
@@ -239,6 +239,26 @@ class ConferenceManagementController extends Controller
 			$user = $this->createUser($data);
 			$payment = $this->createPayment($data, $user);
 			$family_id = $this->createFamilyId($user, $extras['ledge']);
+
+			// Assign Foodstand and Hostel
+			$data['field_id'] = $user->campus->id;
+
+			dd($data);
+
+			$hostel_allocation = HostelAllocationService::assignHostel($data);
+			$service_point = ServicePointAllocationService::assignFoodStand($data);
+
+			$data['allocated_hostel_data'] = $hostel_allocation;
+			$data['allocated_service_point_data'] = $service_point;
+
+			$payment->update([
+				'hostel_allocation_number' => $hostel_allocation['hostel_allocation_number'],
+				'hostel_allocation_type' => $hostel_allocation['hostel_allocation_type'],
+				'service_point_allocation_number' => $service_point['service_point_allocation_number'],
+				'service_point_allocation_type' => $service_point['service_point_allocation_type'],
+				'hostel_id' => $hostel_allocation['hostel_id'],
+				'food_id' => $service_point['service_point_allocation_id']
+			]);
 
 			// Log Email
 			$data['type'] = 'welcome_mail';
@@ -305,30 +325,35 @@ class ConferenceManagementController extends Controller
 					'conference_edition_id' => $request->edition,
 				]);
 
-				if (in_array($data['level'], ['Participant', 'Alumni', 'Nec'])) {
-					$hostel = $this->assignHostel($data['level'], $data['sex']);
-					$food = $this->assignFoodStand($data['level'], $newuser->chapter_id);
+			$chapter = Chapter::with('field:id,name')->select('id', 'field_id')->where('id', $newuser->chapter_id)->first();
+			$data['field_id'] = !empty($chapter->field) ? $chapter->field->id : (!empty($data['field_id']) ? $data['field_id'] : null);
+			
+			if (in_array($data['level'], ['Participant', 'Alumni', 'Nec'])) {
+				$hostel_allocation = HostelAllocationService::assignHostel($data);
+				$service_point = ServicePointAllocationService::assignFoodStand($data);
 
-					$data['hostel_id'] = $hostel->id ?? null;
-					$data['hostel'] = $hostel->name ?? null;
-					$data['food_id'] = $food->id ?? null;
-					$data['foodstand'] = $food->name ?? null;
-
-					$payment->update([
-						'hostel_id' => $data['hostel_id'] ?? null,
-						'food_id' => $data['food_id'] ?? null
-					]);
-				}
-
-				$extras = $this->getExtras($data['type'], $setting);
-				$this->createFamilyId($newuser, $extras['ledge']);
-				$data['chapter'] = isset($newuser->campus->name) ? $newuser->campus->name : '';
+				$data['allocated_hostel_data'] = $hostel_allocation;
+				$data['allocated_service_point_data'] = $service_point;
 				
-				//update temp user
-				$data['type'] = 'welcome_mail';
-				$data['amount'] = $setting->registration_fee;
-				$data['family_id'] = $newuser->family_id;
-					
+				$payment->update([
+					'hostel_allocation_number' => $hostel_allocation['hostel_allocation_number'],
+					'hostel_allocation_type' => $hostel_allocation['hostel_allocation_type'],
+					'service_point_allocation_number' => $service_point['service_point_allocation_number'],
+					'service_point_allocation_type' => $service_point['service_point_allocation_type'],
+					'hostel_id' => $hostel_allocation['hostel_id'],
+					'food_id' => $service_point['service_point_allocation_id']
+				]);
+			}
+
+			$extras = $this->getExtras($data['type'], $setting);
+			$this->createFamilyId($newuser, $extras['ledge']);
+			$data['chapter'] = isset($newuser->campus->name) ? $newuser->campus->name : '';
+			
+			//update temp user
+			$data['type'] = 'welcome_mail';
+			$data['amount'] = $setting->registration_fee;
+			$data['family_id'] = $newuser->family_id;
+				
 				//send email to participant
 				$email = [
 					'subject' => 'Thank you for registering',
@@ -448,9 +473,17 @@ class ConferenceManagementController extends Controller
 		
 		// handle gender change
 		if ($request->has('sex') && $request['sex'] != $user->sex) {
-			$update['hostel_id'] = ($this->assignHostel($payment->level, $request['sex']))->id ?? null;
+			$paymentArray = array_merge($data, $payment->ToArray());
+			$paymentArray['field_id'] =  $payment->user->campus->id;
+			$hostel_allocation = HostelAllocationService::assignHostel($paymentArray);
+
+			$data['allocated_hostel_data'] = $hostel_allocation;
+			$paymentupdate['hostel_allocation_number'] = $hostel_allocation['hostel_allocation_number'];
+			$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
+			$paymentupdate['hostel_id'] = $hostel_allocation['hostel_id'];
+			
 			// If no hostel
-			if (!isset($update['hostel_id']) && empty($update['hostel_id'])) {
+			if (!isset($paymentupdate['hostel_id']) && empty($paymentupdate['hostel_id'])) {
 				return back()->with('error', 'Sorry, there is no available hostel for you at the moment. Changes not saved!');
 			}else{
 				$this->reduceHostelAllocation($payment);
@@ -468,10 +501,18 @@ class ConferenceManagementController extends Controller
 		if (isset($moderator) && !empty($moderator)) {
 			$edition = $this->edition;
 			// Hostel may not be set above, so set it
-			if(!isset($update['hostel'])){
-				$update['hostel_id'] = ($this->assignHostel($payment->level, $request['sex']))->id ?? null;
-				// dd($update['hostel_id'],$payment->level, $request['sex']);
-				if (!isset($update['hostel_id']) && empty($update['hostel_id'])) {
+			if(!isset($update['hostel_id'])){
+				$paymentArray = array_merge($data, $payment->ToArray());
+				$paymentArray['field_id'] =  $payment->user->campus->id;
+				$hostel_allocation = HostelAllocationService::assignHostel($paymentArray);
+
+				$data['allocated_hostel_data'] = $hostel_allocation;
+				$paymentupdate['hostel_allocation_number'] = $hostel_allocation['hostel_allocation_number'];
+				$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
+				$paymentupdate['hostel_id'] = $hostel_allocation['hostel_id'];
+
+				// dd($paymentupdate['hostel_id'],$payment->level, $request['sex']);
+				if (!isset($paymentupdate['hostel_id']) && empty($paymentupdate['hostel_id'])) {
 					return back()->with('error', 'Sorry, there is no available hostel for you at the moment. Changes not saved!');
 				} else {
 					$this->reduceHostelAllocation($payment);
@@ -479,15 +520,26 @@ class ConferenceManagementController extends Controller
 			}
 			
 			if(!isset($payment->food) && empty($payment->food)){
-				$update['food_id'] = ($this->assignFoodStand($payment->level, $user->chapter_id))->id ?? null;
+				$paymentArray = array_merge($data, $payment->ToArray());
+				$paymentArray['field_id'] =  $payment->user->campus->id;
+				
+				$service_point = ServicePointAllocationService::assignFoodStand($paymentArray);
+				
+				$data['allocated_service_point_data'] = $service_point;
+
+				$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
+				$paymentupdate['service_point_allocation_number'] = $service_point['service_point_allocation_number'];
+				$paymentupdate['service_point_allocation_type'] = $service_point['service_point_allocation_type'];
+				$paymentupdate['food_id'] = $service_point['service_point_allocation_id'];
+				
 			}else{
-				$update['food_id'] = $payment->food_id;
+				$paymentupdate['food_id'] = $payment->food_id;
 			}
 		
 		}
-
-		$user->update(Arr::except($update, ['hostel_id','food_id']));
-		$payment->update(Arr::only($update, ['hostel_id','food_id']));
+		
+		$user->update($update);
+		$payment->update($paymentupdate);
 
 		return back()->with('message','Operation succesful');
     }

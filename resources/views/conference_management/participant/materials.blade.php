@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 @section('title', 'Download Conference Materials')
 @section('item')
-<li class="breadcrumb-item"><a href="{{ route('conferencemanagement.show', ['conferencemanagement'=>$payment, 'edition'=>$edition->id]) }}">{{ $setting->conference_theme }}</a></li>
+<li class="breadcrumb-item"><a href="{{ route('conferencemanagement.show', ['conferencemanagement'=>$payment, 'edition'=>$edition->id]) }}">{{ $edition->conference_theme }}</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Conference Materials</li>

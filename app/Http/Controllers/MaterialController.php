@@ -27,9 +27,8 @@ class MaterialController extends Controller
         }
 
         if(auth()->user()->level == 'Participant' || auth()->user()->level == 'Moderator' || auth()->user()->level == 'Alumni' || auth()->user()->level == 'Nec'){
-           return view('participant.materials', compact('materials', 'count'));
+            return view('participant.materials', compact('materials', 'count'));
         }
-       
     }
 
     public function create(Request $request)
