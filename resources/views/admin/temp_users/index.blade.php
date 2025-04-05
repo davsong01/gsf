@@ -17,6 +17,15 @@
 .action-button{
    margin: 5px;
 }
+
+.modal-dialog {
+    max-width: 80%; /* Optional: adjust width of the modal */
+}
+
+.modal-body {
+    max-height: 400px;  /* Set a maximum height for the modal body */
+    overflow-y: auto;   /* Enable vertical scrolling */
+}
 </style>
 @endsection
 @extends('layouts.conference')
