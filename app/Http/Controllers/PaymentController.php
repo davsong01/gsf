@@ -14,15 +14,17 @@ use App\Models\TempUser;
 use App\Mail\WelcomeMail;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\ConferenceEdition;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use App\Services\WebhookAnalyzerService;
 use Illuminate\Support\Facades\Redirect;
 use App\Services\HostelAllocationService;
 use App\Services\WebhookVerificationService;
 use App\Services\ServicePointAllocationService;
-use App\Services\WebhookAnalyzerService;
 
 class PaymentController extends Controller
 
@@ -107,6 +109,7 @@ class PaymentController extends Controller
 		}
 		
 		$request['transid'] = $this->generateTransactionId();
+		\Log::info('Transaction ID: ' . $request['transid']);
 		$tempUser = $this->createTempUser($request->all());
 		
 		if(is_null($tempUser)){
@@ -262,9 +265,13 @@ class PaymentController extends Controller
 				if ($payment->level == 'Moderator') {
 					$payment->update([
 						'uploaded_by' => $user->id,
-						'api_response' => isset($paymentDetails) ? json_encode($paymentDetails) : null,
+						// 'api_response' => isset($paymentDetails) ? json_encode($paymentDetails) : null,
 					]);
 				}
+
+				$payment->update([
+					'api_response' => isset($paymentDetails) ? json_encode($paymentDetails) : null,
+				]);
 				
 				$data['family_id'] = $user->family_id;
 				$data['chapter'] = isset($participant->campus->name) ? $participant->campus->name : '';
@@ -377,6 +384,7 @@ class PaymentController extends Controller
 			return view('frontend.conference.donationthankyou', compact('data', 'conference_year'));
 		}
 	}
+
 	public function queryPaystack($request,$setting, $callback=null)
 	{
 		$url = "https://api.paystack.co/transaction/initialize";
@@ -389,7 +397,8 @@ class PaymentController extends Controller
 			'reference' =>  $request['transid'],
 			'callback_url' => $callback ?? url('/') . '/payment/callback',
 			'currency' => $request['currency'],
-			'channels' => ["card", "bank", "apple_pay", "ussd", "qr", "mobile_money", "bank_transfer", "eft"],
+			'channels' => ["card", "bank", "bank_transfer"],
+			// 'channels' => ["card", "bank", "apple_pay", "ussd", "qr", "mobile_money", "bank_transfer", "eft"],
 			'metadata'=> $metadata,
 		];
 
@@ -423,6 +432,59 @@ class PaymentController extends Controller
 		}
 	}
 
+	public function paystackGetCustomerIdByEmail(Request $request)
+	{
+		$request->validate([
+			'email' => 'required|email',
+			'edition_id' => 'required|integer'
+		]);
+
+		try {
+			$setting = activeConferenceEdition();
+
+			$paystackSecretKey = $setting->PAYSTACK_SECRET_KEY;
+
+			// Step 1: Get customer ID using email
+			$customerResponse = Http::withToken($paystackSecretKey)
+				->get("https://api.paystack.co/customer/{$request->email}");
+			
+			if (!$customerResponse->ok() || !$customerResponse->json('data.id')) {
+				return response()->json(['success' => false, 'message' => 'Customer not found.']);
+			}
+
+			$customerId = $customerResponse->json('data.id');
+			
+			// Step 2: Get transactions for this customer ID
+			$transactionsResponse = Http::withToken($paystackSecretKey)
+				->get("https://api.paystack.co/transaction?customer={$customerId}");
+
+			if (!$transactionsResponse->ok()) {
+				return response()->json(['success' => false, 'message' => 'Could not fetch transactions.']);
+			}
+
+			$transactions = $transactionsResponse->json('data');
+
+			$filtered = collect($transactions)->filter(function ($tx) use ($request) {
+				return isset($tx['metadata']['conference_edition_id']) &&
+					$tx['metadata']['conference_edition_id'] == $request->edition_id;
+			})->map(function ($tx) {
+				$editionId = $tx['metadata']['conference_edition_id'];
+				$edition = ConferenceEdition::find($tx['metadata']['conference_edition_id']);
+				$tx['conference_edition'] = $edition ? $edition->conference_theme : 'Unknown Edition';
+				return $tx;
+			})->values();
+			
+			return response()->json([
+				'success' => true,
+				'transactions' => $filtered
+			]);
+
+			\Log::info(['transactions' => $filtered]);
+
+		} catch (\Exception $e) {
+			return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+		}
+	}
 	public function verify($reference, $setting)
 	{
 		$curl = curl_init();

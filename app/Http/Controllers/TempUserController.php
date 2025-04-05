@@ -72,6 +72,14 @@ class TempUserController extends Controller
 		}
     }
 
+    public function setAndVerifyReference($reference, $temp_id){
+        $temp = TempUser::where('id',$temp_id)->first();
+        if($temp) $temp->update(['transid' => $reference]);
+
+        return redirect(route('tempusers.requery', ['id' => $temp_id, 'reference' => $reference, 'bypass' => true]))->with('message','Reference set successfully');
+        
+    }
+
     public function requeryMultiple(Request $request){
         if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin'){
             $res = [];

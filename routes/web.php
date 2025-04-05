@@ -218,12 +218,15 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('conferencemanagement', ConferenceManagementController::class);
     Route::resource('tempusers', TempUserController::class);
 
+    Route::post('fetch-transaction', [PaymentController::class, 'paystackGetCustomerIdByEmail'])->name('admin.transactions.fetch');
+
     Route::controller(TempUserController::class)->group(function () {
         Route::get('tempusers-transfer-confirm/{id}', 'confirmTransfer')->name('tempusers.transfer.confirm');
         Route::get('tempusers-onsite-confirm/{id}', 'confirmOnSiteTransfer')->name('tempusers.onsite.confirm');
 
         Route::get('requery/{id}', 'requery')->name('tempusers.requery');
         Route::post('verify-multiple-payments', 'requeryMultiple')->name('tempusers.requery-multiple');
+        Route::get('set-and-verify-reference/{reference}/{temp_id}', 'setAndVerifyReference')->name('set-and-verify-reference');
     });
 
     // Participant management
