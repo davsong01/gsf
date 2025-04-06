@@ -14,9 +14,8 @@
                         <h4 class="card-title">All {{ $type }}s</h4>
                         <div class="">
                             <a href="{{ route('conference.participants.create', ['edition'=>$edition->id, 'type'=>$type]) }}" class="btn btn-primary mt-1">Add new</a>
-                              <a class="btn btn-info mt-1" href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id,'type'=>$type]) }}">Import {{ $type }}</a>
-
-                            {{-- <a href="{{ route('conferenceusers.export',  ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export</a> --}}
+                            <a class="btn btn-info mt-1" href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id,'type'=>$type]) }}">Import {{ $type }}</a>
+                            <a href="{{ route('conferenceusers.export',  ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export</a>
                         </div>                        
                     </div>
                     <div class="card-content">
@@ -81,8 +80,6 @@
                                             <td>&#8358;{{ number_format($participant->amount_paid) ?? 0 }}</td>
                                             <td></strong>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
                                                 @else N/A @endif</td>
-                                            
-                                           
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                                 <a class="actions" data-toggle="tooltip" title="View/Edit User" href="{{ route('conference.participants.edit', ['edition'=>$edition->id,'id'=>$participant->id]) }}"> <i class="bx bxs-edit actions"></i></
                                                 </a>
@@ -94,7 +91,7 @@
                                                     href="{{ route('switchuser', ['edition'=>$edition->id,'id'=>$participant->user->id]) }}"><i
                                                         class="fa fa-unlock actions"></i>
                                                 </a>
-                                                 @if($participant->registration_status == 'Complete')
+                                                @if($participant->registration_status == 'Complete')
                                                 <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('participants.card', $participant->id) }}"> <i class="fa fa-print actions"></i></
                                                 </a>
                                             
@@ -110,7 +107,6 @@
                             </div>
                         </div>
                     </div>
-                   
                 </div>
             </div>
         </div>

@@ -412,6 +412,7 @@ class Controller extends BaseController
             'amount_paid' => $data['amount'] ?? $data['amount_paid'],
             'payment_type' => $data['payment_type'],
             'transid' => $data['transid'],
+            'uploaded_by' => $data['uploaded_by'] ?? null,
             'conference_edition_id' => $data['conference_edition_id']
         ]);
         

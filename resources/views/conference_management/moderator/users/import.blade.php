@@ -28,7 +28,7 @@
 										</li>
 										<li>There must be no spaces after the last line in the excel file to be imported</li>
                                         @if(auth()->user()->isModerator($edition))
-                                        <li style="color:red"><strong>Only at most {{ $payment->slot - $payment->slot_filled }} registration slots left can be uploaded</strong></li>
+                                        <li style="color:red"><strong>You can only upload a maximum  of {{ $payment->slot - $payment->slot_filled }} participants</strong></li>
                                         
                                         @endif
 									</ul>

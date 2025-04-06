@@ -12,6 +12,30 @@
       </div>
 @endif
 
+@if(session('failures'))
+    <div class="alert alert-danger">
+        {{-- <strong>{{ session('error') }}</strong> --}}
+        <ul>
+            @foreach(session('failures') as $failure)
+                <li>
+                    Row {{ $failure['row'] }} — 
+                    <!-- Display values for email and phone (or any other columns you want) -->
+                    @if(isset($failure['data']['email']))
+                        Email: <strong>{{ $failure['data']['email'] }}</strong>
+                    @endif
+                    @if(isset($failure['data']['phone']))
+                        | Phone: <strong>{{ $failure['data']['phone'] }}</strong>
+                    @endif
+                    <br>
+                    <!-- Display the error messages -->
+                    Errors: {{ implode(', ', $failure['errors']) }}
+                </li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+
 
 @if(session()->get('warning'))
 <div class="alert alert-danger" role="alert" style="width: 100%;">

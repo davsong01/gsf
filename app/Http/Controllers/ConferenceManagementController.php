@@ -10,7 +10,6 @@ use App\Models\Payment;
 use App\Mail\WelcomeMail;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use App\Models\CriticalEmail;
 use App\Models\ConferenceEdition;
@@ -168,6 +167,7 @@ class ConferenceManagementController extends Controller
 			$completed_registration = $allparticipants->where('registration_status', 'Complete')->count();
 			$allparticipants = $allparticipants->get();
 			$count = 1;
+
 			return view('conference_management.moderator.index', compact('chapters', 'pending_registration', 'completed_registration', 'participants', 'myParticipantsAll', 'count','payment','edition', 'thispayment'));
 		}
 	}
@@ -673,7 +673,7 @@ class ConferenceManagementController extends Controller
 
 	public function usersImportIndex(Request $request)
 	{
-		$edition = ConferenceEdition::find($request->edition);
+		$edition = ConferenceEdition::find($request->edition) ?? activeConferenceEdition();
 		
 		if(auth()->user()->role == 1){
 			$type = $request->type;
@@ -683,7 +683,7 @@ class ConferenceManagementController extends Controller
 		}
 
 		if(auth()->user()->isModerator($edition)){
-			$payment = Payment::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $request->edition, 'registration_status'=>'Complete'])->first();
+			$payment = Payment::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $edition->id, 'registration_status'=>'Complete'])->first();
 			
 			if($payment->slot_filled >= $payment->slot){
 				return back()->with('error', 'You have already exhausted your registration slots');
@@ -705,37 +705,80 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-	public function import(Request $request, $type)
+	
+	public function import(Request $request)
 	{
 		if (auth()->user()->role == 1 || auth()->user()->isModerator($this->edition)) {
-			if (auth()->user()->isAdmin()) {
-				$data = $this->validate($request, [
-					'file' => 'required|mimes:xlsx,csv',
-				]);
-				$request['chapter_id'] = $request->chapter_id;
-				$request['edition'] = ConferenceEdition::where('id', $request['edition'])->first();
-			} else {
-				$data = $this->validate($request, [
-					'file' => 'required|mimes:xlsx,csv',
-					'chapter_id' => 'nullable',
-				]);
-				$payment = Payment::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $request->edition, 'registration_status'=>'Complete'])->first();
-				
-				if ($payment->slot_filled >= $payment->slot) {
+			$data = $this->validate($request, [
+				'file' => 'required|mimes:xlsx,csv',
+				'import_level' => 'required|in:Participant,Moderator,Alumni,Nec,Choir',
+			]);
+
+			$data['chapter_id'] = auth()->user()->isAdmin() ? $request->chapter_id : auth()->user()->chapter_id;
+			$data['edition'] = ConferenceEdition::find($request->edition);
+
+			$redirectRoute = auth()->user()->isAdmin() ? 'users.import.index' : 'conferenceusers.import.index';
+		
+
+			if (!auth()->user()->isAdmin()) {
+				$payment = Payment::where([
+					'user_id' => auth()->user()->id,
+					'conference_edition_id' => $request->edition,
+					'registration_status' => 'Complete'
+				])->first();
+
+				$sRedirectRoute = auth()->user()->isAdmin()
+					? 'users.import.index'
+					: route('conferencemanagement.show', [
+						'conferencemanagement' => $payment->id,
+						'edition' => $request->edition
+					]);
+				if ($payment && $payment->slot_filled >= $payment->slot) {
 					return back()->with('error', 'You have already exhausted your registration slots');
 				}
-				$request['chapter_id'] = auth()->user()->chapter_id;
+			}else{
+				// $sRedirectRoute = auth()->user()->isAdmin()
+				// 	? 'users.import.index'
+				// 	: route('conferencemanagement.show', [
+				// 		'conferencemanagement' => $payment->id,
+				// 		'edition' => $request->edition
+				// 	]);
 			}
 		} else return abort(404);
 
 		try {
-			Excel::import(new ConferenceUsersImport($request->all()), request()->file('file'));
-		} catch (\Illuminate\Database\QueryException $ex) {
-			$error = $ex->getMessage();
-			return back()->with('error', $error);
+			$import = new ConferenceUsersImport($data, $payment ?? null);
+			Excel::import($import, $request->file('file'));
+
+			$failures = $import->failures();
+
+			if ($failures->isNotEmpty()) {
+				$failureDetails = $failures->map(function ($failure) {
+					return [
+						'row' => $failure->row(),
+						'data' => $failure->values(), 
+						'errors' => $failure->errors(),
+					];
+				});
+
+				return redirect(route($redirectRoute))->with([
+					'failures' => $failureDetails,
+					'error' => 'Some rows failed to import.',
+				]);
+			}else{
+				
+				return redirect($sRedirectRoute)->with([
+					'message' => 'Upload Successful',
+				]);
+			}
+			
+		} catch (\Exception $e) {
+			return redirect(route($redirectRoute))->with([
+				'error' => 'Something went wrong, please try again: ' . $e->getMessage(),
+			]);
 		}
-		return back()->with('message', 'Data has been imported succesfully');
 	}
+
 
 	public function trashed(Request $request)
 	{
