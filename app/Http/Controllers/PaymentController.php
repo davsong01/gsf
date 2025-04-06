@@ -314,7 +314,7 @@ class PaymentController extends Controller
 				if($admin !== 'admin'){
 					return $this->thankYouPage($data, $conference_year);
 				} else {
-					return $paymentDetails ?? $payment;
+					return $paymentDetails ?? ($payment ?? null);
 				}
 			}else{
 				$payment = Payment::with('user')->where('transid', $paymentDetails->reference)->first();
@@ -478,8 +478,6 @@ class PaymentController extends Controller
 				'success' => true,
 				'transactions' => $filtered
 			]);
-
-			\Log::info(['transactions' => $filtered]);
 
 		} catch (\Exception $e) {
 			return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);

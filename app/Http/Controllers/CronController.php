@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Nec;
+use App\Models\TempUser;
 use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use App\Models\CriticalEmail;
 use App\Mail\NotificationEmail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\PaymentController;
 
 class CronController extends Controller
 {
@@ -111,6 +113,42 @@ class CronController extends Controller
             }
             echo $count . ' emails sent successfully';
         }
+    }
+
+    public function resolvePayment(Request $request){
+        // Get all temp users for the current conference edition
+        $tempUsers = TempUser::where('conference_edition_id', activeConferenceEdition()->id)->where('status', '!=', 'Complete')->take(10)->get();
+        if($tempUsers->isEmpty()){
+            return response()->json(['message' => 'No temp users found'], 404);
+        }
+
+        $pay = new PaymentController();
+        $tUser = new TempUserController();
+        $request['cron'] = true;
+
+        foreach($tempUsers as $temp){
+            $request['edition_id'] = $temp->conference_edition_id;
+            $request['email'] = $temp->email;
+
+            $customer_transactions = $pay->paystackGetCustomerIdByEmail($request);
+            $customer_transactions = $customer_transactions->getContent();
+            $customer_transactions = json_decode($customer_transactions, true);
+    
+            if(count($customer_transactions) > 0 && isset($customer_transactions['transactions'])){
+                $customer_transactions = $customer_transactions['transactions'];
+                
+                // Loop through the transactions and check if any of them are successful
+                foreach($customer_transactions as $transaction){
+                    if($transaction['status'] == 'success' && $transaction['metadata']['conference_edition_id'] == $temp->conference_edition_id){
+                        $verify = $tUser->setAndVerifyReference($request, $transaction['reference'], $temp->id);
+                        $request['reference'] = $transaction['reference'];
+                        $tUser->requery($request, $temp->id, true);
+                    }
+                }
+            };
+        }
+        
+        dd('All Done');
     }
 
 }

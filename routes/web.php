@@ -72,6 +72,8 @@ Route:: get('/runcron', [CronController::class, 'cron']);
 Route::get('birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
 
 Route::get('email-cron/{pick?}', [CronController::class, 'emailCron']);
+Route::get('cron/resolve-payment', [CronController::class, 'resolvePayment']);
+
 Route::get('/conference', [ConferenceController::class, 'index']);
 
 Route::controller(HomeController::class)->group(function () {

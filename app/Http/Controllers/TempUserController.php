@@ -44,12 +44,13 @@ class TempUserController extends Controller
         return back()->with('message','Update Successful');
     }
 
-    public function requery($id, Request $request, $bypassAuth = false){
+    public function requery(Request $request, $id, $bypassAuth = false){
         if ((auth()->user() && auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') || $bypassAuth == true){
             $temp = TempUser::where('id',$id)->first();
             
             $request->request->add(['reference' => $request->reference]);
             $req = new \App\Http\Controllers\PaymentController();
+            
             $response = $req->handleGatewayCallback($request, 'admin');
             
             $status = $response->status ?? 'Failed';
@@ -61,23 +62,33 @@ class TempUserController extends Controller
             
             if($status == 'abandoned'){
                 $temp->update(['status' => $status]);
+
+                if(isset($request->cron)){
+                    return response()->json('An error occured');
+                }
                 return back()->with('error','Payment Status: '.$status);
             }
 
             if($status == 'Failed'){
+                if (isset($request->cron)) {
+                    return response()->json('An error occured');
+                }
+
                 return back()->with('error','Payment Status: '.$status);
             }else{
+                if (isset($request->cron)) {
+                    return response()->json('Done');
+                }
                 return back()->with('message','Payment Status: '.$status);
             }
 		}
     }
 
-    public function setAndVerifyReference($reference, $temp_id){
+    public function setAndVerifyReference(Request $request, $reference, $temp_id){
         $temp = TempUser::where('id',$temp_id)->first();
         if($temp) $temp->update(['transid' => $reference]);
-
-        return redirect(route('tempusers.requery', ['id' => $temp_id, 'reference' => $reference, 'bypass' => true]))->with('message','Reference set successfully');
         
+        return redirect(route('tempusers.requery', ['id' => $temp_id, 'reference' => $reference, 'bypass' => true]))->with('message','Reference set successfully');        
     }
 
     public function requeryMultiple(Request $request){
