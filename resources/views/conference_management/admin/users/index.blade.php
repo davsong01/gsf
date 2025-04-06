@@ -96,7 +96,12 @@
                                             
                                                 @endif
                                                 @if(auth()->user()->conference_role == 'superadmin')
-                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete User" href="{{ route('conferenceparticipants.delete', $participant->user->id) }}"> <i class="fa fa-recycle"></i></
+
+                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete User" href="{{ route('conferenceparticipants.delete', [
+                                                            'id' => $participant->user_id,
+                                                            'edition' => $participant->conference_edition_id,
+                                                            'payment_id' => $participant->id
+                                                        ]) }}"> <i class="fa fa-recycle"></i>
                                                 </a>
                                                 @endif
                                             </td>

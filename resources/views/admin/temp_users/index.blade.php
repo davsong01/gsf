@@ -164,10 +164,7 @@
                                                     </div>
                                                 </td>
                                             </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                    <div class="modal" id="myModal{{ $participant->id }}">
+                                             <div class="modal" id="myModal{{ $participant->id }}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
 
@@ -204,6 +201,10 @@
                                             </div>
                                         </div>
                                     </div>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                   
                                     <!-- Transaction Modal -->
                                     <div class="modal" id="transactionModal" aria-labelledby="transactionModalLabel">
                                                 <div class="modal-dialog modal-lg">
