@@ -12,7 +12,9 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All materials</h4>
+                        @if(auth()->user()->conference_role == 'superadmin')
                         <a href="{{ route('materials.create',['edition'=>$edition]) }}" class="btn btn-primary mt-1">Upload new material</a>
+                        @endif
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -34,8 +36,10 @@
                                             <td>
                                                 <a class="actions" data-toggle="tooltip" title="Download Material" href="{{ route('materials.show', $material->id) }}"> <i class="bx bxs-download actions"></i>
                                                 </a>
-                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete material" href="{{ route('materials.delete', $material->id) }}"> <i class="fa fa-trash"></i></
+                                                @if(auth()->user()->conference_role == 'superadmin')
+                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete material" href="{{ route('materials.delete', $material->id) }}"> <i class="fa fa-trash"></i>
                                                 </a>
+                                                @endif
                                             </td>
                                         </tr>
                                         @endforeach

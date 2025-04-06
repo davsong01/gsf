@@ -139,11 +139,13 @@
                                                         @endif
 
                                                         {{-- Confirm On Site Payment --}}
+                                                        @if(auth()->user()->conference_role == 'superadmin')
                                                         <a href="{{ route('tempusers.onsite.confirm', $participant->id) }}"
                                                         class="btn btn-success btn-sm action-button text-nowrap"
                                                         onclick="return confirm('Are you really sure to confirm On Site payment?');">
                                                             <i class="fa fa-money me-1"></i> Confirm On-Site
                                                         </a>
+                                                        @endif
 
                                                         {{-- Fetch Transactions --}}
                                                         <button type="button" class="btn btn-info btn-sm action-button text-nowrap fetch-transactions"
@@ -152,12 +154,13 @@
                                                         </button>
 
                                                         {{-- Delete User --}}
+                                                        @if(auth()->user()->conference_role == 'superadmin')
                                                         <a href="{{ route('tempusers.destroy', $participant->id) }}"
                                                         class="btn btn-danger btn-sm text-nowrap"
                                                         onclick="return confirm('Are you really sure?');">
                                                             <i class="fa fa-trash me-1"></i> Delete Entry
                                                         </a>
-
+                                                        @endif
                                                     </div>
                                                 </td>
                                             </tr>

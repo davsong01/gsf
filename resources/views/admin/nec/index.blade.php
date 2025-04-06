@@ -50,10 +50,13 @@
 											<td style="padding-left: 5px;padding-right: 5px;">
 												<a class="actions" data-toggle="tooltip" title="View/Edit Nec" href="{{ route('nec.edit', $n->id) }}"> <i class="bx bxs-edit actions"></i>
 												</a>
+												
+												@if(auth()->user()->conference_role == 'superadmin')
 												<a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');"
 													title="Delete Nec" href="{{ route('nec.delete', $n->id) }}"> <i
 													class="fa fa-trash"></i>
 												</a> 
+												@endif
 											</td> 
 										</tr> 
 									@endforeach 

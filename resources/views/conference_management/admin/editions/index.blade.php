@@ -47,8 +47,10 @@
                                                 <p class="btn btn-{{ $edition->status == 'active'?'primary':'danger' }} btn-sm" readonly>{{ $edition->status }}</p>
                                             </td>
                                             <td>{{ $edition->level }}
-                                                <span style="color:red">{{ $edition->start_date }}</span> - <span style="color:green">{{ $edition->end_date }}</span>  <br>
-                                                <small class="blue">Close Reg: {{ $edition->close_registration }}</small>
+                                                <span style="color:red">{{ \Carbon\Carbon::parse($edition->start_date)->format('F j, Y') }}</span> - 
+                                                <span style="color:green">{{ \Carbon\Carbon::parse($edition->end_date)->format('F j, Y') }}</span> <br>
+
+                                                <small class="blue">Close Reg: {{ \Carbon\Carbon::parse($edition->close_registration)->format('F j, Y') }}</small>
                                             </td>
                                             
                                             <td>Participant: &#8358;{{ number_format($edition->registration_fee) }}<br>

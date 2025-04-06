@@ -118,7 +118,7 @@
                                 </fieldset>
 
                                 <fieldset class="form-group">
-                                    <label for="hostel">Food Stand</label>
+                                    <label for="hostel">Service Point</label>
                                     <select class="form-control" name="food_id" id="food_id" required>
                                         @foreach($foods as $food)
                                             @if($food->capacity > $food->allocation || $food->id == $user->food_id)

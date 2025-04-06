@@ -34,7 +34,6 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                      
                                         @if(isset($participants) && $participants->count() > 0)
                                         @foreach($participants as $participant)
                                        
@@ -96,8 +95,10 @@
                                                 </a>
                                             
                                                 @endif
+                                                @if(auth()->user()->conference_role == 'superadmin')
                                                 <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete User" href="{{ route('conferenceparticipants.delete', $participant->user->id) }}"> <i class="fa fa-recycle"></i></
                                                 </a>
+                                                @endif
                                             </td>
                                         </tr>
                                         @endforeach

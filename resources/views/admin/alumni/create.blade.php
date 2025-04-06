@@ -99,7 +99,7 @@
                                 </fieldset>
 
                                 <fieldset class="form-group">
-                                    <label for="food_id">Food Stand</label>
+                                    <label for="food_id">Service Point</label>
                                     <select class="form-control" name="food_id" id="food_id" required>
                                         @foreach($foods as $food)
                                             <option value="{{ old('food_id') ?? $user->food_id }}" {{ $user->food_id == $food->id ? 'selected' : '' }}>{{ $food->name }}</option>

@@ -124,7 +124,7 @@
                                     <input type="number" name="amount_paid" id="amount_paid" placeholder="Enter amount paid" class="form-control" value="{{ old('amount_paid') }}" required>
                                 </fieldset>
                                 <fieldset class="form-group">
-                                    <label for="uploaded_by">Food Stand</label>
+                                    <label for="uploaded_by">Service Point</label>
                                     <select class="form-control" name="food_id" id="food_id" required>
                                          <option value="">--Select Foodstand--</option>
                                         @foreach($foods as $food)

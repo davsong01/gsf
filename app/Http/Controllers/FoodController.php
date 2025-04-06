@@ -57,7 +57,7 @@ class FoodController extends Controller
             'chapter_ids' => $data['chapter_ids'] ?? NULL,
         ]);
 
-        return redirect(route('foods.index',['edition'=>$request->edition]))->with('message', 'Food Stand succesfully created');
+        return redirect(route('foods.index',['edition'=>$request->edition]))->with('message', 'Service Point succesfully created');
     }
 
     public function show(Food $food)

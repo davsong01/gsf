@@ -717,9 +717,8 @@ class ConferenceManagementController extends Controller
 			$data['chapter_id'] = auth()->user()->isAdmin() ? $request->chapter_id : auth()->user()->chapter_id;
 			$data['edition'] = ConferenceEdition::find($request->edition);
 
-			$redirectRoute = auth()->user()->isAdmin() ? 'users.import.index' : 'conferenceusers.import.index';
-		
-
+			$redirectRoute = auth()->user()->isAdmin() ? route('conferenceusers.import.index',['type' => $request->import_level, 'edition' => $request->edition]) : route('conferenceusers.import.index');
+			
 			if (!auth()->user()->isAdmin()) {
 				$payment = Payment::where([
 					'user_id' => auth()->user()->id,
@@ -727,9 +726,7 @@ class ConferenceManagementController extends Controller
 					'registration_status' => 'Complete'
 				])->first();
 
-				$sRedirectRoute = auth()->user()->isAdmin()
-					? 'users.import.index'
-					: route('conferencemanagement.show', [
+				$sRedirectRoute = route('conferencemanagement.show', [
 						'conferencemanagement' => $payment->id,
 						'edition' => $request->edition
 					]);
@@ -737,12 +734,7 @@ class ConferenceManagementController extends Controller
 					return back()->with('error', 'You have already exhausted your registration slots');
 				}
 			}else{
-				// $sRedirectRoute = auth()->user()->isAdmin()
-				// 	? 'users.import.index'
-				// 	: route('conferencemanagement.show', [
-				// 		'conferencemanagement' => $payment->id,
-				// 		'edition' => $request->edition
-				// 	]);
+				$sRedirectRoute = route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]);
 			}
 		} else return abort(404);
 
@@ -761,7 +753,7 @@ class ConferenceManagementController extends Controller
 					];
 				});
 
-				return redirect(route($redirectRoute))->with([
+				return redirect($redirectRoute)->with([
 					'failures' => $failureDetails,
 					'error' => 'Some rows failed to import.',
 				]);
@@ -773,7 +765,7 @@ class ConferenceManagementController extends Controller
 			}
 			
 		} catch (\Exception $e) {
-			return redirect(route($redirectRoute))->with([
+			return redirect($redirectRoute)->with([
 				'error' => 'Something went wrong, please try again: ' . $e->getMessage(),
 			]);
 		}

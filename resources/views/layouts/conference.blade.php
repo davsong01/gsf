@@ -46,7 +46,7 @@
                           <a class="nav-link {{ Request::is('hostels*') ? 'active' : '' }}" href="{{ route('hostels.index',['edition'=>$edition->id]) }}">Hostels</a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ Request::is('foods*') ? 'active' : '' }}" href="{{ route('foods.index',['edition'=>$edition->id]) }}">Food stands</a>
+                          <a class="nav-link {{ Request::is('foods*') ? 'active' : '' }}" href="{{ route('foods.index',['edition'=>$edition->id]) }}">Service Points</a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('trashed*') ? 'active' : '' }}" href="{{ route('conferenceparticipants.trashed',['edition'=>$edition->id]) }}">Trashed Participants</a>

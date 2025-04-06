@@ -61,9 +61,22 @@
 														</a> <a class="actions" data-toggle="tooltip" data-placement="top" title="Switch To"
 														href="{{ route('switchuser', $participant->id) }}"><i class="fa fa-unlock actions"></i>
 												</a>
+												
 												<a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');"
 													title="Delete User" href="{{ route('alumni.delete', $participant->id) }}"> <i
-														class="fa fa-trash"></i></ </a> </tr> @endforeach </tbody> </table> </div> </div> </div>
-														</div> </div> </div> </section> <!--/ Zero configuration table -->
-							</div>
-							@endsection
+														class="fa fa-trash"></i></a>
+											</td> 
+										</tr> 
+										@endforeach 
+									</tbody>
+										
+								</table> 
+								</div> 
+							</div>				
+						</div> 
+					</div> 
+				</div>
+			</div>
+		</div>
+	</section> <!--/ Zero configuration table -->
+@endsection

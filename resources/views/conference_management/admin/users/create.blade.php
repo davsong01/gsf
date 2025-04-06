@@ -92,7 +92,7 @@
                                     </select>
                                 </fieldset>
                                 <fieldset class="form-group">
-                                    <label for="food_id">Food Stand</label>
+                                    <label for="food_id">Service Point</label>
                                     <select class="form-control" name="food_id" id="food_id" required>
                                          <option value="">--Select Foodstand--</option>
                                         @foreach($foods as $food)

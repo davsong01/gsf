@@ -89,6 +89,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 
 			\Log::info(['slot filled' => Auth::user()]);
 		}
+
 		$data = [
 			'name'  => $name,
 			'email' => $email,

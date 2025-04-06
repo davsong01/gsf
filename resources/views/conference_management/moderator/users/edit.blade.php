@@ -81,7 +81,7 @@
                                 </fieldset>
 
                                 <fieldset class="form-group">
-                                    <label for="food_id">Food Stand</label>
+                                    <label for="food_id">Service Point</label>
                                     <input type="text" id="food_id" name="food_id" class="form-control" value="{{ ($user->food === NULL) ? 'N/A' : $user->food->name }}" disabled required>
                                 </fieldset>
                                 <fieldset class="form-group">
