@@ -123,7 +123,6 @@ class User extends Authenticatable implements MustVerifyEmail
 	public function payments(){
         return $this->hasMany(Payment::class)->orderBy('created_at','DESC');
     }
-
 	
     public function payouts(){
         return $this->hasMany(Payout::class);

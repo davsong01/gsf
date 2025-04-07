@@ -40,6 +40,7 @@
                                             <td>{{ $participant->deleted_at->format('Y-m-d') }}</td>
                                             <td><img class="mr-1" style="border-radius:50%" src="{{ asset('/'.$participant->passport ? $participant->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40"></td>
                                             <td><b>{{ $participant->family_id }}</b> <br>
+                                                <strong>Trans ID:</strong> {{ $participant->transid }} <br>
                                                 Name: {{ $participant->name }} <br>
                                                 Email: {{ $participant->email }} <br>
                                                 Phone: {{ $participant->phone }} <br>
@@ -57,8 +58,6 @@
                                                     @csrf
                                                     @method('DELETE')
                                                 </form>  
-
-                                              
                                             </td>
                                         </tr>
                                         @endforeach

@@ -780,7 +780,7 @@ class ConferenceManagementController extends Controller
 		if (auth()->user()->role == 1) {
 			$participants = User::join('payments', 'payments.user_id', '=', 'users.id')
 			->where('payments.conference_edition_id', $edition->id)
-			->select('users.*','payments.level', 'payments.amount_paid')
+			->select('users.*','payments.level', 'payments.amount_paid','payments.transid')
 				->orderBy('users.created_at', 'desc')->onlyTrashed()->get();
 				// dd($participants);
 			return view('conference_management.admin.users.trashed', compact('participants', 'count','edition'));
@@ -802,10 +802,12 @@ class ConferenceManagementController extends Controller
 		$this->reduceFoodStandAllocation($payment);
 		
 		if($payment->uploaded_by){
-			$moderator = Payment::where(['user_id'=>$payment->uploaded_by,'conference_edition_id'=>$request->edition])->first();
-			$slot = ($moderator->slot_filled  > 0 ) ? $moderator->slot_filled - 1 : $moderator->slot_filled ;
+			$moderator = Payment::where(['user_id'=>$payment->uploaded_by,'conference_edition_id'=>$request->edition, 'level' => 'Moderator'])->first();
+			if($moderator){
+				$slot = ($moderator->slot_filled  > 0 ) ? $moderator->slot_filled - 1 : $moderator->slot_filled ;
+				$moderator->update(['slot_filled'=>$slot]);
+			}
 
-			$moderator->update(['slot_filled'=>$slot]);
 		}
 		
 		//Delete Avatar
@@ -820,6 +822,9 @@ class ConferenceManagementController extends Controller
 		} else {
 			//Get user hostel
 			$user->delete();
+			$payment->transid = $payment->transid.'..Flagged-'.time();
+			
+			$payment->save();
 			$payment->delete();
 
 			return back()->with('message', 'Record has been deleted!');
