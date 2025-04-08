@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\TempUser;
-use App\Models\ConferenceEdition;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
 
 class TempUserController extends Controller
 {
@@ -37,6 +39,12 @@ class TempUserController extends Controller
     }
 
     public function update(Request $request, TempUser $tempuser){
+        $exists = Payment::where('conference_edition_id', $tempuser->conference_edition_id)->where('transid', $request->transid)->exists();
+        
+        if ($exists) {
+            return back()->with('error', 'Transaction ID already exists.');
+        }
+
         $tempuser->update([
             'transid'=>$request->transid,
         ]);

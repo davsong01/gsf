@@ -833,7 +833,6 @@ class ConferenceManagementController extends Controller
 
 	public function destroyStaff(Request $request, $id)
 	{
-
 		//stop from accidentally deleted self
 		if (auth()->user()->id == $id) {
 			return back()->with('error', 'You cannot delete yourself');
@@ -852,12 +851,10 @@ class ConferenceManagementController extends Controller
 
 	public function restore($id){
 		if (auth()->user()->level == 'Admin') {
-
 			$user = User::withTrashed()->where('id', $id)->firstOrFail();
+			$user->restore();
 
-        	$user->restore();
-
-       		return redirect(route('users.index'))->with('message', 'Participant has been restored');
+			return redirect(route('users.index'))->with('message', 'Participant has been restored');
 
 		}else return abort(404);
 	}
@@ -895,7 +892,7 @@ class ConferenceManagementController extends Controller
 	public function ajaxPayment(Request $request){
 		$type = json_decode($request['metadata'], true);
 		$transid = $this->generateTransactionId();
-
+		
 		$tempUser = app('App\Controllers\PaymentController')->createTempUser($request->all());
 		$request['transid'] = $tempUser->transid;
 
@@ -906,5 +903,4 @@ class ConferenceManagementController extends Controller
 		dd($res);
 		return response()->json($res);
 	}
-
 }

@@ -301,7 +301,8 @@ class Controller extends BaseController
 
     public function generateTransactionId()
     {
-        return 'GSF-' . date('Ym') . '-' . rand(99999, 11111);
+        return 'GSF-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+        // return 'GSF-' . date('Ymd') . '-' . rand(99999, 11111);
     }
 
     public function getExtras($type, $setting, $amount = null)
