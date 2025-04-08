@@ -152,7 +152,7 @@ class PaymentController extends Controller
 			if(!empty($transfer_confirm) || !empty($onsite_confirm)){
 				$participant = TempUser::where('transid', $request->reference)->first();
 			}else{
-				$participant = TempUser::where('transid', $paymentDetails->reference)->first();
+				$participant = TempUser::where('transid', $paymentDetails->reference)->where('status', 'Initiated')->first();
 			}
 			
 			if(empty($participant)){
