@@ -109,7 +109,7 @@ class PaymentController extends Controller
 		}
 		
 		$request['transid'] = $this->generateTransactionId();
-		\Log::info('Transaction ID: ' . $request['transid']);
+		
 		$tempUser = $this->createTempUser($request->all());
 		
 		if(is_null($tempUser)){
@@ -152,7 +152,7 @@ class PaymentController extends Controller
 			if(!empty($transfer_confirm) || !empty($onsite_confirm)){
 				$participant = TempUser::where('transid', $request->reference)->first();
 			}else{
-				$participant = TempUser::where('transid', $paymentDetails->reference)->where('status', 'Initiated')->first();
+				$participant = TempUser::where('transid', $paymentDetails->reference)->whereIn('status', ['Initiated', 'abandoned'])->first();
 			}
 			
 			if(empty($participant)){
@@ -265,7 +265,7 @@ class PaymentController extends Controller
 				if ($payment->level == 'Moderator') {
 					$payment->update([
 						'uploaded_by' => $user->id,
-						// 'api_response' => isset($paymentDetails) ? json_encode($paymentDetails) : null,
+						'api_response' => isset($paymentDetails) ? json_encode($paymentDetails) : null,
 					]);
 				}
 
@@ -281,7 +281,11 @@ class PaymentController extends Controller
 					$payment->update(['location'=>'On Site']);
 				}
 
-				$participant->update(['status'=>'Complete']);
+				$participant->update([
+					'status'=>'Complete',
+					'gateway_response' => isset($paymentDetails) ? json_encode($paymentDetails) : null
+				]);
+				
 				$data['type'] = 'welcome_mail';
 				//send email to participant
 				$email = [

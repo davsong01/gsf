@@ -297,12 +297,257 @@
                                 </div>
                                 <input type="hidden" name="id" value="{{ $edition->id }}">
                             </div>
+                            {{-- certificate --}}
+                            <?php 
+                                $service = new App\Services\DynamicImageGeneratorService;
+                            ?>
+                            <div class="row">
+    <div class="col-sm-12 col-md-12">
+        <h3>Badge Settings</h3>
+    </div>
+
+    <div class="col-sm-6 col-md-6">
+        <label for="template">
+            @if(isset($c_settings['template']))
+                Replace Template
+            @else
+                Upload Template
+            @endif
+        </label>
+        <fieldset class="form-group">
+            <input type="file" name="template" class="form-control" id="template">
+        </fieldset>
+    </div>
+
+    @if(!empty($c_settings['settings']))
+        @php $template_counter = 1; @endphp
+        <div id="template-holder" class="col-md-12">
+            @foreach($c_settings['settings'] as $setting)
+                @php $counter = $template_counter++; @endphp
+                <div class="row" id="oldtemplate-{{ $counter }}" style="border-top: 1px solid #000; margin-top: 15px; padding-top: 15px;">
+                    <div class="col-sm-6 col-md-4">
+                        <label>Text Type</label>
+                        <fieldset class="form-group">
+                            <select name="text_type[]" class="form-control" required>
+                                @foreach ($service::textType() as $key=>$option)
+                                    <option value="{{ $key }}">{{ $option }}</option>
+                                @endforeach
+                            </select>
+                        </fieldset>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <label>Font Type Face</label>
+                        <fieldset class="form-group">
+                            <select name="text_type_face[]" class="form-control">
+                                @foreach($service::templateFontType() as $key => $value)
+                                    <option value="{{ $key }}" {{ $setting['text_type_face'] == $key ? 'selected' : '' }}>{{ $value }}</option>
+                                @endforeach
+                            </select>
+                        </fieldset>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <label>Font Size</label>
+                        <fieldset class="form-group">
+                            <input type="number" min="0" class="form-control" name="name_font_size[]" value="{{ $setting['name_font_size'] }}">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <label>Font Weight</label>
+                        <fieldset class="form-group">
+                            <input type="number" min="0" class="form-control" name="name_font_weight[]" value="{{ $setting['name_font_weight'] }}">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <label>Top Offset</label>
+                        <fieldset class="form-group">
+                            <input type="number" min="0" class="form-control" name="top_offset[]" value="{{ $setting['top_offset'] }}">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <label>Left Offset</label>
+                        <fieldset class="form-group">
+                            <input type="number" min="0" class="form-control" name="left_offset[]" value="{{ $setting['left_offset'] }}">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <label>Text Color</label>
+                        <fieldset class="form-group">
+                            <input type="color" class="form-control" name="color[]" value="{{ $setting['color'] ?? '#000000' }}">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-sm-6 col-md-2 d-flex align-items-end">
+                        <button class="btn btn-danger remove-old-template" id="oldtemplate-{{ $counter }}" type="button">
+                            <i class="fa fa-minus"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
+    {{-- Dynamic Row Container --}}
+    <div id="templateRows" class="col-md-12"></div>
+
+    <div class="col-sm-12 col-md-12">
+        <button type="button" class="btn btn-success btn-sm" id="addRowButton">
+            <i class="fa fa-plus"></i> Add New Row
+        </button>
+        <button type="button" class="btn btn-info btn-sm" id="previewButton">
+            <i class="fa fa-eye"></i> Preview
+        </button>
+        <span id="loadingSpinner" style="display: none; margin-left: 5px;">
+            <i class="fa fa-spinner fa-spin"></i>
+        </span>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#addRowButton').on('click', function () {
+            let lastChild = $("#templateRows").children().last();
+            let lastId = $(lastChild).attr('id');
+            let id = lastId ? parseInt(lastId.split('-')[1]) + 1 : 1;
+
+            let newRow = `
+                <div class="row added-row" style="border-top: black solid 1px;margin-bottom: 6px;padding-top: 15px;" id="template-${id}">
+                    <div class="col-md-4">
+                        <label>Text Type</label>
+                        <select name="text_type[]" class="form-control" required>
+                            <option value="">Select...</option>
+                            @foreach ($service::textType() as $key=>$option)
+                                <option value="{{ $key }}">{{ $option }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Font Type Face</label>
+                        <select name="text_type_face[]" class="form-control">
+                            @foreach($service::templateFontType() as $key => $value)
+                                <option value="{{ $key }}">{{ $value }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Font Size</label>
+                        <input type="number" min="0" class="form-control" name="font_size[]">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Font Weight</label>
+                        <input type="number" min="0" class="form-control" name="font_weight[]">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Top Offset</label>
+                        <input type="number" min="0" class="form-control" name="top_offset[]">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Left Offset</label>
+                        <input type="number" min="0" class="form-control" name="left_offset[]">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Text Color</label>
+                        <input type="color" class="form-control" name="color[]">
+                    </div>
+                    <div class="col-sm-6 col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger btn-sm removeRowButton">
+                            <i class="fa fa-minus"></i> Remove
+                        </button>
+                    </div>
+                </div>`;
+            $('#templateRows').append(newRow);
+        });
+
+        // Remove row
+        $(document).on('click', '.removeRowButton', function () {
+            $(this).closest('.added-row').remove();
+        });
+
+        // Preview handling
+        $('#previewButton').on('click', function (e) {
+            e.preventDefault();
+            $('#loadingSpinner').show();
+            let formData = new FormData();
+
+            $('select[name="text_type[]"]').each(function () {
+                formData.append('text_type[]', $(this).val());
+            });
+
+            $('select[name="text_type_face[]"]').each(function () {
+                formData.append('text_type_face[]', $(this).val());
+            });
+
+            $('input[name="font_size[]"]').each(function () {
+                formData.append('font_size[]', $(this).val());
+            });
+
+            $('input[name="font_weight[]"]').each(function () {
+                formData.append('font_weight[]', $(this).val());
+            });
+
+            $('input[name="top_offset[]"]').each(function () {
+                formData.append('top_offset[]', $(this).val());
+            });
+
+            $('input[name="left_offset[]"]').each(function () {
+                formData.append('left_offset[]', $(this).val());
+            });
+
+            $('input[name="color[]"]').each(function () {
+                formData.append('color[]', $(this).val());
+            });
+
+            const fileInput = $('#template')[0].files[0];
+            if (fileInput) {
+                formData.append('template', fileInput);
+            }
+
+            $.ajax({
+                url: "{{ route('template.preview', $edition->id) }}",
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    $('#loadingSpinner').hide();
+                    if (response.preview_image_path) {
+                        $('#templatePreviewImage').attr('src', response.preview_image_path);
+                        $('#previewModal').show();
+                    } else {
+                        alert('Failed to generate preview: ' + response.error);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    $('#loadingSpinner').hide();
+                    alert('An error occurred: ' + error);
+                }
+            });
+        });
+
+        // Hide modal on outside click
+        $(document).on('click', function (event) {
+            if ($(event.target).closest('#previewModal').length === 0 && $('#previewModal').is(':visible')) {
+                $('#previewModal').fadeOut();
+            }
+        });
+    });
+</script>
+
+                            {{-- end certificate --}}
                             <button class="btn btn-primary" style="width:100%; margin-top:10px" type="submit">Update</button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    <div id="previewModal" style="display:none;">
+        <img id="templatePreviewImage" src="" alt="Certificate Preview">
     </div>
     <script>
      CKEDITOR.replace( 'conference_overview' );</script>

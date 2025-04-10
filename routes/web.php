@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NecController;
+use App\Services\DynamicImageGenerator;
 use App\Http\Controllers\CronController;
 use App\Http\Controllers\FoodController;
 use App\Http\Controllers\HomeController;
@@ -37,6 +38,7 @@ use App\Http\Controllers\StakeholderAccountController;
 use App\Http\Controllers\StakeholderPaymentController;
 use App\Http\Controllers\ConferenceManagementController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\DynamicImageGeneratorController;
 
 Route::get('/queue', function () {
     // Artisan::call('queue:retry all');
@@ -263,7 +265,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
         Route::get('conferencecards/{id}', 'getCard')->name('participants.card');
         Route::get('user/meal/{id}', 'getMealTicket')->name('meal.ticket');
+    });
 
+    Route::controller(DynamicImageGeneratorController::class)->group(function () {
+        Route::post('generate-template-preview/{edition_id}', 'generateTemplatePreview')->name('template.preview');
     });
 
     Route::controller(UserController::class)->group(function () {

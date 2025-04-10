@@ -60,13 +60,12 @@ class TempUserController extends Controller
             $req = new \App\Http\Controllers\PaymentController();
             
             $response = $req->handleGatewayCallback($request, 'admin');
-            
             $status = $response->status ?? 'Failed';
             
-            if(isset($response) && !empty($response)){
-                $response = json_encode($response);
-                $temp->update(['gateway_response' => $response]);
-            }
+            // if(isset($response) && !empty($response)){
+            //     $response = json_encode($response);
+            //     $temp->update(['gateway_response' => $response]);
+            // }
             
             if($status == 'abandoned'){
                 $temp->update(['status' => $status]);
@@ -147,7 +146,6 @@ class TempUserController extends Controller
             return back()->with('message','Operation Succesful');
         }else{
             return back()->with('error','Transaction not found');
-
         }
     }
 
