@@ -519,6 +519,19 @@
                 }
             });
         });
+
+        $("#template-holder").on('click', '.remove-old-template', function() {
+            // Get the ID of the clicked element
+            var removeId = $(this).attr('id');  
+        
+            // Check if the ID is not empty
+            if (removeId) {
+                // Remove the element with the corresponding ID
+                $("#" + removeId).remove();
+            } else {
+                console.warn("No ID found to remove.");
+            }
+        });
     });
 
     CKEDITOR.replace( 'conference_overview' );
