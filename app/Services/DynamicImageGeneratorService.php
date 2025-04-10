@@ -32,7 +32,7 @@ class DynamicImageGeneratorService
         if (!empty($request['template'])) {
             $inputImagePath = $request['template'];
         } else {
-            $inputImagePath = base_path('uploads/' . $settings['template']);
+            $inputImagePath = public_path($settings['template']);
         }
 
         $image = Image::make($inputImagePath);
@@ -113,7 +113,9 @@ class DynamicImageGeneratorService
         }
 
         $data['template_settings'] = self::buildCertificateSettings($request);
-
+        // dd($request->all());
+       
+        $data['template_settings']['template'] = $request['path'];
         $settings->template_settings = $data['template_settings'];  
         $settings->save();
         
@@ -123,34 +125,35 @@ class DynamicImageGeneratorService
 
     public static function buildCertificateSettings($request)
     {
-        $template_settings = [
-            "template_name_font_size" => $request->template_name_font_size,
-            "template_name_font_weight" => $request->template_name_font_weight,
+        $auto_certificate_settings = [
+            "template_font_size" => $request->template_font_size,
             "template_color" => $request->template_color,
             "template_top_offset" => $request->template_top_offset,
             "template_left_offset" => $request->template_left_offset,
-            "template_text_type" => $request->text_type,
-            "template_text_type_face" => $request->text_type_face ?: 'Pesaro-Bold.ttf',
+            "template_text_type" => $request->template_text_type,
+            "template_text_type_face" => $request->template_text_type_face ?: 'Pesaro-Bold.ttf',
         ];
 
         $final_array = [];
 
-        $auto_template_settings = array_filter($template_settings, function ($value) {
+        $auto_certificate_settings = array_filter($auto_certificate_settings, function ($value) {
             return !is_null($value);
         });
 
-        if ($request->template_status == 'yes' && count($template_settings) > 0) {
-            foreach ($template_settings as $key => $req) {
+        if ($auto_certificate_settings > 0) {
+            foreach ($auto_certificate_settings as $key => $req) {
                 foreach ($req as $index => $value) {
                     $final_array[$index][$key] = $value;
                 }
             }
         }
 
-        $auto_template_settings['template'] = $request->path;
+        $template_settings = [
+            "template" => $request->path,
+            "settings" => $final_array
+        ];
         
-
-        return $auto_template_settings;
+        return $template_settings;
     }
 
     public static function deleteAllFilesInAPublicFolder($folderName)

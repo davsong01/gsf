@@ -279,6 +279,7 @@
                                 {{-- certificate --}}
                                 <?php 
                                     $service = new App\Services\DynamicImageGeneratorService;
+                                    $template_settings = $edition->template_settings ?? [];
                                 ?>
                                 <div class="row">
                                     <div class="col-sm-12 col-md-12">
@@ -287,7 +288,7 @@
 
                                     <div class="col-sm-6 col-md-6">
                                         <label for="template">
-                                            @if(isset($c_settings['template']))
+                                            @if(isset($template_settings['template']))
                                                 Replace Template
                                             @else
                                                 Upload Template
@@ -298,24 +299,25 @@
                                         </fieldset>
                                     </div>
 
-                                    @if(!empty($c_settings['settings']))
+                                    @if(!empty($template_settings['settings']))
                                         @php $template_counter = 1; @endphp
                                         <div id="template-holder" class="col-md-12">
-                                            @foreach($c_settings['settings'] as $setting)
+                                            @foreach($template_settings['settings'] as $setting)
                                                 @php $counter = $template_counter++; @endphp
                                                 <div class="row" id="oldtemplate-{{ $counter }}" style="border-top: 1px solid #000; margin-top: 15px; padding-top: 15px;">
                                                     <div class="col-sm-6 col-md-2">
                                                         <label>Text Type</label>
                                                         <fieldset class="form-group">
-                                                            <select name="template_text_type[]" class="form-control" required>
+                                                            {{-- {{dd($setting)}} --}}
+                                                            <select name="template_text_type[]" class="form-control" required> 
                                                                 @foreach ($service::textType() as $key=>$option)
-                                                                    <option value="{{ $key }}">{{ $option }}</option>
+                                                                    <option value="{{ $key }}" {{ $setting['template_text_type'] && $setting['template_text_type'] == $key ? 'selected' : ''}}>{{ $option }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </fieldset>
                                                     </div>
-
-                                                    <div class="col-sm-6 col-md-4">
+                                                   
+                                                    <div class="col-md 2">
                                                         <label>Font Type Face</label>
                                                         <fieldset class="form-group">
                                                             <select name="template_text_type_face[]" class="form-control">
@@ -325,11 +327,11 @@
                                                             </select>
                                                         </fieldset>
                                                     </div>
-
+                                                   
                                                     <div class="col-sm-6 col-md-4">
                                                         <label>Font Size</label>
                                                         <fieldset class="form-group">
-                                                            <input type="number" min="0" class="form-control" name="name_template_font_size[]" value="{{ $setting['name_template_font_size'] }}">
+                                                            <input type="number" min="0" class="form-control" name="template_font_size[]" value="{{ $setting['template_font_size'] }}">
                                                         </fieldset>
                                                     </div>
 
@@ -354,7 +356,8 @@
                                                         </fieldset>
                                                     </div>
 
-                                                    <div class="col-sm-2 col-md-2 d-flex align-items-end">
+                                                    <div class="col-md-2" style="">
+                                                        <label for="" style="color:transparent">Hello</label> <br>
                                                         <button class="btn btn-danger remove-old-template" id="oldtemplate-{{ $counter }}" type="button">
                                                             <i class="fa fa-minus"></i> Remove
                                                         </button>
