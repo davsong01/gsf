@@ -11,8 +11,6 @@ class DynamicImageGeneratorController extends Controller
 {
     public function generateTemplatePreview(Request $request, $edition_id)
     {
-        
-
         try {
             $settings = ConferenceEdition::where('id', $edition_id)->first()->template_settings ?? null;
             $request['location'] = 'template_previews';
@@ -27,6 +25,13 @@ class DynamicImageGeneratorController extends Controller
                 'error' => $th->getMessage(),
             ]);
         }
+    }
+
+    public function updateSetting(Request $request, $edition_id){
+        $settings = ConferenceEdition::where('id', $edition_id)->first();
+        DynamicImageGeneratorService::updateSettings($request, $settings);
+
+        return;
     }
 
     

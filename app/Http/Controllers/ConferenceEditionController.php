@@ -8,6 +8,7 @@ use App\Models\Donation;
 use App\Models\Material;
 use Illuminate\Http\Request;
 use App\Models\ConferenceEdition;
+use App\Services\DynamicImageGeneratorService;
 
 class ConferenceEditionController extends Controller
 {
@@ -206,8 +207,11 @@ class ConferenceEditionController extends Controller
         if ($request->has('favicon')) {
             $request['conference_favicon'] = $this->uploadImage($request->favicon, 'frontend/img/site');
         }
+      
+        $edition->update($request->except(['ban','logo','favicon', 'template_text_type', 'template_text_type_face', 'template_font_size', 'template_left_offset', 'template_top_offset','template_color', 'template']));
         
-        $edition->update($request->except(['ban','logo','favicon']));
+        $generator = new DynamicImageGeneratorService();
+        $generator->updateSettings($request, $edition);
         return back()->with('message', 'Operation Successful');
     }
 

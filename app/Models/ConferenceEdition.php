@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 class ConferenceEdition extends Model
 {
     protected $guarded = [];
+    protected $casts = [
+        'template_settings' => 'array',
+    ];
 
     public function payments(){
         return $this->hasMany(Payment::Class, 'conference_edition_id');

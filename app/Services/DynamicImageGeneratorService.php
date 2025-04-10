@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Intervention\Image\Facades\Image;
 
 class DynamicImageGeneratorService
@@ -97,6 +98,77 @@ class DynamicImageGeneratorService
             // 'service_point' => 'Service Point',
             // 'chapter' => 'Chapter',
         ];
+    }
+
+    public static function updateSettings($request, $settings){
+        self::deleteAllFilesInAPublicFolder('template_previews');
+        //check if new featured image
+        if (!empty($request->template)) {
+            $name = uniqid(9) . '.' . $request->template->getClientOriginalExtension();
+            $request->template->move(public_path('template_files'), $name);
+
+            $request['path'] = 'template_files/' . $name;
+        } else {
+            $request['path'] = $settings->template_settings['template'] ?? null;
+        }
+
+        $data['template_settings'] = self::buildCertificateSettings($request);
+
+        $settings->template_settings = $data['template_settings'];  
+        $settings->save();
+        
+        return;
+
+    }
+
+    public static function buildCertificateSettings($request)
+    {
+        $template_settings = [
+            "template_name_font_size" => $request->template_name_font_size,
+            "template_name_font_weight" => $request->template_name_font_weight,
+            "template_color" => $request->template_color,
+            "template_top_offset" => $request->template_top_offset,
+            "template_left_offset" => $request->template_left_offset,
+            "template_text_type" => $request->text_type,
+            "template_text_type_face" => $request->text_type_face ?: 'Pesaro-Bold.ttf',
+        ];
+
+        $final_array = [];
+
+        $auto_template_settings = array_filter($template_settings, function ($value) {
+            return !is_null($value);
+        });
+
+        if ($request->template_status == 'yes' && count($template_settings) > 0) {
+            foreach ($template_settings as $key => $req) {
+                foreach ($req as $index => $value) {
+                    $final_array[$index][$key] = $value;
+                }
+            }
+        }
+
+        $auto_template_settings['template'] = $request->path;
+        
+
+        return $auto_template_settings;
+    }
+
+    public static function deleteAllFilesInAPublicFolder($folderName)
+    {
+        $folderPath = public_path($folderName);
+
+        if (File::exists($folderPath)) {
+            $files = File::files($folderPath);
+
+            // Loop through the files and delete each one
+            foreach ($files as $file) {
+                File::delete($file);
+            }
+
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 

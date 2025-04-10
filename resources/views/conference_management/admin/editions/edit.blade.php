@@ -318,9 +318,9 @@
                                                     <div class="col-sm-6 col-md-4">
                                                         <label>Font Type Face</label>
                                                         <fieldset class="form-group">
-                                                            <select name="template__text_type_face[]" class="form-control">
+                                                            <select name="template_text_type_face[]" class="form-control">
                                                                 @foreach($service::templateFontType() as $key => $value)
-                                                                    <option value="{{ $key }}" {{ $setting['template__text_type_face'] == $key ? 'selected' : '' }}>{{ $value }}</option>
+                                                                    <option value="{{ $key }}" {{ $setting['template_text_type_face'] == $key ? 'selected' : '' }}>{{ $value }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </fieldset>
@@ -419,7 +419,7 @@
                     </div>
                     <div class="col-md-4">
                         <label>Font Type Face</label>
-                        <select name="template__text_type_face[]" class="form-control">
+                        <select name="template_text_type_face[]" class="form-control">
                             @foreach($service::templateFontType() as $key => $value)
                                 <option value="{{ $key }}">{{ $value }}</option>
                             @endforeach
@@ -468,8 +468,8 @@
                 formData.append('template_text_type[]', $(this).val());
             });
 
-            $('select[name="template__text_type_face[]"]').each(function () {
-                formData.append('template__text_type_face[]', $(this).val());
+            $('select[name="template_text_type_face[]"]').each(function () {
+                formData.append('template_text_type_face[]', $(this).val());
             });
 
             $('input[name="template_font_size[]"]').each(function () {

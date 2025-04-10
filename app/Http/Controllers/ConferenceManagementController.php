@@ -274,6 +274,7 @@ class ConferenceManagementController extends Controller
 				'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
 			];
 			$this->logEmail($email);
+			
 			return redirect(route('conference.participants',['type'=>$payment->level, 'edition'=>$setting]))->with('message', 'Participant successfully created');
 
 		}
