@@ -15,7 +15,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Update: {{ $food->name }}</h4>
-                        <a href="{{ route('foodusers.export',['id'=>$food->id, 'edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export Foodstand Participants</a>                        
+                        <a href="{{ route('foodusers.export',['id'=>$food->id, 'edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export Service Point Participants</a>                        
                         
                     </div>
                     <div class="card-content">

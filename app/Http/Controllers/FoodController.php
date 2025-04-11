@@ -10,6 +10,8 @@ use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\FoodParticipantExport;
+use App\Services\HostelAllocationService;
+use App\Services\ServicePointAllocationService;
 
 class FoodController extends Controller
 {
@@ -106,4 +108,11 @@ class FoodController extends Controller
             return back()->with('message',' Delete succesful!');
         }return abort(404);
     }
+
+    public function repairServicePointAllocation(Request $request)
+    {
+        ServicePointAllocationService::repairServicePointAllocation($request->edition);
+        return back()->with('message', ' Repair succesful!');
+    }
+
 }

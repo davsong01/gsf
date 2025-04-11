@@ -131,4 +131,26 @@ class ServicePointAllocationService
         return $number;
     }
 
+    static function repairServicePointAllocation($edition_id)
+    {
+        $food = Food::where('conference_edition_id', $edition_id)->get();
+
+        foreach ($food as $hostel) {
+            $payments = $hostel->payments()->count();
+            if ($hostel->allocation == $payments) {
+                continue;
+            }
+            if ($hostel->allocation > $payments) {
+                $hostel->update(['allocation' => $payments]);
+                continue;
+            }
+            if ($hostel->allocation < $payments) {
+                $hostel->update(['allocation' => $payments]);
+                continue;
+            }
+            $hostel->update(['allocation' => $payments]);
+        }
+
+        return true;
+    }
 }

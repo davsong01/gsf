@@ -287,6 +287,13 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         
     });
 
+    Route::controller(FoodController::class)->group(function () {
+        Route::get('service-point-repair-allocation', 'repairServicePointAllocation')->name('servicepoint.repair.allocation');
+        Route::post('service-point-merger', 'servicePointMerger')->name('servicepoint.merge');
+        Route::get('get-unfilled-SpervicePoint/{id}', 'unFilledServicePoint')->name('unfilled.merger');
+        
+    });
+
     Route::get('food-export/{id}', [FoodController::class, 'participantExport'])->name('foodusers.export');
     Route::resource('conferencesettings', ConferenceSettingController::class);
     Route::get('/reset', [ConferenceSettingController::class, 'resetData'])->name('database.clear');
