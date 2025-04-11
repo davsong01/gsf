@@ -9,10 +9,21 @@
 </div>
 <div class="card-content">
     <div class="row">
-        <div class="col-12">
-
+        <div class="col-md-3 col-12 dashboard-users-success">
+            <div class="card text-center">
+                    <div class="card-content">
+                        <div class="card-body py-1">
+                            <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
+                                &#8358;{{ $total }}
+                            </div>
+                            <div class="text-muted line-ellipsis">Total Payments</div>
+                            <h3 class="mb-0"></h3>
+                        </div>
+                    </div>
+                    
+            </div>
         </div>
-        <div class="col-sm-4 col-12 dashboard-users-success">
+        <div class="col-md-3 col-12 dashboard-users-success">
             <div class="card text-center">
                 <a href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">
                     <div class="card-content">
@@ -20,14 +31,33 @@
                             <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
                                 {{ $registered_participants }}
                             </div>
-                            <div class="text-muted line-ellipsis">Registered Participants</div>
+                            <div class="text-muted line-ellipsis">Participants</div>
                             <h3 class="mb-0"></h3>
                         </div>
                     </div>
                 </a>
             </div>
         </div>
-        <div class="col-sm-4 col-12 dashboard-users-success">
+        <div class="col-md-3 col-12 dashboard-users-success">
+            <div class="card text-center">
+                <a href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">
+                    <div class="card-content">
+                        <div class="card-body">
+                            <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
+                                {{ $registered_moderators_count }}
+                            </div>
+                            <div class="text-muted line-ellipsis">Moderators</div>
+                            <span style="font-size: 10px;">
+                                Total Slots: <strong>{{$total_slots}}</strong><br>
+                                Allocated: <strong>{{$slots_filled}}</strong><br>
+                                Unallocated: <strong>{{$unallocated_slots}}</strong><br>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col-md-3 col-12 dashboard-users-success">
             <div class="card text-center">
                 <a href="{{ route('users.index') }}">
                     <div class="card-content">
@@ -42,21 +72,8 @@
                 </a>
             </div>
         </div>
-        <div class="col-sm-4 col-12 dashboard-users-success">
-            <div class="card text-center">
-                    <div class="card-content">
-                        <div class="card-body py-1">
-                            <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
-                                &#8358;{{ $total }}
-                            </div>
-                            <div class="text-muted line-ellipsis">Total Payment</div>
-                            <h3 class="mb-0"></h3>
-                        </div>
-                    </div>
-                    
-            </div>
-        </div>
-        <div class="col-sm-4 col-12 dashboard-users-success">
+       
+        <div class="col-md-3 col-12 dashboard-users-success">
             <div class="card text-center">
                     <a href="{{ route('donations.index',['edition'=>$edition->id]) }}">
                 
@@ -72,7 +89,7 @@
                     </a>
             </div>
         </div>
-        <div class="col-sm-4 col-12 dashboard-users-success">
+        <div class="col-md-3 col-12 dashboard-users-success">
             <div class="card text-center">
                 <a href="{{ route('materials.index') }}">
                     <div class="card-content">
@@ -93,69 +110,69 @@
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <canvas id="multiBarChart"></canvas>
                 <script>
-    $(document).ready(function () {
-        const ctx = document.getElementById('multiBarChart').getContext('2d');
-        let chartInstance = null;
+                    $(document).ready(function () {
+                        const ctx = document.getElementById('multiBarChart').getContext('2d');
+                        let chartInstance = null;
 
-        function fetchChartData() {
-            $.ajax({
-                url: '/chart-data/' + "{{$edition->id}}",
-                method: 'GET',
-                dataType: 'json',
-                success: function (response) {
-                    if (!response.labels || !response.datasets) {
-                        // alert('Failed to load chart data properly.');
-                        return;
-                    }
+                        function fetchChartData() {
+                            $.ajax({
+                                url: '/chart-data/' + "{{$edition->id}}",
+                                method: 'GET',
+                                dataType: 'json',
+                                success: function (response) {
+                                    if (!response.labels || !response.datasets) {
+                                        // alert('Failed to load chart data properly.');
+                                        return;
+                                    }
 
-                    updateChart(response.labels, response.datasets);
-                },
-                error: function (xhr, status, error) {
-                    alert('Failed to load chart data.');
-                }
-            });
-        }
+                                    updateChart(response.labels, response.datasets);
+                                },
+                                error: function (xhr, status, error) {
+                                    alert('Failed to load chart data.');
+                                }
+                            });
+                        }
 
-        function updateChart(labels, datasets) {
-            if (chartInstance) {
-                chartInstance.destroy(); 
-            }
-
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        },
-                        x: {
-                            stacked: false,
-                            ticks: {
-                                autoSkip: false,
-                                maxRotation: 90,
-                                minRotation: 0
+                        function updateChart(labels, datasets) {
+                            if (chartInstance) {
+                                chartInstance.destroy(); 
                             }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top'
-                        }
-                    }
-                }
-            });
-        }
 
-        // Fetch and load chart data on page load
-        fetchChartData();
-    });
-</script>
+                            chartInstance = new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: datasets
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        },
+                                        x: {
+                                            stacked: false,
+                                            ticks: {
+                                                autoSkip: false,
+                                                maxRotation: 90,
+                                                minRotation: 0
+                                            }
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            position: 'top'
+                                        }
+                                    }
+                                }
+                            });
+                        }
+
+                        // Fetch and load chart data on page load
+                        fetchChartData();
+                    });
+                </script>
 
             </div>
         </div>

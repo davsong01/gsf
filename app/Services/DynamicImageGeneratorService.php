@@ -20,7 +20,7 @@ class DynamicImageGeneratorService
         $textAndReplacements = [];
         
         foreach($texts as $key=>$text){
-            if ($key == 'name') $textAndReplacements[$key] = $payment->user->name ?? 'N/A';
+            if ($key == 'name') $textAndReplacements[$key] = strtoupper($payment->user->name ?? 'N/A');
             if ($key == 'reg_number') $textAndReplacements[$key] = $payment->transid ?? 'N/A';
             if ($key == 'hostel') $textAndReplacements[$key] = $payment->hostel->name ?? 'N/A';
         }

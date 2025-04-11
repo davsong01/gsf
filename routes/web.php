@@ -281,6 +281,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::controller(HostelController::class)->group(function () {
         Route::get('hostels/delete/{id}', 'destroy')->name('hostels.delete');
         Route::get('hostel-export/{id}', 'participantExport')->name('hostelusers.export');
+        Route::get('hostels-repair-allocation', 'repairHostelAllocation')->name('hostels.repair.allocation');
+        Route::post('hostels-merger', 'hostelMerger')->name('hostels.merge');
+        Route::get('get-unfilled-hostels/{id}', 'unFilledHostels')->name('unfilled.merger');
+        
     });
 
     Route::get('food-export/{id}', [FoodController::class, 'participantExport'])->name('foodusers.export');

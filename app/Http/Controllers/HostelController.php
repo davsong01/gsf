@@ -11,6 +11,7 @@ use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\HostelParticipantExport;
+use App\Services\HostelAllocationService;
 
 class HostelController extends Controller
 {
@@ -117,5 +118,10 @@ class HostelController extends Controller
             return back()->with('message',' Delete succesful!');
             
         }return abort(404);
+    }
+
+    public function repairHostelAllocation(Request $request){
+        HostelAllocationService::repairHostelAllocation($request->edition);
+        return back()->with('message', ' Repair succesful!');
     }
 }

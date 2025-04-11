@@ -13,8 +13,9 @@
                     <div class="card-header">
                         <h4 class="card-title">All Hostels for {{ $edition->conference_theme }}</h4>
                         @if(auth()->user()->conference_role == 'superadmin')
-
-                        <a href="{{ route('hostels.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Hostel</a>        
+                            <a href="{{ route('hostels.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Hostel</a>        
+                            <a href="{{ route('hostels.repair.allocation',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-info mt-1">Repair Hostel Allocation</a>        
+                            <a href="{{ route('hostels.merge',['edition'=>$edition->id]) }}" class="btn btn-success mt-1">Hostel Merger</a>        
                         @endif                
                     </div>
                     <div class="card-content">

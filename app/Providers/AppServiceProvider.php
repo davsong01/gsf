@@ -12,7 +12,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if (env('APP_ENV') === 'local') {
+            $path = "/Applications/MAMP/htdocs/gsf/public";
+        } else {
+            $path = '/home/shinliih/directory.gsfnational.org';
+        }
+
+        $this->app->bind('path.public', function () use ($path) {
+            return $path;
+        });
     }
 
     /**
@@ -22,14 +30,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrap();
 
-        if (env('ENT') === 'local') {
-            $path = "/Applications/MAMP/htdocs/gsf/public";
-        } else {
-            $path = '/home/shinliih/directory.gsfnational.org/';
-        }
-
-        $this->app->bind('path.public', function () use ($path) {
-            return $path;
-        });
+        
     }
 }

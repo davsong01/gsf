@@ -16,7 +16,7 @@ class ConferenceEdition extends Model
     ];
 
     public function payments(){
-        return $this->hasMany(Payment::Class, 'conference_edition_id');
+        return $this->hasMany(Payment::Class, 'conference_edition_id', 'id');
     }
 
     public function donations()

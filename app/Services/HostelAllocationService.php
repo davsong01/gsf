@@ -129,4 +129,26 @@ class HostelAllocationService
         return $number;
     }
 
+    static function repairHostelAllocation($edition_id){
+        $hostels = Hostel::where('conference_edition_id', $edition_id)->get();
+
+        foreach($hostels as $hostel){
+            $payments = $hostel->payments()->count();
+            if($hostel->allocation == $payments){
+                continue;
+            }
+            if($hostel->allocation > $payments){
+                $hostel->update(['allocation' => $payments]);
+                continue;
+            }
+            if($hostel->allocation < $payments){
+                $hostel->update(['allocation' => $payments]);
+                continue;
+            }
+            $hostel->update(['allocation' => $payments]);
+        }
+
+        return true;
+    }
+
 }
