@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Food;
 use App\Models\User;
 use App\Models\Email;
@@ -9,18 +10,18 @@ use App\Models\Hostel;
 use App\Models\Chapter;
 use App\Models\Payment;
 use App\Models\Setting;
-use Carbon\Carbon;
-use App\Models\EmailContact;
-use App\Models\CriticalEmail;
-use App\Models\ConferenceEdition;
 use Illuminate\Support\Str;
+use App\Models\EmailContact;
 use Illuminate\Http\Request;
+use App\Models\CriticalEmail;
 use App\Mail\NotificationEmail;
+use App\Models\ConferenceEdition;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Validation\ValidationException;
 use Intervention\Image\Facades\Image as Image;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -385,25 +386,60 @@ class Controller extends BaseController
         return $type;
     }
 
+    // public function createUser($data)
+    // {
+    //     dd($data);
+    //     $user = User::UpdateOrCreate(['email' => $data['email']], [
+    //         'name' => $data['name'],
+    //         'phone' => $data['phone'],
+    //         'sex' => $data['sex'] ?? null,
+    //         'chapter_id' => $data['chapter']??null,
+    //         'passport' => $data['passport']??null,
+    //         'slug' => Str::slug($data['name']),
+    //         'password' => $data['password'],
+    //         'role' => $data['role'] ?? 2
+    //     ]);
+
+    //     return $user;
+    // }
     public function createUser($data)
     {
-        $user = User::UpdateOrCreate(['email' => $data['email']], [
-            'name' => $data['name'],
-            'phone' => $data['phone'],
-            'sex' => $data['sex'] ?? null,
-            'chapter_id' => $data['chapter']??null,
-            'passport' => $data['passport']??null,
-            'slug' => Str::slug($data['name']),
-            'password' => $data['password'],
-            'role' => $data['role'] ?? 2
-        ]);
+        $user = User::where('email', $data['email'])
+            ->orWhere('phone', $data['phone'])
+            ->first();
+        
+        if ($user) {
+            $user->update([
+                'name' => $data['name'],
+                'phone' => $data['phone'],
+                'sex' => $data['sex'] ?? $user->sex,
+                'chapter_id' => $data['chapter'] ?? $user->chapter_id,
+                'passport' => $data['passport'] ?? $user->passport,
+                'slug' => \Str::slug($data['name']),
+                'password' => $data['password'],
+                'role' => $data['role'] ?? $user->role
+            ]);
+        } else {
+            $user = User::create([
+                'email' => $data['email'],
+                'name' => $data['name'],
+                'phone' => $data['phone'],
+                'sex' => $data['sex'] ?? null,
+                'chapter_id' => $data['chapter'] ?? null,
+                'passport' => $data['passport'] ?? null,
+                'slug' => \Str::slug($data['name']),
+                'password' => $data['password'],
+                'role' => $data['role'] ?? 2
+            ]);
+        }
 
         return $user;
     }
 
+
     public function createPayment($data, $user)
     {
-        $payment = Payment::UpdateOrCreate(['transid' => $data['transid']], [
+        $payment = Payment::UpdateOrCreate(['user_id' => $user->id, 'conference_edition_id' => $data['conference_edition_id']], [
             'user_id' => $user->id,
             'registration_status' => 'Complete',
             'slot' => $data['slot'],
@@ -416,7 +452,7 @@ class Controller extends BaseController
             'uploaded_by' => $data['uploaded_by'] ?? null,
             'conference_edition_id' => $data['conference_edition_id']
         ]);
-        
+
         return $payment;
     }
 }

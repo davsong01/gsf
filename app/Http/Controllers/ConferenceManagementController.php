@@ -20,9 +20,10 @@ use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ConferenceUsersImport;
 use App\Services\HostelAllocationService;
+use Illuminate\Support\Facades\Validator;
+use App\Services\DynamicImageGeneratorService;
 use App\Services\ServicePointAllocationService;
 use App\Http\Controllers\CriticalEmailController;
-use App\Services\DynamicImageGeneratorService;
 
 class ConferenceManagementController extends Controller
 {
@@ -175,10 +176,11 @@ class ConferenceManagementController extends Controller
 
 	public function store(Request $request, User $user)
 	{
+		
 		if (auth()->user()->role == 1) {
-			$data = $this->validate($request, [
+			$validator =  Validator::make($request->all(), [
 				'name' => 'required|min:3',
-				'email' => 'required|unique:users,email',
+				'email' => 'required',
 				'phone' => 'required',
 				'sex' => 'required',
 				'chapter' => 'required|numeric',
@@ -189,8 +191,14 @@ class ConferenceManagementController extends Controller
 				'amount_paid' => 'required',
 				'level' => 'required',
 			]);
+
+			if ($validator->fails()) {
+				return redirect()->back()->with('errors', $validator)
+					->withInput($request->all());
+			}
 		}
-		
+
+		$data = $validator->valid();
 		//Handle password
 		if ($request['password']) {
 			$data['password'] = Hash::make($request['password']);
@@ -210,10 +218,8 @@ class ConferenceManagementController extends Controller
 		} else {
 			$data['passport'] = NULL;
 		}
-		
 		$setting = ConferenceEdition::find($request->edition);
 		$data['conference_edition_id'] = $setting->id;
-		
 		//Store block for Admin
 		if (auth()->user()->role == 1) {	
 			if(!isset($data['uploaded_by'])){
@@ -243,15 +249,12 @@ class ConferenceManagementController extends Controller
 
 			// Assign Foodstand and Hostel
 			$data['field_id'] = $user->campus->id;
-
-			dd($data);
-
+			
 			$hostel_allocation = HostelAllocationService::assignHostel($data);
 			$service_point = ServicePointAllocationService::assignFoodStand($data);
 
 			$data['allocated_hostel_data'] = $hostel_allocation;
 			$data['allocated_service_point_data'] = $service_point;
-
 			$payment->update([
 				'hostel_allocation_number' => $hostel_allocation['hostel_allocation_number'],
 				'hostel_allocation_type' => $hostel_allocation['hostel_allocation_type'],
@@ -260,7 +263,7 @@ class ConferenceManagementController extends Controller
 				'hostel_id' => $hostel_allocation['hostel_id'],
 				'food_id' => $service_point['service_point_allocation_id']
 			]);
-
+			
 			// Log Email
 			$data['type'] = 'welcome_mail';
 			$data['amount'] = $data['amount_paid'];
@@ -275,7 +278,6 @@ class ConferenceManagementController extends Controller
 				'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
 			];
 			$this->logEmail($email);
-			
 			return redirect(route('conference.participants',['type'=>$payment->level, 'edition'=>$setting]))->with('message', 'Participant successfully created');
 
 		}
@@ -748,7 +750,7 @@ class ConferenceManagementController extends Controller
 		try {
 			$import = new ConferenceUsersImport($data, $payment ?? null);
 			Excel::import($import, $request->file('file'));
-
+			
 			$failures = $import->failures();
 
 			if ($failures->isNotEmpty()) {

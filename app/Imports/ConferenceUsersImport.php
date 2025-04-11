@@ -5,16 +5,17 @@ namespace App\Imports;
 use Auth;
 use App\User;
 use App\Models\Chapter;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\SkipsOnFailure;
-use Maatwebsite\Excel\Concerns\SkipsFailures;
-use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\Importable;
-use Maatwebsite\Excel\Validators\Failure;
 use App\Services\HostelAllocationService;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Validators\Failure;
+use Maatwebsite\Excel\Concerns\Importable;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
 use App\Services\ServicePointAllocationService;
 
 class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
@@ -86,8 +87,6 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 					'slot.required' => "You cannot import more than " . $this->payment->slot . ' Participants. Check the excel file for extra rows',
 				])->validate();
 			}
-
-			\Log::info(['slot filled' => Auth::user()]);
 		}
 
 		$data = [
@@ -131,16 +130,18 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			'food_id' => $service_point['service_point_allocation_id']
 		]);
 
-		$user->update([
-			'family_id' => app('App\Http\Controllers\Controller')->createFamilyId($user, $this->prefix),
-		]);
+		if(empty($user->family_id)){
+			$user->update([
+				'family_id' => app('App\Http\Controllers\Controller')->createFamilyId($user, $this->prefix),
+			]);
+		}
 
 		if ($payment->hostel_id && $payment->food_id) {
 			$payment->update([
 				'registration_status' => 'Complete'
 			]);
 		}
-
+	
 		return $user;
 	}
 
@@ -148,13 +149,14 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 	{
 		return [
 			'*.name' => 'required|min:3|max:200',
-			'*.email' => 'required|email|unique:users,email',
-			'*.phone' => 'required|unique:users,phone',
+			'*.email' => 'required|email',
+			'*.phone' => 'required',
 			'*.conference_number' => 'nullable|unique:users,conference_number',
 			'*.registration_status' => 'nullable|in:Pending,Complete',
 			'*.sex' => $this->data['import_level'] === 'Participant' ? 'required|in:Male,Female' : 'nullable|in:Male,Female',
 			'*.chapter' => 'nullable|exists:chapters,name',
 		];
+		
 	}
 
 	public function customValidationMessages()
@@ -164,8 +166,6 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			'*.name.required' => "One or more $level do not have a name.",
 			'*.name.min' => "One or more $level name is too short (min 3).",
 			'*.name.max' => "One or more $level name is too long (max 200).",
-			'*.email.unique' => "One or more emails already exist.",
-			'*.phone.unique' => "One or more phone numbers already exist.",
 			'*.sex.required' => "One or more $level have no gender.",
 			'*.sex.in' => "One or more $level gender is invalid.",
 			'*.chapter.exists' => "One or more $level chapter does not exist.",
