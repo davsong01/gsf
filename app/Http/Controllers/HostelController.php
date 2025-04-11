@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Field;
 use App\Models\Hostel;
 use App\Models\Chapter;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
@@ -104,6 +105,12 @@ class HostelController extends Controller
         $edition = ConferenceEdition::find($request->edition);
         $hostel = Hostel::findOrFail($id);
 
+        // check if hostel has any participant
+        $hasPayment = Payment::where('hostel_id', $id)->where('conference_edition_id', $request->edition)->count();
+        
+        if($hasPayment > 0){
+            return back()->with('error','Hostel has participants, cannot delete!');
+        }
         if(auth()->user()->role == 1){
             $hostel->delete();          
             
