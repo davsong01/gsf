@@ -34,5 +34,26 @@ class DynamicImageGeneratorController extends Controller
         return;
     }
 
+    public function generateImage($request, $payment){
+        $texts = DynamicImageGeneratorService::textType();
+        
+        $textAndReplacements = [];
+        foreach ($texts as $key => $text) {
+            if ($key == 'name') $textAndReplacements[$key] = $payment->user->name ?? 'N/A';
+            if ($key == 'reg_number') $textAndReplacements[$key] = $payment->transid ?? 'N/A';
+            if ($key == 'hostel') $textAndReplacements[$key] = $payment->hostel->name ?? 'N/A';
+        }
+
+        $request['location'] = 'badges';
+        $image = DynamicImageGeneratorService::generate($request, $payment->edition->template_settings, $textAndReplacements);
+        
+        if($image['status']){
+            $payment->badge_location = $image['location'];
+            $payment->save();
+        }
+
+        return;
+    }
+    
     
 }

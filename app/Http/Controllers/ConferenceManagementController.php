@@ -22,6 +22,7 @@ use App\Imports\ConferenceUsersImport;
 use App\Services\HostelAllocationService;
 use App\Services\ServicePointAllocationService;
 use App\Http\Controllers\CriticalEmailController;
+use App\Services\DynamicImageGeneratorService;
 
 class ConferenceManagementController extends Controller
 {
@@ -628,21 +629,26 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-    public function getCard($id)
+    public function getCard(Request $request, $id)
 	{
-		$payment = Payment::find($id);
-
+		return back()->with('error', 'This feature is not available yet');
+		$payment = Payment::where('id', $id)->with('user', 'hostel')->first();
+		
 		if (!auth()->user()->completeReg($payment->edition) && auth()->user()->role <> 1) {
 			return back()->with('error', 'You must complete registration before viewing this resource');
 		}
 
 		if (auth()->user()->isModerator($payment->edition)) {
-
 			if ($payment->uploaded_by != auth()->user()->id) {
 				return abort(404);
 			}
 		}
 		
+		if(empty($payment->badge_location)){
+			$imageController = new DynamicImageGeneratorController();
+			$imageController->generateImage($request->all(), $payment);
+		}
+
 		return view('card.id')->with('payment', $payment)
             ->with('edition', $payment->edition)
             ->with('user', $payment->user);

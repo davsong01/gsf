@@ -17,13 +17,13 @@
                         <h4 class="card-title">Update: {{ $user->user->name }}</h4>
                         @if($user->user->completeReg($edition) && $payment->hostel && $payment->food)
                         <div style="padding:20px">
-                            <a href="{{ route('participants.card', ['id'=>$payment->id, 'edition'=>$edition->id]) }}" class="btn btn-primary glow"><i class="fa fa-print" aria-hidden="true"></i> View/Print Conference I.D. card</a>
+                            <a href="{{ route('participants.card', ['id'=>$payment->id, 'edition'=>$edition->id]) }}" class="btn btn-primary glow"><i class="fa fa-print" aria-hidden="true"></i> View/Download Badge</a>
                             @if(isset($edition->material) && !empty($edition->material))
                             <a href="{{ route('materials.index', ['edition'=>$edition->id, 'payment_id'=>$payment->id]) }}" class="btn btn-info glow"><i class="fa fa-print" aria-hidden="true"></i> View/Donload Conference Materials</a>
                             @endif
                         </div>
                         @else
-                        <a href="#" onclick="return false;" data-toggle="tooltip" data-placement="top" title="You must complete registration to use this button" class="btn btn-primary glow disabled"><i class="fa fa-print" aria-hidden="true"></i> View/PrintConference I.D. Card
+                        <a href="#" onclick="return false;" data-toggle="tooltip" data-placement="top" title="You must complete registration to use this button" class="btn btn-primary glow disabled"><i class="fa fa-print" aria-hidden="true"></i>  View/Download Badge
                         </a>
                         @endif
                     </div>

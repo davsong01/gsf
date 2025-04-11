@@ -109,7 +109,7 @@ class User extends Authenticatable implements MustVerifyEmail
 	public function completeReg($edition)
 	{
 		$check = Payment::where(['registration_status' => 'Complete', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
-
+		
 		if (isset($check) && !empty($check)) {
 			return true;
 		} else return false;

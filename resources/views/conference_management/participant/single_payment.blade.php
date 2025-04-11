@@ -23,12 +23,12 @@
 								<div class="dashboard-content-left">
 									<h1 class="text-primary font-large-2 text-bold-500"></h1>
 									@if(auth()->user()->completeReg($edition) && $payment->hostel && $payment->food)
-										<a href="{{ route('participants.card', ['id'=>$payment->id, 'edition'=>$edition->id]) }}" class="btn btn-primary glow"><i class="fa fa-print" aria-hidden="true"></i> View/Print Conference I.D. card</a>
+										<a href="{{ route('participants.card', ['id'=>$payment->id, 'edition'=>$edition->id]) }}" class="btn btn-primary glow"><i class="fa fa-print" aria-hidden="true"></i>  View/Download Badge</a>
 										@if(isset($edition->material) && !empty($edition->material))
 										<a href="{{ route('materials.index', ['edition'=>$edition->id, 'payment_id'=>$payment->id]) }}" class="btn btn-info glow"><i class="fa fa-print" aria-hidden="true"></i> View/Donload Conference Materials</a>
 										@endif
 									@else
-									<a href="#" onclick="return false;" data-toggle="tooltip" data-placement="top" title="You must complete registration to use this button" class="btn btn-primary glow disabled"><i class="fa fa-print" aria-hidden="true"></i> View/PrintConference I.D. Card
+									<a href="#" onclick="return false;" data-toggle="tooltip" data-placement="top" title="You must complete registration to use this button" class="btn btn-primary glow disabled"><i class="fa fa-print" aria-hidden="true"></i>  View/Download Badge
 									</a>
 									@endif
 								</div>
