@@ -188,35 +188,39 @@
                                             @endforeach
                                         </tbody>
                                     </table>
-                                   
+                                   {{-- <td>
+                                        <a href="${verifyUrl}" class="btn btn-sm btn-success set-reference" data-ref="${tx.reference}">
+                                            Set as Reference ID
+                                        </a>
+                                    </td> --}}
                                     <!-- Transaction Modal -->
                                     <div class="modal" id="transactionModal" aria-labelledby="transactionModalLabel">
-                                                <div class="modal-dialog modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Transaction Details</h5>
-                                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <table class="table table-striped table-bordered">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Payment Details</th>
-                                                                        <th>Gateway Response</th>
-                                                                        <th>Conference</th>
-                                                                        <th>Email</th>
-                                                                        <th>Created At</th>
-                                                                        <th>Action</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody id="transactionTableBody">
-                                                                    <!-- Filled via JS -->
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </div>
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Transaction Details</h5>
+                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <table class="table table-striped table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Payment Details</th>
+                                                                <th>Gateway Response</th>
+                                                                <th>Conference</th>
+                                                                <th>Email</th>
+                                                                <th>Created At</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="transactionTableBody">
+                                                            <!-- Filled via JS -->
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
                         </div>
@@ -269,11 +273,7 @@
                                 <td>${tx.conference_edition}</td>
                                 <td>${tx.customer.email}</td>
                                 <td>${new Date(tx.created_at).toLocaleString()}</td>
-                                <td>
-                                    <a href="${verifyUrl}" class="btn btn-sm btn-success set-reference" data-ref="${tx.reference}">
-                                        Set as Reference ID
-                                    </a>
-                                </td>
+                                
                             </tr>
                         `;
                     });

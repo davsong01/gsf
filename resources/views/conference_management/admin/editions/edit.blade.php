@@ -396,7 +396,7 @@
 <div class="modal" id="previewModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 600px; overflow-y: auto;">
                 <img style="width:474px;height:auto;" id="templatePreviewImage" src="" alt="Template Preview">
             </div>
         </div>

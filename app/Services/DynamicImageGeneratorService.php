@@ -35,8 +35,12 @@ class DynamicImageGeneratorService
             $inputImagePath = public_path($settings['template']);
         }
 
+        // if (!is_dir($inputImagePath)) {
+        //     mkdir($inputImagePath, 0777, true);
+        // }
+
         $image = Image::make($inputImagePath);
-        // dd($request);
+        
         if (!empty($request['template_font_size'])) {
             $counter = count($request['template_font_size']);
         } else {
