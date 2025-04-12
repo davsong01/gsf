@@ -14,8 +14,8 @@
                         <h4 class="card-title">All Hostels for {{ $edition->conference_theme }}</h4>
                         @if(auth()->user()->conference_role == 'superadmin')
                             <a href="{{ route('hostels.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Hostel</a>        
-                            <a href="{{ route('hostels.repair.allocation',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-info mt-1">Repair Hostel Allocation</a>        
-                            <a href="{{ route('hostels.merge',['edition'=>$edition->id]) }}" class="btn btn-success mt-1">Hostel Merger</a>        
+                            <a href="{{ route('hostels.repair.allocation',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-info mt-1">Repair Hostel Allocation</a>   
+                            <button style="" class="btn btn-dark mt-1" data-toggle="modal"  data-target="#hostel-merger">Hostel Merger</button>
                         @endif                
                     </div>
                     <div class="card-content">
@@ -84,4 +84,123 @@
     </section>
     <!--/ Zero configuration table -->         
 </div>
+<div class="modal" id="hostel-merger">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- Modal body -->
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="card-body">
+                            <div class="row">
+                                <form action="{{ route('hostels.merge',['edition'=>$edition->id]) }}" method="POST">
+                                @csrf
+                                <!-- Deallocate Dropdown -->
+                                <div class="col-md-12 col-sm-12">
+                                    <fieldset class="form-group">
+                                        <label for="deallocate">Select Hostel to Deallocate</label>
+                                        <select class="form-control" name="deallocate" id="deallocate" required>
+                                            <option value="">-- Select Hostel to Deallocate --</option>
+                                            @foreach($hostelsToMerge as $hostel)
+                                                <?php $remaining = $hostel->capacity - $hostel->payments->count(); ?>
+                                                <option value="{{ $hostel->id }}" data-remaining="{{ $remaining }}">
+                                                    {{ $hostel->name }} ({{ $hostel->allocation }} Allocated | {{ $remaining }} Remaining)
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </fieldset>
+                                </div>
+
+                                <!-- Allocate Dropdown (Initially Hidden) -->
+                                <div class="col-md-12 col-sm-12" id="allocateContainer" style="display:none;">
+                                    <fieldset class="form-group">
+                                        <label for="allocate">Select Hostel to Allocate</label>
+                                        <select class="form-control" name="allocate" id="allocate" required>
+                                            <option value="">-- Select Hostel to Allocate --</option>
+                                        </select>
+                                    </fieldset>
+                                </div>
+                                
+                                <div class="col-md-12 col-sm-12" id="number" style="display: none;">
+                                    <fieldset class="form-group">
+                                        <label for="amount">Amount</label>
+                                        <input type="number" class="form-control" id="amount" min="1" name="amount" value="{{ old('amount') }}" placeholder="Enter amount">
+                                    </fieldset>
+                                </div>
+
+                                <div class="col-md-12 col-sm-12">
+                                    <button class="btn btn-primary" style="width:100%" type="submit">Update</button>
+                                </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(document).ready(function () {
+    $('#deallocate').on('change', function () {
+        var hostelId = $(this).val();
+        var remaining = $('option:selected', this).data('remaining');
+        
+        if (hostelId) {
+            $.ajax({
+                url: '{{ route("get.available.hostels") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    deallocated_hostel_id: hostelId,
+                    edition_id: {{ $edition->id }}
+                },
+                success: function (response) {
+                    if (response.status && response.hostels.length > 0) {
+                        let options = '<option value="">-- Select Hostel to Allocate --</option>';
+                        response.hostels.forEach(function (hostel) {
+                            let remaining = hostel.capacity - hostel.payments_count;
+                            options += `<option value="${hostel.id}" data-remaining="${remaining}">
+                                            ${hostel.name} (${hostel.allocation} Allocated | ${remaining} Remaining)
+                                        </option>`;
+                        });
+
+                        $('#allocate').html(options);
+                        $('#allocateContainer').slideDown();
+
+                        $('#number').slideDown();
+                        $('#amount').val('').removeAttr('max'); // reset
+                    } else {
+                        $('#allocateContainer').hide();
+                        $('#number').hide();
+                        $('#allocate').html('<option value="">No available hostels</option>');
+                        $('#amount').val('').removeAttr('max');
+                    }
+                }
+            });
+        } else {
+            $('#allocateContainer').hide();
+        }
+    });
+
+    $('#allocate').on('change', function () {
+        let remaining = $('option:selected', this).data('remaining');
+
+        if (remaining && remaining > 0) {
+            $('#amount').val(remaining);
+            $('#amount').attr('max', remaining);
+        } else {
+            $('#amount').val('');
+            $('#amount').removeAttr('max');
+        }
+    });
+});
+
+</script>
 @endsection

@@ -283,7 +283,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('hostel-export/{id}', 'participantExport')->name('hostelusers.export');
         Route::get('hostels-repair-allocation', 'repairHostelAllocation')->name('hostels.repair.allocation');
         Route::post('hostels-merger', 'hostelMerger')->name('hostels.merge');
-        Route::get('get-unfilled-hostels/{id}', 'unFilledHostels')->name('unfilled.merger');
+        Route::post('get-available-hostels', 'getAvailableHostels')->name('get.available.hostels');
         
     });
 

@@ -23,12 +23,13 @@ class HostelController extends Controller
         
         if(auth()->user()->role == 1){
             $hostels = Hostel::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
-
+            $hostelsToMerge = Hostel::where('conference_edition_id', $edition->id)->where('allocation', '>',0)->orderBy('created_at', 'desc')->get();
+            
             $hostels->each(function ($hostel) {
                 $hostel->fields = Field::whereIn('id', $hostel->field_ids)->get();
                 $hostel->chapters = Chapter::whereIn('id', $hostel->chapter_ids)->get();
             });
-            return view('conference_management.admin.hostel.index', compact('hostels', 'count','edition'));
+            return view('conference_management.admin.hostel.index', compact('hostels', 'count','edition','hostelsToMerge'));
         }return abort(404);
     }
 
@@ -123,5 +124,24 @@ class HostelController extends Controller
     public function repairHostelAllocation(Request $request){
         HostelAllocationService::repairHostelAllocation($request->edition);
         return back()->with('message', ' Repair succesful!');
+    }
+
+    public function getAvailableHostels(Request $request){
+        $toDeallocate = Hostel::where('conference_edition_id', $request->edition_id)->where('id', $request->deallocated_hostel_id)->first();
+        
+        $hostels = Hostel::withCount('payments')->where('conference_edition_id', $toDeallocate->conference_edition_id)->where('type', $toDeallocate->type)->where('level', $toDeallocate->level)->where('id', '!=', $toDeallocate->id)->where('allocation', '>', 0)->where('capacity', '>', 0)
+        // ->where('field_ids', $toDeallocate->field_ids)->where('chapter_ids', $toDeallocate->chapter_ids)
+        ->get(['id','name','allocation']);
+
+        return response()->json([
+            'status' => true,
+            'hostels' => $hostels
+        ]);
+    }
+
+    public function hostelMerger(Request $request) {
+        HostelAllocationService::hostelMerger($request);
+
+        return back()->with('message', 'Merger Succesful!');
     }
 }
