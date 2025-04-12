@@ -38,11 +38,21 @@ class DynamicImageGeneratorController extends Controller
         $texts = DynamicImageGeneratorService::textType();
         
         $textAndReplacements = [];
+        
         foreach ($texts as $key => $text) {
-            if ($key == 'name') $textAndReplacements[$key] = $payment->user->name ?? 'N/A';
+            if ($key == 'name') $textAndReplacements[$key] = strtoupper($payment->user->name ?? 'N/A');
             if ($key == 'reg_number') $textAndReplacements[$key] = $payment->transid ?? 'N/A';
-            if ($key == 'hostel') $textAndReplacements[$key] = $payment->hostel->name ?? 'N/A';
+            // if ($key == 'hostel') $textAndReplacements[$key] = $payment->hostel->name ?? 'N/A';
+            if ($key == 'hostel') {
+                $hostelName =  $payment->hostel->name ?? 'N/A';
+                $textAndReplacements[$key] = DynamicImageGeneratorService::limitTextMiddle($hostelName, 30);
+            }
+            if ($key == 'campus') {
+                $campusName =  strtoupper($payment->user->campus->name ?? 'N/A');
+                $textAndReplacements[$key] = DynamicImageGeneratorService::limitTextMiddle($campusName, 28);
+            }
         }
+
 
         $request['location'] = 'badges';
         $image = DynamicImageGeneratorService::generate($request, $payment->edition->template_settings, $textAndReplacements);
