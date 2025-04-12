@@ -22,10 +22,35 @@ class DynamicImageGeneratorService
         foreach($texts as $key=>$text){
             if ($key == 'name') $textAndReplacements[$key] = strtoupper($payment->user->name ?? 'N/A');
             if ($key == 'reg_number') $textAndReplacements[$key] = $payment->transid ?? 'N/A';
-            if ($key == 'hostel') $textAndReplacements[$key] = $payment->hostel->name ?? 'N/A';
+            // if ($key == 'hostel') $textAndReplacements[$key] = $payment->hostel->name ?? 'N/A';
+            if ($key == 'hostel') {
+                $hostelName =  $payment->hostel->name ?? 'N/A';
+                $textAndReplacements[$key] = self::limitTextMiddle($hostelName, 30);
+            }
+            if ($key == 'campus') {
+                $campusName =  strtoupper($payment->user->campus->name ?? 'N/A');
+                $textAndReplacements[$key] = self::limitTextMiddle($campusName, 28);
+            }
         }
 
         return Self::generate($request->all(), $settings, $textAndReplacements);
+    }
+
+    static function limitTextMiddle(string $text, int $maxLength = 40): string
+    {
+        if (strlen($text) <= $maxLength) {
+            return $text;
+        }
+
+        $ellipsis = '...';
+        $keepLength = $maxLength - strlen($ellipsis);
+        $startLength = (int) ceil($keepLength / 2);
+        $endLength = (int) floor($keepLength / 2);
+
+        $start = substr($text, 0, $startLength);
+        $end = substr($text, -$endLength);
+
+        return $start . $ellipsis . $end;
     }
 
     public static function generate($request, $settings, $textAndReplaceMents = []){
@@ -100,7 +125,7 @@ class DynamicImageGeneratorService
             'reg_number' => 'Registration Number',
             'hostel' => 'Hostel',
             // 'service_point' => 'Service Point',
-            // 'chapter' => 'Chapter',
+            'campus' => 'Campus',
         ];
     }
 

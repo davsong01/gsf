@@ -305,7 +305,7 @@
                                             @foreach($template_settings['settings'] as $setting)
                                                 @php $counter = $template_counter++; @endphp
                                                 <div class="row" id="oldtemplate-{{ $counter }}" style="border-top: 1px solid #000; margin-top: 15px; padding-top: 15px;">
-                                                    <div class="col-sm-6 col-md-2">
+                                                    <div class="col-md-4">
                                                         <label>Text Type</label>
                                                         <fieldset class="form-group">
                                                             {{-- {{dd($setting)}} --}}
@@ -316,8 +316,8 @@
                                                             </select>
                                                         </fieldset>
                                                     </div>
-                                                   
-                                                    <div class="col-md 2">
+                                            
+                                                    <div class="col-md-4">
                                                         <label>Font Type Face</label>
                                                         <fieldset class="form-group">
                                                             <select name="template_text_type_face[]" class="form-control">
@@ -327,22 +327,22 @@
                                                             </select>
                                                         </fieldset>
                                                     </div>
-                                                   
-                                                    <div class="col-sm-6 col-md-4">
+                                            
+                                                    <div class="col-md-4">
                                                         <label>Font Size</label>
                                                         <fieldset class="form-group">
                                                             <input type="number" min="0" class="form-control" name="template_font_size[]" value="{{ $setting['template_font_size'] }}">
                                                         </fieldset>
                                                     </div>
 
-                                                    <div class="col-sm-6 col-md-4">
+                                                    <div class="col-md-4">
                                                         <label>Top Offset</label>
                                                         <fieldset class="form-group">
                                                             <input type="number" min="0" class="form-control" name="template_top_offset[]" value="{{ $setting['template_top_offset'] }}">
                                                         </fieldset>
                                                     </div>
 
-                                                    <div class="col-sm-6 col-md-4">
+                                                    <div class="col-md-4">
                                                         <label>Left Offset</label>
                                                         <fieldset class="form-group">
                                                             <input type="number" min="0" class="form-control" name="template_left_offset[]" value="{{ $setting['template_left_offset'] }}">
