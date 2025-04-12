@@ -324,7 +324,7 @@ class HostelAllocationService
 
                 // Generate a fresh hostel number after saving
                 $hostel_number = Self::generateHostelNumber($hostelToMerge);
-
+                \Log::info(['hostel number' => $hostel_number]);
                 // Reassign the payment
                 $payment->hostel_id = $hostelToMerge->id;
                 $payment->hostel_allocation_number = $hostel_number;
