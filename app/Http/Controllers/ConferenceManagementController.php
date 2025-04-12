@@ -633,7 +633,7 @@ class ConferenceManagementController extends Controller
 
     public function getCard(Request $request, $id)
 	{
-		return back()->with('error', 'This feature is not available yet');
+		// return back()->with('error', 'This feature is not available yet');
 		$payment = Payment::where('id', $id)->with('user', 'hostel')->first();
 		
 		if (!auth()->user()->completeReg($payment->edition) && auth()->user()->role <> 1) {

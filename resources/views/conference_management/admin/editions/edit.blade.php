@@ -350,7 +350,7 @@
                                                     </div>
 
                                                     <div class="col-sm-6 col-md-2">
-                                                        <label>Color</label>
+                                                        <label>Color ({{ $setting['template_color'] ?? '#000000' }})</label>
                                                         <fieldset class="form-group">
                                                             <input type="color" class="form-control" name="template_color[]" value="{{ $setting['template_color'] ?? '#000000' }}">
                                                         </fieldset>
