@@ -284,14 +284,12 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('hostels-repair-allocation', 'repairHostelAllocation')->name('hostels.repair.allocation');
         Route::post('hostels-merger', 'hostelMerger')->name('hostels.merge');
         Route::post('get-available-hostels', 'getAvailableHostels')->name('get.available.hostels');
-        
     });
 
     Route::controller(FoodController::class)->group(function () {
         Route::get('service-point-repair-allocation', 'repairServicePointAllocation')->name('servicepoint.repair.allocation');
         Route::post('service-point-merger', 'servicePointMerger')->name('servicepoint.merge');
-        Route::get('get-unfilled-SpervicePoint/{id}', 'unFilledServicePoint')->name('unfilled.merger');
-        
+        Route::post('get-available-service-points', 'getAvailableServicePoints')->name('get.available.service_point');
     });
 
     Route::get('food-export/{id}', [FoodController::class, 'participantExport'])->name('foodusers.export');

@@ -21,13 +21,15 @@ class FoodController extends Controller
         $edition = ConferenceEdition::find($request->edition);
         if(auth()->user()->role == 1){
             $foods = Food::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
+
+            $servicePointsToMerge = Food::where('conference_edition_id', $edition->id)->where('allocation', '>', 0)->orderBy('created_at', 'desc')->get();
             
             $foods->each(function ($food) {
                 $food->fields = Field::whereIn('id', $food->field_ids)->get();
                 $food->chapters = Chapter::whereIn('id', $food->chapter_ids)->get();
             });
             
-            return view('conference_management.admin.food.index', compact('foods', 'count','edition'));
+            return view('conference_management.admin.food.index', compact('foods', 'count','edition', 'servicePointsToMerge'));
         }return abort(404);
     }
 
@@ -113,6 +115,28 @@ class FoodController extends Controller
     {
         ServicePointAllocationService::repairServicePointAllocation($request->edition);
         return back()->with('message', ' Repair succesful!');
+    }
+
+    public function getAvailableServicePoints(Request $request)
+    {
+        $toDeallocate = Food::where('conference_edition_id', $request->edition_id)->where('id', $request->deallocated_service_point_id)->first();
+
+        $foods = Food::withCount('payments')->where('conference_edition_id', $toDeallocate->conference_edition_id)->where('level', $toDeallocate->level)->where('id', '!=', $toDeallocate->id)->where('allocation', '>', 0)->where('capacity', '>', 0)
+            // ->where('field_ids', $toDeallocate->field_ids)->where('chapter_ids', $toDeallocate->chapter_ids)
+            ->get(['id', 'name', 'allocation']);
+
+        return response()->json([
+            'status' => true,
+            'foods' => $foods
+        ]);
+    }
+
+    
+    public function servicePointMerger(Request $request)
+    {
+        ServicePointAllocationService::servicePointMerger($request);
+
+        return back()->with('message', 'Merger Succesful!');
     }
 
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Food;
+use App\Models\Payment;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Rap2hpoutre\FastExcel\FastExcel;
@@ -244,24 +245,59 @@ class ServicePointAllocationService
 
     static function repairServicePointAllocation($edition_id)
     {
-        $food = Food::where('conference_edition_id', $edition_id)->get();
+        $foods = Food::where('conference_edition_id', $edition_id)->get();
 
-        foreach ($food as $hostel) {
-            $payments = $hostel->payments()->count();
-            if ($hostel->allocation == $payments) {
+        foreach ($foods as $food) {
+            $payments = $food->payments()->count();
+            if ($food->allocation == $payments) {
                 continue;
             }
-            if ($hostel->allocation > $payments) {
-                $hostel->update(['allocation' => $payments]);
+            if ($food->allocation > $payments) {
+                $food->update(['allocation' => $payments]);
                 continue;
             }
-            if ($hostel->allocation < $payments) {
-                $hostel->update(['allocation' => $payments]);
+            if ($food->allocation < $payments) {
+                $food->update(['allocation' => $payments]);
                 continue;
             }
-            $hostel->update(['allocation' => $payments]);
+            $food->update(['allocation' => $payments]);
         }
 
         return true;
+    }
+
+    static function servicePointMerger($request)
+    {
+        return DB::transaction(function () use ($request) {
+            $food = Food::findOrFail($request->deallocate);
+            $foodToMerge = Food::findOrFail($request->allocate);
+
+            $amountToReassign = (int) $request->amount;
+
+            // Fetch only the number of payments we intend to reassign
+            $payments = Payment::where('food_id', $food->id)
+                ->where('conference_edition_id', $request->edition)
+                ->limit($amountToReassign)
+                ->get();
+
+            foreach ($payments as $payment) {
+                // Increment allocation on the target hostel
+                $foodToMerge->allocation += 1;
+                $foodToMerge->save();
+
+                // Generate a fresh hostel number after saving
+                $food_number = Self::generateServicePointNumber($foodToMerge);
+                // Reassign the payment
+                $payment->food_id = $foodToMerge->id;
+                $payment->service_point_allocation_number = $food_number;
+                $payment->service_point_allocation_type = 'reassignment';
+                $payment->save();
+            }
+
+            $food->allocation -= $payments->count();
+            $food->save();
+
+            return true;
+        });
     }
 }

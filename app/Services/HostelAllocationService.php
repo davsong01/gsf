@@ -259,7 +259,7 @@ class HostelAllocationService
         $number = strtoupper($first_two_letters . $last_letter) . '-' . $allocation;
         $number = str_replace(' ', '', $number);
 
-        \Log::info(['hostel number' => $number, 'hostel' => $hostel]);
+        // \Log::info(['hostel number' => $number, 'hostel' => $hostel]);
         return $number;
     }
 
