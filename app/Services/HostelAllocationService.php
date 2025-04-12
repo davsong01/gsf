@@ -244,16 +244,25 @@ class HostelAllocationService
     }
 
 
-    static function generateHostelNumber($hostel){
-        // first 2 letters of hostel name and last letter plus current allocation
-        $first_two_letters = substr($hostel->name, 0, 2);
-        $last_letter = substr($hostel->name, -1);
+    static function generateHostelNumber($hostel)
+    {
+        $name = trim($hostel->name ?? '');
+        $allocation = $hostel->allocation ?? 0;
 
-        $number = str_replace(' ', '', strtoupper($first_two_letters . $last_letter) . '-' . $hostel->allocation);
+        if (mb_strlen($name) < 3) {
+            return 'HST-' . $hostel->id . '-' . $allocation;
+        }
+
+        $first_two_letters = mb_substr($name, 0, 2);
+        $last_letter = mb_substr($name, -1);
+
+        $number = strtoupper($first_two_letters . $last_letter) . '-' . $allocation;
+        $number = str_replace(' ', '', $number);
 
         \Log::info(['hostel number' => $number, 'hostel' => $hostel]);
         return $number;
     }
+
 
     static function repairHostelAllocation($edition_id){
         $hostels = Hostel::where('conference_edition_id', $edition_id)->get();
