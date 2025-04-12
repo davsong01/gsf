@@ -250,6 +250,8 @@ class HostelAllocationService
         $last_letter = substr($hostel->name, -1);
 
         $number = str_replace(' ', '', strtoupper($first_two_letters . $last_letter) . '-' . $hostel->allocation);
+
+        \Log::info(['hostel number' => $number, 'hostel' => $hostel]);
         return $number;
     }
 
