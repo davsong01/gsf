@@ -656,10 +656,10 @@ class ConferenceManagementController extends Controller
 			}
 		}
 
-		if (empty($payment->badge_location)) {
+		// if (empty($payment->badge_location)) {
 			$imageController = new DynamicImageGeneratorController();
 			$imageController->generateImage($request->all(), $payment);
-		}
+		// }
 
 		return view('card.id')->with('payment', $payment)
 			->with('edition', $payment->edition)
