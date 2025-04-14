@@ -29,30 +29,30 @@ class ConferenceManagementController extends Controller
 {
 	public $edition;
 
-    public function index(Request $request){
+	public function index(Request $request)
+	{
 		// Admin
 		if (auth()->user()->role == 1) {
-			if(auth()->user()->conference_role == 'superadmin'){
+			if (auth()->user()->conference_role == 'superadmin') {
 				$editions = ConferenceEdition::all();
-			}else{
+			} else {
 				$editions = ConferenceEdition::where('id', $this->edition->id)->get();
 			}
-			
+
 			$count = 1;
-			return view('conference_management.admin.editions.index', compact('editions','count'));
-		}else{
-			
+			return view('conference_management.admin.editions.index', compact('editions', 'count'));
+		} else {
 			$edition = (object) activeConferenceEdition();
-			
-			if(auth()->user()->payments->count() > 0){
-				if(auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)){
+
+			if (auth()->user()->payments->count() > 0) {
+				if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)) {
 					return view('conference_management.participant.index', compact('edition'));
 				}
-			}else{
-				return back()->with('error','You have not registered for any conference');
+			} else {
+				return back()->with('error', 'You have not registered for any conference');
 			}
 		}
-    }
+	}
 
 	public function create(Request $request)
 	{
@@ -65,10 +65,10 @@ class ConferenceManagementController extends Controller
 		$moderators = Payment::where(['level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->get();
 		$payment = $moderator;
 		// $moderator_participants = Payment::where(['user_id' => auth()->user()->id, 'level' => 'participant', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete','uploaded_by'=>auth()->user()->id])->get();
-		
+
 		if (auth()->user()->role == 1) {
 			$type = $request->type;
-			return view('conference_management.admin.users.create', compact('edition','chapters', 'hostels', 'foods', 'moderators','moderator','type'));
+			return view('conference_management.admin.users.create', compact('edition', 'chapters', 'hostels', 'foods', 'moderators', 'moderator', 'type'));
 		}
 
 		if (!$moderator) {
@@ -77,7 +77,7 @@ class ConferenceManagementController extends Controller
 			if ($moderator->slot_filled == $moderator->slot) {
 				return back()->with('error', 'You have reached the maximum number of slots you can add');
 			}
-			return view('conference_management.moderator.users.create', compact('chapters', 'edition','payment'));
+			return view('conference_management.moderator.users.create', compact('chapters', 'edition', 'payment'));
 		}
 	}
 
@@ -97,7 +97,7 @@ class ConferenceManagementController extends Controller
 	public function edit($id, Request $request)
 	{
 		$user = $payment = Payment::with('user')->whereId($id)->first();
-		
+
 		$edition = ConferenceEdition::find($request->edition);
 		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 
@@ -128,55 +128,57 @@ class ConferenceManagementController extends Controller
 				$foods = Food::where(['conference_edition_id' => $edition->id, 'level' => 'Participant'])->where('capacity', '>', 'allocation')->orderBy('name')->get();
 			}
 
-			return view('conference_management.moderator.users.edit', compact('user', 'hostels', 'foods', 'chapters', 'edition','payment'));
+			return view('conference_management.moderator.users.edit', compact('user', 'hostels', 'foods', 'chapters', 'edition', 'payment'));
 		}
 
 		return abort(404);
 	}
 
-	public function staffEdit($id, Request $request){
+	public function staffEdit($id, Request $request)
+	{
 		$edition = ConferenceEdition::find($request->edition);
 		$user = User::find($id);
-		
+
 		if (isset($edition) && $edition->status == 'active') {
 			if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') {
 				$staff = User::where('role', 1)->where('conference_role', 'admin')->get();
-				return view('conference_management.admin.staff.edit', compact('edition','user'));
+				return view('conference_management.admin.staff.edit', compact('edition', 'user'));
 			}
 		} else {
 			return back()->with('error', 'Conference Edition not active');
 		}
 	}
 
-	public function show(Payment $conferencemanagement, Request $request){
+	public function show(Payment $conferencemanagement, Request $request)
+	{
 		$chapters = Chapter::all();
 		$edition = ConferenceEdition::where('id', $request->edition)->first();
 		$payment = $conferencemanagement;
 		if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isNec($edition) || auth()->user()->isChoir($edition)) {
-			return view('conference_management.participant.single_payment', compact('edition', 'payment','chapters'));
+			return view('conference_management.participant.single_payment', compact('edition', 'payment', 'chapters'));
 		}
 		if (auth()->user()->isModerator($edition)) {
-			
-			$allparticipants = Payment::with(['hostel', 'moderator'])->where(['uploaded_by'=>auth()->user()->id, 'conference_edition_id'=> $payment->conference_edition_id])->orderBy('created_at', 'desc');
-			
-			$thispayment = Payment::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id,'user_id' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->first();
+
+			$allparticipants = Payment::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->orderBy('created_at', 'desc');
+
+			$thispayment = Payment::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id, 'user_id' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->first();
 			// dd($allparticipants->get(), $payment->conference_edition_id);
 			$myParticipants = clone $allparticipants;
 			$myParticipantsAll = $myParticipants->get();
 			$participants = $allparticipants->count();
-			
+
 			$pending_registration = $myParticipantsAll->where('registration_status', 'Pending')->count();
 			$completed_registration = $allparticipants->where('registration_status', 'Complete')->count();
 			$allparticipants = $allparticipants->get();
 			$count = 1;
 
-			return view('conference_management.moderator.index', compact('chapters', 'pending_registration', 'completed_registration', 'participants', 'myParticipantsAll', 'count','payment','edition', 'thispayment'));
+			return view('conference_management.moderator.index', compact('chapters', 'pending_registration', 'completed_registration', 'participants', 'myParticipantsAll', 'count', 'payment', 'edition', 'thispayment'));
 		}
 	}
 
 	public function store(Request $request, User $user)
 	{
-		
+
 		if (auth()->user()->role == 1) {
 			$validator =  Validator::make($request->all(), [
 				'name' => 'required|min:3',
@@ -196,16 +198,19 @@ class ConferenceManagementController extends Controller
 				return redirect()->back()->with('errors', $validator)
 					->withInput($request->all());
 			}
+
+			$data = $validator->valid();
+		} else {
+			$data = $request->all();
 		}
 
-		$data = $validator->valid();
 		//Handle password
 		if ($request['password']) {
 			$data['password'] = Hash::make($request['password']);
 		} else {
 			$data['password']  = Hash::make($request['phone']);
 		}
-		
+
 		if ($request['transid']) {
 			$data['transid'] = $request['transid'];
 		} else {
@@ -221,19 +226,19 @@ class ConferenceManagementController extends Controller
 		$setting = ConferenceEdition::find($request->edition);
 		$data['conference_edition_id'] = $setting->id;
 		//Store block for Admin
-		if (auth()->user()->role == 1) {	
-			if(!isset($data['uploaded_by'])){
+		if (auth()->user()->role == 1) {
+			if (!isset($data['uploaded_by'])) {
 				$data['uploaded_by'] = auth()->user()->id;
-			}else{
+			} else {
 				$data['uploaded_by'] = $data['uploaded_by'];
 			}
-			
+
 			// Check registration fee
 			$this->checkRegFee($request->all(), $setting);
 			$data['type'] = $this->getType($request);
 			// Assign hostel
 			// (You may want to check if gender is the same as hostel gender)
-			
+
 			// Extras
 			$extras = $this->getExtras($data['type'], $setting);
 			$data['slot'] = $extras['slot'];
@@ -242,14 +247,14 @@ class ConferenceManagementController extends Controller
 			$data['amount_paid'] = $request->amount_paid;
 			$data['registration_status'] = 'Complete';
 			$data['payment_type'] = 'Admin';
-			
+
 			$user = $this->createUser($data);
 			$payment = $this->createPayment($data, $user);
 			$family_id = $this->createFamilyId($user, $extras['ledge']);
 
 			// Assign Foodstand and Hostel
 			$data['field_id'] = $user->campus->id;
-			
+
 			$hostel_allocation = HostelAllocationService::assignHostel($data);
 			$service_point = ServicePointAllocationService::assignFoodStand($data);
 
@@ -263,11 +268,11 @@ class ConferenceManagementController extends Controller
 				'hostel_id' => $hostel_allocation['hostel_id'],
 				'food_id' => $service_point['service_point_allocation_id']
 			]);
-			
+
 			// Log Email
 			$data['type'] = 'welcome_mail';
 			$data['amount'] = $data['amount_paid'];
-			$data['family_id'] = $family_id ;
+			$data['family_id'] = $family_id;
 			$data['chapter'] = isset($user->campus->name) ? $user->campus->name : '';
 			//send email to participant
 			$email = [
@@ -278,14 +283,13 @@ class ConferenceManagementController extends Controller
 				'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
 			];
 			$this->logEmail($email);
-			return redirect(route('conference.participants',['type'=>$payment->level, 'edition'=>$setting]))->with('message', 'Participant successfully created');
-
+			return redirect(route('conference.participants', ['type' => $payment->level, 'edition' => $setting]))->with('message', 'Participant successfully created');
 		}
-		
+
 		$edition = ConferenceEdition::find($request->edition);
 		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
-		
-		if($moderator){
+
+		if ($moderator) {
 			$data2 = $this->validate($request, [
 				'name' => 'required|min:3',
 				'email' => 'required|unique:users,email',
@@ -295,50 +299,50 @@ class ConferenceManagementController extends Controller
 				'transid' => 'nullable',
 			]);
 			$data['type'] = 1;
-			$data = array_merge($data,$data2);
-			
+			$data = array_merge($data, $data2);
+
 			//Check if moderator has slots available
 			if ($moderator->slot_filled >= $moderator->slot) {
 				return back()->with('warning', 'You can no longer add participants because you have used up all available slots');
 			}
-			
+
 			// try {
-				$newuser = User::create([
-					'name' => $data['name'],
-					'email' => $data['email'],
-					'phone' => $data['phone'],
-					'sex' => $data['sex'],
-					'slug' => Str::slug($data['name']),
-					'chapter_id' => auth()->user()->chapter_id,
-					'passport' => $data['passport'],
-					'password' => $data['password']
-				]);
-				$data['level'] = 'Participant';
-				
-				$payment = Payment::Create([
-					'type' => 1,
-					'user_id' => $newuser->id,
-					'level' => 'Participant',
-					'uploaded_by' => auth()->user()->id,
-					'amount_paid' => $setting->registration_fee,
-					'slot' => 1,
-					'slot_filled' => 1,
-					'payment_type' => $moderator->payment_type,
-					'transid' => $this->generateTransactionId(),
-					'registration_status' => 'Complete',
-					'conference_edition_id' => $request->edition,
-				]);
+			$newuser = User::create([
+				'name' => $data['name'],
+				'email' => $data['email'],
+				'phone' => $data['phone'],
+				'sex' => $data['sex'],
+				'slug' => Str::slug($data['name']),
+				'chapter_id' => auth()->user()->chapter_id,
+				'passport' => $data['passport'],
+				'password' => $data['password']
+			]);
+			$data['level'] = 'Participant';
+
+			$payment = Payment::Create([
+				'type' => 1,
+				'user_id' => $newuser->id,
+				'level' => 'Participant',
+				'uploaded_by' => auth()->user()->id,
+				'amount_paid' => $setting->registration_fee,
+				'slot' => 1,
+				'slot_filled' => 1,
+				'payment_type' => $moderator->payment_type,
+				'transid' => $this->generateTransactionId(),
+				'registration_status' => 'Complete',
+				'conference_edition_id' => $request->edition,
+			]);
 
 			$chapter = Chapter::with('field:id,name')->select('id', 'field_id')->where('id', $newuser->chapter_id)->first();
 			$data['field_id'] = !empty($chapter->field) ? $chapter->field->id : (!empty($data['field_id']) ? $data['field_id'] : null);
-			
+
 			if (in_array($data['level'], ['Participant', 'Alumni', 'Nec'])) {
 				$hostel_allocation = HostelAllocationService::assignHostel($data);
 				$service_point = ServicePointAllocationService::assignFoodStand($data);
 
 				$data['allocated_hostel_data'] = $hostel_allocation;
 				$data['allocated_service_point_data'] = $service_point;
-				
+
 				$payment->update([
 					'hostel_allocation_number' => $hostel_allocation['hostel_allocation_number'],
 					'hostel_allocation_type' => $hostel_allocation['hostel_allocation_type'],
@@ -352,53 +356,53 @@ class ConferenceManagementController extends Controller
 			$extras = $this->getExtras($data['type'], $setting);
 			$this->createFamilyId($newuser, $extras['ledge']);
 			$data['chapter'] = isset($newuser->campus->name) ? $newuser->campus->name : '';
-			
+
 			//update temp user
 			$data['type'] = 'welcome_mail';
 			$data['amount'] = $setting->registration_fee;
 			$data['family_id'] = $newuser->family_id;
-				
-				//send email to participant
-				$email = [
-					'subject' => 'Thank you for registering',
-					'recipient_name' => $data['name'],
-					'recipient' => $data['email'],
-					'type' => $data['type'],
-					'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
-				];
-				
-				$this->logEmail($email);
-				// Mail::to($data['email'])->send(new WelcomeMail($data));
-				$email = [
-					'subject' => 'New Registration',
-					'type' => 'new_registration',
-					'recipient' => $setting->official_email,
-					'chapter' => $newuser->campus,
-					'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
-				];
 
-				//send email to official email
-				$this->logEmail($email);
-				$moderator->update([
-					'slot_filled' => $moderator->slot_filled + 1,
-				]);
+			//send email to participant
+			$email = [
+				'subject' => 'Thank you for registering',
+				'recipient_name' => $data['name'],
+				'recipient' => $data['email'],
+				'type' => $data['type'],
+				'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
+			];
 
-			return redirect(route('conferencemanagement.show', ['type' => $moderator->level,'conferencemanagement' => $payment->id, 'edition' => $payment->conference_edition_id]))->with('message', 'Participant successfully created, you have ' . ($moderator->slot - $moderator->slot_filled) . ' participant slot(s) left');
+			$this->logEmail($email);
+			// Mail::to($data['email'])->send(new WelcomeMail($data));
+			$email = [
+				'subject' => 'New Registration',
+				'type' => 'new_registration',
+				'recipient' => $setting->official_email,
+				'chapter' => $newuser->campus,
+				'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
+			];
 
+			//send email to official email
+			$this->logEmail($email);
+			$moderator->update([
+				'slot_filled' => $moderator->slot_filled + 1,
+			]);
+
+			return redirect(route('conferencemanagement.show', ['type' => $moderator->level, 'conferencemanagement' => $payment->id, 'edition' => $payment->conference_edition_id]))->with('message', 'Participant successfully created, you have ' . ($moderator->slot - $moderator->slot_filled) . ' participant slot(s) left');
 		}
 
 		return abort(404);
 	}
 
-	public function staffStore(Request $request){
-		
+	public function staffStore(Request $request)
+	{
+
 		$data = $this->validate($request, [
 			"name" => "required",
 			"email" => "required",
 			"phone" => "required",
 			"sex" => "required",
 			"conference_role" => "required",
-			"password"=>"nullable"
+			"password" => "nullable"
 		]);
 
 		//Handle password
@@ -415,7 +419,7 @@ class ConferenceManagementController extends Controller
 		} else {
 			$data['passport'] = NULL;
 		}
-		
+
 		$user = User::Create([
 			"name" => $data['name'],
 			"email" => $data['email'],
@@ -433,15 +437,15 @@ class ConferenceManagementController extends Controller
 		]);
 
 		return redirect(route('conference.staff', ['edition' => $this->edition]))->with('message', 'Staff successfully created');
-
 	}
 
-	public function checkRegFee($request, $setting){
+	public function checkRegFee($request, $setting)
+	{
 		$error = 0;
-		if($request['level'] == 'Participant' and ($request['amount_paid'] < $setting->registration_fee)){
+		if ($request['level'] == 'Participant' and ($request['amount_paid'] < $setting->registration_fee)) {
 			$error = 1;
 		}
-	
+
 		if ($request['level'] == 'Alumni' and ($request['amount_paid'] != $setting->new_alumni_registration_fee || $request['amount_paid'] != $setting->alumni_registration_fee)) {
 			$error = 1;
 		}
@@ -450,15 +454,16 @@ class ConferenceManagementController extends Controller
 			$error = 1;
 		}
 
-		if($error == 1){
-			return back()->with('error', 'Amount is lower than registration fee for '. $request['level']);
+		if ($error == 1) {
+			return back()->with('error', 'Amount is lower than registration fee for ' . $request['level']);
 		}
-	}	
+	}
 
-    public function update(Request $request, $id){
-        $payment = Payment::with('user')->whereId($id)->first();
-        $user = $payment->user;
-		
+	public function update(Request $request, $id)
+	{
+		$payment = Payment::with('user')->whereId($id)->first();
+		$user = $payment->user;
+
 		$data = $this->validate($request, [
 			'name' => 'required',
 			'phone' => 'required',
@@ -469,12 +474,12 @@ class ConferenceManagementController extends Controller
 
 		if ($request->has('passport')) {
 			$update['passport'] = $this->uploadImage($data['passport'], 'images/passports', 400, 400);
-		} 
-		
+		}
+
 		$update['phone'] = $request['phone'] ?? $user->phone;
 		$update['name'] = $request['name'] ?? $user->name;
 		$update['sex'] = $request['sex'] ?? $user->sex;
-		
+
 		// handle gender change
 		if ($request->has('sex') && $request['sex'] != $user->sex) {
 			$paymentArray = array_merge($data, $payment->ToArray());
@@ -485,27 +490,27 @@ class ConferenceManagementController extends Controller
 			$paymentupdate['hostel_allocation_number'] = $hostel_allocation['hostel_allocation_number'];
 			$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
 			$paymentupdate['hostel_id'] = $hostel_allocation['hostel_id'];
-			
+
 			// If no hostel
 			if (!isset($paymentupdate['hostel_id']) && empty($paymentupdate['hostel_id'])) {
 				return back()->with('error', 'Sorry, there is no available hostel for you at the moment. Changes not saved!');
-			}else{
+			} else {
 				$this->reduceHostelAllocation($payment);
 			}
 		}
-		
+
 		//handle password
 		if ($request->has('password') && !empty($request->password)) {
 			$update['password'] = Hash::make($request['password']);
 		}
-		
+
 		// Moderator
 		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
-		
+
 		if (isset($moderator) && !empty($moderator)) {
 			$edition = $this->edition;
 			// Hostel may not be set above, so set it
-			if(!isset($update['hostel_id'])){
+			if (!isset($update['hostel_id'])) {
 				$paymentArray = array_merge($data, $payment->ToArray());
 				$paymentArray['field_id'] =  $payment->user->campus->id;
 				$hostel_allocation = HostelAllocationService::assignHostel($paymentArray);
@@ -522,37 +527,36 @@ class ConferenceManagementController extends Controller
 					$this->reduceHostelAllocation($payment);
 				}
 			}
-			
-			if(!isset($payment->food) && empty($payment->food)){
+
+			if (!isset($payment->food) && empty($payment->food)) {
 				$paymentArray = array_merge($data, $payment->ToArray());
 				$paymentArray['field_id'] =  $payment->user->campus->id;
-				
+
 				$service_point = ServicePointAllocationService::assignFoodStand($paymentArray);
-				
+
 				$data['allocated_service_point_data'] = $service_point;
 
 				$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
 				$paymentupdate['service_point_allocation_number'] = $service_point['service_point_allocation_number'];
 				$paymentupdate['service_point_allocation_type'] = $service_point['service_point_allocation_type'];
 				$paymentupdate['food_id'] = $service_point['service_point_allocation_id'];
-				
-			}else{
+			} else {
 				$paymentupdate['food_id'] = $payment->food_id;
 			}
-		
 		}
-		
+
 		$user->update($update);
 		$payment->update($paymentupdate);
 
-		return back()->with('message','Operation succesful');
-    }
+		return back()->with('message', 'Operation succesful');
+	}
 
-	public function staffUpdate(Request $request, $id){
-		
+	public function staffUpdate(Request $request, $id)
+	{
+
 		$edition = ConferenceEdition::find($request->edition);
 		$user = User::find($id);
-		
+
 		if (isset($edition) && $edition->status == 'active') {
 			if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') {
 				//Handle password
@@ -563,7 +567,7 @@ class ConferenceManagementController extends Controller
 				}
 
 				$request['password'] = Hash::make($password);
-				
+
 				//Handle Passport Upload
 				if ($request->has('avatar')) {
 					$request['passport'] = $this->uploadImage($request->avatar, 'images/passports', 400, 400);
@@ -571,7 +575,7 @@ class ConferenceManagementController extends Controller
 					$request['passport'] = NULL;
 				}
 
-				$user->update($request->except(['edition','avatar']));
+				$user->update($request->except(['edition', 'avatar']));
 				return redirect(route('conference.staff', ['edition' => $this->edition]))->with('message', 'Staff successfully updated');
 			}
 		} else {
@@ -579,63 +583,66 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-	public function reduceHostelAllocation($payment){
+	public function reduceHostelAllocation($payment)
+	{
 		if (isset($payment->hostel->id) && !empty($payment->hostel->id)) {
 			$current_hostel = Hostel::find($payment->hostel->id);
-			
-			if($current_hostel->allocation == 0){
-				return; 
-			}else{
-				$payment->hostel->update(['allocation'=> $payment->hostel->allocation-1]);
+
+			if ($current_hostel->allocation == 0) {
+				return;
+			} else {
+				$payment->hostel->update(['allocation' => $payment->hostel->allocation - 1]);
 				return $payment->hostel;
 			}
 		}
 	}
 
-	public function reduceFoodStandAllocation($payment){
+	public function reduceFoodStandAllocation($payment)
+	{
 		if (isset($payment->food->id) && !empty($payment->food->id)) {
 			$current_food = Food::find($payment->food->id);
-			
-			if($current_food->allocation == 0){
-				return; 
-			}else{
-				$payment->food->update(['allocation'=> $payment->food->allocation-1]);
+
+			if ($current_food->allocation == 0) {
+				return;
+			} else {
+				$payment->food->update(['allocation' => $payment->food->allocation - 1]);
 				return $payment->food;
 			}
 		}
 	}
 
-    public function participants($type='',$edition=''){
-        $count = 1;
-		
-        if (auth()->user()->role == 1) {
-			$participants = Payment::with('user')->where('conference_edition_id',$edition)->wherehas('user')->orderBy('created_at', 'desc')->where('level',$type)->get();
+	public function participants($type = '', $edition = '')
+	{
+		$count = 1;
+
+		if (auth()->user()->role == 1) {
+			$participants = Payment::with('user')->where('conference_edition_id', $edition)->wherehas('user')->orderBy('created_at', 'desc')->where('level', $type)->get();
 			$edition = ConferenceEdition::find($edition);
-			
-			return view('conference_management.admin.users.index', compact('participants', 'count', 'edition','type'));
-        }
-    }
+
+			return view('conference_management.admin.users.index', compact('participants', 'count', 'edition', 'type'));
+		}
+	}
 
 	public function staffIndex($edition = '')
 	{
 		$count = 1;
 		$edition = ConferenceEdition::find($edition);
-		if(isset($edition) && $edition->status == 'active'){
+		if (isset($edition) && $edition->status == 'active') {
 			if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') {
 				$staff = User::where('role', 1)->get();
-				
+
 				return view('conference_management.admin.staff.index', compact('staff', 'count', 'edition'));
 			}
-		}else{
+		} else {
 			return back()->with('error', 'Conference Edition not active');
 		}
 	}
 
-    public function getCard(Request $request, $id)
+	public function getCard(Request $request, $id)
 	{
 		// return back()->with('error', 'This feature is not available yet');
 		$payment = Payment::where('id', $id)->with('user', 'hostel')->first();
-		
+
 		if (!auth()->user()->completeReg($payment->edition) && auth()->user()->role <> 1) {
 			return back()->with('error', 'You must complete registration before viewing this resource');
 		}
@@ -645,24 +652,25 @@ class ConferenceManagementController extends Controller
 				return abort(404);
 			}
 		}
-		
-		if(empty($payment->badge_location)){
+
+		if (empty($payment->badge_location)) {
 			$imageController = new DynamicImageGeneratorController();
 			$imageController->generateImage($request->all(), $payment);
 		}
 
 		return view('card.id')->with('payment', $payment)
-            ->with('edition', $payment->edition)
-            ->with('user', $payment->user);
+			->with('edition', $payment->edition)
+			->with('user', $payment->user);
 	}
 
-	public function resendEmail(Request $request, $id){
+	public function resendEmail(Request $request, $id)
+	{
 		$payment = Payment::find($id);
 		$user = User::where('id', $payment->user_id)->first();
-		
-		$criticalEmail = CriticalEmail::where('recipient',$user->email)->where('type','welcome_mail')->where('status',1)->first();
-		
-		if($criticalEmail){
+
+		$criticalEmail = CriticalEmail::where('recipient', $user->email)->where('type', 'welcome_mail')->where('status', 1)->first();
+
+		if ($criticalEmail) {
 			$data['type'] = $criticalEmail->type;
 			$data['recipient'] = $criticalEmail->recipient;
 			$data['content'] = $criticalEmail->content;
@@ -675,38 +683,38 @@ class ConferenceManagementController extends Controller
 			} else {
 				return back()->with('error', $res['error']);
 			}
-		}else{
-			return back()->with('error','No sent Email logged for user!');
+		} else {
+			return back()->with('error', 'No sent Email logged for user!');
 		}
 	}
 
 	public function usersImportIndex(Request $request)
 	{
 		$edition = ConferenceEdition::find($request->edition) ?? activeConferenceEdition();
-		
-		if(auth()->user()->role == 1){
+
+		if (auth()->user()->role == 1) {
 			$type = $request->type;
 			$chapters = Chapter::all();
-			
-			return view('conference_management.admin.users.import', compact('chapters','edition', 'type'));
+
+			return view('conference_management.admin.users.import', compact('chapters', 'edition', 'type'));
 		}
 
-		if(auth()->user()->isModerator($edition)){
-			$payment = Payment::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $edition->id, 'registration_status'=>'Complete'])->first();
-			
-			if($payment->slot_filled >= $payment->slot){
+		if (auth()->user()->isModerator($edition)) {
+			$payment = Payment::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $edition->id, 'registration_status' => 'Complete'])->first();
+
+			if ($payment->slot_filled >= $payment->slot) {
 				return back()->with('error', 'You have already exhausted your registration slots');
 			}
 			$type = 'Participant';
-			return view('conference_management.moderator.users.import', compact('edition', 'type','payment'));
+			return view('conference_management.moderator.users.import', compact('edition', 'type', 'payment'));
 		}
-
 	}
 
-	public function getAdminParticipantSample(Request $request,$type){
-		
-		$path = public_path() . '/frontend/exportsamples/import'. Str::lower($type).'.xlsx';
-		
+	public function getAdminParticipantSample(Request $request, $type)
+	{
+
+		$path = public_path() . '/frontend/exportsamples/import' . Str::lower($type) . '.xlsx';
+
 		if (file_exists($path)) {
 			return response()->download($path);
 		} else {
@@ -714,7 +722,7 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-	
+
 	public function import(Request $request)
 	{
 		if (auth()->user()->role == 1 || auth()->user()->isModerator($this->edition)) {
@@ -725,9 +733,14 @@ class ConferenceManagementController extends Controller
 
 			$data['chapter_id'] = auth()->user()->isAdmin() ? $request->chapter_id : auth()->user()->chapter_id;
 			$data['edition'] = ConferenceEdition::find($request->edition);
-
-			$redirectRoute = auth()->user()->isAdmin() ? route('conferenceusers.import.index',['type' => $request->import_level, 'edition' => $request->edition]) : route('conferenceusers.import.index');
 			
+			if(auth()->user()->isAdmin()){
+				if(empty($data['chapter_id'])){
+					return back()->with('error', 'Chapter Id is empty');
+				}
+			}
+			$redirectRoute = auth()->user()->isAdmin() ? route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) : route('conferenceusers.import.index');
+
 			if (!auth()->user()->isAdmin()) {
 				$payment = Payment::where([
 					'user_id' => auth()->user()->id,
@@ -736,13 +749,13 @@ class ConferenceManagementController extends Controller
 				])->first();
 
 				$sRedirectRoute = route('conferencemanagement.show', [
-						'conferencemanagement' => $payment->id,
-						'edition' => $request->edition
-					]);
+					'conferencemanagement' => $payment->id,
+					'edition' => $request->edition
+				]);
 				if ($payment && $payment->slot_filled >= $payment->slot) {
 					return back()->with('error', 'You have already exhausted your registration slots');
 				}
-			}else{
+			} else {
 				$sRedirectRoute = route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]);
 			}
 		} else return abort(404);
@@ -750,14 +763,14 @@ class ConferenceManagementController extends Controller
 		try {
 			$import = new ConferenceUsersImport($data, $payment ?? null);
 			Excel::import($import, $request->file('file'));
-			
+
 			$failures = $import->failures();
 
 			if ($failures->isNotEmpty()) {
 				$failureDetails = $failures->map(function ($failure) {
 					return [
 						'row' => $failure->row(),
-						'data' => $failure->values(), 
+						'data' => $failure->values(),
 						'errors' => $failure->errors(),
 					];
 				});
@@ -766,13 +779,12 @@ class ConferenceManagementController extends Controller
 					'failures' => $failureDetails,
 					'error' => 'Some rows failed to import.',
 				]);
-			}else{
-				
+			} else {
+
 				return redirect($sRedirectRoute)->with([
 					'message' => 'Upload Successful',
 				]);
 			}
-			
 		} catch (\Exception $e) {
 			return redirect($redirectRoute)->with([
 				'error' => 'Something went wrong, please try again: ' . $e->getMessage(),
@@ -785,40 +797,40 @@ class ConferenceManagementController extends Controller
 	{
 		$edition = ConferenceEdition::find($request->edition);
 		$count = 1;
-		
+
 		if (auth()->user()->role == 1) {
 			$participants = User::join('payments', 'payments.user_id', '=', 'users.id')
-			->where('payments.conference_edition_id', $edition->id)
-			->select('users.*','payments.level', 'payments.amount_paid','payments.transid')
+				->where('payments.conference_edition_id', $edition->id)
+				->select('users.*', 'payments.level', 'payments.amount_paid', 'payments.transid')
 				->orderBy('users.created_at', 'desc')->onlyTrashed()->get();
-				// dd($participants);
-			return view('conference_management.admin.users.trashed', compact('participants', 'count','edition'));
+			// dd($participants);
+			return view('conference_management.admin.users.trashed', compact('participants', 'count', 'edition'));
 		}
 	}
 
-	public function destroy(Request $request, $id){
-	
+	public function destroy(Request $request, $id)
+	{
+
 		//stop from accidentally deleted self
-		if(auth()->user()->id == $id){
-			return back()->with('error','You cannot delete yourself');
+		if (auth()->user()->id == $id) {
+			return back()->with('error', 'You cannot delete yourself');
 		}
-		
+
 		// Reduce hostel
-		$payment = Payment::where(['id'=>$request->payment_id,'conference_edition_id'=>$request->edition])->first();
+		$payment = Payment::where(['id' => $request->payment_id, 'conference_edition_id' => $request->edition])->first();
 		$user = User::withTrashed()->where('id', $payment->user_id)->first();
-		
+
 		$this->reduceHostelAllocation($payment);
 		$this->reduceFoodStandAllocation($payment);
-		
-		if($payment->uploaded_by){
-			$moderator = Payment::where(['user_id'=>$payment->uploaded_by,'conference_edition_id'=>$request->edition, 'level' => 'Moderator'])->first();
-			if($moderator){
-				$slot = ($moderator->slot_filled  > 0 ) ? $moderator->slot_filled - 1 : $moderator->slot_filled ;
-				$moderator->update(['slot_filled'=>$slot]);
-			}
 
+		if ($payment->uploaded_by) {
+			$moderator = Payment::where(['user_id' => $payment->uploaded_by, 'conference_edition_id' => $request->edition, 'level' => 'Moderator'])->first();
+			if ($moderator) {
+				$slot = ($moderator->slot_filled  > 0) ? $moderator->slot_filled - 1 : $moderator->slot_filled;
+				$moderator->update(['slot_filled' => $slot]);
+			}
 		}
-		
+
 		//Delete Avatar
 		if ($user->trashed()) {
 			if (isset($user->passport)) {
@@ -831,8 +843,8 @@ class ConferenceManagementController extends Controller
 		} else {
 			//Get user hostel
 			$user->delete();
-			$payment->transid = $payment->transid.'..Flagged-'.time();
-			
+			$payment->transid = $payment->transid . '..Flagged-' . time();
+
 			$payment->save();
 			$payment->delete();
 
@@ -847,25 +859,24 @@ class ConferenceManagementController extends Controller
 			return back()->with('error', 'You cannot delete yourself');
 		}
 
-		$user = User::where('id',$id)->first();
+		$user = User::where('id', $id)->first();
 		//Delete Avatar
 
 		$this->deleteImage($user->passport);
 		$user->forceDelete();
 
 		return back()->with('message', 'Staff has been deleted forever');
-		
 	}
 
 
-	public function restore($id){
+	public function restore($id)
+	{
 		if (auth()->user()->level == 'Admin') {
 			$user = User::withTrashed()->where('id', $id)->firstOrFail();
 			$user->restore();
 
 			return redirect(route('users.index'))->with('message', 'Participant has been restored');
-
-		}else return abort(404);
+		} else return abort(404);
 	}
 
 	public function choirImportIndex()
@@ -898,10 +909,11 @@ class ConferenceManagementController extends Controller
 		return view('admin.official.import');
 	}
 
-	public function ajaxPayment(Request $request){
+	public function ajaxPayment(Request $request)
+	{
 		$type = json_decode($request['metadata'], true);
 		$transid = $this->generateTransactionId();
-		
+
 		$tempUser = app('App\Controllers\PaymentController')->createTempUser($request->all());
 		$request['transid'] = $tempUser->transid;
 
