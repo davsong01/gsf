@@ -546,7 +546,10 @@ class ConferenceManagementController extends Controller
 		}
 
 		$user->update($update);
-		$payment->update($paymentupdate);
+
+		if(isset($paymentupdate)){
+			$payment->update($paymentupdate);
+		}
 
 		return back()->with('message', 'Operation succesful');
 	}
