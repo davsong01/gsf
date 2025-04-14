@@ -50,7 +50,7 @@
                                                 <strong>Hostel:</strong> {{ $participant->hostel->name }}
                                                 @endif
                                                 @if(isset($participant->food_id)) <br>
-                                                <strong>Foodstand:</strong> {{ $participant->food->name }}
+                                                <strong>Service Point:</strong> {{ $participant->food->name }}
                                                 @endif
                                                 @if($type == 'Moderator') <br>
                                                 <span>

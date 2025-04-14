@@ -4,7 +4,7 @@
 <li class="breadcrumb-item"> <a href="{{ route('foods.index',['edition'=>$edition->id]) }}">Service Points</a></li>
 @endsection
 @section('active')
-<li class="breadcrumb-item">Create foodstand</li>
+<li class="breadcrumb-item">Create Service Point</li>
 @endsection
 @section('content2')
 <div class="content-body">

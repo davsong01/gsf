@@ -94,7 +94,7 @@
                                 <fieldset class="form-group">
                                     <label for="food_id">Service Point</label>
                                     <select class="form-control" name="food_id" id="food_id" required>
-                                         <option value="">--Select Foodstand--</option>
+                                         <option value="">--Select Service Point--</option>
                                         @foreach($foods as $food)
                                             @if($food->capacity > $food->allocation)
                                             <option value="{{ old('food_id') ?? $food->id }}" {{ old('food_id') == $food->id ? 'selected' : '' }}>{{ $food->name. ' ('.($food->capacity - $food->allocation). ' participant(s) left) | '.$food->type. ' | '.$food->level}}</option>

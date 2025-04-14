@@ -1,10 +1,10 @@
 @extends('layouts.conference')
-@section('title', 'Update foodstand')
+@section('title', 'Update service point')
 @section('item')
 <li class="breadcrumb-item"> <a href="{{ route('foods.index',['edition'=>$edition->id]) }}">Service Points</a></li>
 @endsection
 @section('active')
-<li class="breadcrumb-item">Update foodstand</li>
+<li class="breadcrumb-item">Update service point</li>
 @endsection
 @section('content2')
 <div class="content-body">
