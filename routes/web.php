@@ -252,6 +252,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::post('store-conferenceparticipants/{edition?}', 'store')->name('conference.participants.store');
         Route::get('edit-conferenceparticipants/{id}/edit/{edition?}', 'edit')->name('conference.participants.edit');
         Route::PATCH('update-conferenceparticipants/{id}/update', 'update')->name('conference.participants.update');
+        Route::PATCH('admin-update-conferenceparticipants/{id}/update', 'adminUpdate')->name('conference.participants.admin.update');
         Route::get('resendwelcomemail/{id}/show', 'resendEmail')->name('participants.resendmail');
         Route::get('participant/delete/{id}', 'destroy')->name('conferenceparticipants.delete');
         Route::get('trashed/participants', 'trashed')->name('conferenceparticipants.trashed');

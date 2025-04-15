@@ -19,7 +19,7 @@
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('conference.participants.update', ['edition'=>$edition->id,'id'=>$user->id]) }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('conference.participants.admin.update', ['edition'=>$edition->id,'id'=>$user->id]) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PATCH')
                          <div class="row">
