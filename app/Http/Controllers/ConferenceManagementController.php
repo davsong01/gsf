@@ -490,7 +490,7 @@ class ConferenceManagementController extends Controller
 			$paymentupdate['hostel_allocation_number'] = $hostel_allocation['hostel_allocation_number'];
 			$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
 			$paymentupdate['hostel_id'] = $hostel_allocation['hostel_id'];
-
+			
 			// If no hostel
 			if (!isset($paymentupdate['hostel_id']) && empty($paymentupdate['hostel_id'])) {
 				return back()->with('error', 'Sorry, there is no available hostel for you at the moment. Changes not saved!');
@@ -591,11 +591,10 @@ class ConferenceManagementController extends Controller
 				$paymentArray = array_merge($data, $payment->ToArray());
 				$paymentArray['field_id'] = $payment->user->campus->id;
 				$paymentArray['setting'] = $setting;
-				$paymentArray['hostel_id'] = $request['hostel_id'];
 
 				$hostel_allocation = HostelAllocationService::assignHostel($paymentArray);
 				$data['allocated_hostel_data'] = $hostel_allocation;
-
+				
 				$paymentupdate['hostel_allocation_number'] = $hostel_allocation['hostel_allocation_number'];
 				$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
 				$paymentupdate['hostel_id'] = $hostel_allocation['hostel_id'];
@@ -610,7 +609,8 @@ class ConferenceManagementController extends Controller
 				$paymentArray = array_merge($data, $payment->ToArray());
 				$paymentArray['field_id'] = $user->campus->id;
 				$paymentArray['setting'] = $setting;
-				$paymentArray['hostel_id'] = $request['hostel_id'];
+				$paymentArray['new_hostel_id'] = $request['hostel_id'];
+
 				$hostel_allocation = HostelAllocationService::assignHostel($paymentArray);
 
 				$data['allocated_hostel_data'] = $hostel_allocation;
@@ -637,7 +637,7 @@ class ConferenceManagementController extends Controller
 				$paymentArray = array_merge($data, $payment->ToArray());
 				$paymentArray['field_id'] = $payment->user->campus->id;
 
-				$paymentArray['food_id'] = $request['food_id'];
+				$paymentArray['new_food_id'] = $request['food_id'];
 				$service_point = ServicePointAllocationService::assignFoodStand($paymentArray);
 	
 				$data['allocated_service_point_data'] = $service_point;
@@ -659,6 +659,7 @@ class ConferenceManagementController extends Controller
 			return back()->with('message', 'Operation successful');
 		} catch (\Throwable $th) {
 			DB::rollBack();
+			dd('hold');
 			return back()->with('error', $th->getMessage(). ', '.$th->getFile(). ', '.$th->getLine());
 		}
 	}

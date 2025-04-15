@@ -122,7 +122,6 @@ class HostelAllocationService
     // }
     static function assignHostel($data)
     {
-
         return DB::transaction(function () use ($data) {
             $setting = $data['setting'] ?? activeConferenceEdition();
 
@@ -135,10 +134,10 @@ class HostelAllocationService
                 'hostel_allocation_type' => null,
                 'hostel_name' => null
             ];
-
+            
             // If the data has a specific hostel_id, use it directly
-            if (isset($data['hostel_id']) && !empty($data['hostel_id'])) {
-                $hostel = Hostel::where('id', $data['hostel_id'])->where('conference_edition_id', $data['conference_edition_id'])->where('type', $data['sex'])->whereRaw('allocation < capacity')->first();
+            if (isset($data['new_hostel_id']) && !empty($data['new_hostel_id'])) {
+                $hostel = Hostel::where('id', $data['new_food_id'])->where('conference_edition_id', $data['conference_edition_id'])->where('type', $data['sex'])->whereRaw('allocation < capacity')->first();
                 
                 if ($hostel) {
                     $res = [
@@ -150,7 +149,6 @@ class HostelAllocationService
                     $hostel->update(['allocation' => $hostel->allocation + 1]);
                 }
             } else {
-                // Continue with normal hostel assignment logic
                 if (in_array($level, ['Official', 'Medical', 'Official'])) {
                     $hostel = Hostel::where([
                         'level' => $level,
@@ -158,7 +156,7 @@ class HostelAllocationService
                     ])->first();
                 } else {
                     $allocation_type = $setting->hostel_assignment_type ?? null;
-
+                    
                     switch ($allocation_type) {
                         case 'full-random':
                             $hostel = Hostel::where([

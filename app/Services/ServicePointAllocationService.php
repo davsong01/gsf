@@ -135,8 +135,8 @@ class ServicePointAllocationService
             ];
 
             // Check if food_id is provided in the data
-            if (isset($data['food_id']) && !empty($data['food_id'])) {
-                $food = Food::find($data['food_id']);
+            if (isset($data['new_food_id']) && !empty($data['new_food_id'])) {
+                $food = Food::where('id', $data['new_food_id'])->where('conference_edition_id', $data['conference_edition_id'])->first();
 
                 if ($food) {
                     $allocation_number = $food->allocation + 1;
