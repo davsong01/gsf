@@ -83,17 +83,6 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			$chapter_id = $this->data['chapter_id'];
 		}
 
-		if ($this->payment && $this->payment->level == 'Moderator') {
-			$this->payment->update(['slot_filled' => $this->payment->slot_filled + 1]);
-
-			if ($this->payment->slot_filled > $this->payment->slot) {
-				Validator::make($row, [
-					'slot' => 'required'
-				], [
-					'slot.required' => "You cannot import more than " . $this->payment->slot . ' Participants. Check the excel file for extra rows',
-				])->validate();
-			}
-		}
 
 		$data = [
 			'name'  => $name,
@@ -121,11 +110,25 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 		$chapter = Chapter::with('field:id,name')->select('id', 'field_id')->where('id', $data['chapter_id'])->first();
 		$data['field_id'] = $chapter->field->id ?? $data['field_id'] ?? null;
 		$data['setting'] = $this->setting;
+
+
 		$hostel_allocation = HostelAllocationService::assignHostel($data);
 		$service_point = ServicePointAllocationService::assignFoodStand($data);
 
 		$data['allocated_hostel_data'] = $hostel_allocation;
 		$data['allocated_service_point_data'] = $service_point;
+
+		if ($this->payment && $this->payment->level == 'Moderator' && !empty($payment)) {
+			$this->payment->update(['slot_filled' => $this->payment->slot_filled + 1]);
+
+			if ($this->payment->slot_filled > $this->payment->slot) {
+				Validator::make($row, [
+					'slot' => 'required'
+				], [
+					'slot.required' => "You cannot import more than " . $this->payment->slot . ' Participants. Check the excel file for extra rows',
+				])->validate();
+			}
+		}
 
 		$payment->update([
 			'hostel_allocation_number' => $hostel_allocation['hostel_allocation_number'],
