@@ -138,7 +138,7 @@ class HostelAllocationService
             
             // If the data has a specific hostel_id, use it directly
             if (isset($data['new_hostel_id']) && !empty($data['new_hostel_id'])) {
-                $hostel = Hostel::where('id', $data['new_food_id'])->where('conference_edition_id', $data['conference_edition_id'])->where('type', $data['sex'])->whereRaw('allocation < capacity')->first();
+                $hostel = Hostel::where('id', $data['new_hostel_id'])->where('conference_edition_id', $data['conference_edition_id'])->where('type', $data['sex'])->whereRaw('allocation < capacity')->first();
                 
                 if ($hostel) {
                     $res = [
@@ -313,8 +313,8 @@ class HostelAllocationService
                 $count += 1;
                 $data['setting'] = $setting;
                 $user = $payment->user;
-                \Log::info(['user' => $user]);
-                $data['field_id'] = $user->campus->field->id;
+                
+                $data['field_id'] = $user->campus->field->id ?? null;
                 $data = array_merge($data, $user->toArray(), $payment->toArray());
                 
                 $hostel_allocation = HostelAllocationService::assignHostel($data);

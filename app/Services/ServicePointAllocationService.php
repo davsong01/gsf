@@ -296,7 +296,7 @@ class ServicePointAllocationService
                 $count += 1;
                 $data['setting'] = $setting;
                 $user = $payment->user;
-                $data['field_id'] = $user->campus->field->id;
+                $data['field_id'] = $user->campus->field->id ?? null;
                 $data = array_merge($data, $user->toArray(), $payment->toArray());
                 
                 $service_point = ServicePointAllocationService::assignFoodStand($data);
