@@ -15,7 +15,7 @@
                         @if(auth()->user()->conference_role == 'superadmin')
                             <a href="{{ route('hostels.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Hostel</a>        
                             <a href="{{ route('hostels.repair.allocation',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-info mt-1">Repair Hostel Allocation</a>   
-                            <a href="{{ route('hostels.auto.allocate',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-success mt-1">Auto Allocate</a>   
+                            <a href="{{ route('hostels.auto.allocate',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-success mt-1">Auto Allocate ({{ $unallocatedHostels }})</a>   
                             <button style="" class="btn btn-dark mt-1" data-toggle="modal"  data-target="#hostel-merger">Hostel Merger</button>
                         @endif                
                     </div>

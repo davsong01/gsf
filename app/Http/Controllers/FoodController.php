@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Food;
 use App\Models\Field;
 use App\Models\Chapter;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
@@ -29,7 +30,9 @@ class FoodController extends Controller
                 $food->chapters = Chapter::whereIn('id', $food->chapter_ids)->get();
             });
             
-            return view('conference_management.admin.food.index', compact('foods', 'count','edition', 'servicePointsToMerge'));
+            $unallocatedSp = Payment::whereNull('food_id')->where('conference_edition_id', $edition->id)->count();
+
+            return view('conference_management.admin.food.index', compact('foods', 'count','edition', 'servicePointsToMerge', 'unallocatedSp'));
         }return abort(404);
     }
 

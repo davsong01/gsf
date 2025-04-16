@@ -29,7 +29,10 @@ class HostelController extends Controller
                 $hostel->fields = Field::whereIn('id', $hostel->field_ids)->get();
                 $hostel->chapters = Chapter::whereIn('id', $hostel->chapter_ids)->get();
             });
-            return view('conference_management.admin.hostel.index', compact('hostels', 'count','edition','hostelsToMerge'));
+
+            $unallocatedHostels = Payment::whereNull('hostel_id')->where('conference_edition_id', $edition->id)->count();
+
+            return view('conference_management.admin.hostel.index', compact('hostels', 'count','edition','hostelsToMerge', 'unallocatedHostels'));
         }return abort(404);
     }
 
