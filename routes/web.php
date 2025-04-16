@@ -283,6 +283,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('hostels/delete/{id}', 'destroy')->name('hostels.delete');
         Route::get('hostel-export/{id}', 'participantExport')->name('hostelusers.export');
         Route::get('hostels-repair-allocation', 'repairHostelAllocation')->name('hostels.repair.allocation');
+        Route::get('hostels-auto-allocate/{edition}', 'autoAllocateHostel')->name('hostels.auto.allocate');
+        
         Route::post('hostels-merger', 'hostelMerger')->name('hostels.merge');
         Route::post('get-available-hostels', 'getAvailableHostels')->name('get.available.hostels');
     });
@@ -291,6 +293,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('service-point-repair-allocation', 'repairServicePointAllocation')->name('servicepoint.repair.allocation');
         Route::post('service-point-merger', 'servicePointMerger')->name('servicepoint.merge');
         Route::post('get-available-service-points', 'getAvailableServicePoints')->name('get.available.service_point');
+        Route::get('sp-auto-allocate/{edition}', 'autoAllocateServicePoint')->name('sp.auto.allocate');
     });
 
     Route::get('food-export/{id}', [FoodController::class, 'participantExport'])->name('foodusers.export');

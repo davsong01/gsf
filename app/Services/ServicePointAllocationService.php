@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Food;
 use App\Models\Payment;
+use App\Models\ConferenceEdition;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Rap2hpoutre\FastExcel\FastExcel;
@@ -122,7 +123,7 @@ class ServicePointAllocationService
     static function assignFoodStand($data)
     {
         return DB::transaction(function () use ($data) {
-            $setting = activeConferenceEdition();
+            $setting = $data['setting'] ?? activeConferenceEdition();
 
             $level = $data['level'] == 'Moderator' ? 'Participant' : $data['level'];
             $sex = $data['sex'];
@@ -281,6 +282,40 @@ class ServicePointAllocationService
         }
 
         return true;
+    }
+
+    static function autoAllocateServicePoint($edition_id)
+    {
+        $payments = Payment::with('user')->whereNull('food_id')->where('conference_edition_id', $edition_id)->get();
+        $setting = ConferenceEdition::where('id', $edition_id)->first();
+        $data = [];
+        $count = 0;
+        
+        if (!empty($payments)) {
+            foreach ($payments as $payment) {
+                $count += 1;
+                $data['setting'] = $setting;
+                $user = $payment->user;
+                $data['field_id'] = $user->campus->field->id;
+                $data = array_merge($data, $user->toArray(), $payment->toArray());
+                
+                $service_point = ServicePointAllocationService::assignFoodStand($data);
+                
+                if (!empty($service_point)) {
+                    $payment->update([
+                        'service_point_allocation_number' => $service_point['service_point_allocation_number'],
+                        'service_point_allocation_type' => $service_point['service_point_allocation_type'],
+                        'food_id' => $service_point['service_point_allocation_id']
+                    ]);
+                } else {
+                    continue;
+                }
+            }
+
+            return [
+                'count' => $count,
+            ];
+        }
     }
 
     static function servicePointMerger($request)

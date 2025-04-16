@@ -126,6 +126,16 @@ class HostelController extends Controller
         return back()->with('message', ' Repair succesful!');
     }
 
+    public function autoAllocateHostel($edition){
+        $res = HostelAllocationService::autoAllocateHostel($edition);
+
+        if(isset($res['count'])){
+            return back()->with('message', $res['count'] . ' Participants allocated successfully!');
+        }else{
+            return back()->with('error', 'We couldn\'t assign any hostel!');
+        }
+    }
+
     public function getAvailableHostels(Request $request){
         $toDeallocate = Hostel::where('conference_edition_id', $request->edition_id)->where('id', $request->deallocated_hostel_id)->first();
         

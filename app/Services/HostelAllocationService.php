@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Hostel;
 use App\Models\Payment;
+use App\Models\ConferenceEdition;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Rap2hpoutre\FastExcel\FastExcel;
@@ -299,6 +300,44 @@ class HostelAllocationService
         }
 
         return true;
+    }
+
+    static function autoAllocateHostel($edition_id){
+        $payments = Payment::with('user')->whereNull('hostel_id')->where('conference_edition_id', $edition_id)->get();
+        $setting = ConferenceEdition::where('id', $edition_id)->first();
+        $data = [];
+        $count = 0;
+        
+        if(!empty($payments)){
+            foreach($payments as $payment){
+                $count += 1;
+                $data['setting'] = $setting;
+                $user = $payment->user;
+                $data['field_id'] = $user->campus->field->id;
+                $data = array_merge($data, $user->toArray(), $payment->toArray());
+                
+                $hostel_allocation = HostelAllocationService::assignHostel($data);
+                
+                if(!empty($hostel_allocation)){
+                    $payment->update([
+                        'hostel_allocation_number' => $hostel_allocation['hostel_allocation_number'],
+                        'hostel_allocation_type' => $hostel_allocation['hostel_allocation_type'],
+                        'hostel_id' => $hostel_allocation['hostel_id'],
+                    ]);
+    
+                }else{
+                    continue;
+                }
+    
+            }
+
+            return [
+                'count' => $count,
+            ];
+        }
+
+        
+
     }
 
     // static function hostelMerger($request){

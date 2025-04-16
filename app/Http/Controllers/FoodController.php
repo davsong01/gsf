@@ -117,6 +117,17 @@ class FoodController extends Controller
         return back()->with('message', ' Repair succesful!');
     }
 
+    public function autoAllocateServicePoint($edition)
+    {
+        $res = ServicePointAllocationService::autoAllocateServicePoint($edition);
+
+        if (isset($res['count'])) {
+            return back()->with('message', $res['count'] . ' Participants allocated successfully!');
+        } else {
+            return back()->with('error', 'We couldn\'t assign any hostel!');
+        }
+    }
+
     public function getAvailableServicePoints(Request $request)
     {
         $toDeallocate = Food::where('conference_edition_id', $request->edition_id)->where('id', $request->deallocated_service_point_id)->first();
