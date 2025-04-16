@@ -28,12 +28,12 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 	private $prefix;
 	private $amount_paid;
 
-	public function __construct($data, $payment)
+	public function __construct($data, $payment=null)
 	{
 		$this->data = $data;
 		$this->payment = $payment;
-		$this->setting = activeConferenceEdition();
-
+		$this->setting = $data['setting'] ?? activeConferenceEdition();
+		
 		switch ($this->data['import_level']) {
 			case 'Participant':
 				$this->type = 1;
@@ -56,7 +56,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 				$details = app('App\Http\Controllers\Controller')->getExtras(1, $this->setting);
 				break;
 		}
-
+		
 		$this->prefix = $details['ledge'];
 		$this->amount_paid = $this->setting->registration_fee;
 	}
@@ -77,6 +77,12 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 		$payment_type = $row['payment_type'] ?? 'Bulk Upload';
 		$uploaded_by = $row['uploaded_by'] ?? Auth::user()->id;
 		
+		if(!$this->data['chapter_id'] && auth()->user()->isAdmin()){
+			$chapter_id = !empty($row['chapter_id']) ? $row['chapter_id'] : $this->getChapterIdByChapterName(trim($row['chapter']));
+		}else{
+			$chapter_id = $this->data['chapter_id'];
+		}
+
 		if ($this->payment && $this->payment->level == 'Moderator') {
 			$this->payment->update(['slot_filled' => $this->payment->slot_filled + 1]);
 
@@ -95,8 +101,8 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			'phone' => $phone,
 			'level' => $level,
 			'type' => $this->type,
-			'chapter_id' => $this->data['chapter_id'] ?? null,
-			'chapter' => $this->data['chapter_id'] ?? null,
+			'chapter_id' => $chapter_id ?? null,
+			'chapter' => $chapter_id ?? null,
 			'sex' => $sex,
 			'registration_status' => $registration_status,
 			'slot' => $slot,
@@ -114,7 +120,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 
 		$chapter = Chapter::with('field:id,name')->select('id', 'field_id')->where('id', $data['chapter_id'])->first();
 		$data['field_id'] = $chapter->field->id ?? $data['field_id'] ?? null;
-
+		$data['setting'] = $this->setting;
 		$hostel_allocation = HostelAllocationService::assignHostel($data);
 		$service_point = ServicePointAllocationService::assignFoodStand($data);
 
@@ -170,5 +176,10 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			'*.sex.in' => "One or more $level gender is invalid.",
 			'*.chapter.exists' => "One or more $level chapter does not exist.",
 		];
+	}
+
+	public function getChapterIdByChapterName($name){
+		$chapter = Chapter::where('name', $name)->first();
+		return $chapter?->id;
 	}
 }

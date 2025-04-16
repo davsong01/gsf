@@ -247,6 +247,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('conference-users-import/{type}', 'getAdminParticipantSample')->name('conference.usersexport.sample');
         Route::post('participants-import', 'import')->name('conferenceusers.import');
         Route::post('conference-users-export/{type}', 'import')->name('conferenceuser.import');
+        Route::post('admin-conference-users-export/{type}', 'adminImport')->name('admin.conferenceuser.import');
         Route::get('conferenceparticipants/{type?}/{edition?}', 'participants')->name('conference.participants');
         Route::get('create-conferenceparticipants/{edition?}', 'create')->name('conference.participants.create');
         Route::post('store-conferenceparticipants/{edition?}', 'store')->name('conference.participants.store');
@@ -266,6 +267,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
         Route::get('conferencecards/{id}', 'getCard')->name('participants.card');
         Route::get('user/meal/{id}', 'getMealTicket')->name('meal.ticket');
+        
     });
 
     Route::controller(DynamicImageGeneratorController::class)->group(function () {

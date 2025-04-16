@@ -64,6 +64,7 @@
                                             <option value="1">Alumni</option>
 										</select>
                                     </fieldset>
+									
 									@if(auth()->user()->role == 1)
 									<fieldset class="form-group">
                                         <label for="chapter_id">Campus</label>

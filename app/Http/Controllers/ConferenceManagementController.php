@@ -809,7 +809,7 @@ class ConferenceManagementController extends Controller
 		if (auth()->user()->role == 1) {
 			$type = $request->type;
 			$chapters = Chapter::all();
-
+			
 			return view('conference_management.admin.users.import', compact('chapters', 'edition', 'type'));
 		}
 
@@ -839,6 +839,8 @@ class ConferenceManagementController extends Controller
 
 	public function import(Request $request)
 	{
+		$edition = ConferenceEdition::find($request->edition) ?? activeConferenceEdition();
+		
 		if (auth()->user()->role == 1 || auth()->user()->isModerator($this->edition)) {
 			$data = $this->validate($request, [
 				'file' => 'required|mimes:xlsx,csv',
@@ -846,7 +848,7 @@ class ConferenceManagementController extends Controller
 			]);
 
 			$data['chapter_id'] = auth()->user()->isAdmin() ? $request->chapter_id : auth()->user()->chapter_id;
-			$data['edition'] = ConferenceEdition::find($request->edition);
+			$data['edition'] = $edition;
 			
 			if(auth()->user()->isAdmin()){
 				if(empty($data['chapter_id'])){
@@ -900,10 +902,58 @@ class ConferenceManagementController extends Controller
 				]);
 			}
 		} catch (\Exception $e) {
+			// dd($e->getMessage(), $e->getLine(), $e->getFile());
 			return redirect($redirectRoute)->with([
 				'error' => 'Something went wrong, please try again: ' . $e->getMessage(),
 			]);
 		}
+	}
+
+	public function adminImport(Request $request)
+	{
+		$edition = ConferenceEdition::find($request->edition) ?? activeConferenceEdition();
+
+		$data = $this->validate($request, [
+			'file' => 'required|mimes:xlsx,csv',
+			'chapter_id' => 'nullable',
+			'import_level' => 'required|in:Participant,Moderator,Alumni,Nec,Choir',
+		]);
+		
+		$data['setting'] = $edition;
+		// $redirectRoute = auth()->user()->isAdmin() ? route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) : route('conferenceusers.import.index');
+		// $sRedirectRoute = route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]);
+
+		// try {
+			$import = new ConferenceUsersImport($data);
+			Excel::import($import, $request->file('file'));
+
+			$failures = $import->failures();
+
+			if ($failures->isNotEmpty()) {
+				$failureDetails = $failures->map(function ($failure) {
+					return [
+						'row' => $failure->row(),
+						'data' => $failure->values(),
+						'errors' => $failure->errors(),
+					];
+				});
+
+				return redirect(route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) )->with([
+					'failures' => $failureDetails,
+					'error' => 'Some rows failed to import.',
+				]);
+			} else {
+
+				return redirect(route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]))->with([
+					'message' => 'Upload Successful',
+				]);
+			}
+		// } catch (\Exception $e) {
+		// 	dd($e->getMessage());
+		// 	return redirect(route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) )->with([
+		// 		'error' => 'Something went wrong, please try again: ' . $e->getMessage(),
+		// 	]);
+		// }
 	}
 
 
