@@ -313,6 +313,7 @@ class HostelAllocationService
                 $count += 1;
                 $data['setting'] = $setting;
                 $user = $payment->user;
+                \Log::info(['user' => $user]);
                 $data['field_id'] = $user->campus->field->id;
                 $data = array_merge($data, $user->toArray(), $payment->toArray());
                 
