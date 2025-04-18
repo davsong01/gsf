@@ -50,6 +50,7 @@ class PaymentController extends Controller
 		
 		$metadata = json_decode($request->metadata);
 		$type['type'] = $metadata->type;
+
 		$request['metadata'] = json_encode($type);		
 		
 		// $type['type'] = json_decode($request->metadata)->type;

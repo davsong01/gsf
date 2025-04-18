@@ -53,6 +53,10 @@ Route::get('/retry', function () {
 
 Route::get('test/{data?}', [CriticalEmailController::class, 'getContent']);
 
+Route::controller(ConferenceUtilityToolsController::class)->group(function () {
+    Route::get('cron-fix-attempted-registration', 'fixAttemptedRegistration')->name('cron.edition.fix.attempted');
+});
+
 // Campus Tracker routes
 Route::controller(ChapterController::class)->group(function () {
     Route::get('campus-tracker', 'campusUpdate')->name('campus.tracker'); //http://127.0.0.1:8000/campus-view?chapter=1&token=387130
