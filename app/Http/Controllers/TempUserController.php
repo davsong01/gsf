@@ -17,9 +17,21 @@ class TempUserController extends Controller
         $edition = ConferenceEdition::with(['payments', 'donations'])->find($request->edition);
 
 		if (auth()->user()->role == 1) {
-			$participants = TempUser::with('campus')->where('conference_edition_id', $edition->id)->whereIn('status',['Initiated','abandoned'])->orderBy('created_at', 'desc')->get();
+            // $participants = TempUser::with('campus')->where('conference_edition_id', $edition->id)->whereIn('status',['Initiated','abandoned','Complete'])->orderBy('created_at', 'desc')->orderBy('status')->get();
             
-			return view('admin.temp_users.index', compact('participants', 'count','edition'));
+            $participants = TempUser::with('campus')
+                ->where('conference_edition_id', $edition->id)
+                ->whereIn('status', ['Initiated', 'abandoned', 'Complete'])
+                ->orderBy('created_at', 'desc')
+                ->orderByRaw("CASE 
+                WHEN status = 'Initiated' THEN 0
+                WHEN status = 'abandoned' THEN 1
+                WHEN status = 'Complete' THEN 2
+                ELSE 3 END")
+                ->get();
+
+
+            return view('admin.temp_users.index', compact('participants', 'count','edition'));
         }
        
         return abort(404);
@@ -58,6 +70,7 @@ class TempUserController extends Controller
             
             $request->request->add(['reference' => $request->reference]);
             $req = new \App\Http\Controllers\PaymentController();
+            $request['setting'] = ConferenceEdition::where('id', $temp->conference_edition_id)->first();
             
             $response = $req->handleGatewayCallback($request, 'admin');
             $status = $response->status ?? 'Failed';

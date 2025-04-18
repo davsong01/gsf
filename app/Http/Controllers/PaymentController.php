@@ -142,7 +142,7 @@ class PaymentController extends Controller
 	public function handleGatewayCallback(Request $request, $admin="", $transfer_confirm="",$onsite_confirm="")
 	{
 		$reference = $request->reference;
-		$setting = activeConferenceEdition();
+		$setting = $request['setting'] ?? activeConferenceEdition();
 		$conference_year = Carbon::parse($setting->start_date)->year;
 
 		$paymentDetails = $this->verify($reference, $setting);

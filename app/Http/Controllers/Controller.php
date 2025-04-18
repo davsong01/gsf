@@ -405,10 +405,11 @@ class Controller extends BaseController
     public function createUser($data)
     {
         $user = User::where('email', $data['email'])
-            ->orWhere('phone', $data['phone'])
+            // ->orWhere('phone', $data['phone'])
             ->first();
-        
-        if ($user) {
+            
+        \Log::info(['found' => $user]);
+        if (!is_null($user)) {
             $user->update([
                 'name' => $data['name'],
                 'phone' => $data['phone'],
@@ -420,6 +421,7 @@ class Controller extends BaseController
                 'role' => $data['role'] ?? $user->role
             ]);
         } else {
+            // \Log::info(['no dta' => $data]);
             $user = User::create([
                 'email' => $data['email'],
                 'name' => $data['name'],

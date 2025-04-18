@@ -115,7 +115,6 @@ class User extends Authenticatable implements MustVerifyEmail
 		} else return false;
 	}
 
-	
     public function campus(){
         return $this->belongsTo(Chapter::class, 'chapter_id');
     }

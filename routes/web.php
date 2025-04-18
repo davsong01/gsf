@@ -30,6 +30,7 @@ use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\SwitchUserController;
 use App\Http\Controllers\UserEmailsController;
 use App\Http\Controllers\StakeholderController;
+use App\Http\Controllers\UtilityToolsController;
 use App\Http\Controllers\CriticalEmailController;
 use App\Http\Controllers\StakeholderLoginController;
 use App\Http\Controllers\ConferenceEditionController;
@@ -39,6 +40,7 @@ use App\Http\Controllers\StakeholderPaymentController;
 use App\Http\Controllers\ConferenceManagementController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\DynamicImageGeneratorController;
+use App\Http\Controllers\ConferenceUtilityToolsController;
 
 Route::get('/queue', function () {
     // Artisan::call('queue:retry all');
@@ -216,6 +218,13 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('clone-edition/{id}', 'clone')->name('clone.conference.edition');
         Route::get('chart-data/{id}', 'chart')->name('conference.edition.chart');
     });
+
+    Route::controller(ConferenceUtilityToolsController::class)->group(function () {
+        Route::get('conferenceutilitytools', 'utilityIndex')->name('conference.utility.tools');
+        Route::get('fix-attempted-registration', 'fixAttemptedRegistration')->name('edition.fix.attempted');
+        
+    });
+
     Route::resource('conferenceeditions', ConferenceEditionController::class);
 
     //Conference management

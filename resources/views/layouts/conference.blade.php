@@ -70,6 +70,9 @@
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('conferenceeditions*') ? 'active' : '' }}" href="{{ route('edit.conference.edition', $edition->id) }}">Settings</a>
                         </li>
+                        <li class="nav-item">
+                          <a class="nav-link {{ Request::is('conferenceutilitytools*') ? 'active' : '' }}" href="{{ route('conference.utility.tools', ['edition'=>$edition->id]) }}">Utility Tools</a>
+                        </li>
                         @endif
                         
                       @endif

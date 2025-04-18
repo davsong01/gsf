@@ -28,6 +28,7 @@ class ConferenceSettingController extends Controller
             'new_alumni_registration_fee' => 'required|numeric',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
+            'start_registration' => 'required|date',
             'close_registration' => 'required|date',
             'conference_overview' => 'required'
         ]);

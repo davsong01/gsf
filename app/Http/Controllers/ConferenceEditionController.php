@@ -51,6 +51,7 @@ class ConferenceEditionController extends Controller
             "start_date" => "required",
             "alumni_registration_fee" => "required",
             "end_date" => "required",
+            "start_registration" => "required",
             "close_registration" => "required",
             "random_hostel" => "required",
             "random_foodstand" => "required",
@@ -104,8 +105,7 @@ class ConferenceEditionController extends Controller
             $total_slots = $moderators->sum('slot');
             $slots_filled = $moderators->sum('slot_filled');
             $unallocated_slots = $total_slots - $slots_filled;
-             
-
+            
             $pending_registration = clone $payments;
             $pending_registration = $pending_registration->where('registration_status', 'Pending')->count();
 

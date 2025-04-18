@@ -99,6 +99,13 @@
                                         </fieldset>
                                     </div>
                                     <div class="col-sm-6 col-md-6">
+                                        <label for="start_registration">Registration Start date</label>
+                                        <fieldset class="form-group">
+                                            <input type="date" class="form-control" name="start_registration" value="{{ old('start_registration') ?? $edition->start_registration }}" id="start_registration">
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="col-sm-6 col-md-6">
                                         <label for="close_registration">Registration Close date</label>
                                         <fieldset class="form-group">
                                             <input type="date" class="form-control" name="close_registration" value="{{ old('close_registration') ?? $edition->close_registration }}" id="close_registration">
