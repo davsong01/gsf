@@ -33,14 +33,14 @@ class ConferenceUtilityToolsController extends Controller
     public function fixAttemptedRegistration(Request $request)
     {
         ini_set('max_execution_time', 600);
-        
+
         $edition = ConferenceEdition::find($request->edition);
         $request['setting'] = $edition;
 
         if (!$edition) {
             abort(404, 'Edition not found.');
         }
-
+        
         $tempusers = TempUser::where('conference_edition_id', $edition->id)
             ->whereIn('status', ['Initiated', 'abandoned', 'Complete'])
             ->whereIn('fix_status', ['pending'])

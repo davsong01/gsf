@@ -155,6 +155,17 @@
                                             </div>
                                         </fieldset>
                                     </div>
+                                    <div class="col-sm-6 col-md-6">
+                                        <label for="ministry">Ministry</label>
+                                        <fieldset class="form-group ">
+                                            <select class="form-control" name="ministry" id="ministry" required>
+                                                <option value="">Select...</option>
+                                                <option value="gsf" {{ $edition->ministry == 'gsf'?'selected':'' }}>GSF</option>
+                                                <option value="gyf"  {{ $edition->ministry == 'gyf'?'selected':'' }}>GYF</option>
+                                            </select>
+                                        
+                                        </fieldset>
+                                    </div>
                                     @if( empty($edition->conference_logo))
                                     <div class="col-sm-6 col-md-6">
                                         <label for="conference_logo">Upload Logo</label>

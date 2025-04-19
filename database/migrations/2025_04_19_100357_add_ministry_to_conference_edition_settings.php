@@ -11,12 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasColumn('temp_users', 'fix_status')) {
+        if (Schema::hasColumn('conference_editions', 'ministry')) {
             return;
         }
+
+        Schema::table('conference_editions', function (Blueprint $table) {
+            $table->string('ministry')->nullable();
+        });
         
-        Schema::table('temp_users', function (Blueprint $table) {
-            $table->string('fix_status')->default('pending');
+        Schema::table('conference_editions', function (Blueprint $table) {
+            //
         });
     }
 
@@ -25,7 +29,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('temp_users', function (Blueprint $table) {
+        Schema::table('conference_edition_settings', function (Blueprint $table) {
             //
         });
     }

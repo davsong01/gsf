@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use App\Models\ConferenceEdition;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Field;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -50,8 +51,17 @@ class PaymentController extends Controller
 		
 		$metadata = json_decode($request->metadata);
 		$type['type'] = $metadata->type;
+		$type['name'] = $request->name;
+		$type['phone'] = $request->phone;
+		$type['chapter_id'] = $request->chapter;
+		$type['chapter'] = Chapter::where('id', $request->chapter)->first()->name ?? null;
+		$type['gender'] =  $request->gender;
+		$type['field_id'] =  $request->field_id ?? null;
+		$type['field'] =  Field::where('id', $request->field_id)->first()->name ?? null;
+		$type['ministry'] = $setting->ministry;
 
-		$request['metadata'] = json_encode($type);		
+		$request['metadata'] = json_encode($type);	
+		$request['first_name'] = $request->name;	
 		
 		// $type['type'] = json_decode($request->metadata)->type;
 		$type = $type['type'] ?? $request->type;
@@ -394,9 +404,23 @@ class PaymentController extends Controller
 	{
 		$url = "https://api.paystack.co/transaction/initialize";
 		// Convert amount using payment mode exchange rate
-		$metadata = isset($request['metadata']) ? json_decode($request['metadata'],true) : []; 
-
+		$metadata = isset($request['metadata']) ? json_decode($request['metadata'],true) : [];
+		$metadata["custom_fields"] = [
+			[
+				"display_name"=> "First Name",
+				"variable_name"=> "first_name",
+				"value"=> $request['name']
+			],
+			[
+				"display_name"=>"Phone Number",
+				"variable_name"=>"phone_number",
+				"value"=> $request['phone']
+			]
+		];
 		$fields = [
+			'first_name' => $request['name'],
+			'last_name' => $request['name'],
+			'phone' => $request['phone'],
 			'email' => $request['email'],
 			'amount' => $request['amount'],
 			'reference' =>  $request['transid'],
@@ -407,7 +431,9 @@ class PaymentController extends Controller
 			'metadata'=> $metadata,
 		];
 
+		// dd($fields);
 		$fields_string = http_build_query($fields);
+		// dd($fields, $fields_string, $request);
 		//open connection
 		$ch = curl_init();
 		//set the url, number of POST vars, POST data

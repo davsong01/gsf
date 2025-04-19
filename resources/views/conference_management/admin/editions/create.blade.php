@@ -149,7 +149,17 @@
                                         
                                     </fieldset>
                                 </div>
-                                
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="ministry">Ministry</label>
+                                    <fieldset class="form-group ">
+                                        <select class="form-control" name="ministry" id="ministry" required>
+                                            <option value="">Select...</option>
+                                            <option value="gsf" {{ old('ministry') == 'gsf'?'selected':'' }}>GSF</option>
+                                            <option value="gyf"  {{ old('ministry') == 'gyf'?'selected':'' }}>GYF</option>
+                                        </select>
+                                      
+                                    </fieldset>
+                                </div>
                                 <div class="col-sm-12 col-md-12">
                                     <label for="conference_overview">Conference Overview</label><small> You can use html tags here</small>
                                     <fieldset class="form-group  ">

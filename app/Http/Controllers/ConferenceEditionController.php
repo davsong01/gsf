@@ -60,6 +60,7 @@ class ConferenceEditionController extends Controller
             "PAYSTACK_SECRET_KEY" => "required",
             "PAYSTACK_PUBLIC_KEY" => "required",
             "MERCHANT_EMAIL" => "required",
+            "mission" => "required",
         ]);
         
         // Check if existing active
