@@ -18,7 +18,8 @@ class ConferenceUtilityToolsController extends Controller
             ->first();
         
         $count = TempUser::where('conference_edition_id', $edition->id)
-            ->where('fix_status','pending')
+            ->where('fix_status', 'pending')
+            ->whereNotIn('status',['Initiated','abandoned', 'Complete'])
             // ->whereDoesntHave('users.payments', function ($query) use ($edition) {
             //     $query->where('registration_status', 'Complete')
             //         ->where('conference_edition_id', $edition->id);
