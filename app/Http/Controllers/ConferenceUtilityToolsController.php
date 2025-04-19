@@ -32,6 +32,8 @@ class ConferenceUtilityToolsController extends Controller
 
     public function fixAttemptedRegistration(Request $request)
     {
+        ini_set('max_execution_time', 600);
+        
         $edition = ConferenceEdition::find($request->edition);
         $request['setting'] = $edition;
 
@@ -46,7 +48,7 @@ class ConferenceUtilityToolsController extends Controller
                 $query->where('registration_status', 'Complete')
                     ->where('conference_edition_id', $edition->id);
             })
-            ->take(15)
+            ->take(20)
             ->get()
             ->unique('email');
             
