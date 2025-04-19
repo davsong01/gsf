@@ -46,7 +46,7 @@ class ConferenceUtilityToolsController extends Controller
                 $query->where('registration_status', 'Complete')
                     ->where('conference_edition_id', $edition->id);
             })
-            ->take(10)
+            ->take(15)
             ->get()
             ->unique('email');
             
@@ -73,7 +73,7 @@ class ConferenceUtilityToolsController extends Controller
                     $slot = $extras['slot'] ?? null;
                     $level = $extras['level'] ?? null;
                     $slot_filled = $extras['slot_filled'] ?? null;
-                    
+
                     $data = [
                         'name'  => $tempuser->name,
                         'email' => $tempuser->email,
