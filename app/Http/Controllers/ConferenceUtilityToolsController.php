@@ -67,13 +67,13 @@ class ConferenceUtilityToolsController extends Controller
                 
                 if (isset($validPayment['transaction']) && $validPayment['success'] == true) {
                     $valid = $validPayment['transaction'];
-                    $amount = ($valid['amount'] / $request['setting']->registration_fee);
+                    $amount = ($valid['amount'] / 100);
                     $type = $valid['metadata']['type'];
                     $extras = $this->getExtras($type, $request['setting'], $amount);
                     $slot = $extras['slot'] ?? null;
                     $level = $extras['level'] ?? null;
                     $slot_filled = $extras['slot_filled'] ?? null;
-
+                    
                     $data = [
                         'name'  => $tempuser->name,
                         'email' => $tempuser->email,
