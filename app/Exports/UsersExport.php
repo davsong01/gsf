@@ -23,18 +23,45 @@ class UsersExport implements WithHeadings, FromQuery
 	 */
 	public function headings(): array
 	{
-		return ["Family ID","Transaction ID", "Registration Status", "Name", "Email", "Phone", "Chapter","Registration Date","Amount Paid","Level","Hostel","Foodstand","Purpose","Location"];
+		return ["Family ID","Transaction ID", "Registration Status", "Name", "Moderator","Email", "Phone", "Chapter","Registration Date","Amount Paid","Level","Hostel","Foodstand","Purpose","Location", "Gender"];
 	}
 	
 	public function query()
 	{
+		// $participants = User::join('payments', 'payments.user_id', '=', 'users.id')
+		// ->leftJoin('hostels', 'hostels.id', '=', 'payments.hostel_id')
+		// ->leftJoin('food', 'food.id', '=', 'payments.food_id')
+		// ->leftJoin('chapters', 'chapters.id', '=', 'users.chapter_id')
+		// ->where(['payments.conference_edition_id'=> $this->data['edition_id']])->where('role','!=',1)
+		// 	->select('users.family_id', 'payments.transid', 'payments.registration_status', 'users.name', 'users.payments.uploaded_by.users.name', 'users.email', 'users.phone', 'chapters.name as chapter', 'payments.created_at as registration_date','payments.amount_paid', 'payments.level','hostels.name as hostel','food.name as foodstand', 'payments.purpose', 'payments.location')
+		// 	->orderBy('users.created_at', 'desc');
 		$participants = User::join('payments', 'payments.user_id', '=', 'users.id')
-		->leftJoin('hostels', 'hostels.id', '=', 'payments.hostel_id')
-		->leftJoin('food', 'food.id', '=', 'payments.food_id')
-		->leftJoin('chapters', 'chapters.id', '=', 'users.chapter_id')
-		->where(['payments.conference_edition_id'=> $this->data['edition_id']])->where('role','!=',1)
-			->select('users.family_id', 'payments.transid', 'payments.registration_status', 'users.name', 'users.email', 'users.phone', 'chapters.name as chapter', 'payments.created_at as registration_date','payments.amount_paid', 'payments.level','hostels.name as hostel','food.name as foodstand', 'payments.purpose', 'payments.location')
-			->orderBy('users.created_at', 'desc');
+			->leftJoin('hostels', 'hostels.id', '=', 'payments.hostel_id')
+			->leftJoin('food', 'food.id', '=', 'payments.food_id')
+			->leftJoin('chapters', 'chapters.id', '=', 'users.chapter_id')
+			->leftJoin('users as uploaded_by_users', 'uploaded_by_users.id', '=', 'payments.uploaded_by')
+			->where('payments.conference_edition_id', $this->data['edition_id'])
+			->where('users.role', '!=', 1)
+			->select(
+				'users.family_id',
+				'payments.transid',
+				'payments.registration_status',
+				'users.name',
+				'uploaded_by_users.name as uploaded_by_name',
+				'users.email',
+				'users.phone',
+				'chapters.name as chapter',
+				'payments.created_at as registration_date',
+				'payments.amount_paid',
+				'payments.level',
+				'hostels.name as hostel',
+				'food.name as foodstand',
+				'payments.purpose',
+				'payments.location',
+				'users.sex'
+			)
+			->orderBy('uploaded_by_users.name')
+			->orderBy('users.created_at', 'asc');
 
 		return $participants;
 	}
