@@ -36,6 +36,7 @@
                                                 <option value="">Select...</option>
                                                 <option value="1" {{ $edition->template_id == '1' ?'selected':'' }}>Template 1</option>
                                                 <option value="2"  {{ $edition->template_id == '2' ?'selected':'' }}>Template 2</option>
+                                                <option value="3"  {{ $edition->template_id == '3' ?'selected':'' }}>Aivent</option>
                                             </select>
                                         </fieldset>
                                     </div>
@@ -155,17 +156,7 @@
                                             </div>
                                         </fieldset>
                                     </div>
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="ministry">Ministry</label>
-                                        <fieldset class="form-group ">
-                                            <select class="form-control" name="ministry" id="ministry" required>
-                                                <option value="">Select...</option>
-                                                <option value="gsf" {{ $edition->ministry == 'gsf'?'selected':'' }}>GSF</option>
-                                                <option value="gyf"  {{ $edition->ministry == 'gyf'?'selected':'' }}>GYF</option>
-                                            </select>
-                                        
-                                        </fieldset>
-                                    </div>
+                                    
                                     @if( empty($edition->conference_logo))
                                     <div class="col-sm-6 col-md-6">
                                         <label for="conference_logo">Upload Logo</label>
@@ -258,40 +249,17 @@
                                     <h3> Payment Settings</h3>
                                     </div>
                                     <div class="col-sm-6 col-md-6">
-                                        <label for="PAYSTACK_PUBLIC_KEY">Paystack Public Key</label>
+                                        <label for="payment_provider_id">Payment Provider</label>
                                         <fieldset class="form-group ">
-                                            <input type="text" class="form-control" name="PAYSTACK_PUBLIC_KEY" value="{{ old('PAYSTACK_PUBLIC_KEY') ?? $edition->PAYSTACK_PUBLIC_KEY}}" id="PAYSTACK_PUBLIC_KEY">
-                                            
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="PAYSTACK_SECRET_KEY">Paystack Secret Key</label>
-                                        <fieldset class="form-group ">
-                                            <input type="text" class="form-control" name="PAYSTACK_SECRET_KEY" value="{{ old('PAYSTACK_SECRET_KEY') ?? $edition->PAYSTACK_SECRET_KEY }}" id="PAYSTACK_SECRET_KEY">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="MERCHANT_EMAIL">Merchant Email</label>
-                                        <fieldset class="form-group ">
-                                            <input type="text" class="form-control" name="MERCHANT_EMAIL" value="{{ old('MERCHANT_EMAIL') ?? $edition->MERCHANT_EMAIL}}" id="MERCHANT_EMAIL">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="enable_sub_account">Enable Sub Account</label>
-                                        <fieldset class="form-group ">
-                                            <select class="form-control" name="enable_sub_account" id="enable_sub_account" required>
+                                            <select class="form-control" name="payment_provider_id" id="payment_provider_id" required>
                                                 <option value="">Select...</option>
-                                                <option value="yes" {{ $edition->enable_sub_account == 'yes'?'selected':'' }}>Yes</option>
-                                                <option value="no"  {{ $edition->enable_sub_account == 'no'?'selected':'' }}>No</option>
+                                                @foreach($paymentproviders as $provider)
+                                                <option value="{{ $provider->id }}" {{ $provider->id == $edition->payment_provider_id ? 'selected' : ''}}>{{ $provider->name }}</option>
+                                                @endforeach
                                             </select>
                                         </fieldset>
                                     </div>
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="paystack_subaccount_id">Paystack Subaccount ID</label>
-                                        <fieldset class="form-group ">
-                                            <input type="text" class="form-control" name="paystack_subaccount_id" value="{{ old('paystack_subaccount_id') ?? $edition->paystack_subaccount_id}}" id="paystack_subaccount_id">
-                                        </fieldset>
-                                    </div>
+                    
                                     <input type="hidden" name="id" value="{{ $edition->id }}">
                                 </div>
                                 {{-- certificate --}}

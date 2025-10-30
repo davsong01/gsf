@@ -115,3 +115,19 @@ if (!function_exists("formatDates")) {
         return "{$startDay} - {$endDay} {$monthYear}";
     }
 }
+
+
+if (!function_exists('generalSetting')) {
+    function generalSetting($columns = ['*'])
+    {
+        $query = GeneralSetting::query();
+
+        if (is_array($columns)) {
+            $settings = $query->first($columns);
+        } else {
+            $settings = $query->value($columns);
+        }
+
+        return $settings ?? null;
+    }
+}

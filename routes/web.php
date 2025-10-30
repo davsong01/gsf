@@ -32,6 +32,7 @@ use App\Http\Controllers\UserEmailsController;
 use App\Http\Controllers\StakeholderController;
 use App\Http\Controllers\UtilityToolsController;
 use App\Http\Controllers\CriticalEmailController;
+use App\Http\Controllers\PaymentProviderController;
 use App\Http\Controllers\StakeholderLoginController;
 use App\Http\Controllers\ConferenceEditionController;
 use App\Http\Controllers\ConferenceSettingController;
@@ -129,8 +130,8 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('upload-multiple', [HomeController::class, 'uploadMultiple'])->name('upload.multiple');
     
     Route::get('sample-listing', [HomeCOntroller::class, 'getListingSample'])->name('sample-listing');
-    
 });
+
 Route::post('newdonation', [DonationController::class, 'redirectToGateway'])->name('newdonation.save');
 
 Route::controller(StakeholderLoginController::class)->group(function () {
@@ -180,6 +181,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('staff', StakeholderController::class);
     Route::get('staffs/delete/{id}', [StakeholderController::class, 'destroy'])->name('staff.delete');
     Route::resource('email', EmailController::class);
+    Route::resource('paymentproviders', PaymentProviderController::class);
+
+    
 
     // Official
     Route::resource('nec', NecController::class);

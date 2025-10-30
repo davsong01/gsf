@@ -2,7 +2,6 @@
 @section('title', 'Dashboard')
 @section('active', ' Dashboard')
 
-
 @section('content')
 <div class="content-body">
     @include('includes.alerts')

@@ -97,7 +97,6 @@ class ConferenceManagementController extends Controller
 	public function edit($id, Request $request)
 	{
 		$user = $payment = Payment::with('user')->whereId($id)->first();
-		
 		$edition = ConferenceEdition::find($request->edition);
 		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 

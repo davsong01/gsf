@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Donation;
 use App\Models\Material;
 use Illuminate\Http\Request;
+use App\Models\PaymentProvider;
 use App\Models\ConferenceEdition;
 use App\Services\DynamicImageGeneratorService;
 
@@ -210,7 +211,9 @@ class ConferenceEditionController extends Controller
     {
         if (auth()->user()->role == 1) {
             $edition = ConferenceEdition::find($id);
-            return view('conference_management.admin.editions.edit', compact('edition'));
+            $paymentproviders = PaymentProvider::where('status', 'active')->get();
+
+            return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders'));
         }
     }
 
@@ -236,11 +239,13 @@ class ConferenceEditionController extends Controller
         if ($request->has('favicon')) {
             $request['conference_favicon'] = $this->uploadImage($request->favicon, 'frontend/img/site');
         }
-      
+        
         $edition->update($request->except(['ban','logo','favicon', 'template_text_type', 'template_text_type_face', 'template_font_size', 'template_left_offset', 'template_top_offset','template_color', 'template']));
         
-        $generator = new DynamicImageGeneratorService();
-        $generator->updateSettings($request, $edition);
+        if(!empty($request->template)){
+            $generator = new DynamicImageGeneratorService();
+            $generator->updateSettings($request, $edition);
+        }
         return back()->with('message', 'Operation Successful');
     }
 
