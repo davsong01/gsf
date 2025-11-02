@@ -32,6 +32,7 @@
                                     <thead>
                                         <tr>
                                             <th>S/N</th>
+                                            <th>Ministry</th>
                                             <th>Theme</th>
                                             <th>Dates</th>
                                             <th>Fee Details</th>
@@ -43,7 +44,9 @@
                                         @foreach($editions as $edition)
                                         <tr>
                                             <td>{{ $count++ }}</td>
-                                            <td>{{ $edition->conference_theme }} <br>
+                                            <td>{{ $edition?->ministry?->name }} <br> <strong>{{ $edition?->ministry?->code }}</strong></td>
+                                            <td>
+                                                {{ $edition->conference_theme }} <br>
                                                 <p class="btn btn-{{ $edition->status == 'active'?'primary':'danger' }} btn-sm" readonly>{{ $edition->status }}</p>
                                             </td>
                                             <td>{{ $edition->level }}

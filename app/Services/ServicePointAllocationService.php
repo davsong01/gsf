@@ -14,10 +14,10 @@ class ServicePointAllocationService
     // static function assignFoodStand($data)
     // {
     //     return DB::transaction(function () use ($data) {
-    //         $setting = activeConferenceEdition();
+    //         $setting = $data['setting'] ?? activeConferenceEdition();
 
     //         $level = $data['level'] == 'Moderator' ? 'Participant' : $data['level'];
-    //         $sex = $data['sex'];
+    //         $gender = $data['gender'];
 
     //         $res = [
     //             'service_point_allocation_id' => null,
@@ -26,83 +26,11 @@ class ServicePointAllocationService
     //             'service_point_allocation_name' => null
     //         ];
 
-    //         if (in_array($level, ['Official', 'Medical'])) {
-    //             $foodstand = Food::where([
-    //                 'level' => $level,
-    //                 'conference_edition_id' => $setting->id
-    //             ])->first();
-    //         } else {
-    //             $allocation_type = $setting->service_point_assignment_type ?? null;
+    //         // Check if food_id is provided in the data
+    //         if (isset($data['new_food_id']) && !empty($data['new_food_id'])) {
+    //             $food = Food::where('id', $data['new_food_id'])->where('conference_edition_id', $data['conference_edition_id'])->first();
 
-    //             switch ($allocation_type) {
-    //                 case 'full-random':
-    //                     $food = Food::where('conference_edition_id', $setting->id)
-    //                         ->whereRaw('allocation < capacity')
-    //                         ->inRandomOrder()
-    //                         ->first();
-    //                     break;
-
-    //                 case 'random':
-    //                     $food = Food::where([
-    //                         'level' => $level,
-    //                         'conference_edition_id' => $setting->id
-    //                     ])
-    //                         ->whereRaw('allocation < capacity')
-    //                         ->inRandomOrder()
-    //                         ->first();
-    //                     break;
-
-    //                 case 'based_on_chapter':
-    //                     $chapter_id_json = json_encode((string) $data['chapter']);
-    //                     $food = Food::where('conference_edition_id', $setting->id)
-    //                         ->whereRaw('JSON_CONTAINS(chapter_ids, ?)', [$chapter_id_json])
-    //                         ->whereRaw('allocation < capacity')
-    //                         ->first();
-    //                     break;
-
-    //                 case 'based_on_field':
-    //                     $field_id_json = json_encode((string) $data['field_id']);
-    //                     $food = Food::where('conference_edition_id', $setting->id)
-    //                         ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
-    //                         ->whereRaw('allocation < capacity')
-    //                         ->first();
-    //                     break;
-
-    //                 case 'based_on_chapter_with_category':
-    //                     $field_id_json = json_encode((string) $data['field_id']);
-    //                     $food = Food::where([
-    //                         'level' => $level,
-    //                         'conference_edition_id' => $setting->id
-    //                     ])
-    //                         ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
-    //                         ->whereRaw('allocation < capacity')
-    //                         ->first();
-    //                     break;
-
-    //                 case 'based_on_field_with_category':
-    //                     $field_id_json = json_encode((string) $data['field_id']);
-    //                     $food = Food::where([
-    //                         'type' => $sex,
-    //                         'level' => $level,
-    //                         'conference_edition_id' => $setting->id
-    //                     ])
-    //                         ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
-    //                         ->whereRaw('allocation < capacity')
-    //                         ->first();
-    //                     break;
-
-    //                 default:
-    //                     $allocation_type = 'SP-' . $allocation_type;
-    //                     $food = Food::where([
-    //                         'level' => $level,
-    //                         'conference_edition_id' => $setting->id
-    //                     ])
-    //                         ->whereRaw('allocation < capacity')
-    //                         ->inRandomOrder()
-    //                         ->first();
-    //             }
-
-    //             if (!empty($food)) {
+    //             if ($food) {
     //                 $allocation_number = $food->allocation + 1;
     //                 $food->update(['allocation' => $allocation_number]);
 
@@ -111,143 +39,282 @@ class ServicePointAllocationService
     //                 $res = [
     //                     'service_point_allocation_id' => $food->id,
     //                     'service_point_allocation_number' => $food_number,
-    //                     'service_point_allocation_type' => $allocation_type,
+    //                     'service_point_allocation_type' => 'admin',
     //                     'service_point_allocation_name' => $food->name,
     //                 ];
+    //             }
+    //         } else {
+    //             // Continue with the normal food stand allocation logic
+    //             if (in_array($level, ['Official', 'Medical'])) {
+    //                 $food = Food::where([
+    //                     'level' => $level,
+    //                     'conference_edition_id' => $setting->id
+    //                 ])->first();
+    //             } else {
+    //                 $allocation_type = $setting->service_point_assignment_type ?? null;
+
+    //                 switch ($allocation_type) {
+    //                     case 'full-random':
+    //                         $food = Food::where('conference_edition_id', $setting->id)
+    //                             ->whereRaw('allocation < capacity')
+    //                             ->inRandomOrder()
+    //                             ->first();
+    //                         break;
+
+    //                     case 'random':
+    //                         $food = Food::where([
+    //                             'level' => $level,
+    //                             'conference_edition_id' => $setting->id
+    //                         ])
+    //                             ->whereRaw('allocation < capacity')
+    //                             ->inRandomOrder()
+    //                             ->first();
+    //                         break;
+
+    //                     case 'based_on_chapter':
+    //                         $chapter_id_json = json_encode((string) $data['chapter']);
+    //                         $food = Food::where('conference_edition_id', $setting->id)
+    //                             ->whereRaw('JSON_CONTAINS(chapter_ids, ?)', [$chapter_id_json])
+    //                             ->whereRaw('allocation < capacity')
+    //                             ->first();
+    //                         break;
+
+    //                     case 'based_on_field':
+    //                         $field_id_json = json_encode((string) $data['field_id']);
+    //                         $food = Food::where('conference_edition_id', $setting->id)
+    //                             ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
+    //                             ->whereRaw('allocation < capacity')
+    //                             ->first();
+    //                         break;
+
+    //                     case 'based_on_chapter_with_category':
+    //                         $field_id_json = json_encode((string) $data['field_id']);
+    //                         $food = Food::where([
+    //                             'level' => $level,
+    //                             'conference_edition_id' => $setting->id
+    //                         ])
+    //                             ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
+    //                             ->whereRaw('allocation < capacity')
+    //                             ->first();
+    //                         break;
+
+    //                     case 'based_on_field_with_category':
+    //                         $field_id_json = json_encode((string) $data['field_id']);
+    //                         $food = Food::where([
+    //                             'type' => $gender,
+    //                             'level' => $level,
+    //                             'conference_edition_id' => $setting->id
+    //                         ])
+    //                             ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
+    //                             ->whereRaw('allocation < capacity')
+    //                             ->first();
+    //                         break;
+
+    //                     default:
+    //                         $allocation_type = 'SP-' . $allocation_type;
+    //                         $food = Food::where([
+    //                             'level' => $level,
+    //                             'conference_edition_id' => $setting->id
+    //                         ])
+    //                             ->whereRaw('allocation < capacity')
+    //                             ->inRandomOrder()
+    //                             ->first();
+    //                 }
+
+    //                 if (!empty($food)) {
+    //                     $allocation_number = $food->allocation + 1;
+    //                     $food->update(['allocation' => $allocation_number]);
+
+    //                     $food_number = self::generateServicePointNumber($food);
+
+    //                     $res = [
+    //                         'service_point_allocation_id' => $food->id,
+    //                         'service_point_allocation_number' => $food_number,
+    //                         'service_point_allocation_type' => $allocation_type,
+    //                         'service_point_allocation_name' => $food->name,
+    //                     ];
+    //                 }
     //             }
     //         }
 
     //         return $res;
     //     });
     // }
-    static function assignFoodStand($data)
+    public static function assignFoodStand($transaction, $newData = [])
     {
-        return DB::transaction(function () use ($data) {
-            $setting = $data['setting'] ?? activeConferenceEdition();
+        $defaultResponse = [
+            'status' => false,
+            'message' => 'Service point could not be allocated.',
+            'service_point_allocation_id' => null,
+            'service_point_allocation_number' => null,
+            'service_point_allocation_type' => null,
+            'service_point_allocation_name' => null,
+        ];
 
-            $level = $data['level'] == 'Moderator' ? 'Participant' : $data['level'];
-            $sex = $data['sex'];
+        try {
+            $setting = $transaction->edition;
+            $level = $transaction->level === 'Moderator' ? 'Participant' : $transaction->level;
+            $gender = $transaction->gender;
+            $conference_edition_id = $transaction->conference_edition_id;
 
-            $res = [
-                'service_point_allocation_id' => null,
-                'service_point_allocation_number' => null,
-                'service_point_allocation_type' => null,
-                'service_point_allocation_name' => null
-            ];
 
-            // Check if food_id is provided in the data
-            if (isset($data['new_food_id']) && !empty($data['new_food_id'])) {
-                $food = Food::where('id', $data['new_food_id'])->where('conference_edition_id', $data['conference_edition_id'])->first();
+            DB::beginTransaction();
+;
+            // --- CASE 1: Admin manually sets food stand ---
+            if (!empty($newData['new_food_id'])) {
+                $food = Food::where('id', $newData['new_food_id'])
+                    ->where('conference_edition_id', $conference_edition_id)
+                    ->whereRaw('allocation < capacity')
+                    ->first();
 
-                if ($food) {
-                    $allocation_number = $food->allocation + 1;
-                    $food->update(['allocation' => $allocation_number]);
+                if (!$food) {
+                    DB::rollBack();
+                    return [
+                        ...$defaultResponse,
+                        'message' => 'Selected service point not available or already full.',
+                    ];
+                }
 
-                    $food_number = self::generateServicePointNumber($food);
+                $allocationNumber = $food->allocation + 1;
+                $food->update(['allocation' => $allocationNumber]);
 
-                    $res = [
-                        'service_point_allocation_id' => $food->id,
-                        'service_point_allocation_number' => $food_number,
-                        'service_point_allocation_type' => 'admin',
-                        'service_point_allocation_name' => $food->name,
+                DB::commit();
+                return [
+                    ...$defaultResponse,
+                    'status' => true,
+                    'message' => 'Service point allocated successfully (admin).',
+                    'service_point_allocation_id' => $food->id,
+                    'service_point_allocation_number' => self::generateServicePointNumber($food),
+                    'service_point_allocation_type' => 'admin',
+                    'service_point_allocation_name' => $food->name,
+                ];
+            }
+
+            // --- CASE 2: Automatic allocation ---
+            $allocationType = $setting->service_point_assignment_type ?? null;
+            $chapterId = $data['chapter'] ?? null;
+            $fieldId = $data['field_id'] ?? null;
+            $food = null;
+
+            // Handle Official / Medical special levels
+            if (in_array($level, ['Official', 'Medical'])) {
+                $food = Food::where([
+                    'level' => $level,
+                    'conference_edition_id' => $conference_edition_id,
+                ])->first();
+
+                if (!$food) {
+                    DB::rollBack();
+                    return [
+                        ...$defaultResponse,
+                        'message' => "No service point found for {$level}.",
                     ];
                 }
             } else {
-                // Continue with the normal food stand allocation logic
-                if (in_array($level, ['Official', 'Medical'])) {
+                switch ($allocationType) {
+                    case 'full-random':
+                        $food = Food::where('conference_edition_id', $conference_edition_id)
+                            ->whereRaw('allocation < capacity')
+                            ->inRandomOrder()
+                            ->first();
+                        break;
+
+                    case 'random':
+                        $food = Food::where([
+                            'level' => $level,
+                            'conference_edition_id' => $conference_edition_id,
+                        ])
+                            ->whereRaw('allocation < capacity')
+                            ->inRandomOrder()
+                            ->first();
+                        break;
+
+                    case 'based_on_chapter':
+                        $food = Food::where('conference_edition_id', $conference_edition_id)
+                            ->whereRaw('JSON_CONTAINS(chapter_ids, ?)', [json_encode((string) $chapterId)])
+                            ->whereRaw('allocation < capacity')
+                            ->first();
+                        break;
+
+                    case 'based_on_field':
+                        $food = Food::where('conference_edition_id', $conference_edition_id)
+                            ->whereRaw('JSON_CONTAINS(field_ids, ?)', [json_encode((string) $fieldId)])
+                            ->whereRaw('allocation < capacity')
+                            ->first();
+                        break;
+
+                    case 'based_on_chapter_with_category':
+                        $food = Food::where([
+                            'level' => $level,
+                            'conference_edition_id' => $conference_edition_id,
+                        ])
+                            ->whereRaw('JSON_CONTAINS(chapter_ids, ?)', [json_encode((string) $chapterId)])
+                            ->whereRaw('allocation < capacity')
+                            ->first();
+                        break;
+
+                    case 'based_on_field_with_category':
+                        $food = Food::where([
+                            'level' => $level,
+                            'conference_edition_id' => $conference_edition_id,
+                        ])
+                            ->whereRaw('JSON_CONTAINS(field_ids, ?)', [json_encode((string) $fieldId)])
+                            ->whereRaw('allocation < capacity')
+                            ->first();
+                        break;
+                }
+
+                // --- Fallback allocation ---
+                if (!$food) {
                     $food = Food::where([
                         'level' => $level,
-                        'conference_edition_id' => $setting->id
-                    ])->first();
-                } else {
-                    $allocation_type = $setting->service_point_assignment_type ?? null;
+                        'conference_edition_id' => $conference_edition_id,
+                    ])
+                        ->whereRaw('allocation < capacity')
+                        ->inRandomOrder()
+                        ->first();
 
-                    switch ($allocation_type) {
-                        case 'full-random':
-                            $food = Food::where('conference_edition_id', $setting->id)
-                                ->whereRaw('allocation < capacity')
-                                ->inRandomOrder()
-                                ->first();
-                            break;
-
-                        case 'random':
-                            $food = Food::where([
-                                'level' => $level,
-                                'conference_edition_id' => $setting->id
-                            ])
-                                ->whereRaw('allocation < capacity')
-                                ->inRandomOrder()
-                                ->first();
-                            break;
-
-                        case 'based_on_chapter':
-                            $chapter_id_json = json_encode((string) $data['chapter']);
-                            $food = Food::where('conference_edition_id', $setting->id)
-                                ->whereRaw('JSON_CONTAINS(chapter_ids, ?)', [$chapter_id_json])
-                                ->whereRaw('allocation < capacity')
-                                ->first();
-                            break;
-
-                        case 'based_on_field':
-                            $field_id_json = json_encode((string) $data['field_id']);
-                            $food = Food::where('conference_edition_id', $setting->id)
-                                ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
-                                ->whereRaw('allocation < capacity')
-                                ->first();
-                            break;
-
-                        case 'based_on_chapter_with_category':
-                            $field_id_json = json_encode((string) $data['field_id']);
-                            $food = Food::where([
-                                'level' => $level,
-                                'conference_edition_id' => $setting->id
-                            ])
-                                ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
-                                ->whereRaw('allocation < capacity')
-                                ->first();
-                            break;
-
-                        case 'based_on_field_with_category':
-                            $field_id_json = json_encode((string) $data['field_id']);
-                            $food = Food::where([
-                                'type' => $sex,
-                                'level' => $level,
-                                'conference_edition_id' => $setting->id
-                            ])
-                                ->whereRaw('JSON_CONTAINS(field_ids, ?)', [$field_id_json])
-                                ->whereRaw('allocation < capacity')
-                                ->first();
-                            break;
-
-                        default:
-                            $allocation_type = 'SP-' . $allocation_type;
-                            $food = Food::where([
-                                'level' => $level,
-                                'conference_edition_id' => $setting->id
-                            ])
-                                ->whereRaw('allocation < capacity')
-                                ->inRandomOrder()
-                                ->first();
-                    }
-
-                    if (!empty($food)) {
-                        $allocation_number = $food->allocation + 1;
-                        $food->update(['allocation' => $allocation_number]);
-
-                        $food_number = self::generateServicePointNumber($food);
-
-                        $res = [
-                            'service_point_allocation_id' => $food->id,
-                            'service_point_allocation_number' => $food_number,
-                            'service_point_allocation_type' => $allocation_type,
-                            'service_point_allocation_name' => $food->name,
+                    if (!$food) {
+                        DB::rollBack();
+                        return [
+                            ...$defaultResponse,
+                            'message' => 'No available service point found for your category or fallback type.',
                         ];
                     }
+
+                    $allocationType = 'fallback-random';
                 }
             }
 
-            return $res;
-        });
+            // --- Assign service point ---
+            $allocationNumber = $food->allocation + 1;
+            $food->update(['allocation' => $allocationNumber]);
+
+            DB::commit();
+            return [
+                ...$defaultResponse,
+                'status' => true,
+                'message' => 'Service point allocated successfully.',
+                'service_point_allocation_id' => $food->id,
+                'service_point_allocation_number' => self::generateServicePointNumber($food),
+                'service_point_allocation_type' => $allocationType,
+                'service_point_allocation_name' => $food->name,
+            ];
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Log::error('Service point allocation failed', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'status' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+                'service_point_allocation_id' => null,
+                'service_point_allocation_number' => null,
+                'service_point_allocation_type' => null,
+                'service_point_allocation_name' => null,
+            ];
+        }
     }
 
 

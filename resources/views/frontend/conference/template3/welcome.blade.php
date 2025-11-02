@@ -1,6 +1,6 @@
 @extends('frontend.conference.template3.app')
 @section('content')
-<section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800" data-video-src="mp4:video/2.mp4">
+<section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800">
     <div class="gradient-edge-top op-6 h-50 color"></div>
     <div class="gradient-edge-bottom"></div>
     <div class="sw-overlay op-8"></div>
@@ -292,178 +292,43 @@
 </section>
 
 <section id="section-tickets" class="bg-dark section-dark text-light pt-40 relative jarallax" aria-label="section">
-    <img src="images/background/7.webp" class="jarallax-img" alt="">
+    <img src="{{ asset('conference_templates/template3/images/background/7.webp') }}" class="jarallax-img" alt="">
     <div class="gradient-edge-top"></div>
     <div class="gradient-edge-bottom"></div>
     <div class="sw-overlay op-7"></div>
 
     <div class="container relative z-2">
         <div class="row g-4 gx-5 justify-content-center">
-          <div class="col-lg-6 text-center">
-              <h2 class="wow fadeInUp" data-wow-delay=".2s">Secure Your Nayoco 2026 Pass</h2>
-              <p class="lead wow fadeInUp" data-wow-delay=".4s">
-                  Join us for four days of divine encounters, worship, and transformation. Choose your pass and be part of The Shining Lights experience.
-              </p>
-          </div>
-      </div>
-
-
-        <div class="row g-4 justify-content-center">
-            <div class="col-lg-12">
-                <div class="owl-carousel owl-theme owl-3-dots wow mask-right">
-                    <!-- ticket item begin -->
-                    <div class="item">
-                        <div class="d-ticket">
-                            <img src="{{ asset('conference_templates/templat3/images/logo.webp') }}" class="w-80px mb-4" alt="">
-                            <img src="{{ asset('conference_templates/templat3/images/misc/barcode.webp') }}" class="w-20 p-2 abs abs-middle end-0 me-2" alt="">
-                            <img src="{{ asset('conference_templates/templat3/images/logo-big-white.webp') }}" class="w-40 abs abs-centered me-4 op-2" alt="">
-                            <h2>Standard</h2>
-                            <h4 class="mb-4">$299</h4>
-                            <div class="fs-14">October 1 to 5 - 10:00 AM</div>
-                        </div>
-
-                        <div class="relative overflow-hidden">
-                            <div class="py-4 z-2">
-                                <ul class="ul-check mb-4">
-                                    <li>Access to keynotes and sessions.</li>
-                                    <li>Admission to exhibitions and demos.</li>
-                                    <li>Networking opportunities.</li>
-                                    <li>Digital materials and session recordings.</li>
-                                </ul>
-                            </div>
-
-                            <a class="btn-main fx-slide w-100" href="tickets.html"><span>Buy Ticket</span></a>
-                            
-                        </div>
-                    </div>
-                    <!-- ticket item end -->
-
-                    <!-- ticket item begin -->
-                    <div class="item">
-                        <div class="d-ticket">
-                            <img src="images/logo.webp" class="w-80px mb-4" alt="">
-                            <img src="images/misc/barcode.webp" class="w-20 p-2 abs abs-middle end-0 me-2" alt="">
-                            <img src="images/logo-big-white.webp" class="w-40 abs abs-centered me-4 op-2" alt="">
-                            <h2>VIP</h2>
-                            <h4 class="mb-4">$699</h4>
-                            <div class="fs-14">October 1 to 5 - 10:00 AM</div>
-                        </div>
-                        <div class="relative">
-                            <div class="py-4 z-2">
-                                <ul class="ul-check mb-4">
-                                    <li>All Standard benefits.</li>
-                                    <li>VIP lounge access and exclusive events.</li>
-                                    <li>Front-row seating and priority workshop access.</li>
-                                    <li>VIP swag bag and exclusive content.</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <a class="btn-main fx-slide w-100" href="tickets.html"><span>Buy Ticket</span></a>
-                    </div>
-                    <!-- ticket item end -->
-
-                    <!-- ticket item begin -->
-                    <div class="item">
-                        <div class="d-ticket s2">
-                            <img src="images/logo.webp" class="w-80px mb-4" alt="">
-                            <img src="images/misc/barcode.webp" class="w-20 p-2 abs abs-middle end-0 me-2" alt="">
-                            <img src="images/logo-big-white.webp" class="w-40 abs abs-centered me-4 op-2" alt="">
-                            <h2>Full Access</h2>
-                            <h4 class="mb-4">$1199</h4>
-                            <div class="fs-14">October 1 to 5 - 10:00 AM</div>
-                        </div>
-                        <div class="relative">
-                            <div class="py-4 z-2">
-                                <ul class="ul-check mb-4">
-                                    <li>All VIP benefits.</li>
-                                    <li>Access to all workshops and breakout sessions.</li>
-                                    <li>Personalized session scheduling.</li>
-                                    <li>Speaker meet-and-greet and after-party access.</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <a class="btn-main fx-slide w-100" href="tickets.html"><span>Buy Ticket</span></a>
-                    </div>
-                    <!-- ticket item end -->
-
-                    <!-- ticket item begin -->
-                    <div class="item">
-                        <div class="d-ticket s2">
-                            <img src="images/logo.webp" class="w-80px mb-4" alt="">
-                            <img src="images/misc/barcode.webp" class="w-20 p-2 abs abs-middle end-0 me-2" alt="">
-                            <img src="images/logo-big-white.webp" class="w-40 abs abs-centered me-4 op-2" alt="">
-                            <h2>Exclusive Access</h2>
-                            <h4 class="mb-4">$2499</h4>
-                            <div class="fs-14">October 1 to 5 - 10:00 AM</div>
-                        </div>
-                        <div class="relative">
-                            <div class="py-4 z-2">
-                                <ul class="ul-check mb-4">
-                                    <li>All Full Access Pass benefits.</li>
-                                    <li>Private one-on-one sessions with speakers.</li>
-                                    <li>Priority access to all events and workshops.</li>
-                                    <li>Exclusive VIP gala and after-party invitations.</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <a class="btn-main fx-slide w-100" href="tickets.html"><span>Buy Ticket</span></a>
-                    </div>
-                    <!-- ticket item end -->
-
-                    <!-- ticket item begin -->
-                    <div class="item">
-                        <div class="d-ticket s3">
-                            <img src="images/logo.webp" class="w-80px mb-4" alt="">
-                            <img src="images/misc/barcode.webp" class="w-20 p-2 abs abs-middle end-0 me-2" alt="">
-                            <img src="images/logo-big-white.webp" class="w-40 abs abs-centered me-4 op-2" alt="">
-                            <h2>Student</h2>
-                            <h4 class="mb-4">$149</h4>
-                            <div class="fs-14">October 1 to 5 - 10:00 AM</div>
-                        </div>
-                        <div class="relative">
-                            <div class="py-4 z-2">
-                                <ul class="ul-check mb-4">
-                                    <li>Access to keynotes and workshops.</li>
-                                    <li>Student-specific networking events.</li>
-                                    <li>Discounted online resources post-event.</li>
-                                    <li>Special student meetups for networking.</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <a class="btn-main fx-slide w-100" href="tickets.html"><span>Buy Ticket</span></a>
-                    </div>
-                    <!-- ticket item end -->
-
-                    <!-- ticket item begin -->
-                    <div class="item">
-                        <div class="d-ticket s3">
-                            <img src="images/logo.webp" class="w-80px mb-4" alt="">
-                            <img src="images/misc/barcode.webp" class="w-20 p-2 abs abs-middle end-0 me-2" alt="">
-                            <img src="images/logo-big-white.webp" class="w-40 abs abs-centered me-4 op-2" alt="">
-                            <h2>Virtual</h2>
-                            <h4 class="mb-4">$99</h4>
-                            <div class="fs-14">October 1 to 5 - 10:00 AM</div>
-                        </div>
-                        <div class="relative">
-                            <div class="py-4 z-2">
-                                <ul class="ul-check mb-4">
-                                    <li>Live-streamed keynotes and workshops.</li>
-                                    <li>On-demand access to recorded sessions.</li>
-                                    <li>Interactive Q&A with speakers.</li>
-                                    <li>Virtual networking and digital swag.</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <a class="btn-main fx-slide w-100" href="tickets.html"><span>Buy Ticket</span></a>
-                    </div>
-                    <!-- ticket item end -->
-                </div>
+            <div class="col-lg-6 text-center">
+                <h2 class="wow fadeInUp" data-wow-delay=".2s">Secure Your Nayoco 2026 Pass</h2>
+                <p class="lead wow fadeInUp" data-wow-delay=".4s">
+                    Join us for four days of divine encounters, worship, and transformation. Choose your pass and be part of The Shining Lights experience.
+                </p>
             </div>
+        </div>
+
+        <div class="row g-4 justify-content-center mt-4">
+            @foreach($plans as $plan)
+                @if($plan['show'])
+                <div class="col-md-4">
+                    <div class="d-ticket p-4 bg-dark-2 rounded-1 text-center h-100 position-relative wow fadeInUp">
+                        <img src="{{ asset($setting->conference_logo) }}" class="w-80px mb-4" alt="">
+                        <h2 class="mb-2">{{ $plan['title'] }}</h2>
+                        <h4 class="mb-4">&#8358;{{ $plan['price'] }}</h4>
+
+                        <ul class="ul-check mb-4 text-start">
+                            @foreach($plan['items'] as $item)
+                                <li>{{ $item }}</li>
+                            @endforeach
+                        </ul>
+
+                        <a class="btn-main fx-slide w-100 mt-auto" href="{{ route('conference.registration', $plan['route_id']) }}">
+                            <span>Register{{ $plan['per_participant'] ? ' /Participant' : '' }}</span>
+                        </a>
+                    </div>
+                </div>
+                @endif
+            @endforeach
         </div>
     </div>
 </section>

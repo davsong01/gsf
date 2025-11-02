@@ -9,6 +9,7 @@ use App\Models\Material;
 use Illuminate\Http\Request;
 use App\Models\PaymentProvider;
 use App\Models\ConferenceEdition;
+use App\Models\Ministry;
 use App\Services\DynamicImageGeneratorService;
 
 class ConferenceEditionController extends Controller
@@ -212,8 +213,9 @@ class ConferenceEditionController extends Controller
         if (auth()->user()->role == 1) {
             $edition = ConferenceEdition::find($id);
             $paymentproviders = PaymentProvider::where('status', 'active')->get();
-
-            return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders'));
+            $ministries = Ministry::where('status', 'active')->latest()->get();
+            
+            return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders', 'ministries'));
         }
     }
 

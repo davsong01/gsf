@@ -185,16 +185,6 @@ class Controller extends BaseController
         }
     }
 
-    public function logEmail($data)
-    {
-        CriticalEmail::create([
-            'recipient' => $data['recipient'],
-            'type' => $data['type'],
-            'subject' => $data['subject'],
-            'content' => $data['content'],
-        ]);
-    }
-
     protected function saveContactForm($user_id, $type, $name, $email, $phone, $message)
     {
         EmailContact::create([
@@ -228,25 +218,10 @@ class Controller extends BaseController
             });
     }
 
-    public function createFamilyId($user, $prefix = null)
-    {
-        $family_id = 'GSF' . $prefix . $user->id;
-
-        $user->update([
-            'family_id' => $family_id,
-        ]);
-
-        return $family_id;
-    }
-
-    public function generateStaffFamilyId($edition, $user){
-        return  'GSF' . $edition->reg_prefix .'-'. $user->id;
-    }
-
     protected function uploadImage($image, $location, $width = null, $height = null)
     {
         $imgName = time() . rand(11111111, 9999999) . '.' . $image->getClientOriginalExtension();
-       
+        
         if ($width && $height) {
             $image = Image::make($image)->resize($width, $height);
         } else {
@@ -300,91 +275,7 @@ class Controller extends BaseController
         );
     }
 
-    public function generateTransactionId()
-    {
-        return 'GSF-' . date('Ymd') . '-' . strtoupper(Str::random(6));
-        // return 'GSF-' . date('Ymd') . '-' . rand(99999, 11111);
-    }
-
-    public function getExtras($type, $setting, $amount = null)
-    {
-        if (isset($type) && $type == '1') {
-            $data['slot'] = 1;
-            $data['ledge'] = $setting->reg_prefix . 'P-';
-            $data['level'] = 'Participant';
-            $data['slot_filled'] = 1;
-        }
-
-        if (isset($type) && $type == '2') {
-            $data['slot'] = $amount / $setting->registration_fee;
-            $data['ledge'] = $setting->reg_prefix . 'M-';
-            $data['level'] = 'Moderator';
-            $data['slot_filled'] = 1;
-        }
-
-        if (isset($type) && $type == '3') {
-            $data['slot'] = 1;
-            $data['ledge'] = $setting->reg_prefix . 'A-';
-            $data['level'] = 'Alumni';
-            $data['slot_filled'] = 1;
-        }
-
-        if (isset($type) && $type == '4') {
-            $data['slot'] = 1;
-            $data['ledge'] = $setting->reg_prefix . 'N-';
-            $data['level'] = 'Nec';
-            $data['slot_filled'] = 1;
-        }
-        if (isset($type) && $type == '5') {
-            $data['slot'] = 1;
-            $data['ledge'] = $setting->reg_prefix . 'O-';
-            $data['level'] = 'Official';
-            $data['slot_filled'] = 1;
-        }
-
-        if (isset($type) && $type == '6') {
-            $data['slot'] = 1;
-            $data['ledge'] = $setting->reg_prefix . 'C-';
-            $data['level'] = 'Choir';
-            $data['slot_filled'] = 1;
-        }
-
-        if (isset($type) && $type == '7') {
-            $data['slot'] = 1;
-            $data['ledge'] = $setting->reg_prefix . 'M-';
-            $data['level'] = 'Medical';
-            $data['slot_filled'] = 1;
-        }
-        return $data;
-    }
-
-    public function getType($request)
-    {
-        if ($request->level == 'Participant') {
-            $type = 1;
-        }
-        if ($request->level == 'Moderator') {
-            $type = 2;
-        }
-        if ($request->level == 'Alumni') {
-            $type = 3;
-        }
-        if ($request->level == 'Nec') {
-            $type = 4;
-        }
-        if ($request->level == 'Official') {
-            $type = 5;
-        }
-        if ($request->level == 'Choir') {
-            $type = 6;
-        }
-
-        if ($request->level == 'Medical') {
-            $type = 7;
-        }
-
-        return $type;
-    }
+   
 
     // public function createUser($data)
     // {
@@ -402,59 +293,25 @@ class Controller extends BaseController
 
     //     return $user;
     // }
-    public function createUser($data)
-    {
-        $user = User::where('email', $data['email'])
-            // ->orWhere('phone', $data['phone'])
-            ->first();
-            
-        \Log::info(['found' => $user]);
-        if (!is_null($user)) {
-            $user->update([
-                'name' => $data['name'],
-                'phone' => $data['phone'],
-                'sex' => $data['sex'] ?? $user->sex,
-                'chapter_id' => $data['chapter'] ?? $user->chapter_id,
-                'passport' => $data['passport'] ?? $user->passport,
-                'slug' => \Str::slug($data['name']),
-                'password' => $data['password'],
-                'role' => $data['role'] ?? $user->role
-            ]);
-        } else {
-            // \Log::info(['no dta' => $data]);
-            $user = User::create([
-                'email' => $data['email'],
-                'name' => $data['name'],
-                'phone' => $data['phone'],
-                'sex' => $data['sex'] ?? null,
-                'chapter_id' => $data['chapter'] ?? null,
-                'passport' => $data['passport'] ?? null,
-                'slug' => \Str::slug($data['name']),
-                'password' => $data['password'],
-                'role' => $data['role'] ?? 2
-            ]);
-        }
-
-        return $user;
-    }
+   
 
 
-    public function createPayment($data, $user)
-    {
-        $payment = Payment::UpdateOrCreate(['user_id' => $user->id, 'conference_edition_id' => $data['conference_edition_id']], [
-            'user_id' => $user->id,
-            'registration_status' => 'Complete',
-            'slot' => $data['slot'],
-            'type' => $data['type'],
-            'slot_filled' => isset($data['slot_filled']) ? $data['slot_filled'] : 0,
-            'level' => $data['level'],
-            'amount_paid' => $data['amount'] ?? $data['amount_paid'],
-            'payment_type' => $data['payment_type'],
-            'transid' => $data['transid'],
-            'uploaded_by' => $data['uploaded_by'] ?? null,
-            'conference_edition_id' => $data['conference_edition_id']
-        ]);
+    // public function createPayment($data, $user)
+    // {
+    //     $payment = Payment::UpdateOrCreate(['user_id' => $user->id, 'conference_edition_id' => $data['conference_edition_id']], [
+    //         'user_id' => $user->id,
+    //         'registration_status' => 'Complete',
+    //         'slot' => $data['slot'],
+    //         'type' => $data['type'],
+    //         'slot_filled' => isset($data['slot_filled']) ? $data['slot_filled'] : 0,
+    //         'level' => $data['level'],
+    //         'amount_paid' => $data['amount'] ?? $data['amount_paid'],
+    //         'payment_type' => $data['payment_type'],
+    //         'transid' => $data['transid'],
+    //         'uploaded_by' => $data['uploaded_by'] ?? null,
+    //         'conference_edition_id' => $data['conference_edition_id']
+    //     ]);
 
-        return $payment;
-    }
+    //     return $payment;
+    // }
 }

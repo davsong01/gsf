@@ -9,7 +9,7 @@ use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 
-class TempUserController extends Controller
+class TransactionController extends Controller
 {
     public function index(Request $request)
 	{
@@ -17,9 +17,9 @@ class TempUserController extends Controller
         $edition = ConferenceEdition::with(['payments', 'donations'])->find($request->edition);
 
 		if (auth()->user()->role == 1) {
-            // $participants = TempUser::with('campus')->where('conference_edition_id', $edition->id)->whereIn('status',['Initiated','abandoned','Complete'])->orderBy('created_at', 'desc')->orderBy('status')->get();
+            // $participants = Transaction::with('campus')->where('conference_edition_id', $edition->id)->whereIn('status',['Initiated','abandoned','Complete'])->orderBy('created_at', 'desc')->orderBy('status')->get();
             
-            $participants = TempUser::with('campus')
+            $participants = Transaction::with('campus')
                 ->where('conference_edition_id', $edition->id)
                 ->whereIn('status', ['Initiated', 'abandoned', 'Complete'])
                 ->orderBy('created_at', 'desc')
@@ -31,7 +31,7 @@ class TempUserController extends Controller
                 ->get();
 
 
-            return view('admin.temp_users.index', compact('participants', 'count','edition'));
+            return view('admin.transactions.index', compact('participants', 'count','edition'));
         }
        
         return abort(404);
@@ -39,7 +39,7 @@ class TempUserController extends Controller
 
     public function show(Request $request, $id){
       
-        $tempusers = TempUser::find($id);
+        $tempusers = Transaction::find($id);
 
         $tempusers->delete();
 
@@ -66,7 +66,7 @@ class TempUserController extends Controller
 
     public function requery(Request $request, $id, $bypassAuth = false){
         if ((auth()->user() && auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') || $bypassAuth == true){
-            $temp = TempUser::where('id',$id)->first();
+            $temp = Transaction::where('id',$id)->first();
             
             $request->request->add(['reference' => $request->reference]);
             $req = new \App\Http\Controllers\PaymentController();
@@ -105,7 +105,7 @@ class TempUserController extends Controller
     }
 
     public function setAndVerifyReference(Request $request, $reference, $temp_id){
-        $temp = TempUser::where('id',$temp_id)->first();
+        $temp = Transaction::where('id',$temp_id)->first();
         if($temp) $temp->update(['transid' => $reference]);
         
         return redirect(route('tempusers.requery', ['id' => $temp_id, 'reference' => $reference, 'bypass' => true]))->with('message','Reference set successfully');        
@@ -116,7 +116,7 @@ class TempUserController extends Controller
             $res = [];
             if($request->has('obj')){
                 foreach($request->obj as $obj){
-                    $temp = TempUser::where('transid',$obj)->first();
+                    $temp = Transaction::where('transid',$obj)->first();
                     
                     $request->request->add(['reference' => $obj]);
                     
@@ -145,7 +145,7 @@ class TempUserController extends Controller
     }
 
     public function confirmTransfer(Request $request, $id){
-        $temp = TempUser::find($id);
+        $temp = Transaction::find($id);
         if(!$temp){
             return back()->with('message','Record not found');
         }
@@ -163,7 +163,7 @@ class TempUserController extends Controller
     }
 
     public function confirmOnSiteTransfer(Request $request, $id){
-        $temp = TempUser::find($id);
+        $temp = Transaction::find($id);
         if(!$temp){
             return back()->with('message','Record not found');
         }

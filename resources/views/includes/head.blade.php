@@ -26,7 +26,7 @@
 
 	<!-- BEGIN: Vendor CSS-->
 	<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/vendors.min.css') }}">
-	<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/ui/prism.min.css') }}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/ui/.min.css') }}">
 
 	<!-- END: Vendor CSS-->
 

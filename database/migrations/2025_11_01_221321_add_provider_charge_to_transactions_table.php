@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('transactions', 'remarks')) {
-            Schema::table('transactions', function (Blueprint $table) {
-                $table->string('remarks')->nullable()->after('amount');
-            });
-        }
-
+        Schema::table('transactions', function (Blueprint $table) {
+            $table->integer('payment_provider_id')->nullable()->after('id');
+            $table->decimal('provider_charge', 10,2)->nullable()->after('amount');
+            $table->decimal('total_amount', 10, 2)->nullable()->after('provider_charge');
+        });
     }
 
     /**
@@ -25,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->dropColumn("remarks");
-        }); 
+            //
+        });
     }
 };

@@ -1,15 +1,19 @@
+<div class="alert alert-success" role="alert" style="width: 100%;">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>Success!</strong>sdsdsdsd
+</div>
 @if(session()->get('message'))
 <div class="alert alert-success" role="alert" style="width: 100%;">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <strong>Success!</strong> {{ session()->get('message')}}
-      </div>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>Success!</strong> {{ session()->get('message')}}
+</div>
 @endif
 
 @if(session()->get('error'))
 <div class="alert alert-warning" role="alert" style="width: 100%;">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <strong>Whoops!</strong> {{ session()->get('error')}} </strong>
-      </div>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>Whoops!</strong> {{ session()->get('error')}} </strong>
+</div>
 @endif
 
 @if(session('failures'))

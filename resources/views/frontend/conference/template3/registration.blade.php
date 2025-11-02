@@ -1,283 +1,171 @@
-@extends('frontend.conference.template2.app')
-@section('css')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+@extends('frontend.conference.template3.app')
 
-<style>
-    .form-control{
-        padding-left: 10px !important;
-    }
-    .select2-selection__rendered {
-        line-height: 31px !important;
-    }
-    .select2-container .select2-selection--single {
-        height: 35px !important;
-    }
-    .select2-selection__arrow {
-        height: 34px !important;
-    }
-    .form-label {
-        margin-top: 10px;
-        margin-bottom: 5px;
-    }
-    .select2-container {
-            width: 100% !important;
-        }
-</style>
-@endsection
-{{-- {{dd($setting->conference_logo)}} --}}
 @section('content')
-<div id="page-banner-area" class="page-banner-area" style="background-image:url({{ asset('conference_templates/template2/images/hero_area/banner_bg.jpg') }})">
-    <!-- Subpage title start -->
-    <div class="page-banner-title">
-    <div class="text-center">
-        @if($type == 5)
-        <h2>Donate</h2>
-        @else
-        <h2>Register</h2>
-        @endif
-    </div>
-    </div><!-- Subpage title end -->
-</div><!-- Page Banner end -->
-<!-- ts intro start -->
-<section class="ts-intro-content">
-    <div class="container">
-        @include('includes.alerts')
-    <div class="row">
-        <div class="col-lg-12">
-                <h2 class="column-title">
-                    <span>{{$title}}</span>
-                    @if($type != 5)
-                    Kindly fill form below and click the payment button
-                    @else
-                    Kindly fill form below and click the make donation button
-
-                    @endif
-                </h2>
-            <div class="intro-content-text">
-                @if($type != 5)
-                    @if(isset($setting->lock_online_payment) && $setting->lock_online_payment == 'yes')
-                    <div class="alert alert-warning" role="alert">
-                        <strong>NOTE:</strong> Online Payment has closed. Please fill the form below and pay at the venue.
+<section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-500">
+    <img src="{{ asset('conference_templates/template2/images/hero_area/banner_bg.jpg') }}" class="jarallax-img" alt="">
+    <div class="gradient-edge-bottom h-50"></div>
+    <div class="sw-overlay op-5"></div>
+    <div class="abs w-80 bottom-10 z-2 w-100">
+        <div class="container">
+            <div class="row align-items-center justify-content-between gx-5">
+                <div class="col-lg-6">
+                    <div class="relative wow mask-right">
+                        <div class="text-start">
+                            <h1 class="fs-96 text-uppercase fs-sm-10vw mb-0 lh-1">Register</h1>
+                        </div>
                     </div>
-                    @endif
-                @endif
-                <form action="{{ route('pay') }}" method="POST">
-                    @csrf
-                    
-                    @if(isset($type))
-                        @if($type == 1 or $type == 2 or $type == 3)
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="control-group">
-                                    <label class="form-label">Name</label>
-                                    <input type="text" class="form-control form-control-name" id="name"
-                                    name="name" placeholder="Enter your full name" required="required">
-                                </div>
-                                <div class="control-group">
-                                    <label class="form-label">Phone</label>
-                                    <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" placeholder="Enter your phone number" required="required">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="control-group">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control form-control-name" id="email"
-                                        name="email" placeholder="Enter your email" required="required">
-                                </div>
-                                <div class="control-group">
-                                    <label class="form-label" for="gender">Gender</label><br>
-                                    <select name="gender" class="form-control" id="gender" required>
-                                        <option value="">--Select</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            @if($type == 1 or $type == 2)
-                            <div class="col-md-6">
-                                <div class="control-group">
-                                    <label class="form-label" for="chapter">GSF Campus</label> <small style="color:blue">(Select "other" if you
-                                        are registering from an assembly)</small><br>
-                                    <select name="chapter" id="chapter" class="select2 form-control" required>
-                                        <option value="">--Select Campus</option>
-                                        @foreach($chapters as $chapter)
-                                        <option value="{{ $chapter->id }}" {{ old('chapter') == $chapter->id ? 'selected' : ''}}>
-                                            {{ $chapter->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6" id="field-div" style="display:none">
-                                <div class="control-group">
-                                    <label class="form-label" for="field_id">Field/State</label><br>
-                                    <select name="field_id" id="field_id" class="select2 form-control">
-                                        <option value="">--Select Field/State</option>
-                                        @foreach($fields as $field)
-                                        <option value="{{ $field->id }}" {{ old('field') == $field->id ? 'selected' : ''}}>
-                                            {{ $field->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            @endif
-                        
-                            @if($type == 2)
-                            <div class="col-md-6">
-                                <div class="control-group">
-                                    <label class="form-label">No of Participants you want to register</label>
-                                    <input type="number" class="form-control" id="participants" name="participants"
-                                        placeholder="Number of participants from your fellowship" required="required">
-                                </div>
-                            </div>
-                            @endif
-
-                            @if($type == 3)
-                            <div class="col-md-6">
-                                <div class="control-group">
-                                    <label class="form-label">Old alumni/New alumni?</label>
-                                    <select name="alumni_type" class="form-control select2"
-                                        onchange="document.querySelector('#alumni_amount').value = alumnis_amount[this.value]?alumnis_amount[this.value]*100:''"
-                                        required>
-                                        <option value="">Select alumni type</option>
-                                        <option value="new_alumni_registration_fee">Fresh Graduate/Alumni (&#8358;{{ $setting->new_alumni_registration_fee }}) </option>
-                                        <option value="alumni_registration_fee">Old Alumni (&#8358;{{ $setting->alumni_registration_fee }})</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="control-group">
-                                    <label class="form-label" for="field_id">Field/State</label><br>
-                                    <select name="field_id" id="field_id" class="select2 form-control" required>
-                                        <option value="">--Select Field/State</option>
-                                        @foreach($fields as $field)
-                                        <option value="{{ $field->id }}" {{ old('field') == $field->id ? 'selected' : ''}}>
-                                            {{ $field->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            @endif
-                        </div> 
-                        @endif
-                        <input type="hidden" name="metadata" value="{{ json_encode($array = ['type' => $type]) }}">
-                        <input type="hidden" name="type" value="{{ $type }}">
-                        @if($type == 1)
-                        <input type="hidden" name="amount" value="{{ $setting->registration_fee }}">
-                        <input type="hidden" name="quantity" value="1">
-                        <input type="hidden" name="currency" value="NGN">
-                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        @endif
-
-                        @if($type == 2)
-                        <script>
-                            var participants = document.getElementById('participants');
-                            var amount = document.getElementById('amount');
-                            
-                            participants.addEventListener('input', function() {
-                                amount.value = this.value * {{ $setting->registration_fee * 100 }};
-                            });
-                            
-                            amount.addEventListener('input', function() {
-                                participants.value = this.value;
-                            });
-                        </script>
-                        @endif
-                        @if($type == 5)
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="control-group">
-                                    <label class="form-label">Name</label>
-                                    <input type="text" class="form-control form-control-name" id="name"
-                                    name="name" placeholder="Enter your full name" required="required">
-                                </div>
-                                <div class="control-group">
-                                    <label class="form-label">Phone</label>
-                                    <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" placeholder="Enter your phone number" required="required">
-                                </div>
-                                <div class="control-group">
-                                    <label class="form-label">Amount</label>
-                                    <input type="amount" class="form-control form-control-name" id="amount"
-                                        name="amount" placeholder="Enter amount to donate" required>
-                                </div>
-                                
-                                
-                            </div>
-                            <div class="col-md-6">
-                                <div class="control-group">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control form-control-name" id="email"
-                                        name="email" placeholder="Enter your email" required="required">
-                                </div>
-                                <div class="control-group">
-                                    <label class="form-label" for="field_id">Field/State</label><br>
-                                    <select name="field_id" id="field_id" class="select2 form-control">
-                                        <option value="">--Select Field/State</option>
-                                        @foreach($fields as $field)
-                                        <option value="{{ $field->id }}" {{ old('field') == $field->id ? 'selected' : ''}}>
-                                            {{ $field->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="control-group">
-                                    <label class="form-label">Remarks</label>
-                                    <textarea name="remarks" class="form-control" id="" cols="30" rows="10" placeholder="Enter remarks"></textarea>
-                                </div>
-                            </div>
-                            
-                                {{-- <div class="control-group">
-                                    <label class="form-label" for="gender">Gender</label><br>
-                                    <select name="gender" class="form-control" id="gender" required>
-                                        <option value="">--Select</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                    </select>
-                                </div> --}}
-                            </div>
-                            
-                        </div> 
-                        @endif
-                    @endif
-                    <br>
-                    <div class="control-group" style="margin-top:30px">
-                        @if($type != 5)
-                        <button class="btn btn-danger hover-top btn-glow rounded-pill border-0" type="submit" style="width:100%">Make Payment</button>
-                        @else    
-                        <button class="btn btn-danger hover-top btn-glow rounded-pill border-0" type="submit" style="width:100%">Make Donation</button>
-                        @endif
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
-        
     </div>
+</section>
+
+<section class="relative">
+    <div class="container">
+        <div class="row align-items-center justify-content-center">
+
+            <!-- Left Column: Event Info -->
+            <div class="col-lg-6">
+                <h2 class="wow fadeInUp">Begin Your Registration</h2>
+                <p class="col-lg-8">Fill out your details below. After submitting, you’ll be redirected to a confirmation page to review your registration and complete the next steps.</p>
+
+                <div class="spacer-single"></div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="relative mb-4">
+                            <i class="abs fs-28 p-3 bg-color text-light rounded-1 icofont-location-pin"></i>
+                            <div class="ms-80px">
+                                <h4 class="mb-0">Location</h4>
+                                Gospel City. Lagos Ibadan Expressway, Ogunmakin. Ogun state
+                            </div>
+                        </div>
+
+                        <div class="relative mb-4">
+                            <i class="abs fs-28 p-3 bg-color text-light rounded-1 icofont-envelope"></i>
+                            <div class="ms-80px">
+                                <h4 class="mb-0">Contact Email</h4>
+                                {{ $setting->official_email }}
+                            </div>
+                        </div>
+
+                        <div class="relative mb-4">
+                            <i class="abs fs-28 p-3 bg-color text-light rounded-1 icofont-phone"></i>
+                            <div class="ms-80px">
+                                <h4 class="mb-0">Call Us</h4>
+                                {{ $setting->official_phone }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Registration Form -->
+            <div class="col-lg-6">
+                <div class="bg-dark-2 rounded-1 p-60 relative">
+                    <form action="{{ route('checkout') }}" method="POST">
+                        @csrf
+                        <div class="row g-4">
+                            <div class="col-lg-12">
+                                <h3>{{ $title }}</h3>
+                                <p>Enter your details below to begin your {{$setting->conference_theme}} registration.</p>
+                                @include('includes.bootstrap5alerts')
+                                @foreach($registrationFields as $field)
+                                    @if($field['status'] && in_array($type, $field['registration_types']))
+                                        <div class="field-set">
+                                            @if($field['type'] == 'select')
+                                                <label>{{ $field['label'] }}</label>
+                                                <select name="{{ $field['name'] }}" class="form-underline select2"
+                                                        @if(isset($field['required']) && $field['required']) required @endif
+                                                        @if(isset($field['has_onchange'])) onchange="{{ $field['has_onchange'] }}" @endif>
+                                                    <option value="">--Select--</option>
+                                                    @foreach($field['options'] ?? [] as $key => $value)
+                                                        @if(is_array($value))
+                                                            <option value="{{ $value['id'] ?? $key }}">{{ $value['name'] ?? $value['title'] ?? $value['id'] ?? $key }}</option>
+                                                        @else
+                                                            <option value="{{ $key }}">{{ $value }}</option>
+                                                        @endif
+                                                    @endforeach
+
+                                                    @if(isset($field['has_other_option']) && $field['has_other_option'])
+                                                        <option value="other">Other</option>
+                                                    @endif
+                                                </select>
+                                            @elseif($field['type'] == 'textarea')
+                                                <textarea name="{{ $field['name'] }}" class="form-underline h-100px"
+                                                        placeholder="{{ $field['label'] }}"
+                                                        @if(isset($field['required']) && $field['required']) required @endif></textarea>
+                                            @else
+                                                <input type="{{ $field['type'] }}" name="{{ $field['name'] }}" class="form-underline"
+                                                    placeholder="{{ $field['label'] }}"
+                                                    @if(isset($field['required']) && $field['required']) required @endif>
+                                            @endif
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+                        <input type="hidden" name="type" value="{{ $type }}">
+                        <div class="mt-3">
+                            <button type="submit" class="btn-main w-100">Submit Details</button>
+                        </div>
+                    </form>
+
+<script>
+$(document).ready(function() {
+    $('.select2').select2();
+
+    $('#chapter').change(function() {
+        if ($(this).val() === 'other') {
+            $('#field-div').show();
+            $('#field_id').prop('required', true);
+        } else {
+            $('#field-div').hide();
+            $('#field_id').prop('required', false);
+        }
+    });
+});
+</script>
+
+                </div>
+
+{{-- JS for dynamic field display --}}
+<script>
+$(document).ready(function() {
+    $('.select2').select2();
+
+    $('#chapter').change(function() {
+        if ($(this).val() === 'other') {
+            $('#field-div').show();
+            $('#field_id').prop('required', true);
+        } else {
+            $('#field-div').hide();
+            $('#field_id').prop('required', false);
+        }
+    });
+});
+</script>
+
+                </div>
+            </div>
+
+        </div>
     </div>
 </section>
 @endsection
+
 @section('script')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-    $(document).ready(function() {
-        $('.select2').select2();
-        $('#chapter').change(function() {
-            if ($('#chapter').val() == '86') {
-                $('#field-div').show();
-                $('#field_id').prop('required', true);
-            } else {
-                $('#field-div').hide();
-                $('#field_id').prop('required', false);
-            }
-        });
-    });
+$(document).ready(function() {
+    $('.select2').select2();
 
-    $(document).on('select2:open', function(e) {
-        window.setTimeout(function () {
-            document.querySelector('input.select2-search__field').focus();
-        }, 0);
+    $('#chapter').change(function() {
+        // If user selects 'other', you could optionally show a field for free text
+        if ($(this).val() == 'other') {
+            // logic to show custom campus input if needed
+        }
     });
-
+});
 </script>
 @endsection

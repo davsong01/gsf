@@ -117,13 +117,13 @@ class CronController extends Controller
 
     public function resolvePayment(Request $request){
         // Get all temp users for the current conference edition
-        $tempUsers = TempUser::where('conference_edition_id', activeConferenceEdition()->id)->where('status', '!=', 'Complete')->take(10)->get();
+        $tempUsers = Transaction::where('conference_edition_id', activeConferenceEdition()->id)->where('status', '!=', 'Complete')->take(10)->get();
         if($tempUsers->isEmpty()){
             return response()->json(['message' => 'No temp users found'], 404);
         }
 
         $pay = new PaymentController();
-        $tUser = new TempUserController();
+        $tUser = new TransactionController();
         $request['cron'] = true;
 
         foreach($tempUsers as $temp){

@@ -1,128 +1,82 @@
-@extends('frontend.conference.template2.app')
-@section('css')
+@extends('frontend.conference.template3.app')
+@include('includes.alerts')
 
-@endsection
 @section('content')
-<div id="page-banner-area" class="page-banner-area" style="background-image:url({{ asset('conference_templates/template2/images/hero_area/banner_bg.jpg') }})">
-    <!-- Subpage title start -->
-    <div class="page-banner-title">
-    <div class="text-center">
-        <h2>Thank you</h2>
-    </div>
-    </div><!-- Subpage title end -->
-</div><!-- Page Banner end -->
-<!-- ts intro start -->
-<section class="ts-contact" style="padding: 50px 0;">
-    <div class="container">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <h2 class="section-title text-center" style="margin-bottom: 10px;">
-                <span></span>
-                Payment Received
-            </h2>
-            <div class="section-header" style="margin-top:10px">
-                    <p style="text-align:center"> <br> Dear {{ $data['name'] }}, please find below the details of your payment for <strong>{{ $data['edition']->conference_theme }} conference</strong>. <br>
-                        We have sent a mail to <strong>{{ $data['email'] }} </strong> with your registration details.
-                    </p>
-                </div>
-        </div><!-- col end-->
-    </div>
-    <div class="row">
-        <div class="col-lg-4">
-            <div class="single-intro-text single-contact-feature">
-                <h3 class="ts-title">Name</h3>
-                <p>{{ $data['name'] }}</p>
-                <span class="count-number fa fa-user"></span>
-            </div><!-- single intro text end-->
-            <div class="border-shap left"></div>
-        </div><!-- col end-->
-        <div class="col-lg-4">
-            <div class="single-intro-text single-contact-feature">
-                <h3 class="ts-title">Email</h3>
-                <p>
-                {{ $data['email'] }}
-                </p>
-                <span class="count-number fa fa-envelope"></span>
-            </div><!-- single intro text end-->
-            <div class="border-shap left"></div>
-        </div><!-- col end-->
-        <div class="col-lg-4">
-            <div class="single-intro-text single-contact-feature">
-                <h3 class="ts-title">Phone Number</h3>
-                <p>
-                {{ $data['phone'] }}
-                </p>
-                <span class="count-number fa fa-phone"></span>
-            </div><!-- single intro text end-->
-            <div class="border-shap left"></div>
-        </div><!-- col end-->
-    </div>
-    <div class="row" style="margin-top:20px">
-        <div class="col-lg-4">
-            <div class="single-intro-text single-contact-feature">
-                <h3 class="ts-title">Amount Paid</h3>
-                <p>
-                &#8358;{{ number_format($data['amount']) }} 
-                </p>
-                <p>
-                {{ $data['payment_type'] }}
-                </p>
-                <span class="count-number fa fa-paper-plane"></span>
-            </div><!-- single intro text end-->
-            <div class="border-shap left"></div>
-        </div><!-- col end-->
-        <div class="col-lg-4">
-            <div class="single-intro-text single-contact-feature">
-                <h3 class="ts-title">Hostel Allocation</h3>
-                @if(!empty($data['allocated_hostel_data']['hostel_name']))
-                <p>
-                    <strong>Hostel Name: </strong>{{ $data['allocated_hostel_data']['hostel_name'] }} <br>
-                    <strong>Hostel Allocation Number: </strong>{{ $data['allocated_hostel_data']['hostel_allocation_number'] }}
-                </p>
-                @else
-                <p>
-                <br>
-                <br>
-                </p>
-                @endif
-                <span class="count-number fa fa-paper-plane"></span>
-            </div><!-- single intro text end-->
-            <div class="border-shap left"></div>
-        </div><!-- col end-->
-        <div class="col-lg-4">
-            <div class="single-intro-text single-contact-feature">
-                <h3 class="ts-title">Service Point Allocation</h3>
-                @if(!empty($data['allocated_service_point_data']['service_point_allocation_name']))
-                <p>
-                    <strong>Service Point: </strong>{{ $data['allocated_service_point_data']['service_point_allocation_name'] }} <br>
-                    <strong>S.P. Allocation Number: </strong>{{ $data['allocated_service_point_data']['service_point_allocation_number'] }}
-                </p>
-                @else
-                <p>
-                <br>
-                <br>
-                </p>
-                @endif
-                <span class="count-number fa fa-paper-plane"></span>
-            </div><!-- single intro text end-->
-            <div class="border-shap left"></div>
-        </div><!-- col end-->
-    </div><!-- row end-->
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="text-center">
-                <br> <br>
-                <h3> <strong> Your Login Details are</strong></h3>
-                <p>Family ID: {{ $data['family_id'] }}  <br>
-                Password: {{ $data['phone'] }} 
-                </p>
-                <a style="margin-bottom:20px; background-color:#183187;border: none;" href="{{ route('conferencemanagement.index') }}" data-toggle="tooltip" data-placement="top" title="Click to login" class="btn btn-outline-danger rounded-pill order-0">Access dashboard</a><br><br>
-            </div>
+<section id="section-hero" class="section-dark text-light jarallax no-top no-bottom relative mh-500">
+    <img src="{{ asset('conference_templates/template2/images/hero_area/banner_bg.jpg') }}" class="jarallax-img" alt="">
+    <div class="gradient-edge-bottom h-50"></div>
+    <div class="sw-overlay op-5"></div>
+    <div class="abs w-80 bottom-10 z-2 w-100">
+        <div class="container text-center">
+            <h1 class="text-uppercase fs-sm-8vw lh-1 mb-2 wow fadeInDown">Thank You!</h1>
+            <p class="lead wow fadeInUp" data-wow-delay=".3s">
+                Your registration was successful
+            </p>
         </div>
     </div>
-    </div><!-- container end-->
-    <div class="speaker-shap">
-        <img class="shap2" src="images/shap/home_schedule_memphis1.png" alt="">
+</section>
+
+<section class="py-5 bg-dark text-light">
+    <div class="container">
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-lg-8">
+                <h3 class="text-uppercase mb-3">We’re glad to have you onboard</h3>
+                <p class="text-muted">
+                    Dear <strong>{{ $transaction->name ?? 'Participant' }}</strong>, thank you for registering 
+                    {{ isset($transaction->edition->conference_theme) ? 'for ' . $transaction->edition->conference_theme : '' }}.
+                    <br>
+                    A confirmation email has been sent to <strong>{{ $transaction->email }}</strong> 
+                    with your login credentials and next steps.
+                </p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-md-8">
+                <div class="card bg-transparent border-light rounded-4 shadow-lg p-4">
+                    <h5 class="text-uppercase text-warning">Registration Details</h5>
+                    <hr class="border-light">
+                    <p><strong>Name:</strong> {{ $transaction->name }}</p>
+                    <p><strong>Email:</strong> {{ $transaction->email }}</p>
+                    <p><strong>Phone:</strong> {{ $transaction->phone }}</p>
+                    <p><strong>Gender:</strong> {{ ucfirst($transaction->gender ?? 'N/A') }}</p>
+
+                    @if(!empty($transaction->amount_paid))
+                        <hr class="border-light">
+                        <p><strong>Total Amount Paid:</strong> ₦{{ number_format($transaction->total_amount, 2) }}</p>
+                        <p><strong>Transaction ID:</strong> {{ $transaction->transid ?? 'N/A' }}</p>
+                    @endif
+                
+                    @if(!empty($transaction->hostel_id))
+                        <hr class="border-light">
+                        <p><strong>Hostel:</strong> {{ $transaction->hostel->name }}</p>
+                        <p><strong>Hostel Allocation Number:</strong> {{ $transaction->hostel_allocation_number }}</p>
+                    @endif
+
+                    @if(!empty($transaction->food_id))
+                        <hr class="border-light">
+                        <p><strong>Service Point:</strong> {{ $transaction->food->name }}</p>
+                        <p><strong>Allocation No:</strong> {{ $transaction->service_point_allocation_number }}</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center text-center mt-4">
+            <div class="col-md-6">
+                <div class="p-4 rounded-4 bg-dark text-dark shadow">
+                    <h5 class="text-uppercase mb-3">Your Login Details</h5>
+                    <p>
+                        <strong>Family ID:</strong> {{ $transaction->user->family_id ?? 'N/A' }} <br>
+                        <strong>Password:</strong> {{ $transaction->phone ?? 'Your registered phone number' }}
+                    </p>
+                    <a href="{{ route('login') }}" 
+                       class="btn-main btn btn-warning btn-lg rounded-pill mt-3 fw-bold">
+                        Access Your Account
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 @endsection

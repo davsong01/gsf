@@ -23,8 +23,9 @@ use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\MinistryController;
 use App\Http\Controllers\OfficialController;
-use App\Http\Controllers\TempUserController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ModeratorController;
 use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\SwitchUserController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\UserEmailsController;
 use App\Http\Controllers\StakeholderController;
 use App\Http\Controllers\UtilityToolsController;
 use App\Http\Controllers\CriticalEmailController;
+use App\Http\Controllers\MinistryFieldController;
 use App\Http\Controllers\PaymentProviderController;
 use App\Http\Controllers\StakeholderLoginController;
 use App\Http\Controllers\ConferenceEditionController;
@@ -119,7 +121,7 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('general-search', 'generalSearch')->name('general.search');
     Route::get('search-alumni', 'alumniSearch')->name('search.alumni');
     Route::get('member/search', 'memberSearch')->name('member.search');
-   
+    
     Route::get('newalumni', 'newAlumni')->name('newalumni');
     Route::post('newalumni', 'saveNewAlumni')->name('newalumni.save');
     Route::get('conference-registration/{page?}', 'regPage')->name('conference.registration');
@@ -168,8 +170,9 @@ Route::middleware(['stakeholder'])->group(function(){
 Route::get( '/registration', [ConferenceController::class, 'index'])->name('index');
 Route::get('/nec/registration/portal/pay', [ConferenceController::class, 'necRegistration'])->name('nec.registration');
 
+Route::post('/checkout', [PaymentController::class, 'checkout'])->name('checkout');
 Route::post('/pay', [PaymentController::class, 'redirectToGateway'])->name('pay');
-Route::get('/payment/callback', [PaymentController::class, 'handleGatewayCallback']);
+Route::get('/payment/verify/{reference}', [PaymentController::class, 'handleGatewayCallback']);
 Route::any('/payment/webhook', [PaymentController::class, 'dumpWebhook']);
 Route::get('/payment/analyze-webhook', [PaymentController::class, 'analyze']);
 Route::get('/payment/donation-callback', [DonationController::class, 'handleDonationGatewayCallback']);
@@ -237,11 +240,11 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     //Conference management
     Route::resource('conferencemanagement', ConferenceManagementController::class);
-    Route::resource('tempusers', TempUserController::class);
+    Route::resource('tempusers', TransactionController::class);
 
     Route::post('fetch-transaction', [PaymentController::class, 'paystackGetCustomerIdByEmail'])->name('admin.transactions.fetch');
 
-    Route::controller(TempUserController::class)->group(function () {
+    Route::controller(TransactionController::class)->group(function () {
         Route::get('tempusers-transfer-confirm/{id}', 'confirmTransfer')->name('tempusers.transfer.confirm');
         Route::get('tempusers-onsite-confirm/{id}', 'confirmOnSiteTransfer')->name('tempusers.onsite.confirm');
 
@@ -317,6 +320,20 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::get('food-export/{id}', [FoodController::class, 'participantExport'])->name('foodusers.export');
     Route::resource('conferencesettings', ConferenceSettingController::class);
+    Route::resource('generalsettings/ministry', MinistryController::class);
+    Route::get('ministry/{ministry}/assignment-types', [MinistryController::class, 'assignmentTypes'])
+        ->name('ministries.assignment.types');
+
+    Route::get('generalsettings/ministryfield/{ministry}', [MinistryFieldController::class, 'index'])->name('ministryfield.index');
+    Route::prefix('generalsettings/{ministry}')->group(function () {
+        Route::get('fields', [MinistryFieldController::class, 'index'])->name('ministries.fields.index');
+        Route::get('fields/create', [MinistryFieldController::class, 'create'])->name('ministries.fields.create');
+        Route::post('fields', [MinistryFieldController::class, 'store'])->name('ministries.fields.store');
+        Route::get('fields/{field}/edit', [MinistryFieldController::class, 'edit'])->name('ministries.fields.edit');
+        Route::put('fields/{field}', [MinistryFieldController::class, 'update'])->name('ministries.fields.update');
+        Route::delete('fields/{field}', [MinistryFieldController::class, 'destroy'])->name('ministries.fields.destroy');
+    });
+
     Route::get('/reset', [ConferenceSettingController::class, 'resetData'])->name('database.clear');
     
     Route::resource('foods', FoodController::class);

@@ -751,7 +751,7 @@
                         </div>
                         <div id="collapse5" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading5">
                             <div class="panel-body">
-                                The Conference will commence on Thursday night with a opening session which is often characterized with the power of the Spirit with all-encompassing display of joy.
+                                  The Conference will commence on Thursday night with a opening session which is often characterized with the power of the Spirit with all-encompassing display of joy.
                             </div>
                         </div>
                       </div>

@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Models\Payment;
 use App\Models\Donation;
 use App\Models\Material;
+use App\Models\Ministry;
 use App\Models\TempUser;
+use App\Models\PaymentProvider;
 use Illuminate\Database\Eloquent\Model;
 
 class ConferenceEdition extends Model
@@ -31,7 +33,7 @@ class ConferenceEdition extends Model
 
     public function attemptedPayments()
     {
-        return $this->hasMany(TempUser::class);
+        return $this->hasMany(Transaction::class);
     }
 
     public function alumniCount()
@@ -44,9 +46,18 @@ class ConferenceEdition extends Model
         return $this->hasMany(Payment::class, 'conference_edition_id')
         ->where(function ($query) {
             $query->where('level', 'Participant')
-                  ->orWhere('level', 'Moderator');
+                ->orWhere('level', 'Moderator');
         })
         ->count();
     }
 
+    public function ministry()
+    {
+        return $this->belongsTo(Ministry::class);
+    }
+
+    public function paymentprovider()
+    {
+        return $this->belongsTo(PaymentProvider::class, 'payment_provider_id');
+    }
 }

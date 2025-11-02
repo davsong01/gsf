@@ -34,9 +34,9 @@ class ConferenceManagementController extends Controller
 		// Admin
 		if (auth()->user()->role == 1) {
 			if (auth()->user()->conference_role == 'superadmin') {
-				$editions = ConferenceEdition::all();
+				$editions = ConferenceEdition::with('ministry')->get();
 			} else {
-				$editions = ConferenceEdition::where('id', $this->edition->id)->get();
+				$editions = ConferenceEdition::with('ministry')->where('id', $this->edition->id)->get();
 			}
 
 			$count = 1;
@@ -431,7 +431,7 @@ class ConferenceManagementController extends Controller
 		]);
 
 		$user->update([
-			'family_id' => $this->generateStaffFamilyId($this->edition, $user),
+			'family_id' => PaymentService::generateStaffFamilyId($this->edition, $user),
 		]);
 
 		return redirect(route('conference.staff', ['edition' => $this->edition]))->with('message', 'Staff successfully created');
@@ -696,19 +696,7 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-	public function reduceHostelAllocation($payment)
-	{
-		if (isset($payment->hostel->id) && !empty($payment->hostel->id)) {
-			$current_hostel = Hostel::find($payment->hostel->id);
-
-			if ($current_hostel->allocation == 0) {
-				return;
-			} else {
-				$payment->hostel->update(['allocation' => $payment->hostel->allocation - 1]);
-				return $payment->hostel;
-			}
-		}
-	}
+	
 
 	public function reduceFoodStandAllocation($payment)
 	{
@@ -1077,7 +1065,7 @@ class ConferenceManagementController extends Controller
 		$type = json_decode($request['metadata'], true);
 		$transid = $this->generateTransactionId();
 
-		$tempUser = app('App\Controllers\PaymentController')->createTempUser($request->all());
+		$tempUser = app('App\Controllers\PaymentController')->initializeTransaction($request->all());
 		$request['transid'] = $tempUser->transid;
 
 		$res = [

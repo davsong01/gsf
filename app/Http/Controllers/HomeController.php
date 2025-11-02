@@ -70,22 +70,21 @@ class HomeController extends Controller
                 ],
             ];
 
-
             $speakers = [
                 [
                     'name' => 'Joshua Henry',
                     'title' => 'Chief AI Scientist, OpenAI',
-                    'image' => 'conference_templates/template3/images/team/1.png',
+                    'image' => 'conference_templates/template3/images/speakers/1.png',
                 ],
                 [
                     'name' => 'Leila Zhang',
                     'title' => 'VP of Machine Learning, Google',
-                    'image' => 'conference_templates/template3/images/team/2.webp',
+                    'image' => 'conference_templates/template3/images/speakers/2.png',
                 ],
                 [
                     'name' => 'Carlos Rivera',
                     'title' => 'Founder & CEO, NeuralCore',
-                    'image' => 'conference_templates/template3/images/team/3.webp',
+                    'image' => 'conference_templates/template3/images/speakers/3.png',
                 ],
             ];
 
@@ -98,7 +97,7 @@ class HomeController extends Controller
                             'time' => '08:00 AM – 09:30 AM',
                             'speaker' => 'Pastor David O.',
                             'position' => 'Conference Host',
-                            'image' => 'images/speakers/1.webp',
+                            'image' => 'conference_templates/template3/images/speakers/1.png',
                             'title' => 'Opening Session: The Shining Lights',
                             'description' => 'A grand opening declaring the theme — “The Shining Lights” (Proverbs 4:18). Step into four days of divine encounter, worship, and illumination.',
                         ],
@@ -106,7 +105,7 @@ class HomeController extends Controller
                             'time' => '10:00 AM – 12:00 PM',
                             'speaker' => 'Rev. Grace Eze',
                             'position' => 'Guest Minister',
-                            'image' => 'images/speakers/2.webp',
+                            'image' => 'conference_templates/template3/images/speakers/2.png',
                             'title' => 'Session: Walking in the Light of God’s Word',
                             'description' => 'Discover the transforming power of living daily by the Word and shining God’s truth in every area of your life.',
                         ],
@@ -114,7 +113,7 @@ class HomeController extends Controller
                             'time' => '02:00 PM – 04:00 PM',
                             'speaker' => 'Evangelist Samuel Adeyemi',
                             'position' => 'Youth Missionary',
-                            'image' => 'images/speakers/3.webp',
+                            'image' => 'conference_templates/template3/images/speakers/3.png',
                             'title' => 'Workshop: Rekindling the Fire of Youth Evangelism',
                             'description' => 'A practical training on how to be a light in schools, campuses, and communities — carrying the fire of revival wherever you go.',
                         ],
@@ -122,7 +121,7 @@ class HomeController extends Controller
                             'time' => '06:00 PM – 08:00 PM',
                             'speaker' => 'Pastor (Mrs.) Joy Akande',
                             'position' => 'Women of Faith Network',
-                            'image' => 'images/speakers/4.webp',
+                            'image' => 'conference_templates/template3/images/speakers/4.png',
                             'title' => 'Evening Revival: Let Your Light Shine',
                             'description' => 'A stirring revival service calling all believers to rise and shine as ambassadors of Christ in a dark world.',
                         ],
@@ -136,7 +135,7 @@ class HomeController extends Controller
                             'time' => '08:00 AM – 09:30 AM',
                             'speaker' => 'Minister John Paul',
                             'position' => 'Worship Leader',
-                            'image' => 'images/speakers/5.webp',
+                            'image' => 'conference_templates/template3/images/speakers/1.png',
                             'title' => 'Morning Worship & Exhortation',
                             'description' => 'A powerful morning of worship and short exhortation to set the tone for the day’s divine encounters.',
                         ],
@@ -144,7 +143,7 @@ class HomeController extends Controller
                             'time' => '10:00 AM – 12:30 PM',
                             'speaker' => 'Rev. Naomi Okafor',
                             'position' => 'Bible Teacher',
-                            'image' => 'images/speakers/6.webp',
+                            'image' => 'conference_templates/template3/images/speakers/2.png',
                             'title' => 'Bible Study: Growing Brighter Daily',
                             'description' => 'A deep dive into Proverbs 4:18, uncovering how every believer is called to increase in light, grace, and purpose daily.',
                         ],
@@ -152,7 +151,7 @@ class HomeController extends Controller
                             'time' => '02:00 PM – 04:00 PM',
                             'speaker' => 'Panel of Young Ministers',
                             'position' => 'Youth Forum',
-                            'image' => 'images/speakers/7.webp',
+                            'image' => 'conference_templates/template3/images/speakers/1.png',
                             'title' => 'Youth Panel: Being a Light in a Digital World',
                             'description' => 'An interactive youth session discussing practical ways to shine for Christ in the media, tech, and creative industries.',
                         ],
@@ -160,7 +159,7 @@ class HomeController extends Controller
                             'time' => '06:00 PM – 08:30 PM',
                             'speaker' => 'Pastor Victor A.',
                             'position' => 'Lead Pastor, Gospel City',
-                            'image' => 'images/speakers/8.webp',
+                            'image' => 'conference_templates/template3/images/speakers/3.png',
                             'title' => 'Evening Power Night: Manifesting the Glory',
                             'description' => 'A night of worship, deliverance, and impartation. Come ready for miracles, healing, and encounters with the Holy Spirit.',
                         ],
@@ -174,7 +173,7 @@ class HomeController extends Controller
                             'time' => '08:00 AM – 09:30 AM',
                             'speaker' => 'Minister Peace O.',
                             'position' => 'Prayer Coordinator',
-                            'image' => 'images/speakers/9.webp',
+                            'image' => 'conference_templates/template3/images/speakers/2.png',
                             'title' => 'Morning Prayer Fire',
                             'description' => 'Join hundreds of believers as we intercede for the nations, the youth, and a greater move of God’s light.',
                         ],
@@ -182,7 +181,7 @@ class HomeController extends Controller
                             'time' => '10:00 AM – 12:00 PM',
                             'speaker' => 'Dr. Caleb Johnson',
                             'position' => 'Guest Minister',
-                            'image' => 'images/speakers/10.webp',
+                            'image' => 'conference_templates/template3/images/speakers/3.png',
                             'title' => 'Session: Disciples of Light — Transforming the World',
                             'description' => 'Discover your calling as a disciple of light and how to influence your generation for Christ through service and love.',
                         ],
@@ -190,7 +189,7 @@ class HomeController extends Controller
                             'time' => '02:00 PM – 04:30 PM',
                             'speaker' => 'Pastor Emmanuel A.',
                             'position' => 'Youth Director',
-                            'image' => 'images/speakers/11.webp',
+                            'image' => 'conference_templates/template3/images/speakers/2.png',
                             'title' => 'Workshop: Leadership by the Light',
                             'description' => 'Training session on spiritual leadership, excellence, and integrity for youth leaders and ministry workers.',
                         ],
@@ -198,7 +197,7 @@ class HomeController extends Controller
                             'time' => '06:00 PM – 08:30 PM',
                             'speaker' => 'Guest Music Ministers',
                             'position' => 'Concert Night',
-                            'image' => 'images/speakers/12.webp',
+                            'image' => 'conference_templates/template3/images/speakers/1.png',
                             'title' => 'Night of Worship: Shine Jesus Shine',
                             'description' => 'A spirit-filled worship concert featuring anointed music ministers, setting hearts ablaze for God’s glory.',
                         ],
@@ -212,7 +211,7 @@ class HomeController extends Controller
                             'time' => '08:00 AM – 09:00 AM',
                             'speaker' => 'Minister Sarah I.',
                             'position' => 'Choir Director',
-                            'image' => 'images/speakers/13.webp',
+                            'image' => 'conference_templates/template3/images/speakers/1.png',
                             'title' => 'Morning Worship & Thanksgiving',
                             'description' => 'A joyful thanksgiving session filled with praises as we celebrate the move of God throughout NAYOCO 2026.',
                         ],
@@ -220,7 +219,7 @@ class HomeController extends Controller
                             'time' => '09:30 AM – 12:00 PM',
                             'speaker' => 'Rev. (Dr.) Michael Okechukwu',
                             'position' => 'General Overseer',
-                            'image' => 'images/speakers/14.webp',
+                            'image' => 'conference_templates/template3/images/speakers/2.png',
                             'title' => 'Final Message: The Light That Never Fades',
                             'description' => 'A closing message on sustaining the fire and walking continually in the light of Christ.',
                         ],
@@ -228,7 +227,7 @@ class HomeController extends Controller
                             'time' => '01:00 PM – 03:00 PM',
                             'speaker' => 'All Ministers',
                             'position' => 'Closing Ceremony',
-                            'image' => 'images/speakers/15.webp',
+                            'image' => 'conference_templates/template3/images/speakers/4.png',
                             'title' => 'Commissioning & Prophetic Blessing',
                             'description' => 'Final prayers, declarations, and sending forth — go and shine your light across the world!',
                         ],
@@ -236,6 +235,32 @@ class HomeController extends Controller
                 ],
             ];
 
+            $plans = [
+                [
+                    'title' => 'Single Registration',
+                    'items' => ['Undergraduate', 'SSS Student', 'Youth'],
+                    'price' => number_format($setting->registration_fee),
+                    'route_id' => 1,
+                    'show' => true,
+                    'per_participant' => false,
+                ],
+                [
+                    'title' => 'Mass Registration',
+                    'items' => ['2 or more Undergraduates', '2 or more SSS Students', '2 or more Youths'],
+                    'price' => number_format($setting->registration_fee),
+                    'route_id' => 2,
+                    'show' => isset($setting->lock_online_payment) && $setting->lock_online_payment == 'no',
+                    'per_participant' => true,
+                ],
+                [
+                    'title' => 'Alumni Registration',
+                    'items' => ['GSF Alumni', 'Youth Corpers', 'Senior Friends'],
+                    'price' => number_format($setting->new_alumni_registration_fee) . ' - ₦' . number_format($setting->alumni_registration_fee),
+                    'route_id' => 3,
+                    'show' => true,
+                    'per_participant' => false,
+                ],
+            ];
 
             return view('frontend.conference.template'. $this->conference->template_id.'.welcome')
                 ->with('events',$events)
@@ -247,6 +272,7 @@ class HomeController extends Controller
                 ->with('chapters', $chapters)
                 ->with('faqs', $faqs)
                 ->with('schedule', $schedule)
+                ->with('plans', $plans)
                 ->with('speakers', $speakers);
         }else{
             $used = ['Zonal Pastor', 'Field Pastor', 'Portfolio'];
@@ -276,6 +302,7 @@ class HomeController extends Controller
             $chapters = Chapter::orderBy('name')->get();
             $fields = Field::orderBy('name')->get();
             $setting = $this->conference;
+
             $conference_year = Carbon::parse($setting->start_date)->year;
             $alumnis_amount = [
                 'alumni_registration_fee' => $setting->alumni_registration_fee,
@@ -295,8 +322,10 @@ class HomeController extends Controller
             if ($type == 3) {
                 $title = 'Alumni Registration';
             }
+
+            $registrationFields = reformatRegistrationFields($setting->ministry->fields->where('field_usage', 'registration'));
             
-            return view('frontend.conference.template'. $this->conference->template_id.'.registration',compact('title','chapters','setting','conference_year','alumnis_amount','type', 'fields'));
+            return view('frontend.conference.template'. $this->conference->template_id.'.registration',compact('title','chapters','setting','conference_year','alumnis_amount','type', 'fields', 'registrationFields'));
         } else {
             return abort(404);
         }

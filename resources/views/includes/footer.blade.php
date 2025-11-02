@@ -9,7 +9,6 @@
 </footer>
 <!-- BEGIN: Vendor JS-->
 <script src="{{ asset('app-assets/vendors/js/vendors.min.js') }}"></script>
-<script src="{{ asset('app-assets/vendors/js/ui/prism.min.js')}}"></script>
 
 <script src="{{ asset('app-assets/fonts/LivIconsEvo/js/LivIconsEvo.tools.js') }}"></script>
 <script src="{{ asset('app-assets/fonts/LivIconsEvo/js/LivIconsEvo.defaults.js') }}"></script>
@@ -30,8 +29,6 @@
 
 <script src="{{ asset('app-assets/vendors/js/extensions/jquery.steps.min.js') }}"></script>
 <script src="{{ asset('app-assets/vendors/js/forms/validation/jquery.validate.min.js') }}"></script>
-
-<script src="{{ asset('app-assets/vendors/js/ui/prism.min') }}"></script>
 
 <!-- END: Page Vendor JS-->
 

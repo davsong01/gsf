@@ -1,7 +1,17 @@
+
 <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="fa fa-bars"></i><span class="menu-title" data-i18n="Kanban">Dashboard</span></a></li>
-<li class="nav-item {{ Request::is('conferencemanagement*') ? 'active' : '' }}"><a href="{{ route('conferencemanagement.index') }}"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Dashboard">Conference</span></a>
 {{-- <li class="nav-item {{ Request::is('conferencemanagement*') ? 'active' : '' }}"><a href="{{ route('conferencemanagement.index') }}"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Dashboard">Conference</span></a> --}}
+@if(auth()->user()->conference_role == 'superadmin')
+    <li class="nav-item {{ Request::is('conferencemanagement.index*') ? 'open' : '' }}"><a href="#"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Content">General Settings</span></a>
+        <ul class="menu-content">
+            <li class="is_shown"><a href="{{ route('ministry.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Ministries</span></a>
+            </li>
+        </ul>
+    </li>
+@endif
+<li class="nav-item {{ Request::is('conferencemanagement*') ? 'active' : '' }}"><a href="{{ route('conferencemanagement.index') }}"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Dashboard">Conference</span></a>
 </li>
+
 @if(auth()->user()->conference_role == 'superadmin')
 <li class=" nav-item {{ Request::is('staff') ? 'active' : '' }}"><a href="{{ route('staff.index') }}"><i class="fa fa-group"></i><span class="menu-title">Staff</span></a>
 </li>
@@ -32,7 +42,4 @@
 data-i18n="Kanban">My Profile</span></a>
 </li>
 
-@if(auth()->user()->conference_role == 'superadmin')
-    <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="fa fa-bars"></i><span class="menu-title" data-i18n="Kanban">General Settings</span></a></li>
-@endif
 @endif

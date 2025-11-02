@@ -17,7 +17,7 @@ class ConferenceUtilityToolsController extends Controller
         $edition = ConferenceEdition::where('id', request()->edition)
             ->first();
         
-        $count = TempUser::where('conference_edition_id', $edition->id)
+        $count = Transaction::where('conference_edition_id', $edition->id)
             ->where('fix_status', 'pending')
             ->whereNotIn('status',['Initiated','abandoned', 'Complete'])
             // ->whereDoesntHave('users.payments', function ($query) use ($edition) {
@@ -42,7 +42,7 @@ class ConferenceUtilityToolsController extends Controller
             abort(404, 'Edition not found.');
         }
         
-        $tempusers = TempUser::where('conference_edition_id', $edition->id)
+        $tempusers = Transaction::where('conference_edition_id', $edition->id)
             ->whereIn('status', ['Initiated', 'abandoned', 'Complete'])
             ->whereIn('fix_status', ['pending'])
             ->whereDoesntHave('users.payments', function ($query) use ($edition) {

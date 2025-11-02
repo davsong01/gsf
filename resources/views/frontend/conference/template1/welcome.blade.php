@@ -148,7 +148,7 @@
   <!-- end of .container-->
 </section>
 
-<section class="bg-100 py-7" id="register">
+{{-- <section class="bg-100 py-7" id="register">
   <div class="container-lg">
     <div class="row justify-content-center">
       <div class="col-md-8 col-lg-5 text-center mb-3">
@@ -256,7 +256,7 @@
     </div>
   </div>
   <!-- end of .container-->
-</section>
+</section> --}}
 <!-- ============================================-->
 <!-- <section> begin ============================-->
 <section class="py-7" id="testimonies">

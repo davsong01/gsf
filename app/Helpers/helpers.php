@@ -1,8 +1,33 @@
 <?php
 
+use App\Models\Field;
+use App\Models\Chapter;
 use App\Models\GeneralSetting;
 use Illuminate\Support\Carbon;
 use App\Models\ConferenceEdition;
+
+if (!function_exists('registrationTypeNames')) {
+    function registrationTypeNames(?array $ids = null)
+    {
+        $types = [
+            1 => 'Individual Registration',
+            2 => 'Group Registration',
+            3 => 'Alumni Registration',
+            5 => 'Donation',
+        ];
+
+        if (is_null($ids)) {
+            // return full list if no argument is passed
+            return $types;
+        }
+
+        // return matched names for given IDs
+        return collect($ids)
+            ->map(fn($id) => $types[$id] ?? 'Unknown')
+            ->all();
+    }
+}
+
 
 if (!function_exists("hostelAssignmentTypes")) {
     function hostelAssignmentTypes()
@@ -30,6 +55,39 @@ if (!function_exists("servicePointAssignmentTypes")) {
             'based_on_chapter_with_category' => 'Based On Chapter (Category Inclusive)',
             'based_on_field_with_category' => 'Based On Field (Category Inclusive)'
         ];
+    }
+}
+
+if (!function_exists("reformatRegistrationFields")) {
+    function reformatRegistrationFields($fields)
+    {
+        return collect($fields)->map(function ($field) {
+            $name = strtolower($field->name ?? '');
+
+            switch (true) {
+                case in_array($name, ['chapter', 'chapter_id']):
+                    $field->options = Chapter::select('id', 'name')->get();
+                    break;
+
+                case in_array($name, ['field', 'field_id']):
+                    $field->options = Field::select('id', 'name')->get();
+                    break;
+                    // add more mappings easily later:
+                    // case in_array($name, ['department', 'department_id']):
+                    //     $options = Department::select('id', 'name')->get();
+                    //     break;
+            }
+
+            return $field;
+        })->values()->toArray();
+    }
+}
+
+
+if (!function_exists("currency")) {
+    function currency()
+    {
+        return 'NGN';
     }
 }
 

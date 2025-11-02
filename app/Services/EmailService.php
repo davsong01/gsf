@@ -1,0 +1,138 @@
+<?php
+namespace App\Services;
+
+use App\Models\CriticalEmail;
+
+class EmailService {
+    public static function getContent($type, $transaction)
+    {
+        $subject = '';
+        $content = '';
+        $conferenceTheme = $transaction->edition->conference_theme ?? 'GSF National Conference';
+        $user = $transaction->user ?? null;
+
+        $registrationDetails = "
+        <strong>Name:</strong> {$transaction->name}<br>
+        <strong>Email:</strong> {$transaction->email}<br>
+        <strong>Phone:</strong> {$transaction->phone}<br>
+        <strong>Amount Paid:</strong> &#8358;" . number_format($transaction->amount_paid ?? $transaction->amount ?? 0) . "<br><br>
+        <strong>Service Charge:</strong> &#8358;" . number_format($transaction->provider_charge ?? 0) . "<br><br>
+        <strong>Total Amount Paid:</strong> &#8358;" . number_format($transaction->total_amount ?? (($transaction->amount_paid ?? 0) + ($transaction->provider_charge ?? 0))) . "<br><br>";
+
+        $allocationDetails = '';
+        if (!empty($transaction->hostel_id)) {
+            $allocationDetails .= "<strong>Allocated Hostel:</strong> {$transaction->hostel->name}<br>Hostel Allocation Number: {$transaction->hostel_allocation_number}<br>";
+        }
+        if (!empty($transaction->food_id)) {
+            $allocationDetails .= "<br><strong>Allocated Service Point:</strong> {$transaction->food->name}<br>Service Point Allocation Number: {$transaction->service_point_allocation_number}<br><br>";
+        }
+
+        $loginDetails = $user ? "
+        <strong>Login ID:</strong> {$user->family_id}<br>
+        <strong>Password:</strong> {$transaction->phone}<br><br>
+        You can login and change your password for security reasons.<br><br>
+        <a style='color:white;text-decoration:none;background-color:#29166f;padding:7px;border-radius:5px;' href='" . route('login') . "'>Login</a><br><br>" : '';
+
+        switch ($type) {
+            case 'welcome_mail':
+                $subject = "Welcome to {$conferenceTheme}";
+                $content = "
+                Dear {$transaction->name}, <br><br>
+                Your registration for {$conferenceTheme} is successful. <br><br>
+                Below are the details of your registration: <br><br>
+                {$registrationDetails}
+                <strong>Allocation Details:</strong><br>{$allocationDetails}
+                Kindly login to your dashboard to view your profile and print your ID card:<br><br>
+                {$loginDetails}
+                Thanks.";
+                break;
+
+            case 'new_registration':
+                $subject = 'New Conference Registration Notification';
+                $prefix = match ($transaction->level) {
+                    'Moderator', 'Participant' => "A participant has just registered for the {$conferenceTheme}.<br><br>",
+                    'Alumni' => "An Alumni has just registered for the {$conferenceTheme}.<br><br>",
+                    default => "A new registration has been made.<br><br>",
+                };
+
+                $content = "
+                Dear Admin, <br><br>{$prefix}
+                {$registrationDetails}
+                <strong>Family ID:</strong> {$transaction->family_id}<br>
+                <strong>Chapter:</strong> {$transaction->chapter}<br><br>
+                Thanks.";
+                break;
+
+            case 'admin_donation_notification':
+                $subject = 'New Donation Received for Conference';
+                $content = "
+                Dear Admin,<br><br>
+                A new donation has just been made for the {$conferenceTheme}.<br><br>
+                {$registrationDetails}
+                <strong>Payment Mode:</strong> {$transaction->payment_type}<br>
+                <strong>Transaction ID:</strong> {$transaction->transid}<br><br>
+                Thanks.";
+                break;
+
+            case 'donator_notification':
+                $subject = 'Thank You for Your Donation';
+                $content = "
+                Dear {$transaction->name},<br><br>
+                Thank you for your donation of &#8358;" . number_format($transaction->amount ?? 0) . " towards {$conferenceTheme}.<br><br>
+                Your support is deeply appreciated.<br><br>
+                <strong>Transaction ID:</strong> {$transaction->transid}<br><br>
+                Thanks.";
+                break;
+
+            case 'donation_thank_you_mail':
+                $subject = 'Thank You for Supporting GSF';
+                $content = "
+                Dear {$transaction->name},<br><br>
+                Thank you for your generous contribution of &#8358;" . number_format($transaction->amount ?? 0) . " to GSF.<br><br>
+                God bless you abundantly.<br><br>
+                <strong>Transaction ID:</strong> {$transaction->transid}<br><br>
+                Thanks.";
+                break;
+
+            case 'admin_donation_general_notification':
+                $subject = 'New GSF Payment Notification';
+                $content = "
+                Dear Admin,<br><br>
+                A new payment for {$transaction->type} has been received.<br><br>
+                {$registrationDetails}
+                <strong>Type:</strong> {$transaction->type}<br>
+                <strong>Status:</strong> {$transaction->membership_status}<br>
+                <strong>Date:</strong> {$transaction->created_at}<br>
+                <strong>Transaction ID:</strong> {$transaction->transid}<br><br>
+                Thanks.";
+                break;
+
+            default:
+                $subject = 'GSF Notification';
+                $content = 'No content available for this notification type.';
+                break;
+        }
+
+        return [
+            'subject' => $subject,
+            'content' => $content,
+        ];
+    }
+
+    public static function logEmail($data)
+    {
+        $type = $data['type'];
+        $transaction = $data['transaction'];
+
+        $emailContent = self::getContent($type, $transaction);
+        $subject = $emailContent['subject'];
+        $content = $emailContent['content'];
+
+        CriticalEmail::create([
+            'recipient' => $transaction->email,
+            'type' => $type,
+            'subject' => $subject,
+            'content' => $content,
+        ]);
+    }
+}

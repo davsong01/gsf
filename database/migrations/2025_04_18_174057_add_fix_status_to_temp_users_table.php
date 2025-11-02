@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasColumn('temp_users', 'fix_status')) {
+        if (Schema::hasColumn('transactions', 'fix_status')) {
             return;
         }
         
-        Schema::table('temp_users', function (Blueprint $table) {
+        Schema::table('transactions', function (Blueprint $table) {
             $table->string('fix_status')->default('pending');
         });
     }
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('temp_users', function (Blueprint $table) {
+        Schema::table('transactions', function (Blueprint $table) {
             //
         });
     }

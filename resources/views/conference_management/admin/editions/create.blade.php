@@ -109,7 +109,7 @@
                             
                                     </fieldset>
                                 </div>
-                                 <div class="col-sm-6 col-md-6">
+                                <div class="col-sm-6 col-md-6">
                                     <label for="hostel_assignment_type">Hostel Assignment Type</label>
                                     <fieldset class="form-group ">
                                         <select class="form-control" name="hostel_assignment_type" id="hostel_assignment_type" required>

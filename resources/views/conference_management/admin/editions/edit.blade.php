@@ -114,28 +114,34 @@
                                     </div>
                                     
                                     <div class="col-sm-6 col-md-6">
+                                        <label for="ministry_id">Ministry</label>
+                                        <fieldset class="form-group">
+                                            <select class="form-control" name="ministry_id" id="ministry_id" required>
+                                                <option value="">Select Ministry...</option>
+                                                @foreach ($ministries as $ministry)
+                                                    <option value="{{ $ministry->id }}" {{ $edition->ministry_id == $ministry->id ? 'selected':'' }}>
+                                                        {{ $ministry->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="col-sm-6 col-md-6 d-none" id="hostelAssignmentWrapper">
                                         <label for="hostel_assignment_type">Hostel Assignment Type</label>
-                                        <fieldset class="form-group ">
-                                            <select class="form-control" name="hostel_assignment_type" id="hostel_assignment_type" required>
-                                                <option value="">Select...</option>
-                                                @foreach (hostelAssignmentTypes() as $key => $value)
-                                                <option value="{{ $key }}" {{ $edition->hostel_assignment_type == $key ? 'selected':'' }}>{{ $value }}</option> 
-                                                @endforeach
-                                            </select>
+                                        <fieldset class="form-group">
+                                            <select class="form-control" name="hostel_assignment_type" id="hostel_assignment_type"></select>
                                         </fieldset>
                                     </div>
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="service_point_assignment_type">Service Point Assignemt Type</label>
-                                        <fieldset class="form-group ">
-                                            <select class="form-control" name="service_point_assignment_type" id="service_point_assignment_type" required>
-                                                <option value="">Select...</option>
-                                                @foreach (servicePointAssignmentTypes() as $key => $value)
-                                                <option value="{{ $key }}" {{ $edition->service_point_assignment_type == $key ? 'selected':'' }}>{{ $value }}</option> 
-                                                @endforeach
-                                            </select>
+
+                                    <div class="col-sm-6 col-md-6 d-none" id="servicePointWrapper">
+                                        <label for="service_point_assignment_type">Service Point Assignment Type</label>
+                                        <fieldset class="form-group">
+                                            <select class="form-control" name="service_point_assignment_type" id="service_point_assignment_type"></select>
                                         </fieldset>
                                     </div>
-                                    
+
+
                                     <div class="col-sm-6 col-md-6">
                                         <label for="random_hostel">Enable mass registration</label>
                                         <fieldset class="form-group ">
@@ -152,7 +158,7 @@
                                         <fieldset class="form-group ">
                                             <input type="text" class="form-control" name="reg_prefix" value="{{ old('reg_prefix') ?? $edition->reg_prefix }}" id="reg_prefix">
                                             <div class="form-control-position">
-                                                &#128231;
+                                                {{-- &#128231; --}}
                                             </div>
                                         </fieldset>
                                     </div>
@@ -518,6 +524,63 @@
                 console.warn("No ID found to remove.");
             }
         });
+
+        const hostelWrapper = $('#hostelAssignmentWrapper');
+        const hostelSelect = $('#hostel_assignment_type');
+        const serviceWrapper = $('#servicePointWrapper');
+        const serviceSelect = $('#service_point_assignment_type');
+
+        const existingHostelValue = "{{ $edition->hostel_assignment_type ?? '' }}";
+        const existingServiceValue = "{{ $edition->service_point_assignment_type ?? '' }}";
+
+        function populateSelect($select, options, selectedValue = '') {
+            $select.empty().append('<option value="">Select...</option>');
+            if (options && typeof options === 'object') {
+                $.each(options, function (key, value) {
+                    const isSelected = key == selectedValue ? 'selected' : '';
+                    $select.append(`<option value="${key}" ${isSelected}>${value}</option>`);
+                });
+            }
+        }
+
+        function toggleAssignmentFields(ministryId) {
+            hostelWrapper.addClass('d-none');
+            serviceWrapper.addClass('d-none');
+
+            if (!ministryId) return;
+
+            $.ajax({
+                url: `/ministry/${ministryId}/assignment-types`,
+                type: 'GET',
+                success: function (fields) {
+                    if (!fields || !fields.length) return;
+
+                    fields.forEach(field => {
+                        if (field.name === 'hostel_assignment_type') {
+                            hostelWrapper.removeClass('d-none');
+                            populateSelect(hostelSelect, field.options, existingHostelValue);
+                        }
+
+                        if (field.name === 'service_point_assignment_type') {
+                            serviceWrapper.removeClass('d-none');
+                            populateSelect(serviceSelect, field.options, existingServiceValue);
+                        }
+                    });
+                },
+                error: function () {
+                    console.error('Failed to fetch ministry allocation fields.');
+                }
+            });
+        }
+
+        $('#ministry_id').on('change', function () {
+            toggleAssignmentFields($(this).val());
+        });
+
+        // Auto-load when editing
+        const selectedMinistry = $('#ministry_id').val();
+        if (selectedMinistry) toggleAssignmentFields(selectedMinistry);
+            
     });
 
     CKEDITOR.replace( 'conference_overview' );
@@ -574,6 +637,7 @@
             currentEditor.format("bold", true);
         }
     }
+   
 
 </script>
 @endsection

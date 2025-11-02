@@ -65,6 +65,17 @@
                                         <li><a class="menu-item" href="#section-venue">Venue</a></li>
                                         <li><a class="menu-item" href="#section-faq">FAQ</a></li>
                                         <li><a class="menu-item" href="news.html">Donate</a></li>
+                                        @auth
+                                        <li class="menu-item">
+                                            <a target="_blank" href="{{  route('account') }}" class="">My Account</a>
+                                        </li>
+                                        <li class="menu-item">
+                                            <a href="{{  route('logout') }}" class="" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                                        </li>
+                                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                            @csrf
+                                        </form>  
+                                        @endauth
                                     </ul>
                                 </div>
                             </div>
