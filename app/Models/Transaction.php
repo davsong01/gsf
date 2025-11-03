@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Food;
 use App\Models\User;
 use App\Models\Hostel;
+use App\Models\Chapter;
 use App\Models\ConferenceEdition;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\TransactionAllocationField;
@@ -35,9 +36,14 @@ class Transaction extends Model
         return $this->belongsTo(PaymentProvider::class, 'payment_provider_id');
     }
 
-    public function chapter()
+    public function getChapterAttribute()
     {
-        return $this->belongsTo(Chapter::class, 'chapter_id');
+        $chapterId = $this->allocationFields
+            ->where('key', 'chapter')
+            ->first()
+            ?->value;
+
+        return $chapterId ? Chapter::firstWhere('id', $chapterId) : null;
     }
 
     public function edition()

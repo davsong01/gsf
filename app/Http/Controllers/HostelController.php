@@ -142,7 +142,7 @@ class HostelController extends Controller
     public function getAvailableHostels(Request $request){
         $toDeallocate = Hostel::where('conference_edition_id', $request->edition_id)->where('id', $request->deallocated_hostel_id)->first();
         
-        $hostels = Hostel::withCount('payments')->where('conference_edition_id', $toDeallocate->conference_edition_id)->where('type', $toDeallocate->type)->where('level', $toDeallocate->level)->where('id', '!=', $toDeallocate->id)->where('allocation', '>', 0)->where('capacity', '>', 0)
+        $hostels = Hostel::withCount('transactions')->where('conference_edition_id', $toDeallocate->conference_edition_id)->where('type', $toDeallocate->type)->where('level', $toDeallocate->level)->where('id', '!=', $toDeallocate->id)->where('allocation', '>', 0)->where('capacity', '>', 0)
         // ->where('field_ids', $toDeallocate->field_ids)->where('chapter_ids', $toDeallocate->chapter_ids)
         ->get(['id','name','allocation']);
 

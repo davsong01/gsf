@@ -58,13 +58,12 @@
                             <div class="de-flex-col">
                                 <div class="de-flex-col header-col-mid">
                                     <ul id="mainmenu">
-                                        <li><a class="menu-item" href="#section-about">Details</a></li>
-                                        <li><a class="menu-item" href="#section-speakers">Speakers</a></li>
-                                        <li><a class="menu-item" href="#section-schedule">Schedule</a></li>
-                                        <li><a class="menu-item" href="#section-tickets">Tickets</a></li>
-                                        <li><a class="menu-item" href="#section-venue">Venue</a></li>
-                                        <li><a class="menu-item" href="#section-faq">FAQ</a></li>
-                                        <li><a class="menu-item" href="news.html">Donate</a></li>
+                                        <li><a class="menu-item" href="{{ url('/').'#section-about' }}">Details</a></li>
+                                        <li><a class="menu-item" href="{{ url('/').'#section-speakers' }}">Speakers</a></li>
+                                        <li><a class="menu-item" href="{{ url('/').'#section-schedule' }}">Schedule</a></li>
+                                        <li><a class="menu-item" href="{{ url('/').'#section-venue' }}">Venue</a></li>
+                                        <li><a class="menu-item" href="{{ url('/').'#section-faq' }}">FAQ</a></li>
+                                        {{-- <li><a class="menu-item" href="news.html">Donate</a></li> --}}
                                         @auth
                                         <li class="menu-item">
                                             <a target="_blank" href="{{  route('account') }}" class="">My Account</a>
@@ -76,12 +75,17 @@
                                             @csrf
                                         </form>  
                                         @endauth
+                                        @guest
+                                        <li class="menu-item">
+                                            <a target="_blank" href="{{ route('login') }}" class="">Login</a>
+                                        </li>
+                                        @endguest
                                     </ul>
                                 </div>
                             </div>
 
                             <div class="de-flex-col">
-                                <a class="btn-main fx-slide w-100" href="tickets-2.html"><span>Save your seat</span></a>
+                                <a class="btn-main fx-slide w-100" href="{{ url('/').'#section-tickets' }}"><span>Save your seat</span></a>
 
                                 <div class="menu_side_area">
                                     <span id="menu-btn"></span>

@@ -104,7 +104,7 @@
                 </a>
             </div>
         </div>
-
+        @if(strtoupper($edition->ministry->code) == 'GSF')
         <div class="col-sm-12 col-12 dashboard-users-success">
             <div class="card text-center">
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -176,6 +176,7 @@
 
             </div>
         </div>
+        @endif
     </div>
 </div>
 @endsection

@@ -43,10 +43,12 @@ class PaymentProviderRequest extends FormRequest
             'base_url' => 'nullable|url',
             'provider_charge' => 'nullable|numeric|min:0',
             'customer_pays_provider_charge' => 'boolean',
-            'allow_sub_account' => 'boolean',
+            'enable_sub_account' => 'boolean',
             'api_key' => 'nullable|string|max:500',
             'secret_key' => 'nullable|string|max:500',
             'public_key' => 'nullable|string|max:500',
+            "sub_account_code" => "nullable|string",
+            "sub_account_fee_percentage" => "nullable|numeric",
             'channels' => 'nullable|array',
             'channels.*' => 'in:card,bank,ussd,qr,mobile_money,bank_transfer,CARD,account_transfer,apple_pay',
         ];

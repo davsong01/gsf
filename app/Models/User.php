@@ -7,11 +7,11 @@ use App\Models\Post;
 use App\Models\Hostel;
 use App\Models\Payout;
 use App\Models\Chapter;
-use App\Models\Payment;
+use App\Models\Stakeholder;
+use App\Models\Transaction;
 use App\Models\Notification;
 use Laravel\Sanctum\HasApiTokens;
 use App\Http\Controllers\Controller;
-use App\Models\Stakeholder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Notifications\Notifiable;
@@ -55,7 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	public function isParticipant($edition)
 	{
-		$check = Payment::where(['level'=>'Participant', 'conference_edition_id'=>$edition->id,'user_id'=>$this->id])->first();
+		$check = Transaction::where(['level'=>'Participant', 'conference_edition_id'=>$edition->id,'user_id'=>$this->id])->first();
 		if (isset($check) && !empty($check)) {
 			return true;
 		} else return false;
@@ -63,7 +63,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	public function isAlumni($edition)
 	{
-		$check = Payment::where(['level' => 'Alumni', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
+		$check = Transaction::where(['level' => 'Alumni', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
 
 		if (isset($check) && !empty($check)) {
 			return true;
@@ -72,7 +72,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	public function isNec($edition)
 	{
-		$check = Payment::where(['level' => 'Nec', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
+		$check = Transaction::where(['level' => 'Nec', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
 
 		if (isset($check) && !empty($check)) {
 			return true;
@@ -81,7 +81,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	public function isModerator($edition)
 	{
-		$check = Payment::where(['level' => 'Moderator', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
+		$check = Transaction::where(['level' => 'Moderator', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
 		if (isset($check) && !empty($check)) {
 			return true;
 		} else return false;
@@ -89,7 +89,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	public function isChoir($edition)
 	{
-		$check = Payment::where(['level' => 'Choir', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
+		$check = Transaction::where(['level' => 'Choir', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
 
 		if (isset($check) && !empty($check)) {
 			return true;
@@ -98,7 +98,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	public function isOfficial($edition)
 	{
-		$check = Payment::where(['level' => 'Official', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
+		$check = Transaction::where(['level' => 'Official', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
 
 		if (isset($check) && !empty($check)) {
 			return true;
@@ -108,7 +108,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	public function completeReg($edition)
 	{
-		$check = Payment::where(['registration_status' => 'Complete', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
+		$check = Transaction::where(['registration_status' => 'Complete', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
 		
 		if (isset($check) && !empty($check)) {
 			return true;
@@ -119,8 +119,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Chapter::class, 'chapter_id');
     }
 
-	public function payments(){
-        return $this->hasMany(Payment::class)->orderBy('created_at','DESC');
+	public function transactions(){
+        return $this->hasMany(Transaction::class)->orderBy('created_at','DESC');
     }
 	
     public function payouts(){
@@ -158,14 +158,6 @@ class User extends Authenticatable implements MustVerifyEmail
 		// } else return false;
 	}
 
-	public function scopeMember()
-	{
-		// $check = Payment::where(['level' => 'Alumni', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
-
-		// if (isset($check) && !empty($check)) {
-		// 	return true;
-		// } else return false;
-	}
 
 	public function stakeholder(){
 		return $this->hasOne(Stakeholder::class, 'email', 'email');

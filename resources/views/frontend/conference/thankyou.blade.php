@@ -54,8 +54,14 @@
                   
                     <div class="col-md-12">
                         <div class="contact-text">
-                            {{-- <a class="btn submitregistration" href="{{ route('conferencemanagement.index', ['edition'=>$data['edition']->id]) }}" data-toggle="tooltip" data-placement="top" title="Click to login" style="width:100%; margin-bottom:30px">Login to access your dashboard</a><br><br> --}}
-                            <a class="btn submitregistration" href="{{ route('conferencemanagement.index') }}" data-toggle="tooltip" data-placement="top" title="Click to login" style="width:100%; margin-bottom:30px">Login to access your dashboard</a><br><br>
+                            <a class="btn submitregistration" 
+                            href="{{ route('conferencemanagement', ['edition' => $data['edition']->id]) }}"
+                            data-bs-toggle="tooltip" data-bs-placement="top" 
+                            title="Click to login" 
+                            style="width:100%; margin-bottom:30px">
+                            Login to access your dashboard
+                            </a>
+
                             <h3> <strong> Your Login Details are</strong>
                             </h3>
                             <p>Family ID: {{ $data['family_id'] }}  <br>

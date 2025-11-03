@@ -6,13 +6,13 @@
     <img src="{{ asset('conference_templates/template2/images/hero_area/banner_bg.jpg') }}" class="jarallax-img" alt="">
     <div class="gradient-edge-bottom h-50"></div>
     <div class="sw-overlay op-5"></div>
-    <div class="abs w-80 bottom-10 z-2 w-100">
+    <div class="abs w-50 bottom-10 z-2 w-100">
         <div class="container">
             <div class="row align-items-center justify-content-between gx-5">
                 <div class="col-lg-6">
                     <div class="relative wow mask-right">
                         <div class="text-start">
-                            <h1 class="text-uppercase fs-sm-10vw mb-0 lh-1">Confirm Your Registration</h1>
+                            <h1 style="font-size: 50px;" class="text-uppercase fs-sm-10vw mb-0 lh-1">Confirm Your Registration</h1>
                         </div>
                     </div>
                 </div>
@@ -107,16 +107,18 @@
 <script>
 document.getElementById('proceedBtn').addEventListener('click', function() {
     const provider = "{{$paymentProvider->slug}}";
+    const subAccountPercentage = {{ $paymentProvider->sub_account_fee_percentage ?? 0 }};
+    const feeBearer = (subAccountPercentage > 85) ? 'subaccount' : 'account';
 
-    if(provider === 'paystack') {
+    if (provider === 'paystack') {
         // Open Paystack modal
         let handler = PaystackPop.setup({
-            key: '{{ env("PAYSTACK_PUBLIC_KEY") }}',
+            key: '{{ $paymentProvider->public_key }}',
             email: '{{ $transaction->email }}',
-            amount: {{ ($transaction->amount_paid + ($paymentProvider->provider_charge ?? 0)) * 100 }},
+            amount: {{ $transaction->total_amount * 100 }}, // Paystack expects amount in kobo
             currency: 'NGN',
             ref: '{{ $transaction->transid }}',
-            channels: @json($paymentProvider->channels),
+            channels: @json($paymentProvider->channels ?? []),
             metadata: {
                 custom_fields: [
                     {
@@ -136,42 +138,55 @@ document.getElementById('proceedBtn').addEventListener('click', function() {
                     }
                 ]
             },
-            callback: function(response){
-                window.location.href = "/payment/verify/" + response.reference;
+            @if($paymentProvider->enable_sub_account)
+            subaccount: "{{ $paymentProvider->sub_account_code }}",
+            bearer: "{{ $paymentProvider->sub_account_fee_percentage > 85 ? 'subaccount' : 'account' }}",
+            transaction_charge: 0,
+            @endif
+
+            callback: function(response) {
+                if (response.status === "success") {
+                    window.location.href = "/payment/verify/" + response.reference;
+                } else {
+                    alert("Payment not completed");
+                }
             },
-            onClose: function(){
+
+            onClose: function() {
                 alert('Payment window closed');
             }
         });
         handler.openIframe();
     }
 
-    if(provider === 'monnify') {
-        // Open Monnify modal
+    if (provider === 'monnify') {
+        const transactionAmount = {{ (int) $transaction->total_amount }};
+        const subAccountPercentage = {{ (float) ($paymentProvider->sub_account_fee_percentage ?? 0) }};
+        const enableSplit = {{ $paymentProvider->enable_sub_account ? 'true' : 'false' }};
+
         MonnifySDK.initialize({
-            amount: {{ $transaction->amount_paid + ($paymentProvider->provider_charge ?? 0) }},
+            amount: transactionAmount,
             currency: "NGN",
-            reference: "{{ $transaction->reference }}",
-            customerName: "{{ $transaction->name }}",
-            customerEmail: "{{ $transaction->email }}",
-            apiKey: "{{ env('MONNIFY_API_KEY') }}",
-            contractCode: "{{ env('MONNIFY_CONTRACT_CODE') }}",
+            reference: "{{ $transaction->transid }}",
+            customerFullName: "{{ addslashes($transaction->name) }}",
+            customerEmail: "{{ addslashes($transaction->email) }}",
+            apiKey: "{{ $paymentProvider->api_key }}",
+            contractCode: "{{ $paymentProvider->public_key }}",
             paymentDescription: "Conference Registration",
-            metadata: {
-                transactionId: "{{ $transaction->id }}"
-            },
-            onComplete: function(response) {
+            onComplete: function (response) {
                 if (response.status === "PAID") {
-                    window.location.href = "/payment/verify/monnify/" + response.paymentReference;
+                    window.location.href = "/payment/verify/" + response.paymentReference;
                 } else {
                     alert("Payment not completed");
                 }
             },
-            onClose: function(data) {
+
+            onClose: function (data) {
                 console.log("Monnify modal closed", data);
             }
         });
     }
+
 });
 </script>
 

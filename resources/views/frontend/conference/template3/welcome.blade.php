@@ -14,29 +14,22 @@
                         <div class="d-flex justify-content-center align-items-center mx-4">
                             <i class="fa fa-calendar id-color me-3"></i>
                             <?php
-                              $start_date = "2026-04-17 00:00:00";
-                              $end_date = "2026-04-20 00:00:00";
+                                $start = \Carbon\Carbon::parse($setting->start_date);
+                                $end = \Carbon\Carbon::parse($setting->end_date);
 
-                              $start = \Carbon\Carbon::parse($start_date);
-                              $end = \Carbon\Carbon::parse($end_date);
-
-                              if ($start->month === $end->month && $start->year === $end->year) {
-                                  $dateRange = $start->format('F j') . '–' . $end->format('j, Y');
-                              } else {
-                                  $dateRange = $start->format('F j, Y') . '–' . $end->format('F j, Y');
-                              }
-                              ?>
-
-                              <h4 class="mb-0">{{ $dateRange }}</h4>
+                                if ($start->month === $end->month && $start->year === $end->year) {
+                                    $dateRange = $start->format('F j') . '–' . $end->format('j, Y');
+                                } else {
+                                    $dateRange = $start->format('F j, Y') . '–' . $end->format('F j, Y');
+                                }
+                            ?>
+                            <h4 class="mb-0">{{ $dateRange }}</h4>
                         </div>
-
-                       
                     </div>
 
                     <div class="spacer-single"></div>
-
-                    <a class="btn-main mx-2 fx-slide" href="#section-tickets"><span>Book slot</span></a>
-                    <a class="btn-main btn-line mx-2 fx-slide" href="#section-schedule"><span>View Schedule</span></a>
+                    <a class="btn-main mx-2 fx-slide" href="{{ url('/').'#section-tickets' }}"><span>Book slot</span></a>
+                    <a class="btn-main btn-line mx-2 fx-slide" href="{{ url('/').'#section-schedule' }}"><span>View Schedule</span></a>
                 </div>
             </div>
         </div>

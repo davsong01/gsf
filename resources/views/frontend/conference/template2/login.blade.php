@@ -13,10 +13,7 @@
         height: calc(100% - 73px);
     }
 
-    <blade media|%20(max-width%3A%20450px)%20%7B>.h-custom {
-        height: 100%;
-    }
-    }
+  
 </style>
 @endsection
 @section('content')

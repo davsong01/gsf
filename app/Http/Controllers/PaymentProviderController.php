@@ -36,7 +36,7 @@ class PaymentProviderController extends Controller
     }
 
     public function create(){
-        return view('admin.paymentproviders.create');
+        return view('admin.paymentproviders.edit');
     }
     /**
      * Store a newly created resource in storage.
@@ -76,7 +76,7 @@ class PaymentProviderController extends Controller
     public function update(PaymentProviderRequest $request, PaymentProvider $paymentprovider)
     {
         $validated = $request->validated();
-
+        
         if ($request->hasFile('logo')) {
             $validated['logo'] = $this->uploadFile(
                 $request->file('logo'),

@@ -85,16 +85,8 @@ class ConferenceEditionController extends Controller
     public function show(ConferenceEdition $conferenceEdition, $id)
     {
         if (auth()->user()->role == 1) {
-            // $edition = ConferenceEdition::with(['payments','donations'])->find($id);
-
-            // $registered_participants = $edition->payments->count();
-            // $pending_registration = $edition->payments->where('registration_status', 'Pending')->count();
-            // $total = $edition->payments->sum('amount_paid');
-            // $completed_registration = $edition->payments->where('registration_status', 'Complete')->count();
-            // $donations = Donation::where('conference_edition_id',$id)->sum('amount');
-            // $materials = Material::where('conference_edition_id',$id)->count();
-            $edition = ConferenceEdition::with(['payments', 'donations'])->where('id', $id)->first();
-            $payments = Payment::where('conference_edition_id', $id)->get();
+            $edition = ConferenceEdition::with(['transactions', 'donations'])->where('id', $id)->first();
+            $payments = $edition->transactions;
             
             $registered_participants = clone $payments;
             $registered_participants = $registered_participants->where('registration_status', 'Complete')->where('level','Participant')->count();
@@ -128,30 +120,30 @@ class ConferenceEditionController extends Controller
     public function chart(ConferenceEdition $id)
     {
         if (auth()->user()->role == 1) {
-            $data = User::join('payments', 'payments.user_id', '=', 'users.id')
-                ->where('payments.purpose', 'conference')
-                ->where('payments.registration_status', 'Complete')
-                ->leftJoin('hostels', 'hostels.id', '=', 'payments.hostel_id')
-                ->leftJoin('food', 'food.id', '=', 'payments.food_id')
+            $data = User::join('transactions', 'transactions.user_id', '=', 'users.id')
+                ->where('transactions.purpose', 'conference')
+                ->where('transactions.registration_status', 'Complete')
+                ->leftJoin('hostels', 'hostels.id', '=', 'transactions.hostel_id')
+                ->leftJoin('food', 'food.id', '=', 'transactions.food_id')
                 ->leftJoin('chapters', 'chapters.id', '=', 'users.chapter_id')
-                ->where('payments.conference_edition_id', $id->id)
+                ->where('transactions.conference_edition_id', $id->id)
                 ->where('users.role', '!=', 1)
                 ->select(
                     'users.family_id',
-                    'payments.transid',
-                    'payments.registration_status',
+                    'transactions.transid',
+                    'transactions.registration_status',
                     'users.name',
                     'users.email',
                     'users.phone',
                     'chapters.name as chapter',
                     'chapters.id as chapter_id',
-                    'payments.created_at as registration_date',
-                    'payments.amount_paid',
-                    'payments.level',
+                    'transactions.created_at as registration_date',
+                    'transactions.amount_paid',
+                    'transactions.level',
                     'hostels.name as hostel',
                     'food.name as foodstand',
-                    'payments.purpose',
-                    'payments.location'
+                    'transactions.purpose',
+                    'transactions.location'
                 )
                 ->orderBy('users.created_at', 'desc')
                 ->get();

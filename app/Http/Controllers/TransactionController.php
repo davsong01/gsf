@@ -11,16 +11,15 @@ use App\Models\Payment;
 
 class TransactionController extends Controller
 {
-    public function index(Request $request)
+    public function attemptedTransactions(Request $request)
 	{
 		$count = 1;
-        $edition = ConferenceEdition::with(['payments', 'donations'])->find($request->edition);
+        $edition = ConferenceEdition::with(['transactions'])->find($request->edition);
 
 		if (auth()->user()->role == 1) {
             // $participants = Transaction::with('campus')->where('conference_edition_id', $edition->id)->whereIn('status',['Initiated','abandoned','Complete'])->orderBy('created_at', 'desc')->orderBy('status')->get();
             
-            $participants = Transaction::with('campus')
-                ->where('conference_edition_id', $edition->id)
+            $participants = Transaction::where('conference_edition_id', $edition->id)
                 ->whereIn('status', ['Initiated', 'abandoned', 'Complete'])
                 ->orderBy('created_at', 'desc')
                 ->orderByRaw("CASE 
@@ -33,7 +32,7 @@ class TransactionController extends Controller
 
             return view('admin.transactions.index', compact('participants', 'count','edition'));
         }
-       
+        
         return abort(404);
 	}
 

@@ -55,10 +55,10 @@ class EmailController extends Controller
             'content' => 'required | min: 10'
         ]);
 
-        $recipients = Payment::join('users', 'payments.user_id', '=', 'users.id')
-            ->where(['payments.conference_edition_id' => $request->edition])
-            ->select('users.name', 'users.email', 'users.phone','payments.level')
-            ->orderBy('payments.created_at', 'desc');
+        $recipients = Payment::join('users', 'transactions.user_id', '=', 'users.id')
+            ->where(['transactions.conference_edition_id' => $request->edition])
+            ->select('users.name', 'users.email', 'users.phone','transactions.level')
+            ->orderBy('transactions.created_at', 'desc');
        
         if($data['recipient'] == 'All'){
             $recipients = $recipients->get();

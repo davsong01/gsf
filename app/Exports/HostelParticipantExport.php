@@ -28,11 +28,11 @@ class HostelParticipantExport implements WithHeadings, FromQuery
 	
 	public function query()
 	{
-		$participants = User::join('payments', 'payments.user_id', '=', 'users.id')
-		->Join('hostels', 'hostels.id', '=', 'payments.hostel_id')
+		$participants = User::join('transactions', 'transactions.user_id', '=', 'users.id')
+		->Join('hostels', 'hostels.id', '=', 'transactions.hostel_id')
 		->where(['hostels.id'=> $this->data['hostel_id']])
 		->leftJoin('chapters', 'chapters.id', '=', 'users.chapter_id')
-		->select('users.family_id', 'payments.transid', 'users.name', 'users.email', 'users.phone', 'users.sex', 'chapters.name as chapter', 'payments.created_at as registration_date','payments.amount_paid','payments.level','hostels.name as hostel')
+		->select('users.family_id', 'transactions.transid', 'users.name', 'users.email', 'users.phone', 'users.sex', 'chapters.name as chapter', 'transactions.created_at as registration_date','transactions.amount_paid','transactions.level','hostels.name as hostel')
 		->orderBy('users.created_at', 'desc');
 	
 		return $participants;

@@ -1,7 +1,7 @@
 @extends('frontend.conference.template3.app')
 
 @section('content')
-<section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-500">
+<section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-300">
     <img src="{{ asset('conference_templates/template2/images/hero_area/banner_bg.jpg') }}" class="jarallax-img" alt="">
     <div class="gradient-edge-bottom h-50"></div>
     <div class="sw-overlay op-5"></div>
@@ -11,7 +11,7 @@
                 <div class="col-lg-6">
                     <div class="relative wow mask-right">
                         <div class="text-start">
-                            <h1 class="fs-96 text-uppercase fs-sm-10vw mb-0 lh-1">Register</h1>
+                            <h1 class="fs-80 text-uppercase fs-sm-10vw mb-0 lh-1">Register</h1>
                         </div>
                     </div>
                 </div>
@@ -73,32 +73,48 @@
                                 @foreach($registrationFields as $field)
                                     @if($field['status'] && in_array($type, $field['registration_types']))
                                         <div class="field-set">
+                                            @php
+                                                $name = $field['name'];
+                                                $oldValue = old($name);
+                                            @endphp
+
                                             @if($field['type'] == 'select')
                                                 <label>{{ $field['label'] }}</label>
-                                                <select name="{{ $field['name'] }}" class="form-underline select2"
-                                                        @if(isset($field['required']) && $field['required']) required @endif
-                                                        @if(isset($field['has_onchange'])) onchange="{{ $field['has_onchange'] }}" @endif>
+                                                <select name="{{ $name }}" class="form-underline select2"
+                                                        @if(!empty($field['required'])) required @endif
+                                                        @if(!empty($field['has_onchange'])) onchange="{{ $field['has_onchange'] }}" @endif>
                                                     <option value="">--Select--</option>
+
                                                     @foreach($field['options'] ?? [] as $key => $value)
-                                                        @if(is_array($value))
-                                                            <option value="{{ $value['id'] ?? $key }}">{{ $value['name'] ?? $value['title'] ?? $value['id'] ?? $key }}</option>
-                                                        @else
-                                                            <option value="{{ $key }}">{{ $value }}</option>
-                                                        @endif
+                                                        @php
+                                                            $optionValue = is_array($value) ? ($value['id'] ?? $key) : $key;
+                                                            $optionLabel = is_array($value) ? ($value['name'] ?? $value['title'] ?? $optionValue) : $value;
+                                                        @endphp
+                                                        <option value="{{ $optionValue }}" 
+                                                            {{ (string)$oldValue === (string)$optionValue ? 'selected' : '' }}>
+                                                            {{ $optionLabel }}
+                                                        </option>
                                                     @endforeach
 
-                                                    @if(isset($field['has_other_option']) && $field['has_other_option'])
-                                                        <option value="other">Other</option>
+                                                    @if(!empty($field['has_other_option']))
+                                                        <option value="other" {{ $oldValue === 'other' ? 'selected' : '' }}>Other</option>
                                                     @endif
                                                 </select>
+
                                             @elseif($field['type'] == 'textarea')
-                                                <textarea name="{{ $field['name'] }}" class="form-underline h-100px"
+                                                <label>{{ $field['label'] }}</label>
+                                                <textarea name="{{ $name }}" class="form-underline h-100px"
                                                         placeholder="{{ $field['label'] }}"
-                                                        @if(isset($field['required']) && $field['required']) required @endif></textarea>
+                                                        @if(!empty($field['required'])) required @endif>{{ $oldValue }}</textarea>
+
                                             @else
-                                                <input type="{{ $field['type'] }}" name="{{ $field['name'] }}" class="form-underline"
+                                                <label>{{ $field['label'] }}</label>
+                                                <input type="{{ $field['type'] }}" 
+                                                    name="{{ $name }}" 
+                                                    class="form-underline"
+                                                    value="{{ $oldValue }}"
                                                     placeholder="{{ $field['label'] }}"
-                                                    @if(isset($field['required']) && $field['required']) required @endif>
+                                                    @if(!empty($field['required'])) required @endif>
                                             @endif
                                         </div>
                                     @endif
@@ -111,24 +127,27 @@
                         </div>
                     </form>
 
-<script>
-$(document).ready(function() {
-    $('.select2').select2();
+                    <script>
+                    $(document).ready(function() {
+                        $('.select2').select2();
 
-    $('#chapter').change(function() {
-        if ($(this).val() === 'other') {
-            $('#field-div').show();
-            $('#field_id').prop('required', true);
-        } else {
-            $('#field-div').hide();
-            $('#field_id').prop('required', false);
-        }
-    });
-});
-</script>
+                        $('#chapter').change(function() {
+                            if ($(this).val() === 'other') {
+                                $('#field-div').show();
+                                $('#field_id').prop('required', true);
+                            } else {
+                                $('#field-div').hide();
+                                $('#field_id').prop('required', false);
+                            }
+                        });
+                    });
+                    </script>
 
                 </div>
-
+            </div>
+        </div>
+    </div>
+</div>
 {{-- JS for dynamic field display --}}
 <script>
 $(document).ready(function() {

@@ -1,85 +1,78 @@
-@extends('frontend.conference.template2.app')
-@section('css')
-<style>
-    .divider:after,
-    .divider:before {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: #eee;
-    }
+@extends('frontend.conference.template3.app')
 
-    .h-custom {
-        height: calc(100% - 73px);
-    }
-
-    <blade media|%20(max-width%3A%20450px)%20%7B>.h-custom {
-        height: 100%;
-    }
-    }
-</style>
-@endsection
 @section('content')
-<div id="page-banner-area" class="page-banner-area"
-    style="background-image:url({{ asset('conference_templates/template2/images/hero_area/banner_bg.jpg') }})">
-    <!-- Subpage title start -->
-    <div class="page-banner-title">
-        <div class="text-center">
-            <h2>Login</h2>
-        </div>
-    </div><!-- Subpage title end -->
-</div><!-- Page Banner end -->
-
-<div class="">
-    <section class="vh-100">
-        <div class="container-fluid h-custom">
-            <div class="row d-flex justify-content-center align-items-center h-100">
-                
-                <div class="col-md-9 col-lg-6 col-xl-5">
-                    <img src="{{ asset($setting->banner)}}"
-                        class="img-fluid" alt="Sample image">
-                </div>
-                <div class="col-md-8 col-lg-6 col-xl-4">
-                    @include('includes.alerts')
-                    <form action="{{ route('login') }}" method="POST">
-                        @csrf
-                        {{-- <div class="divider d-flex align-items-center my-4">
-                            <p class="text-center fw-bold mx-3 mb-0"></p>
-                        </div> --}}
-                        <!-- Email input -->
-                        <div data-mdb-input-init class="form-outline mb-4">
-                            <label class="form-label" for="family_id">Family ID</label>
-                            <input required type="text" id="family_id" name="family_id" class="form-control form-control-lg"
-                                placeholder="Enter your family ID" value="{{ old('family_id') }}">
+<section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-300">
+    <img src="{{ asset('conference_templates/template2/images/hero_area/banner_bg.jpg') }}" class="jarallax-img" alt="">
+    <div class="gradient-edge-bottom h-50"></div>
+    <div class="sw-overlay op-5"></div>
+    <div class="abs w-80 bottom-10 z-2 w-100">
+        <div class="container">
+            <div class="row align-items-center justify-content-between gx-5">
+                <div class="col-lg-6">
+                    <div class="relative wow mask-right">
+                        <div class="text-start">
+                            <h1 class="fs-80 text-uppercase fs-sm-10vw mb-0 lh-1">Login</h1>
                         </div>
-
-                        <!-- Password input -->
-                        <div data-mdb-input-init class="form-outline mb-3">
-                            <label class="form-label" for="password">Password</label>
-                            <input type="password" id="password" name="password" class="form-control form-control-lg"
-                                placeholder="Enter password" />
-   
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center">
-                            <!-- Checkbox -->
-                            <div class="form-check mb-0">
-                                <input class="" type="checkbox" value="" name="" id="check" />
-                                <label class="" for="">
-                                    <span onclick="newFunction()" style="cursor: pointer;">Show Password</span>
-                                </label>
-                            </div>
-                        </div>
-                        <input style="margin-top:20px;width: 100%;" type="submit" value="Login" h
-                        class="btn btn-danger hover-top btn-glow rounded-pill border-0">
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+</section>
 
-    </section>
+<section class="relative">
+    <div class="container">
+        <div class="row align-items-center justify-content-center">
+            <div class="col-lg-6">
+                <div class="wow scaleIn">
+                    <img src="{{ asset($setting->banner) }}" class="w-100" alt="">
+                </div>
+            </div>
+            <!-- Right Column: Registration Form -->
+            <div class="col-lg-6">
+                <div class="bg-dark-2 rounded-1 p-60 relative">
+                    <form action="{{ route('login') }}" method="POST">
+                        @csrf
+                        <div class="row g-4">
+                            <div class="col-lg-12">
+                                {{-- <h3>{{ $title }}</h3> --}}
+                                <p>Login below to access your dashboard.</p>
+
+                                @include('includes.bootstrap5alerts')
+                                <div class="field-set" style="background-size: cover; background-repeat: no-repeat;">
+                                    <label>Registration ID</label>
+                                    <input value="{{ old('family_id') }}" type="text" name="family_id" id="family_id" class="form-underline" placeholder="Enter Registration ID" required>
+                                </div>
+
+                                <div class="field-set" style="background-size: cover; background-repeat: no-repeat;">
+                                    <label>Password</label>
+                                    <input value="{{ old('password') }}" type="text" name="password" id="password" class="form-underline" placeholder="Enter Password" required>
+                                </div>
+
+                                <div class="field-set" style="background-size: cover; background-repeat: no-repeat;">
+                                    <input class="" type="checkbox" value="" name="" id="check" />
+                                    <label class="" for="">
+                                        <span onclick="newFunction()" style="cursor: pointer;">Show Password</span>
+                                    </label>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn-main w-100">Login</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
 @section('script')
+
 <script>
     function newFunction() {
         var x = document.getElementById("password");

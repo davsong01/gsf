@@ -28,7 +28,7 @@
                             <td>{{ ucfirst($ministry->status) }}</td>
                             <td>
                                 <a href="{{ route('ministry.edit', $ministry->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="{{ route('ministryfield.index', $ministry->id) }}" class="btn btn-sm btn-info">Fields</a>
+                                <a href="{{ route('ministryfield.index', $ministry->id) }}" class="btn btn-sm btn-info">Reg. Fields</a>
                                 <form action="{{ route('ministry.destroy', $ministry->id) }}" method="POST" style="display:inline-block">
                                     @csrf
                                     @method('DELETE')

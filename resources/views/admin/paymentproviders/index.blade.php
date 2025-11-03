@@ -42,11 +42,11 @@
 
                                                 <td>
                                                     <strong>{{ $provider->name }}</strong> <br>
-                                                    <small class="text-muted">{{ $provider->slug }}</small>
+                                                    <small class="text-muted">Provider Engine: {{ $provider->slug }}</small>
                                                     @if($provider->logo)
                                                         <div>
                                                             <img src="{{ asset($provider->logo) }}" 
-                                                                 alt="Logo" width="50" class="mt-1 rounded">
+                                                                alt="Logo" width="50" class="mt-1 rounded">
                                                         </div>
                                                     @endif
                                                 </td>

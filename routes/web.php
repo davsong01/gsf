@@ -170,7 +170,9 @@ Route::middleware(['stakeholder'])->group(function(){
 Route::get( '/registration', [ConferenceController::class, 'index'])->name('index');
 Route::get('/nec/registration/portal/pay', [ConferenceController::class, 'necRegistration'])->name('nec.registration');
 
-Route::post('/checkout', [PaymentController::class, 'checkout'])->name('checkout');
+Route::post('checkout', [PaymentController::class, 'checkout'])->name('checkout');
+Route::get('checkout/{transaction}', [PaymentController::class, 'showCheckout'])->name('show.checkout');
+
 Route::post('/pay', [PaymentController::class, 'redirectToGateway'])->name('pay');
 Route::get('/payment/verify/{reference}', [PaymentController::class, 'handleGatewayCallback']);
 Route::any('/payment/webhook', [PaymentController::class, 'dumpWebhook']);
@@ -240,8 +242,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     //Conference management
     Route::resource('conferencemanagement', ConferenceManagementController::class);
-    Route::resource('tempusers', TransactionController::class);
-
+    Route::get('tempusers', [TransactionController::class, 'attemptedTransactions'])->name('tempusers.index');
+    
     Route::post('fetch-transaction', [PaymentController::class, 'paystackGetCustomerIdByEmail'])->name('admin.transactions.fetch');
 
     Route::controller(TransactionController::class)->group(function () {

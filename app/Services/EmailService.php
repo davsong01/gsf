@@ -10,6 +10,7 @@ class EmailService {
         $content = '';
         $conferenceTheme = $transaction->edition->conference_theme ?? 'GSF National Conference';
         $user = $transaction->user ?? null;
+        $fields = $transaction->allocationFields;
 
         $registrationDetails = "
         <strong>Name:</strong> {$transaction->name}<br>
@@ -58,8 +59,7 @@ class EmailService {
                 $content = "
                 Dear Admin, <br><br>{$prefix}
                 {$registrationDetails}
-                <strong>Family ID:</strong> {$transaction->family_id}<br>
-                <strong>Chapter:</strong> {$transaction->chapter}<br><br>
+                <strong>Family ID:</strong> {$transaction->user->family_id}<br>
                 Thanks.";
                 break;
 
@@ -127,9 +127,9 @@ class EmailService {
         $emailContent = self::getContent($type, $transaction);
         $subject = $emailContent['subject'];
         $content = $emailContent['content'];
-
+        
         CriticalEmail::create([
-            'recipient' => $transaction->email,
+            'recipient' => in_array($type, ['new_registration']) ? $transaction->edition->official_email : $transaction->email,
             'type' => $type,
             'subject' => $subject,
             'content' => $content,

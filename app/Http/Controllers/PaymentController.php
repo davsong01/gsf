@@ -78,9 +78,17 @@ class PaymentController extends Controller
 
 		$transaction = $transaction['data'];
 
-		$paymentProvider = $setting->paymentprovider;
+		// $paymentProvider = $setting->paymentprovider;
 
-		return view('frontend.conference.template' . $setting->template_id . '.checkout', compact('transaction', 'paymentProvider','setting'));
+		return redirect(route('show.checkout', $transaction->id));
+		// return view('frontend.conference.template' . $setting->template_id . '.checkout', compact('transaction', 'paymentProvider','setting'));
+	}
+
+	public function showCheckout(Transaction $transaction){
+		$setting = $transaction->edition;
+		$paymentProvider = $transaction->paymentprovider;
+
+		return view('frontend.conference.template' . $setting->template_id . '.checkout', compact('transaction', 'paymentProvider', 'setting'));
 	}
 
 	public function redirectToGateway(Request $request)
@@ -116,130 +124,7 @@ class PaymentController extends Controller
 		}
 	}
 
-	// public function handleGatewayCallback(Request $request, $admin="", $transfer_confirm="",$onsite_confirm="")
-	// {
-	// 	$reference = $request->reference;
-	// 	$setting = $request['setting'] ?? activeConferenceEdition();
-	// 	$extraData = [
-	// 		'conference_year' => Carbon::parse($setting->start_date)->year,
-	// 	];
-
-	// 	$transaction = Transaction::with(['user','paymentprovider', 'edition', 'allocationFields'])->where('transid', $reference)->first();
-
-	// 	if($transaction->status == 'Complete'){
-	// 		if ($admin !== 'admin') {
-	// 			return $this->thankYouPage($transaction, $extraData);
-	// 		} else {
-	// 			return $transaction;
-	// 		}
-	// 	}
-
-	// 	$verify = $this->verify($transaction);
-
-	// 	$transaction->update([
-	// 		'api_response' => $verify['message'] ?? null,
-	// 	]);
-
-	// 	if ($verify['status'] || !empty($transfer_confirm) || !empty($onsite_confirm)) {
-	// 		if(!empty($transfer_confirm) || !empty($onsite_confirm)){
-	// 			// $participant = Transaction::where('transid', $request->reference)->first();
-	// 		}else{
-	// 			// $participant = Transaction::where('transid', $paymentDetails->reference)->whereIn('status', ['Initiated', 'abandoned'])->first();
-	// 		}
-
-	// 		if(empty($transaction)){
-	// 			return false;
-	// 		}
-
-	// 		$emailData['transaction'] = $transaction;
-
-	// 		//Donations
-	// 		if ($transaction->purpose == 'donation') {
-	// 			$emailData['type'] = 'admin_donation_notification';
-	// 			EmailService::logEmail($emailData);
-
-	// 			//send email to donor
-	// 			$emailData['type'] = 'donator_notification';
-	// 			EmailService::logEmail($emailData);
-
-	// 			//Todo: make this return redirect to
-	// 			$data['edition'] = $setting;
-	// 			$transaction->update([
-	// 				'status' => 'Complete',
-	// 				'user_id' => $user->id ?? null,
-	// 			]);
-
-	// 			if($admin !== 'admin'){
-	// 				return $this->donationThankYouPage($transaction, $extraData);
-	// 			}else{
-	// 				return $transaction;
-	// 			}
-	// 		}
-
-	// 		$user = PaymentService::createUser($transaction);
-
-	// 		// Assign Automatic foodstand and hostel
-	// 		if (in_array($transaction->level, ['Participant', 'Alumni', 'Nec','Moderator'])) {
-	// 			$hostel_allocation = HostelAllocationService::assignHostel($transaction);
-	// 			$service_point = ServicePointAllocationService::assignFoodStand($transaction);
-
-	// 			$data['allocated_hostel_data'] = $hostel_allocation;
-	// 			$data['allocated_service_point_data'] = $service_point;
-
-	// 			$transaction->update([
-	// 				'hostel_allocation_number' => $hostel_allocation['hostel_allocation_number'] ?? null,
-	// 				'hostel_allocation_type' => $hostel_allocation['hostel_allocation_type'] ?? null,
-	// 				'service_point_allocation_number' => $service_point['service_point_allocation_number'] ?? null,
-	// 				'service_point_allocation_type' => $service_point['service_point_allocation_type'] ?? null,
-	// 				'hostel_id' => $hostel_allocation['hostel_id'] ?? null,
-	// 				'food_id' => $service_point['service_point_allocation_id'] ?? null
-	// 			]);
-	// 		}
-
-	// 		$familyId = PaymentService::generateFamilyId($user, $setting);
-
-	// 		$user->update([
-	// 			'family_id' => $familyId,
-	// 		]);
-
-	// 		if ($transaction->level == 'Moderator') {
-	// 			$transaction->update([
-	// 				'uploaded_by' => $user->id,
-	// 			]);
-	// 		}
-
-	// 		$transaction->update([
-	// 			'status' => 'Complete',
-	// 			'user_id' => $user->id ?? null,
-	// 		]);
-
-
-	// 		//send email to participant
-	// 		$emailData['type'] = 'welcome_mail';
-	// 		EmailService::logEmail($emailData);
-
-
-	// 		//send email to official email
-	// 		$emailData['type'] = 'new_registration';
-	// 		EmailService::logEmail($emailData);
-
-	// 		if($admin !== 'admin'){
-	// 			// Auth::loginUsingId($transaction->user->id);	
-	// 		} 
-
-	// 		if($admin !== 'admin'){
-	// 			return $this->thankYouPage($transaction, $extraData);
-	// 		} else {
-	// 			return $transaction;
-	// 		}
-
-	// 		if($admin !== 'admin'){
-	// 			dd('Transaction failed! We have not received any money from you.');
-	// 		} else {
-	// 			return $transaction;
-	// 		}
-	// 	}
-	// }
+	
 	public function handleGatewayCallback(Request $request, $admin = "", $transfer_confirm = "", $onsite_confirm = "")
 	{
 		$reference = $request->reference;
@@ -321,10 +206,18 @@ class PaymentController extends Controller
 		// Final transaction update
 		$transaction->update([
 			'status' => 'Complete',
+			'registration_status' => 'Complete',
 			'user_id' => $user->id ?? null,
 		]);
 
+		if(in_array($transaction->level, ['Moderator'])){
+			$transaction->update([
+				'uploaded_by' => $user->id ?? null,
+			]);
+		}
+
 		// Send emails
+		$transaction->user = $user;
 		$this->sendRegistrationEmails($transaction);
 
 		// Auto-login (if needed)
@@ -377,6 +270,8 @@ class PaymentController extends Controller
 
 
 	public function thankYouPage($transaction, $extraData){
+		$transaction->fresh();
+		
 		if(!empty($transaction->edition)){
             return view('frontend.conference.template'. $transaction->edition->template_id.'.thankyou', compact('transaction', 'extraData'));
 		}else{

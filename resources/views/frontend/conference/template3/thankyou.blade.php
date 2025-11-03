@@ -70,10 +70,8 @@
                         <strong>Family ID:</strong> {{ $transaction->user->family_id ?? 'N/A' }} <br>
                         <strong>Password:</strong> {{ $transaction->phone ?? 'Your registered phone number' }}
                     </p>
-                    <a href="{{ route('login') }}" 
-                       class="btn-main btn btn-warning btn-lg rounded-pill mt-3 fw-bold">
-                        Access Your Account
-                    </a>
+
+                    <a class="btn-main fx-slide w-100" href="{{ route('conferencemanagement.index') }}"><span>Access Your Account</span></a>
                 </div>
             </div>
         </div>

@@ -256,17 +256,17 @@ class PaymentService {
     public static function createUser($transaction)
     {
         $user = User::firstOrNew(['email' => $transaction->email]);
-
+        
         $user->fill([
             'name' => $transaction->name,
             'phone' => $transaction->phone,
             'sex' => $transaction->gender ?? $user->sex,
-            'chapter_id' => $transaction->chapter ?? $user->chapter_id,
+            'chapter_id' => $transaction->chapter->id ?? $user->chapter_id,
             'passport' => $user->passport,
             'slug' => Str::slug($transaction->name),
             'role' => $user->role ?? 2,
         ]);
-
+        
         if (!$user->exists || $user->isDirty('phone')) {
             $user->password = bcrypt($transaction->phone);
         }

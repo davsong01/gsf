@@ -8,6 +8,7 @@ use App\Models\Hostel;
 use App\Models\Chapter;
 use App\Models\Payment;
 use App\Mail\WelcomeMail;
+use App\Models\Transaction;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -38,13 +39,13 @@ class ConferenceManagementController extends Controller
 			} else {
 				$editions = ConferenceEdition::with('ministry')->where('id', $this->edition->id)->get();
 			}
-
+			
 			$count = 1;
 			return view('conference_management.admin.editions.index', compact('editions', 'count'));
 		} else {
 			$edition = (object) activeConferenceEdition();
-
-			if (auth()->user()->payments->count() > 0) {
+			
+			if (auth()->user()->transactions->count() > 0) {
 				if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)) {
 					return view('conference_management.participant.index', compact('edition'));
 				}
@@ -61,10 +62,10 @@ class ConferenceManagementController extends Controller
 		$hostels = Hostel::where('conference_edition_id', $edition->id)->orderBy('name')->get();
 		$foods = Food::where('conference_edition_id', $edition->id)->orderBy('name')->get();
 		$type = '';
-		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
-		$moderators = Payment::where(['level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->get();
+		$moderator = Transaction::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
+		$moderators = Transaction::where(['level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->get();
 		$payment = $moderator;
-		// $moderator_participants = Payment::where(['user_id' => auth()->user()->id, 'level' => 'participant', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete','uploaded_by'=>auth()->user()->id])->get();
+		// $moderator_participants = Transaction::where(['user_id' => auth()->user()->id, 'level' => 'participant', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete','uploaded_by'=>auth()->user()->id])->get();
 
 		if (auth()->user()->role == 1) {
 			$type = $request->type;
@@ -96,9 +97,9 @@ class ConferenceManagementController extends Controller
 
 	public function edit($id, Request $request)
 	{
-		$user = $payment = Payment::with('user')->whereId($id)->first();
+		$user = $payment = Transaction::with('user')->whereId($id)->first();
 		$edition = ConferenceEdition::find($request->edition);
-		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
+		$moderator = Transaction::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 
 		$chapters = Chapter::all();
 		$hostels = Hostel::where('conference_edition_id', $edition->id)->orderBy('name')->get();
@@ -148,7 +149,7 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-	public function show(Payment $conferencemanagement, Request $request)
+	public function show(Transaction $conferencemanagement, Request $request)
 	{
 		$chapters = Chapter::all();
 		$edition = ConferenceEdition::where('id', $request->edition)->first();
@@ -158,9 +159,9 @@ class ConferenceManagementController extends Controller
 		}
 		if (auth()->user()->isModerator($edition)) {
 
-			$allparticipants = Payment::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->orderBy('created_at', 'desc');
+			$allparticipants = Transaction::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->orderBy('created_at', 'desc');
 
-			$thispayment = Payment::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id, 'user_id' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->first();
+			$thispayment = Transaction::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id, 'user_id' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->first();
 			// dd($allparticipants->get(), $payment->conference_edition_id);
 			$myParticipants = clone $allparticipants;
 			$myParticipantsAll = $myParticipants->get();
@@ -285,7 +286,7 @@ class ConferenceManagementController extends Controller
 		}
 
 		$edition = ConferenceEdition::find($request->edition);
-		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
+		$moderator = Transaction::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 
 		if ($moderator) {
 			$data2 = $this->validate($request, [
@@ -317,7 +318,7 @@ class ConferenceManagementController extends Controller
 			]);
 			$data['level'] = 'Participant';
 
-			$payment = Payment::Create([
+			$payment = Transaction::Create([
 				'type' => 1,
 				'user_id' => $newuser->id,
 				'level' => 'Participant',
@@ -459,7 +460,7 @@ class ConferenceManagementController extends Controller
 
 	public function update(Request $request, $id)
 	{
-		$payment = Payment::with('user')->whereId($id)->first();
+		$payment = Transaction::with('user')->whereId($id)->first();
 		$user = $payment->user;
 		
 		$data = $this->validate($request, [
@@ -504,7 +505,7 @@ class ConferenceManagementController extends Controller
 		}
 
 		// Moderator
-		$moderator = Payment::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
+		$moderator = Transaction::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 
 		if (isset($moderator) && !empty($moderator)) {
 			$edition = $this->edition;
@@ -555,7 +556,7 @@ class ConferenceManagementController extends Controller
 
 
 	public function adminUpdate(Request $request, $id){
-		$payment = Payment::with('user')->whereId($id)->first();
+		$payment = Transaction::with('user')->whereId($id)->first();
 		$user = $payment->user;
 
 		$data = $this->validate($request, [
@@ -717,7 +718,7 @@ class ConferenceManagementController extends Controller
 		$count = 1;
 
 		if (auth()->user()->role == 1) {
-			$participants = Payment::with('user')->where('conference_edition_id', $edition)->wherehas('user')->orderBy('created_at', 'desc')->where('level', $type)->get();
+			$participants = Transaction::with('user')->where('conference_edition_id', $edition)->wherehas('user')->orderBy('created_at', 'desc')->where('level', $type)->get();
 			$edition = ConferenceEdition::find($edition);
 
 			return view('conference_management.admin.users.index', compact('participants', 'count', 'edition', 'type'));
@@ -742,7 +743,7 @@ class ConferenceManagementController extends Controller
 	public function getCard(Request $request, $id)
 	{
 		// return back()->with('error', 'This feature is not available yet');
-		$payment = Payment::where('id', $id)->with('user', 'hostel')->first();
+		$payment = Transaction::where('id', $id)->with('user', 'hostel')->first();
 
 		if (!auth()->user()->completeReg($payment->edition) && auth()->user()->role <> 1) {
 			return back()->with('error', 'You must complete registration before viewing this resource');
@@ -766,7 +767,7 @@ class ConferenceManagementController extends Controller
 
 	public function resendEmail(Request $request, $id)
 	{
-		$payment = Payment::find($id);
+		$payment = Transaction::find($id);
 		$user = User::where('id', $payment->user_id)->first();
 
 		$criticalEmail = CriticalEmail::where('recipient', $user->email)->where('type', 'welcome_mail')->where('status', 1)->first();
@@ -801,7 +802,7 @@ class ConferenceManagementController extends Controller
 		}
 
 		if (auth()->user()->isModerator($edition)) {
-			$payment = Payment::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $edition->id, 'registration_status' => 'Complete'])->first();
+			$payment = Transaction::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $edition->id, 'registration_status' => 'Complete'])->first();
 
 			if ($payment->slot_filled >= $payment->slot) {
 				return back()->with('error', 'You have already exhausted your registration slots');
@@ -845,7 +846,7 @@ class ConferenceManagementController extends Controller
 			$redirectRoute = auth()->user()->isAdmin() ? route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) : route('conferenceusers.import.index');
 
 			if (!auth()->user()->isAdmin()) {
-				$payment = Payment::where([
+				$payment = Transaction::where([
 					'user_id' => auth()->user()->id,
 					'conference_edition_id' => $request->edition,
 					'registration_status' => 'Complete'
@@ -968,14 +969,14 @@ class ConferenceManagementController extends Controller
 		}
 
 		// Reduce hostel
-		$payment = Payment::where(['id' => $request->payment_id, 'conference_edition_id' => $request->edition])->first();
+		$payment = Transaction::where(['id' => $request->payment_id, 'conference_edition_id' => $request->edition])->first();
 		$user = User::withTrashed()->where('id', $payment->user_id)->first();
 
 		$this->reduceHostelAllocation($payment);
 		$this->reduceFoodStandAllocation($payment);
 
 		if ($payment->uploaded_by) {
-			$moderator = Payment::where(['user_id' => $payment->uploaded_by, 'conference_edition_id' => $request->edition, 'level' => 'Moderator'])->first();
+			$moderator = Transaction::where(['user_id' => $payment->uploaded_by, 'conference_edition_id' => $request->edition, 'level' => 'Moderator'])->first();
 			if ($moderator) {
 				$slot = ($moderator->slot_filled  > 0) ? $moderator->slot_filled - 1 : $moderator->slot_filled;
 				$moderator->update(['slot_filled' => $slot]);

@@ -65,9 +65,9 @@
                                             </td>
                                             <td>Attempted: {{ $edition->attemptedPayments()->count() }}<br>
                                                 <small>
-                                                    Participants: {{ $edition->participantCount() }}<br>
+                                                    {{-- Participants: {{ $edition->participantCount() }}<br>
                                                     Alumni: {{ $edition->alumniCount() }}<br>
-                                                    Total: {{ $edition->payments->count() }}<br>
+                                                    Total: {{ $edition->payments->count() }}<br> --}}
                                                 </small>
                                             </td>
                                             <td>

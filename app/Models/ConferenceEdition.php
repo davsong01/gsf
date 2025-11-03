@@ -7,6 +7,7 @@ use App\Models\Donation;
 use App\Models\Material;
 use App\Models\Ministry;
 use App\Models\TempUser;
+use App\Models\Transaction;
 use App\Models\PaymentProvider;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,13 +18,13 @@ class ConferenceEdition extends Model
         'template_settings' => 'array',
     ];
 
-    public function payments(){
-        return $this->hasMany(Payment::Class, 'conference_edition_id', 'id');
+    public function transactions(){
+        return $this->hasMany(Transaction::Class, 'conference_edition_id', 'id')->where('purpose', 'conference');
     }
 
     public function donations()
     {
-        return $this->hasMany(Donation::Class, 'conference_edition_id');
+        return $this->hasMany(Transaction::Class, 'conference_edition_id', 'id')->where('purpose','donation');
     }
 
     public function material()
@@ -33,21 +34,22 @@ class ConferenceEdition extends Model
 
     public function attemptedPayments()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Transaction::class)->where('status', '!=', 'Complete');
     }
 
     public function alumniCount()
     {
-        return $this->hasMany(Payment::Class, 'conference_edition_id')->where('level', 'Alumni')->count();
+        return $this->hasMany(Transaction::class, 'conference_edition_id')->where('level', 'Alumni')->where('status', '=', 'Complete');
     }
 
     public function participantCount()
     {
-        return $this->hasMany(Payment::class, 'conference_edition_id')
-        ->where(function ($query) {
-            $query->where('level', 'Participant')
-                ->orWhere('level', 'Moderator');
-        })
+        return $this->hasMany(Transaction::class, 'conference_edition_id')
+            ->where('status', '=', 'Complete')
+            ->where(function ($query) {
+                $query->where('level', 'Participant')
+                    ->orWhere('level', 'Moderator');
+            })
         ->count();
     }
 

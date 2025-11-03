@@ -22,7 +22,8 @@
 							<div class="d-flex justify-content-between align-items-end">
 								<div class="dashboard-content-left">
 									<h1 class="text-primary font-large-2 text-bold-500"></h1>
-									@if(auth()->user()->completeReg($edition) && $payment->hostel && $payment->food)
+									
+									@if(auth()->user()->completeReg($edition) && $payment->hostel && $payment->food && !empty($edition->template_settings))
 										<a href="{{ route('participants.card', ['id'=>$payment->id, 'edition'=>$edition->id]) }}" class="btn btn-primary glow"><i class="fa fa-print" aria-hidden="true"></i>  View/Download Badge</a>
 										@if(isset($edition->material) && !empty($edition->material))
 										<a href="{{ route('materials.index', ['edition'=>$edition->id, 'payment_id'=>$payment->id]) }}" class="btn btn-info glow"><i class="fa fa-print" aria-hidden="true"></i> View/Donload Conference Materials</a>
@@ -145,9 +146,9 @@
 										required>
 								</fieldset>
 								<fieldset class="form-group">
-									<label for="payment_type">Payment Type</label>
+									<label for="payment_type">Payment Channel</label>
 									<input type="text" id="payment_type" class="form-control @error('payment_type')is-invalid @enderror"
-										value="{{ $payment->payment_type }}" disabled required>
+										value="{{ $payment->location }}" disabled required>
 
 								</fieldset>
 								
