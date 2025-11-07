@@ -1,5 +1,5 @@
 <?php 
-   $setting = activeConferenceEdition();
+    $setting = activeConferenceEdition();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -29,10 +29,10 @@
 
     <div id="wrapper">
 
-        <div class="float-text show-on-scroll">
+        {{-- <div class="float-text show-on-scroll">
             <span><a href="#">Scroll to top</a></span>
         </div>
-        <div class="scrollbar-v show-on-scroll"></div>
+        <div class="scrollbar-v show-on-scroll"></div> --}}
 
         <!-- page preloader begin -->
         <div id="de-loader"></div>
@@ -59,8 +59,12 @@
                                 <div class="de-flex-col header-col-mid">
                                     <ul id="mainmenu">
                                         <li><a class="menu-item" href="{{ url('/').'#section-about' }}">Details</a></li>
+                                        @if(!empty(conferenceSpeakers()))
                                         <li><a class="menu-item" href="{{ url('/').'#section-speakers' }}">Speakers</a></li>
+                                        @endif
+                                        @if(!empty(conferenceSchedule()))
                                         <li><a class="menu-item" href="{{ url('/').'#section-schedule' }}">Schedule</a></li>
+                                        @endif
                                         <li><a class="menu-item" href="{{ url('/').'#section-venue' }}">Venue</a></li>
                                         <li><a class="menu-item" href="{{ url('/').'#section-faq' }}">FAQ</a></li>
                                         {{-- <li><a class="menu-item" href="news.html">Donate</a></li> --}}
@@ -108,7 +112,7 @@
                         <div>
                         </div>
                         <div>
-                            <img src="{{ asset($setting->conference_logo) }}" class="w-150px" alt=""><br>
+                            <img src="{{ asset($setting->conference_logo) }}" class="w-70px" alt=""><br>
                             <div class="social-icons mb-sm-30 mt-4">
                                 <div class="social-icons mb-sm-30 mt-4">
                                     @if(!empty($setting->facebook))

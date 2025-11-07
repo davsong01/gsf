@@ -22,6 +22,7 @@ class MinistryField extends Model
         'has_other_option',
         'onchange',
         'depends_on',
+        'display_order',
     ];
 
     protected $casts = [

@@ -18,6 +18,7 @@ return new class extends Migration
 
             $table->string('name'); // field key
             $table->string('label');
+            $table->integer('display_order')->nullable();
             $table->enum('type', ['text', 'number', 'email', 'select', 'textarea', 'checkbox', 'radio']);
             $table->json('options')->nullable(); // for select/radio/checkbox
             $table->json('registration_types'); // e.g., [1,2]

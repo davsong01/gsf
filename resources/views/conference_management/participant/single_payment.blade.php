@@ -6,7 +6,6 @@
 @endsection
 @section('content')
 <div class="content-body">
-	@include('includes.alerts')
 	<!-- Dashboard Ecommerce Starts -->
 	<section id="dashboard-ecommerce">
 		<div class="row">
@@ -97,6 +96,12 @@
 										value="{{ auth()->user()->email }}" required disabled>
 								</fieldset>
 								<fieldset class="form-group">
+									<label for="payment_type">Payment Channel</label>
+									<input type="text" id="payment_type" class="form-control @error('payment_type')is-invalid @enderror"
+										value="{{ $payment->location }}" disabled required>
+
+								</fieldset>
+								<fieldset class="form-group">
 									<label for="name">Name</label>
 									<input type="text" class="@error('name')is-invalid @enderror form-control" id="name" name="name"
 										value="{{ old('name') ?? auth()->user()->name }}" placeholder="Enter name" $state>
@@ -118,6 +123,7 @@
 											{{ auth()->user()->sex == 'Female' ? 'selected' : ''}}>Female</option>
 									</select>
 								</fieldset>
+								
 							</div>
 							<div class="col-md-6 col-sm-12">
 								<fieldset class="form-group">
@@ -145,27 +151,17 @@
 										value="{{ ($payment->service_point_allocation_number === NULL) ? 'N/A' :$payment->service_point_allocation_number }}" disabled
 										required>
 								</fieldset>
-								<fieldset class="form-group">
-									<label for="payment_type">Payment Channel</label>
-									<input type="text" id="payment_type" class="form-control @error('payment_type')is-invalid @enderror"
-										value="{{ $payment->location }}" disabled required>
-
-								</fieldset>
 								
-								<fieldset class="form-group">
-									<label for="chapter">Campus</label>
-									@if (isset(auth()->user()->chapter_id)) 
-									@foreach($chapters as $chapter)
-									@if (auth()->user()->chapter_id == $chapter->id )
-									<input type="text" id="chapter" class="form-control"
-										value="{{ $chapter->name }}" disabled required>
-									@endif
+								
+								@if(!empty($payment->allocationFields))
+									@foreach($payment->allocationFields as $field)
+										<fieldset class="form-group">
+											<label for="{{$field->key}}">{{ ucwords(str_replace('_id', '', $field->key)) }}</label>
+											<input type="text" id="chapter" class="form-control" value="{{ $field->value }}" disabled>
+										</fieldset>
 									@endforeach
-									@else
-									<input type="text" value = "N/A" class="form-control"
-										 disabled required>
-									@endif
-								</fieldset>
+								@endif
+
 								<fieldset class="form-group @error('passport')is-invalid @enderror">
 									<label for="passport">Change Passport <small>(Not more than 200kilobyte | Only jpeg,jpg,png format is accepted)</small></label>
 									<input type="file" accept="image/*" class="form-control" name="passport" id="passport">

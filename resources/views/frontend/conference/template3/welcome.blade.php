@@ -29,7 +29,9 @@
 
                     <div class="spacer-single"></div>
                     <a class="btn-main mx-2 fx-slide" href="{{ url('/').'#section-tickets' }}"><span>Book slot</span></a>
-                    <a class="btn-main btn-line mx-2 fx-slide" href="{{ url('/').'#section-schedule' }}"><span>View Schedule</span></a>
+                    @if(!empty(conferenceSchedule()))
+                        <a class="btn-main btn-line mx-2 fx-slide" href="{{ url('/').'#section-schedule' }}"><span>View Schedule</span></a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -120,7 +122,7 @@
                             </div>
                         </div>
                         <div class="gradient-edge-bottom h-100"></div>
-                        <img src="{{ asset('conference_templates/template3/images/news/s4.webp')}}" class="w-100 hover-scale-1-1" alt="Inspiring Teachings">
+                        <img src="{{ asset('conference_templates/template3/images/news/s3.webp')}}" class="w-100 hover-scale-1-1" alt="Inspiring Teachings">
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                     </div>
                 </div>
@@ -136,7 +138,7 @@
                             </div>
                         </div>
                         <div class="gradient-edge-bottom h-100"></div>
-                        <img src="{{ asset('conference_templates/template3/images/news/s5.webp') }}" class="w-100 hover-scale-1-1" alt="Fellowship">
+                        <img src="{{ asset('conference_templates/template3/images/news/s3.webp') }}" class="w-100 hover-scale-1-1" alt="Fellowship">
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                     </div>
                 </div>
@@ -152,7 +154,7 @@
                             </div>
                         </div>
                         <div class="gradient-edge-bottom h-100"></div>
-                        <img src="{{ asset('conference_templates/template3/images/news/s1.webp') }}" class="w-100 hover-scale-1-1" alt="Youth Empowerment">
+                        <img src="{{ asset('conference_templates/template3/images/news/s3.webp') }}" class="w-100 hover-scale-1-1" alt="Youth Empowerment">
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                     </div>
                 </div>
@@ -168,7 +170,7 @@
                             </div>
                         </div>
                         <div class="gradient-edge-bottom h-100"></div>
-                        <img src="{{ asset('conference_templates/template3/images/news/s2.webp')}}" class="w-100 hover-scale-1-1" alt="Divine Encounter">
+                        <img src="{{ asset('conference_templates/template3/images/news/s3.webp')}}" class="w-100 hover-scale-1-1" alt="Divine Encounter">
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                     </div>
                 </div>
@@ -194,7 +196,7 @@
     </div>
 </section>
 
-
+@if(!empty($speakers))
 <section id="section-speakers" class="bg-dark section-dark text-light">
     <div class="container">
         <div class="row g-4 justify-content-center">
@@ -225,8 +227,9 @@
         </div>
     </div>
 </section>
+@endif
 
-
+@if(!empty($schedule))
 <section id="section-schedule" class="bg-dark section-dark text-light">
     <div class="container">
         <div class="row g-4 gx-5 justify-content-center">
@@ -283,6 +286,7 @@
         </div>
     </div>
 </section>
+@endif
 
 <section id="section-tickets" class="bg-dark section-dark text-light pt-40 relative jarallax" aria-label="section">
     <img src="{{ asset('conference_templates/template3/images/background/7.webp') }}" class="jarallax-img" alt="">
@@ -326,7 +330,7 @@
     </div>
 </section>
 
-<section id="section-venue" class="bg-dark section-dark text-light pt-40 relative jarallax" aria-label="section">
+{{-- <section id="section-venue" class="bg-dark section-dark text-light pt-40 relative jarallax" aria-label="section">
   <div class="container relative z-2">
     <div class="row g-4 justify-content-center">
         <div class="col-lg-6 text-center">
@@ -378,7 +382,7 @@
     </div>
 
   </div>
-</section>
+</section> --}}
 
 @if(!empty($faqs))
 <section  id="section-faq" class="bg-dark section-dark text-light">

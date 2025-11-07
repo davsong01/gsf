@@ -18,6 +18,7 @@
                         <tr>
                             <th>#</th>
                             <th>Name / Label</th>
+                            <th>Order</th>
                             <th>Type</th>
                             <th>Usage</th>
                             <th>Registration Types</th>
@@ -33,6 +34,7 @@
                                 <strong>{{ $field->label }}</strong><br>
                                 <small>Key: {{ $field->name }}</small>
                             </td>
+                            <td>{{ ucfirst($field->display_order) }}</td>
                             <td>{{ ucfirst($field->type) }}</td>
                             <td>{{ ucfirst($field->field_usage) }}</td>
                             @php

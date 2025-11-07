@@ -59,7 +59,16 @@
                         @endforeach
                     </select>
                 </div>
-
+                <div class="form-group">
+                    <label for="onchange">Display Order</label>
+                    <input 
+                        type="number" 
+                        name="display_order" 
+                        id="display_order" 
+                        class="form-control" 
+                        value="{{ old('display_order', $field->display_order ?? '') }}"
+                    >
+                </div>
                 <div class="form-group">
                     <label for="field_usage">Field Usage</label>
                     <select name="field_usage" id="field_usage" class="form-control" required>

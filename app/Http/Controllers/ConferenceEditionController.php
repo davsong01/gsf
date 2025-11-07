@@ -55,7 +55,7 @@ class ConferenceEditionController extends Controller
             "end_date" => "required",
             "start_registration" => "required",
             "close_registration" => "required",
-            "random_hostel" => "required",
+            // "random_hostel" => "required",
             "random_foodstand" => "required",
             "reg_prefix" => "required",
             "conference_overview" => "required",

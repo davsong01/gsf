@@ -30,7 +30,7 @@
             </div>
             <!-- Right Column: Registration Form -->
             <div class="col-lg-6">
-                <div class="bg-dark-2 rounded-1 p-60 relative">
+                <div class="bg-dark-2 rounded-1 p-20 relative">
                     <form action="{{ route('login') }}" method="POST">
                         @csrf
                         <div class="row g-4">

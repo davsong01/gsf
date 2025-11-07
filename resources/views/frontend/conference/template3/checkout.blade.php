@@ -54,14 +54,14 @@
                     <div class="border-bottom pb-3 mb-3">
                         <p class="mb-1"><strong>Amount:</strong> ₦{{ number_format($transaction->amount_paid, 2) }}</p>
 
-                        @if($paymentProvider->customer_pays_provider_charge)
-                            <p class="mb-1"><strong>Service Charge:</strong> ₦{{ number_format($paymentProvider->provider_charge, 2) }}</p>
-                        @endif
-
-                        <div class="mt-3 py-2 px-3 rounded bg-dark text-light d-flex justify-content-between align-items-center" style="border: 2px solid #ffc107;">
-                            <strong class="fs-5 text-uppercase">Total Payable:</strong>
+                        <p class="mb-1"><strong>Service Charge:</strong> ₦{{ number_format(($paymentProvider->customer_pays_provider_charge ? $transaction->provider_charge : 0), 2) }}</p>
+                        {{-- @if($paymentProvider->customer_pays_provider_charge)
+                        @endif --}}
+                        
+                        <div class="mt-3 py-2 px-3 rounded bg-dark text-light d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center" style="border: 2px solid #ffc107;">
+                            <strong class="fs-5 text-uppercase mb-1 mb-sm-0">Total Payable:</strong>
                             <span class="fs-4 fw-bold text-warning">
-                                ₦{{ number_format(($transaction->amount_paid + ($paymentProvider->provider_charge ?? 0)), 2) }}
+                                ₦{{ number_format($transaction->total_amount, 2) }}
                             </span>
                         </div>
 
@@ -86,9 +86,9 @@
                     <p class="mb-1"><strong>Payment for:</strong> {{ $setting->conference_theme ?? 'N/A' }}</p>
  
                     <div id="proceedBtn" class="d-flex justify-content-between align-items-center mt-4">
-                        <a href="#" class="btn-main fx-slide"  data-provider="{{ $paymentProvider->slug }}">
+                        <button class="btn-main fx-slide" data-provider="{{$paymentProvider->slug}}">
                             <span>Proceed to Payment</span>
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -109,7 +109,8 @@ document.getElementById('proceedBtn').addEventListener('click', function() {
     const provider = "{{$paymentProvider->slug}}";
     const subAccountPercentage = {{ $paymentProvider->sub_account_fee_percentage ?? 0 }};
     const feeBearer = (subAccountPercentage > 85) ? 'subaccount' : 'account';
-
+    const transid = "{{ $transaction->transid }}";
+    
     if (provider === 'paystack') {
         // Open Paystack modal
         let handler = PaystackPop.setup({
@@ -117,7 +118,7 @@ document.getElementById('proceedBtn').addEventListener('click', function() {
             email: '{{ $transaction->email }}',
             amount: {{ $transaction->total_amount * 100 }}, // Paystack expects amount in kobo
             currency: 'NGN',
-            ref: '{{ $transaction->transid }}',
+            ref: transid,
             channels: @json($paymentProvider->channels ?? []),
             metadata: {
                 custom_fields: [
@@ -146,7 +147,7 @@ document.getElementById('proceedBtn').addEventListener('click', function() {
 
             callback: function(response) {
                 if (response.status === "success") {
-                    window.location.href = "/payment/verify/" + response.reference;
+                    window.location.href = "/payment/verify/" + transid;
                 } else {
                     alert("Payment not completed");
                 }
@@ -163,22 +164,27 @@ document.getElementById('proceedBtn').addEventListener('click', function() {
         const transactionAmount = {{ (int) $transaction->total_amount }};
         const subAccountPercentage = {{ (float) ($paymentProvider->sub_account_fee_percentage ?? 0) }};
         const enableSplit = {{ $paymentProvider->enable_sub_account ? 'true' : 'false' }};
+        const  methods = @json($paymentProvider->channels ?? []);
 
         MonnifySDK.initialize({
             amount: transactionAmount,
             currency: "NGN",
-            reference: "{{ $transaction->transid }}",
+            reference: transid,
             customerFullName: "{{ addslashes($transaction->name) }}",
             customerEmail: "{{ addslashes($transaction->email) }}",
             apiKey: "{{ $paymentProvider->api_key }}",
             contractCode: "{{ $paymentProvider->public_key }}",
             paymentDescription: "Conference Registration",
+            @if($paymentProvider->enable_sub_account)
+            incomeSplitConfig: [{
+                subAccountCode: "{{ $paymentProvider->sub_account_code }}",
+                feePercentage: subAccountPercentage,
+                feeBearer: feeBearer // or true if main account should bear fees
+            }],
+            @endif
+            paymentMethods: methods,
             onComplete: function (response) {
-                if (response.status === "PAID") {
-                    window.location.href = "/payment/verify/" + response.paymentReference;
-                } else {
-                    alert("Payment not completed");
-                }
+                window.location.href = "/payment/verify/" + transid;
             },
 
             onClose: function (data) {
@@ -186,7 +192,7 @@ document.getElementById('proceedBtn').addEventListener('click', function() {
             }
         });
     }
-
+    
 });
 </script>
 

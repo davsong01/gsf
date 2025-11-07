@@ -142,7 +142,7 @@
                                     </div>
 
 
-                                    <div class="col-sm-6 col-md-6">
+                                    {{-- <div class="col-sm-6 col-md-6">
                                         <label for="random_hostel">Enable mass registration</label>
                                         <fieldset class="form-group ">
                                             <select class="form-control" name="mass_registration" id="mass_registration" required>
@@ -152,7 +152,7 @@
                                             </select>
                                         
                                         </fieldset>
-                                    </div>
+                                    </div> --}}
                                     <div class="col-sm-6 col-md-6">
                                         <label for="reg_prefix">Registration Prefix</label>
                                         <fieldset class="form-group ">

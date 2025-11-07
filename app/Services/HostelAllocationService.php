@@ -25,9 +25,9 @@ class HostelAllocationService
         try {
             $setting = $transaction->edition;
             $level = $transaction->level === 'Moderator' ? 'Participant' : $transaction->level;
-            $gender = $transaction->gender;
+            $gender = $newData['sex'] ?? $transaction->gender;
             $conference_edition_id = $transaction->conference_edition_id;
-
+            
             DB::beginTransaction();
 
             // --- CASE 1: Admin manually set hostel ---
@@ -226,105 +226,19 @@ class HostelAllocationService
     }
 
 
-    static function repairHostelAllocation($edition_id){
-        $hostels = Hostel::where('conference_edition_id', $edition_id)->get();
-
-        foreach($hostels as $hostel){
-            $payments = $hostel->payments()->count();
-            if($hostel->allocation == $payments){
-                continue;
-            }
-            if($hostel->allocation > $payments){
-                $hostel->update(['allocation' => $payments]);
-                continue;
-            }
-            if($hostel->allocation < $payments){
-                $hostel->update(['allocation' => $payments]);
-                continue;
-            }
-            $hostel->update(['allocation' => $payments]);
-        }
-
-        return true;
-    }
-
-    static function autoAllocateHostel($edition_id){
-        $payments = Payment::with('user')->whereNull('hostel_id')->where('conference_edition_id', $edition_id)->get();
-        $setting = ConferenceEdition::where('id', $edition_id)->first();
-        $transaction = [];
-        $count = 0;
-        
-        if(!empty($payments)){
-            foreach($payments as $payment){
-                $count += 1;
-                $transaction['setting'] = $setting;
-                $user = $payment->user;
-                
-                $transaction['field_id'] = $user->campus->field->id ?? null;
-                $transaction = array_merge($transaction, $user->toArray(), $payment->toArray());
-                
-                $hostel_allocation = HostelAllocationService::assignHostel($transaction);
-                
-                if(!empty($hostel_allocation)){
-                    $payment->update([
-                        'hostel_allocation_number' => $hostel_allocation['hostel_allocation_number'],
-                        'hostel_allocation_type' => $hostel_allocation['hostel_allocation_type'],
-                        'hostel_id' => $hostel_allocation['hostel_id'],
-                    ]);
-    
-                }else{
-                    continue;
-                }
-    
-            }
-
-            return [
-                'count' => $count,
-            ];
-        }
-    }
-
-    public static function reduceHostelAllocation($payment)
+    public static function reduceHostelAllocation($transaction)
     {
-        if (isset($payment->hostel->id) && !empty($payment->hostel->id)) {
-            $current_hostel = Hostel::find($payment->hostel->id);
+        if (isset($transaction->hostel->id) && !empty($transaction->hostel->id)) {
+            $current_hostel = Hostel::find($transaction->hostel->id);
 
             if ($current_hostel->allocation == 0) {
                 return;
             } else {
-                $payment->hostel->update(['allocation' => $payment->hostel->allocation - 1]);
-                return $payment->hostel;
+                $transaction->hostel->update(['allocation' => $transaction->hostel->allocation - 1]);
+                return $transaction->hostel;
             }
         }
     }
-
-    // static function hostelMerger($request){
-    //     $hostel = Hostel::find($request->deallocate);
-    //     $hostelToMerge = Hostel::find($request->allocate);
-
-    //     $payments = Payment::where('hostel_id', $hostel->id)->where('conference_edition_id', $request->edition)->get();
-
-    //     foreach ($payments as $payment) {
-    //         // depopulte hostel
-    //         $hostel->allocation = $hostel->allocation - 1;
-    //         $hostel->save();
-    //         // populate hosteltomerge
-    //         $hostelToMerge->allocation = $hostelToMerge->allocation + 1;
-    //         $hostelToMerge->save();
-    //         $hostelToMerge->refresh();
-    //         // generate hostel number
-    //         $hostel_number = Self::generateHostelNumber($hostelToMerge);
-
-    //         // update payment
-    //         $payment->hostel_id = $hostelToMerge->id;
-    //         $payment->hostel_allocation_number = $hostel_number;
-    //         $payment->hostel_allocation_type = 'reassignment';
-    //         $payment->save();
-
-    //     }
-
-    //     return true;
-    // }
 
     static function hostelMerger($request)
     {

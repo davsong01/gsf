@@ -54,7 +54,7 @@ class PaymentController extends Controller
 		$setting = activeConferenceEdition();
 		$this->frontend = frontendTemplate();
 		$type = $request->type;
-
+		
 		$setting = $this->conferenceEdition();
 		$request['setting'] = $setting;
 
@@ -86,53 +86,57 @@ class PaymentController extends Controller
 
 	public function showCheckout(Transaction $transaction){
 		$setting = $transaction->edition;
+		
+		$transaction->update(['transid' => strtoupper($setting->ministry->code) . '-' . PaymentService::generateTransactionId()]);
+
 		$paymentProvider = $transaction->paymentprovider;
 
 		return view('frontend.conference.template' . $setting->template_id . '.checkout', compact('transaction', 'paymentProvider', 'setting'));
 	}
 
-	public function redirectToGateway(Request $request)
-	{
-		$setting = activeConferenceEdition();
-		$this->frontend = frontendTemplate();
+	// public function redirectToGateway(Request $request)
+	// {
+	// 	$setting = activeConferenceEdition();
+	// 	$this->frontend = frontendTemplate();
 
-		if ($setting->close_registration < now()) {
-			return back()->with('warning', 'Registration for this program has closed');
-			// return redirect(url('/registration/#register'))->with('warning', 'Registration for this program has closed');
-		}
+	// 	if ($setting->close_registration < now()) {
+	// 		return back()->with('warning', 'Registration for this program has closed');
+	// 		// return redirect(url('/registration/#register'))->with('warning', 'Registration for this program has closed');
+	// 	}
 		
-		$this->validate($request, [
-			'name' => 'required',
-			'email' => 'required|email',
-			'phone' => 'required',
-			'chapter' => 'nullable'
-		]);
+	// 	$this->validate($request, [
+	// 		'name' => 'required',
+	// 		'email' => 'required|email',
+	// 		'phone' => 'required',
+	// 		'chapter' => 'nullable'
+	// 	]);
 
 		
-		try {
-			$request['amount'] = $request['amount'] * 100;
-			$url = $this->queryPaystack($request->all(), $setting);
+	// 	try {
+	// 		$request['amount'] = $request['amount'] * 100;
+	// 		$url = $this->queryPaystack($request->all(), $setting);
 			
-			if (isset($url['error'])) {
-				return back()->with('error', $url['error']);
-			}elseif (isset($url) && !empty($url)) {
-				return redirect()->away($url);
-			}
+	// 		if (isset($url['error'])) {
+	// 			return back()->with('error', $url['error']);
+	// 		}elseif (isset($url) && !empty($url)) {
+	// 			return redirect()->away($url);
+	// 		}
 		
-		} catch (\Exception $e) {
-			return redirect(url('/registration/#register'))->with('error', $e . 'Transaction token has expired or details not correct. Please refresh the page and try again');
-		}
-	}
+	// 	} catch (\Exception $e) {
+	// 		return redirect(url('/registration/#register'))->with('error', $e . 'Transaction token has expired or details not correct. Please refresh the page and try again');
+	// 	}
+	// }
 
-	
-	public function handleGatewayCallback(Request $request, $admin = "", $transfer_confirm = "", $onsite_confirm = "")
+	// public function handleGatewayCallback(Request $request, $admin = "", $transfer_confirm = "", $onsite_confirm = "")
+	public function handleGatewayCallback(Request $request, $reference)
 	{
-		$reference = $request->reference;
+		$admin = $request->admin;
+		
 		$setting = $request['setting'] ?? activeConferenceEdition();
 		$extraData = [
 			'conference_year' => Carbon::parse($setting->start_date)->year,
 		];
-
+		
 		$transaction = Transaction::with(['user', 'paymentprovider', 'edition', 'allocationFields'])
 			->where('transid', $reference)
 			->first();
@@ -149,11 +153,12 @@ class PaymentController extends Controller
 		}
 
 		$verify = $this->verify($transaction);
-
+		
 		$transaction->update([
 			'api_response' => $verify['message'] ?? null,
+			'provider_reference' => $verify['provider_reference'] ?? null,
 		]);
-
+		
 		// Stop early if verification failed and no manual confirmation
 		if (!$verify['status'] && empty($transfer_confirm) && empty($onsite_confirm)) {
 			if ($admin !== 'admin') {

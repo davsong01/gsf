@@ -46,19 +46,7 @@
                                             @error('name') <small class="text-danger">{{ $message }}</small> @enderror
                                         </fieldset>
 
-                                        <fieldset class="form-group">
-                                            <label for="slug">Engine</label>
-                                            <input 
-                                                type="text" 
-                                                class="form-control" 
-                                                id="slug" 
-                                                name="slug"
-                                                value="{{ old('slug', $paymentprovider->slug ?? '') }}" 
-                                                placeholder="e.g. paystack" 
-                                                required
-                                            >
-                                            @error('slug') <small class="text-danger">{{ $message }}</small> @enderror
-                                        </fieldset>
+                                        
 
                                         <fieldset class="form-group">
                                             <label for="status">Status</label>
@@ -122,39 +110,99 @@
 
                                     {{-- Right column --}}
                                     <div class="col-md-6 col-sm-12">
+                                                        {{-- Engine select --}}
+                                        <fieldset class="form-group">
+                                            <label for="slug">Engine</label>
+                                            <select class="form-control" id="slug" name="slug" required>
+                                                <option value="">-- Select Engine --</option>
+                                                <option value="paystack" {{ old('slug', $paymentprovider->slug ?? '') === 'paystack' ? 'selected' : '' }}>Paystack</option>
+                                                <option value="monnify" {{ old('slug', $paymentprovider->slug ?? '') === 'monnify' ? 'selected' : '' }}>Monnify</option>
+                                            </select>
+                                            @error('slug') <small class="text-danger">{{ $message }}</small> @enderror
+                                        </fieldset>
+
+                                        {{-- Channels (hidden by default) --}}
                                         <fieldset class="form-group">
                                             <label>Channels</label>
-                                            <div class="d-flex flex-wrap">
-                                                @php
-                                                    $savedChannels = old('channels', $paymentprovider->channels ?? []);
-                                                    $options = [
-                                                        'card' => 'Card',
-                                                        'bank' => 'Bank',
-                                                        'ussd' => 'USSD',
-                                                        'qr' => 'QR',
-                                                        'mobile_money' => 'Mobile Money',
-                                                        'bank_transfer' => 'Bank Transfer',
-                                                        'account_transfer' => 'Account Transfer',
-                                                        'apple_pay' => 'Apple Pay',
-                                                    ];
-                                                @endphp
-
-                                                @foreach($options as $val => $label)
-                                                    <div class="form-check mr-3 mb-2">
-                                                        <input 
-                                                            class="form-check-input" 
-                                                            type="checkbox" 
-                                                            name="channels[]" 
-                                                            id="{{ $val }}" 
-                                                            value="{{ $val }}"
-                                                            {{ in_array($val, (array)$savedChannels) ? 'checked' : '' }}
-                                                        >
-                                                        <label class="form-check-label" for="{{ $val }}">{{ $label }}</label>
-                                                    </div>
-                                                @endforeach
-                                            </div>
+                                            <div id="channels-container" class="d-flex flex-wrap" style="display:none;"></div>
                                             @error('channels') <small class="text-danger d-block">{{ $message }}</small> @enderror
                                         </fieldset>
+
+                                        @php
+                                            $savedChannels = old('channels', $paymentprovider->channels ?? []);
+                                        @endphp
+
+                                        {{-- jQuery renderer --}}
+                                        <script>
+                                        $(function () {
+                                            const $engine = $('#slug');
+                                            const $container = $('#channels-container');
+
+                                            const paystackChannels = {
+                                                card: 'Card',
+                                                bank: 'Bank',
+                                                ussd: 'USSD',
+                                                qr: 'QR',
+                                                mobile_money: 'Mobile Money',
+                                                bank_transfer: 'Bank Transfer',
+                                                account_transfer: 'Account Transfer',
+                                                apple_pay: 'Apple Pay'
+                                            };
+
+                                            const monnifyChannels = {
+                                                CARD: 'Card',
+                                                ACCOUNT_TRANSFER: 'Account Transfer',
+                                                USSD: 'USSD',
+                                                PHONE_NUMBER: 'Phone Number'
+                                            };
+
+                                            // saved channels from server (may be empty array)
+                                            const savedChannels = @json($savedChannels);
+
+                                            function renderChannels(engine) {
+                                                $container.empty();
+
+                                                let channels = {};
+                                                if (engine === 'monnify') channels = monnifyChannels;
+                                                else if (engine === 'paystack') channels = paystackChannels;
+                                                else channels = {};
+
+                                                if (Object.keys(channels).length === 0) {
+                                                    $container.hide();
+                                                    return;
+                                                }
+
+                                                // Build checkboxes
+                                                $.each(channels, function (value, label) {
+                                                    const checked = savedChannels && savedChannels.indexOf(value) !== -1 ? 'checked' : '';
+                                                    const id = 'channel_' + value.replace(/[^a-zA-Z0-9_-]/g, '_');
+                                                    const html = `
+                                                        <div class="form-check mr-3 mb-2">
+                                                            <input class="form-check-input" type="checkbox" name="channels[]" id="${id}" value="${value}" ${checked}>
+                                                            <label class="form-check-label" for="${id}">${label}</label>
+                                                        </div>
+                                                    `;
+                                                    $container.append(html);
+                                                });
+
+                                                $container.show();
+                                            }
+
+                                            // initial render (edit mode or after validation error)
+                                            const initialEngine = $engine.val();
+                                            if (initialEngine) {
+                                                renderChannels(initialEngine);
+                                            }
+
+                                            // change handler
+                                            $engine.on('change', function () {
+                                                const val = $(this).val();
+                                                // clear any previously rendered checkboxes to avoid stale values
+                                                // If you want to reset savedChannels when engine changes, we don't preserve selection across different engines
+                                                renderChannels(val);
+                                            });
+                                        });
+                                        </script>
 
                                         <fieldset class="form-group">
                                             <label for="api_key">API Key</label>

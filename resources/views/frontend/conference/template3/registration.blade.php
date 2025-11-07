@@ -8,7 +8,7 @@
     <div class="abs w-80 bottom-10 z-2 w-100">
         <div class="container">
             <div class="row align-items-center justify-content-between gx-5">
-                <div class="col-lg-6">
+                <div class="col-md-6">
                     <div class="relative wow mask-right">
                         <div class="text-start">
                             <h1 class="fs-80 text-uppercase fs-sm-10vw mb-0 lh-1">Register</h1>
@@ -25,7 +25,7 @@
         <div class="row align-items-center justify-content-center">
 
             <!-- Left Column: Event Info -->
-            <div class="col-lg-6">
+            <div class="col-md-6">
                 <h2 class="wow fadeInUp">Begin Your Registration</h2>
                 <p class="col-lg-8">Fill out your details below. After submitting, you’ll be redirected to a confirmation page to review your registration and complete the next steps.</p>
 
@@ -45,7 +45,7 @@
                             <i class="abs fs-28 p-3 bg-color text-light rounded-1 icofont-envelope"></i>
                             <div class="ms-80px">
                                 <h4 class="mb-0">Contact Email</h4>
-                                {{ $setting->official_email }}
+                                <p>{{ $setting->official_email }}</p>
                             </div>
                         </div>
 
@@ -61,8 +61,8 @@
             </div>
 
             <!-- Right Column: Registration Form -->
-            <div class="col-lg-6">
-                <div class="bg-dark-2 rounded-1 p-60 relative">
+            <div class="col-md-6">
+                <div class="bg-dark-2 rounded-1 p-20 relative">
                     <form action="{{ route('checkout') }}" method="POST">
                         @csrf
                         <div class="row g-4">
@@ -70,9 +70,10 @@
                                 <h3>{{ $title }}</h3>
                                 <p>Enter your details below to begin your {{$setting->conference_theme}} registration.</p>
                                 @include('includes.bootstrap5alerts')
+
                                 @foreach($registrationFields as $field)
                                     @if($field['status'] && in_array($type, $field['registration_types']))
-                                        <div class="field-set">
+                                        <div class="field-set position-relative mb-3">
                                             @php
                                                 $name = $field['name'];
                                                 $oldValue = old($name);
@@ -84,18 +85,15 @@
                                                         @if(!empty($field['required'])) required @endif
                                                         @if(!empty($field['has_onchange'])) onchange="{{ $field['has_onchange'] }}" @endif>
                                                     <option value="">--Select--</option>
-
                                                     @foreach($field['options'] ?? [] as $key => $value)
                                                         @php
                                                             $optionValue = is_array($value) ? ($value['id'] ?? $key) : $key;
-                                                            $optionLabel = is_array($value) ? ($value['name'] ?? $value['title'] ?? $optionValue) : $value;
+                                                            $optionLabel = is_array($value) ? ($value['name'] ?? ($value['title'] ?? $optionValue)) : $value;
                                                         @endphp
-                                                        <option value="{{ $optionValue }}" 
-                                                            {{ (string)$oldValue === (string)$optionValue ? 'selected' : '' }}>
+                                                        <option value="{{ $optionValue }}" {{ (string)$oldValue === (string)$optionValue ? 'selected' : '' }}>
                                                             {{ $optionLabel }}
                                                         </option>
                                                     @endforeach
-
                                                     @if(!empty($field['has_other_option']))
                                                         <option value="other" {{ $oldValue === 'other' ? 'selected' : '' }}>Other</option>
                                                     @endif
@@ -119,8 +117,10 @@
                                         </div>
                                     @endif
                                 @endforeach
+
                             </div>
                         </div>
+
                         <input type="hidden" name="type" value="{{ $type }}">
                         <div class="mt-3">
                             <button type="submit" class="btn-main w-100">Submit Details</button>
@@ -128,21 +128,25 @@
                     </form>
 
                     <script>
-                    $(document).ready(function() {
-                        $('.select2').select2();
+                        $(document).ready(function() {
+                            $('.select2').each(function() {
+                                $(this).select2({
+                                    width: '100%',
+                                    dropdownParent: $(this).parent() // ensures dropdown stays inside container
+                                });
+                            });
 
-                        $('#chapter').change(function() {
-                            if ($(this).val() === 'other') {
-                                $('#field-div').show();
-                                $('#field_id').prop('required', true);
-                            } else {
-                                $('#field-div').hide();
-                                $('#field_id').prop('required', false);
-                            }
+                            $('#chapter').change(function() {
+                                if ($(this).val() === 'other') {
+                                    $('#field-div').show();
+                                    $('#field_id').prop('required', true);
+                                } else {
+                                    $('#field-div').hide();
+                                    $('#field_id').prop('required', false);
+                                }
+                            });
                         });
-                    });
                     </script>
-
                 </div>
             </div>
         </div>

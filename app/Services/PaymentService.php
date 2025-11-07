@@ -77,38 +77,131 @@ class PaymentService {
 
         $extras = self::getExtras($type, $setting, $data['amount']);
         $data['transid'] = strtoupper($setting->ministry->code) .'-'. PaymentService::generateTransactionId();
-        
+       
+        // try {
+        //     DB::beginTransaction();
+
+        //     $transaction = Transaction::updateOrCreate(
+        //         [
+        //             'email' => $data['email'],
+        //             'conference_edition_id' => $setting->id,
+        //             'provider_charge' => $data['provider_charge'] ?? null,
+        //             'transid' => $data['transid'],
+        //         ],
+        //         [
+        //             'name' => $data['name'],
+        //             'provider_charge' => $data['provider_charge'] ?? null,
+        //             'payment_provider_id' => $data['payment_provider_id'] ?? $paymentProvider->id,
+        //             'amount_paid' => $amount,
+        //             'total_amount' => $data['total_amount'] ?? $amount,
+        //             'phone' => $data['phone'],
+        //             'type' => $type,
+        //             'transid' => $data['transid'] ?? null,
+        //             'status' => 'Initiated',
+        //             'gender' => $data['gender'] ?? null,
+        //             'conference_edition_id' => $setting->id,
+        //             'location' => $location,
+        //             'remarks' => $data['remarks'] ?? null,
+
+        //             'registration_status' => 'Pending',
+        //             'slot' => $extras['slot'],
+        //             'slot_filled' => $extras['slot_filled'] ?? 0,
+        //             'level' => $extras['level'],
+        //         ]
+        //     );
+
+        //     $allocatableFields = [
+        //         'field_id',
+        //         'chapter_id',
+        //         'chapter',
+        //         'state',
+        //         'region_id',
+        //         'district_id',
+        //         'assembly_id'
+        //     ];
+
+        //     $options = !empty($setting->ministry->fields)
+        //         ? $setting->ministry->fields->pluck('name')->toArray()
+        //         : [];
+
+        //     $filteredFields = [];
+
+        //     if (in_array('field_id', $options, true) && !isset($data['field_id'])) {
+        //         if (!empty($data['chapter'])) {
+        //             $fieldId = DB::table('chapters')
+        //                 ->where('id', $data['chapter'])
+        //                 ->value('field_id');
+
+        //             if ($fieldId) {
+        //                 $filteredFields['field_id'] = $fieldId;
+        //             }
+        //         }
+        //     }
+
+        //     foreach ($allocatableFields as $key) {
+        //         if (in_array($key, $options, true) && isset($data[$key])) {
+        //             $filteredFields[$key] = $data[$key];
+        //         }
+        //     }
+
+        //     if (!empty($filteredFields)) {
+        //         foreach ($filteredFields as $key => $value) {
+        //             TransactionAllocationField::updateOrCreate(
+        //                 [
+        //                     'transaction_id' => $transaction->id,
+        //                     'key' => $key,
+        //                 ],
+        //                 [
+        //                     'value' => $value,
+        //                 ]
+        //             );
+        //         }
+        //     }
+
+        //     DB::commit();
+
+        //     return [
+        //         'status' => true,
+        //         'data' => $transaction->load('allocationFields')
+        //     ];
+        // } catch (\Throwable $e) {
+        //     DB::rollBack();
+
+        //     return [
+        //         'status' => false,
+        //         'message' => 'Transaction initialization failed: ' . $e->getMessage()
+        //     ];
+        // }
         try {
             DB::beginTransaction();
 
-            $transaction = Transaction::updateOrCreate(
-                [
-                    'email' => $data['email'],
-                    'conference_edition_id' => $setting->id,
-                    'provider_charge' => $data['provider_charge'] ?? null,
-                ],
-                [
+            // Check if transaction already exists (don't update existing)
+            $transaction = Transaction::where('transid', $data['transid'])->first();
+
+            if (!$transaction) {
+                $transaction = Transaction::create([
                     'name' => $data['name'],
-                    'provider_charge' => $data['provider_charge'] ?? null,
+                    'email' => $data['email'],
+                    'phone' => $data['phone'],
+                    'gender' => $data['gender'] ?? null,
+                    'remarks' => $data['remarks'] ?? null,
+                    'conference_edition_id' => $setting->id,
                     'payment_provider_id' => $data['payment_provider_id'] ?? $paymentProvider->id,
+                    'provider_charge' => $data['provider_charge'] ?? null,
                     'amount_paid' => $amount,
                     'total_amount' => $data['total_amount'] ?? $amount,
-                    'phone' => $data['phone'],
                     'type' => $type,
-                    'transid' => $data['transid'] ?? null,
+                    'transid' => $data['transid'],
                     'status' => 'Initiated',
-                    'gender' => $data['gender'] ?? null,
-                    'conference_edition_id' => $setting->id,
                     'location' => $location,
-                    'remarks' => $data['remarks'] ?? null,
-
                     'registration_status' => 'Pending',
                     'slot' => $extras['slot'],
                     'slot_filled' => $extras['slot_filled'] ?? 0,
                     'level' => $extras['level'],
-                ]
-            );
+                ]);
+            }
 
+            // Prepare allocatable fields
             $allocatableFields = [
                 'field_id',
                 'chapter_id',
@@ -125,36 +218,32 @@ class PaymentService {
 
             $filteredFields = [];
 
-            if (in_array('field_id', $options, true) && !isset($data['field_id'])) {
-                if (!empty($data['chapter'])) {
-                    $fieldId = DB::table('chapters')
-                        ->where('id', $data['chapter'])
-                        ->value('field_id');
-
-                    if ($fieldId) {
-                        $filteredFields['field_id'] = $fieldId;
-                    }
+            // Auto-fill field_id if missing but chapter exists
+            if (in_array('field_id', $options, true) && empty($data['field_id']) && !empty($data['chapter'])) {
+                $fieldId = DB::table('chapters')->where('id', $data['chapter'])->value('field_id');
+                if ($fieldId) {
+                    $filteredFields['field_id'] = $fieldId;
                 }
             }
-
+            
+            // Filter and prepare valid fields
             foreach ($allocatableFields as $key) {
                 if (in_array($key, $options, true) && isset($data[$key])) {
                     $filteredFields[$key] = $data[$key];
                 }
             }
-
-            if (!empty($filteredFields)) {
-                foreach ($filteredFields as $key => $value) {
-                    TransactionAllocationField::updateOrCreate(
-                        [
-                            'transaction_id' => $transaction->id,
-                            'key' => $key,
-                        ],
-                        [
-                            'value' => $value,
-                        ]
-                    );
-                }
+            
+            // Insert or update allocation fields
+            foreach ($filteredFields as $key => $value) {
+                TransactionAllocationField::updateOrCreate(
+                    [
+                        'transaction_id' => $transaction->id,
+                        'key' => $key,
+                    ],
+                    [
+                        'value' => $value,
+                    ]
+                );
             }
 
             DB::commit();
@@ -168,7 +257,7 @@ class PaymentService {
 
             return [
                 'status' => false,
-                'message' => 'Transaction initialization failed: ' . $e->getMessage()
+                'message' => 'Transaction initialization failed: ' . $e->getMessage(),
             ];
         }
     }

@@ -13,6 +13,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\CriticalEmail;
+use App\Services\PaymentService;
 use App\Models\ConferenceEdition;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -154,15 +155,15 @@ class ConferenceManagementController extends Controller
 		$chapters = Chapter::all();
 		$edition = ConferenceEdition::where('id', $request->edition)->first();
 		$payment = $conferencemanagement;
+
 		if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isNec($edition) || auth()->user()->isChoir($edition)) {
 			return view('conference_management.participant.single_payment', compact('edition', 'payment', 'chapters'));
 		}
+
 		if (auth()->user()->isModerator($edition)) {
-
 			$allparticipants = Transaction::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->orderBy('created_at', 'desc');
-
 			$thispayment = Transaction::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id, 'user_id' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->first();
-			// dd($allparticipants->get(), $payment->conference_edition_id);
+			
 			$myParticipants = clone $allparticipants;
 			$myParticipantsAll = $myParticipants->get();
 			$participants = $allparticipants->count();
@@ -178,6 +179,7 @@ class ConferenceManagementController extends Controller
 
 	public function store(Request $request, User $user)
 	{
+		dd('under construction');
 		if (auth()->user()->role == 1) {
 			$validator =  Validator::make($request->all(), [
 				'name' => 'required|min:3',
@@ -460,7 +462,7 @@ class ConferenceManagementController extends Controller
 
 	public function update(Request $request, $id)
 	{
-		$payment = Transaction::with('user')->whereId($id)->first();
+		$payment = Transaction::with(['user', 'paymentprovider', 'edition', 'allocationFields'])->whereId($id)->first();
 		$user = $payment->user;
 		
 		$data = $this->validate($request, [
@@ -482,10 +484,8 @@ class ConferenceManagementController extends Controller
 
 		// handle gender change
 		if ($request->has('sex') && $request['sex'] != $user->sex) {
-			$paymentArray = array_merge($data, $payment->ToArray());
-			$paymentArray['field_id'] =  $payment->user->campus->id;
-			$hostel_allocation = HostelAllocationService::assignHostel($paymentArray);
-
+			$hostel_allocation = HostelAllocationService::assignHostel($payment, $request->all());
+			
 			$data['allocated_hostel_data'] = $hostel_allocation;
 			$paymentupdate['hostel_allocation_number'] = $hostel_allocation['hostel_allocation_number'];
 			$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
@@ -493,28 +493,25 @@ class ConferenceManagementController extends Controller
 			
 			// If no hostel
 			if (!isset($paymentupdate['hostel_id']) && empty($paymentupdate['hostel_id'])) {
-				return back()->with('error', 'Sorry, there is no available hostel for you at the moment. Changes not saved!');
+				return back()->with('error', "There is no {$request->sex} hostel available at the moment. Changes not saved!");
 			} else {
-				$this->reduceHostelAllocation($payment);
+				HostelAllocationService::reduceHostelAllocation($payment);
 			}
 		}
-
+		
 		//handle password
 		if ($request->has('password') && !empty($request->password)) {
 			$update['password'] = Hash::make($request['password']);
 		}
 
 		// Moderator
-		$moderator = Transaction::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
+		$moderator = Transaction::with(['user', 'paymentprovider', 'edition', 'allocationFields'])->where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 
 		if (isset($moderator) && !empty($moderator)) {
-			$edition = $this->edition;
 			// Hostel may not be set above, so set it
 			if (!isset($update['hostel_id'])) {
-				$paymentArray = array_merge($data, $payment->ToArray());
-				$paymentArray['field_id'] =  $payment->user->campus->id;
-				$hostel_allocation = HostelAllocationService::assignHostel($paymentArray);
-
+				$hostel_allocation = HostelAllocationService::assignHostel($moderator, $request->all());
+				
 				$data['allocated_hostel_data'] = $hostel_allocation;
 				$paymentupdate['hostel_allocation_number'] = $hostel_allocation['hostel_allocation_number'];
 				$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
@@ -524,15 +521,12 @@ class ConferenceManagementController extends Controller
 				if (!isset($paymentupdate['hostel_id']) && empty($paymentupdate['hostel_id'])) {
 					return back()->with('error', 'Sorry, there is no available hostel for you at the moment. Changes not saved!');
 				} else {
-					$this->reduceHostelAllocation($payment);
+					HostelAllocationService::reduceHostelAllocation($moderator);
 				}
 			}
 
 			if (!isset($payment->food) && empty($payment->food)) {
-				$paymentArray = array_merge($data, $payment->ToArray());
-				$paymentArray['field_id'] =  $payment->user->campus->id;
-
-				$service_point = ServicePointAllocationService::assignFoodStand($paymentArray);
+				$service_point = ServicePointAllocationService::assignFoodStand($moderator);
 
 				$data['allocated_service_point_data'] = $service_point;
 
@@ -694,22 +688,6 @@ class ConferenceManagementController extends Controller
 			}
 		} else {
 			return back()->with('error', 'Conference Edition not active');
-		}
-	}
-
-	
-
-	public function reduceFoodStandAllocation($payment)
-	{
-		if (isset($payment->food->id) && !empty($payment->food->id)) {
-			$current_food = Food::find($payment->food->id);
-
-			if ($current_food->allocation == 0) {
-				return;
-			} else {
-				$payment->food->update(['allocation' => $payment->food->allocation - 1]);
-				return $payment->food;
-			}
 		}
 	}
 
@@ -972,8 +950,8 @@ class ConferenceManagementController extends Controller
 		$payment = Transaction::where(['id' => $request->payment_id, 'conference_edition_id' => $request->edition])->first();
 		$user = User::withTrashed()->where('id', $payment->user_id)->first();
 
-		$this->reduceHostelAllocation($payment);
-		$this->reduceFoodStandAllocation($payment);
+		HostelAllocationService::reduceHostelAllocation($payment);
+		ServicePointAllocationService::reduceFoodStandAllocation($payment);
 
 		if ($payment->uploaded_by) {
 			$moderator = Transaction::where(['user_id' => $payment->uploaded_by, 'conference_edition_id' => $request->edition, 'level' => 'Moderator'])->first();

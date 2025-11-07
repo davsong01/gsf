@@ -25,6 +25,7 @@ class MinistryFieldController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'label' => 'required|string|max:255',
+            'display_order' => 'required|numeric',
             'type' => 'required|in:text,number,email,select,textarea,checkbox,radio',
             'field_usage' => 'required|in:registration,allocation,both',
             'registration_types' => 'required|array',
@@ -43,7 +44,8 @@ class MinistryFieldController extends Controller
             'onchange',
             'options',
             'registration_types',
-            'depends_on'
+            'depends_on',
+            'display_order'
         ]);
 
         $data['options'] = $data['options'] ?? null;
@@ -68,6 +70,7 @@ class MinistryFieldController extends Controller
             'name' => 'required|string|max:255',
             'label' => 'required|string|max:255',
             'type' => 'required|string|in:text,number,email,select,textarea,checkbox,radio',
+            'display_order' => 'required|numeric',
             'field_usage' => 'required|string|in:registration,allocation,both',
             'registration_types' => 'nullable|array',
             'registration_types.*' => 'integer',
@@ -90,6 +93,7 @@ class MinistryFieldController extends Controller
         $validated['required'] = $request->required;
         $validated['status'] = $request->status;
         $validated['has_other_option'] = $request->has_other_option;
+        
         $field->update($validated);
 
         return redirect()
