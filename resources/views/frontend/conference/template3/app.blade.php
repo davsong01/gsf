@@ -5,30 +5,35 @@
 <html lang="en">
 
 <head>
-   <meta property="og:url" content="{{ env('APP_URL') }}">
-   <meta property="og:title" content="{{ env('APP_NAME') }}"> 
-   <meta property="og:image" content="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}"/> 
-   <meta property="og:description" content="{{ $setting->conference_theme . ' Conference '.date('Y') }}"/>
-   <meta property="og:site_name" content="{{ env('APP_NAME') }}" />
-   <meta charset="utf-8">
-   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-   <meta name="viewport" content="width=device-width, initial-scale=1">
-   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-   <title>{{ env('APP_NAME') }}</title>
-   <!-- CSS Files
-   ================================================== -->
-   <link href="{{asset('conference_templates/template3/css/bootstrap.min.css')}}" rel="stylesheet" type="text/css" id="bootstrap">
-   <link href="{{asset('conference_templates/template3/css/vendors.css')}}" rel="stylesheet" type="text/css" >
-   <link href="{{asset('conference_templates/template3/css/style.css')}}" rel="stylesheet" type="text/css" >
-   <!-- color scheme -->
-   <link id="colors" href="{{asset('conference_templates/template3/css/colors/scheme-01.css')}}" rel="stylesheet" type="text/css" >
+    <meta property="og:url" content="{{ env('APP_URL') }}">
+    <meta property="og:title" content="{{ env('APP_NAME') }}"> 
+    <meta property="og:image" content="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}"/> 
+    <meta property="og:description" content="{{ $setting->conference_theme }}"/>
+    <meta property="og:site_name" content="{{ env('APP_NAME') }}" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>{{ env('APP_NAME') }}</title>
+
+    <link href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}" rel="icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}">
+    
+    <!-- CSS Files
+    ================================================== -->
+    <link href="{{asset('conference_templates/template3/css/bootstrap.min.css')}}" rel="stylesheet" type="text/css" id="bootstrap">
+    <link href="{{asset('conference_templates/template3/css/vendors.css')}}" rel="stylesheet" type="text/css" >
+    <link href="{{asset('conference_templates/template3/css/style.css')}}" rel="stylesheet" type="text/css" >
+    <!-- color scheme -->
+    <link id="colors" href="{{asset('conference_templates/template3/css/colors/scheme-01.css')}}" rel="stylesheet" type="text/css" >
 
 </head>
 
 <body class="dark-scheme">
-
     <div id="wrapper">
-
         {{-- <div class="float-text show-on-scroll">
             <span><a href="#">Scroll to top</a></span>
         </div>

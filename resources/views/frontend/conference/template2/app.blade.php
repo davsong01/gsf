@@ -10,7 +10,7 @@
   <meta property="og:url" content="{{ env('APP_URL') }}">
   <meta property="og:title" content="{{ env('APP_NAME') }}"> 
   <meta property="og:image" content="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}"/> 
-  <meta property="og:description" content="{{ $setting->conference_theme . ' Conference '.date('Y') }}"/>
+  <meta property="og:description" content="{{ $setting->conference_theme }}"/>
   <meta property="og:site_name" content="{{ env('APP_NAME') }}" />
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">

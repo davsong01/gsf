@@ -403,7 +403,7 @@ if (!function_exists('conferencePlans')) {
         $plans = [
             [
                 'title' => 'Single Registration',
-                'items' => ['Undergraduate', 'SSS Student', 'Youth'],
+                'items' => ['Students', 'Working Youths', 'Artisans'],
                 'price' => number_format($setting->registration_fee),
                 'route_id' => 1,
                 'show' => isset($setting->lock_online_payment) && $setting->lock_online_payment == 'no',
