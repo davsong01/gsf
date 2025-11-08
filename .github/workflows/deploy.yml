@@ -50,7 +50,6 @@ jobs:
           port: 21098
           script_stop: true
           script: |
-
             cd /home/gyfnbpbo/registration.gyfnational.org/apps
             git pull origin development
             php artisan migrate --force
@@ -58,4 +57,4 @@ jobs:
             php artisan config:clear
             php artisan route:clear
             php artisan view:clear
-            
+
