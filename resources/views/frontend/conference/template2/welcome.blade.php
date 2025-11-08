@@ -647,9 +647,10 @@
                   </div>
                   <div class="ts-pricing-progress">
                       <p class="amount-progres-text">
-                        Undergraduate <br>
-                        SSS Student <br>
-                        Youth <br>
+                        Students <br>
+                        Working Youths <br>
+                        Artisans <br>
+                        etc <br>
                       </p>
                       <div class="ts-progress">
                         <div class="ts-progress-inner" style="width: 100%"></div>
