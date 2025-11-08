@@ -309,7 +309,7 @@
                 @if($plan['show'])
                 <div class="col-md-4">
                     <div class="d-ticket p-4 bg-dark-2 rounded-1 text-center h-100 position-relative wow fadeInUp">
-                        <img src="{{ asset($setting->conference_logo) }}" class="w-80px mb-4" alt="">
+                        <img style="border-radius: 50%;" src="{{ asset($setting->conference_logo) }}" class="w-80px mb-4" alt="">
                         <h2 class="mb-2">{{ $plan['title'] }}</h2>
                         <h4 class="mb-4">&#8358;{{ $plan['price'] }}</h4>
 
