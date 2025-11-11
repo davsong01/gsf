@@ -196,11 +196,15 @@ class StakeholderReportsController extends Controller
         $validated = $request->validate([
             'responses' => 'required|array',
             'responses.*' => 'nullable',
-            // 'confirm_information' => 'accepted',
+            'confirm_information' => 'accepted',
         ]);
 
         $chapter = Chapter::with('zone:id','field:id')->where('id', $stakeholder->chapter_id)->first();
-        
+
+        if (empty($chapter->year_established)) {
+            $chapter->update(['year_established' => $validated['responses']['year_established']]);
+        }
+
         DB::beginTransaction();
 
         try {
@@ -235,13 +239,77 @@ class StakeholderReportsController extends Controller
             
             DB::commit();
 
-            return redirect(route('stakeholder.dashboard'))->with('message', 'Report saved successfully');
+            return redirect(route('stakeholders.reports.index'))->with('message', 'Report saved successfully');
         } catch (\Throwable $e) {
             DB::rollBack();
-            dd($e->getMessage());
+            
             return back()->withErrors(['error' => 'An error occurred while saving the report. ' . $e->getMessage()]);
         }
     }
+
+    public function update(Request $request, StakeholderReport $report)
+    {
+        $stakeholder = Auth::guard('stakeholder')->user();
+
+        $checks = $this->checks($stakeholder);
+        
+        // Validate the form data
+        $validated = $request->validate([
+            'responses' => 'required|array',
+            'responses.*' => 'nullable',
+            'confirm_information' => 'accepted',
+        ]);
+
+        $chapter = Chapter::with('zone:id', 'field:id')->where('id', $stakeholder->chapter_id)->first();
+
+        if(empty($chapter->year_established)){
+            $chapter->update(['year_established' => $validated['responses']['year_established']]);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $report->update([
+                'chapter_id' => $stakeholder->chapter_id,
+                'zone_id' => $stakeholder->zone_id ?? $chapter?->zone->id,
+                'field_id' => $stakeholder->field_id ?? $chapter?->field->id,
+                'stakeholder_id' => $stakeholder->id,
+                'session' => $validated['responses']['session'] ?? $report->session,
+                'year' => $validated['responses']['year'] ?? $report->year,
+                'month' => $validated['responses']['month'] ?? $report->month,
+            ]);
+
+            // Loop through each response and update or create answers
+            foreach ($validated['responses'] as $slug => $answer) {
+                $question = StakeholderReportQuestion::where('slug', $slug)->first();
+                if (!$question) continue;
+
+                $answerValue = is_array($answer) ? json_encode($answer) : $answer;
+
+                // Update existing answer or create new
+                StakeholderReportAnswer::updateOrCreate(
+                    [
+                        'report_id' => $report->id,
+                        'question_id' => $question->id,
+                    ],
+                    [
+                        'answer_value' => $answerValue,
+                    ]
+                );
+            }
+
+            ReportNotificationService::handleReportSubmissionSubmission($report, $stakeholder, 'update');
+
+            DB::commit();
+
+            return redirect(route('stakeholders.reports.index'))->with('message', 'Report updated successfully');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            // dd($e->getMessage());
+            return back()->withErrors(['error' => 'An error occurred while updating the report. ' . $e->getMessage()]);
+        }
+    }
+
 
     public function checks($stakeholder){
 
@@ -270,9 +338,15 @@ class StakeholderReportsController extends Controller
      * @param  \App\Reports  $reports
      * @return \Illuminate\Http\Response
      */
-    public function show(Reports $report)
+    public function show(StakeholderReport $report)
     {
-        return view('stakeholder.show', compact('report'));
+        $sections = StakeholderQuestionSection::isActive()->with([
+            'subsections.questions' => function ($query) {
+                $query->orderBy('order');
+            }
+        ])->orderBy('id')->get();
+
+        return view('stakeholder.show', compact('report','sections'));
     }
 
     /**
@@ -321,101 +395,100 @@ class StakeholderReportsController extends Controller
      * @param  \App\Reports  $reports
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Reports $report)
-    {
-        if(Auth::guard('stakeholder')->user()->role == 'President'){
-            $data = $this->validateRequestData($request);
+    // public function update(Request $request, Reports $report)
+    // {
+    //     if(Auth::guard('stakeholder')->user()->role == 'President'){
+    //         $data = $this->validateRequestData($request);
         
-            if(is_null(Auth::guard('stakeholder')->user()->signature) || is_null(Auth::guard('stakeholder')->user()->gen_sec_signature) || is_null(Auth::guard('stakeholder')->user()->fin_sec_signature) || is_null(Auth::guard('stakeholder')->user()->evang_sec_signature)){
-                return back()->with('message', 'Kindly Upload signatures first, you will only need to do this once');
-            }
+    //         if(is_null(Auth::guard('stakeholder')->user()->signature) || is_null(Auth::guard('stakeholder')->user()->gen_sec_signature) || is_null(Auth::guard('stakeholder')->user()->fin_sec_signature) || is_null(Auth::guard('stakeholder')->user()->evang_sec_signature)){
+    //             return back()->with('message', 'Kindly Upload signatures first, you will only need to do this once');
+    //         }
     
-            if(!is_null(Auth::guard('stakeholder')->user()->chapter_id)){
-                $data['chapter_id'] = Auth::guard('stakeholder')->user()->chapter_id;
-            }
+    //         if(!is_null(Auth::guard('stakeholder')->user()->chapter_id)){
+    //             $data['chapter_id'] = Auth::guard('stakeholder')->user()->chapter_id;
+    //         }
             
-           
-            $data['zone_reject_comment'] = null;
-            $data['field_reject_comment' ] = null;
-            $data['status_complete_reject_comment' ] = null;
+    //         $data['zone_reject_comment'] = null;
+    //         $data['field_reject_comment' ] = null;
+    //         $data['status_complete_reject_comment' ] = null;
 
-            $report->update($data);
+    //         $report->update($data);
             
-            //Send Email  
-            if($report->zone->stakeholder){
-                $data = [
-                    'type' => 'resend',
-                    'addressee' => $report->zone->stakeholder->name,
-                    'chapter' => $report->chapter->name,
-                    'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year,
-                ];
+    //         //Send Email  
+    //         if($report->zone->stakeholder){
+    //             $data = [
+    //                 'type' => 'resend',
+    //                 'addressee' => $report->zone->stakeholder->name,
+    //                 'chapter' => $report->chapter->name,
+    //                 'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year,
+    //             ];
     
-                Mail::to($report->zone->stakeholder->email)->send(new NotificationEmail($data));
-            }
+    //             Mail::to($report->zone->stakeholder->email)->send(new NotificationEmail($data));
+    //         }
         
-        }
+    //     }
 
-        if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
-            $report->zonal_pastor_affirmation = Auth::guard('stakeholder')->user()->name;
-            $report->zone_status = 1;
-        }
+    //     if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
+    //         $report->zonal_pastor_affirmation = Auth::guard('stakeholder')->user()->name;
+    //         $report->zone_status = 1;
+    //     }
 
-        if(Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
-            $report->field_pastor_approval = Auth::guard('stakeholder')->user()->name;
-            $report->field_status = 1;
-            $report->zone_status = 1;
-        }
+    //     if(Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
+    //         $report->field_pastor_approval = Auth::guard('stakeholder')->user()->name;
+    //         $report->field_status = 1;
+    //         $report->zone_status = 1;
+    //     }
 
-        if(Auth::guard('stakeholder')->user()->role == 'Secretariat'){
-            $report->field_pastor_approval = Auth::guard('stakeholder')->user()->name;
-            $report->ncp_comment = $request->ncp_comment;
-            $report->field_status = 1;
-            $report->zone_status = 1;
-            $report->status_complete = 1;
-        }
+    //     if(Auth::guard('stakeholder')->user()->role == 'Secretariat'){
+    //         $report->field_pastor_approval = Auth::guard('stakeholder')->user()->name;
+    //         $report->ncp_comment = $request->ncp_comment;
+    //         $report->field_status = 1;
+    //         $report->zone_status = 1;
+    //         $report->status_complete = 1;
+    //     }
 
-        $report->save();
+    //     $report->save();
 
-        $report->update($this->validateRequestData($request));
+    //     $report->update($this->validateRequestData($request));
         
-        //Send mail notification
-        if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
-            //Get field pastor
-            $zonalPastor = $report->zone->stakeholder;
+    //     //Send mail notification
+    //     if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
+    //         //Get field pastor
+    //         $zonalPastor = $report->zone->stakeholder;
 
-            //send mail to Zonal Pastor
-            if($zonalPastor){
-                $data = [
-                    'type' => 'zone',
-                    'addressee' => $zonalPastor->name,
-                    'chapter' => $report->chapter->name,
-                    'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year
-                ];
+    //         //send mail to Zonal Pastor
+    //         if($zonalPastor){
+    //             $data = [
+    //                 'type' => 'zone',
+    //                 'addressee' => $zonalPastor->name,
+    //                 'chapter' => $report->chapter->name,
+    //                 'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year
+    //             ];
 
-                Mail::to($zonalPastor->email)->send(new NotificationEmail($data));
-            }
+    //             Mail::to($zonalPastor->email)->send(new NotificationEmail($data));
+    //         }
 
-            //
-        }
+    //         //
+    //     }
         
-        if(Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
-            //send mail to Secretary
-            $secretary = Stakeholder::whereRole('Secretariat')->wherePortfolio('Gen Sec')->first();
-            if($secretary){
-                $data = [
-                    'type' => 'zone',
-                    'addressee' => $secretary->name,
-                    'chapter' => $report->chapter->name,
-                    'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year
-                ];
+    //     if(Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
+    //         //send mail to Secretary
+    //         $secretary = Stakeholder::whereRole('Secretariat')->wherePortfolio('Gen Sec')->first();
+    //         if($secretary){
+    //             $data = [
+    //                 'type' => 'zone',
+    //                 'addressee' => $secretary->name,
+    //                 'chapter' => $report->chapter->name,
+    //                 'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year
+    //             ];
 
-                Mail::to($secretary->email)->send(new NotificationEmail($data));
-            }
+    //             Mail::to($secretary->email)->send(new NotificationEmail($data));
+    //         }
             
-        }
+    //     }
 
-        return redirect(route('stakeholder.dashboard'))->with('message', 'operation successful!');
-    }
+    //     return redirect(route('stakeholders.dashboard'))->with('message', 'operation successful!');
+    // }
 
     /**
      * Remove the specified resource from storage.
@@ -463,7 +536,7 @@ class StakeholderReportsController extends Controller
             }
         
 
-        return redirect(route('stakeholder.dashboard'))->with('message', 'operation successful!');
+        return redirect(route('stakeholders.dashboard'))->with('message', 'operation successful!');
     }
     
     public function destroy(Reports $reports)

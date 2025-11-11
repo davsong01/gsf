@@ -46,7 +46,7 @@ class StakeholderAccountController extends Controller
 
         return view('stakeholder.dashboard', compact('reports', 'count'));
     }
-
+    
     public function profile()
     {
         return view('stakeholder.profile');
@@ -97,7 +97,7 @@ class StakeholderAccountController extends Controller
         }else{
             $fin_sec_signature = Auth::guard('stakeholder')->user()->fin_sec_signature;
         }
-       
+        
         if($request->has('evang_sec_signature')){
             if (!is_null(Auth::guard('stakeholder')->user()->evang_sec_signature) && file_exists(base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->evang_sec_signature))
             unlink( base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->evang_sec_signature);
@@ -124,7 +124,7 @@ class StakeholderAccountController extends Controller
         Auth::guard('stakeholder')->user()->year = $request->year;
 
         Auth::guard('stakeholder')->user()->save();
-               
+        
         return back()->with('message', 'Update Successful');
     }
     /**

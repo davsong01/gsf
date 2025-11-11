@@ -18,7 +18,11 @@
         </li>
         <li class="is_shown"><a href="{{ route('stakeholderpersonnel.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Stakeholders</span></a>
         </li>
-        <li class="is_shown"><a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Report Items</span></a>
+        <li class="is_shown"><a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Report Sections</span></a>
+        </li>
+        <li class="is_shown"><a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Report Sub Sections</span></a>
+        </li>
+        <li class="is_shown"><a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Report Questions</span></a>
         </li>
     </ul>
 </li>
