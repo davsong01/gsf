@@ -6,6 +6,15 @@ use App\Models\GeneralSetting;
 use Illuminate\Support\Carbon;
 use App\Models\ConferenceEdition;
 
+
+
+if (!function_exists('chapterStakeholders')) {
+    function chapterStakeholders()
+    {
+        return ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary'];
+    }
+}
+
 if (!function_exists('registrationTypeNames')) {
     function registrationTypeNames(?array $ids = null)
     {

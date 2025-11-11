@@ -217,7 +217,7 @@
                                                     <td>{{ $week }}</td>
                                                     @foreach($question->options['columns'] as $col)
                                                     <td>
-                                                        @if($col['type'] == 'Remarks')
+                                                        @if($col == 'Remarks')
                                                         <input type="text" class="form-control"
                                                                name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
                                                                value="{{ $value[$week][$col] ?? '' }}">

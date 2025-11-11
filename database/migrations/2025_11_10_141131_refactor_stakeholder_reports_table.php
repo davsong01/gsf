@@ -9,6 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('stakeholder_reports', function (Blueprint $table) {
+            if (!Schema::hasColumn('stakeholder_reports', 'year')) {
+                $table->string('year')->nullable()->after('stakeholder_id');
+            }
+
+            if (!Schema::hasColumn('stakeholder_reports', 'month')) {
+                $table->string('month')->nullable()->after('stakeholder_id');
+            }
+
+            if (!Schema::hasColumn('stakeholder_reports', 'session')) {
+                $table->string('session')->nullable()->after('stakeholder_id');
+            }
+
             if (!Schema::hasColumn('stakeholder_reports', 'field_approved_at')) {
                 $table->timestamp('field_approved_at')->nullable()->after('field_status');
             }

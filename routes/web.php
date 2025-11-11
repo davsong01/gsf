@@ -418,14 +418,16 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
         // Reports
         // Stakeholder Account Routes
         Route::controller(StakeholderAccountController::class)->group(function () {
-            Route::get('/dashboard', 'index')->name('dashboard');
+            Route::get('/dashboard', 'dashboard')->name('dashboard');
             Route::get('/profile', 'profile')->name('profile');
             Route::post('/profile', 'saveProfile')->name('saveprofile');
         });
 
         Route::resource('reports', StakeholderReportsController::class);
         Route::controller(StakeholderReportsController::class)->group(function () {
-            Route::get('/reports/delete/{id}', 'delete')->name('reports.delete');
+            Route::get('/reports/delete/{report}', 'delete')->name('reports.delete');
+            Route::get('/reports/print/{report}', 'delete')->name('reports.print');
+            Route::get('/reports/nudge/{report}', 'delete')->name('reports.nudge');
             Route::post('/reports/reject', 'rejectReport')->name('reports.reject');
         });
 

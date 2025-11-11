@@ -9,8 +9,8 @@
     <section id="reports-dashboard">
         <div class="row mb-3">
             <div class="col-12 d-flex justify-content-between align-items-center">
-                <h4 class="card-title">My Reports</h4>
-                @if(in_array(Auth::guard('stakeholder')->user()->role, ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary']))
+                <h4 class="card-title">All Reports</h4>
+                @if(in_array(Auth::guard('stakeholder')->user()->role, chapterStakeholders()))
                 <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">Add This Month's Report</a>
                 @endif
             </div>
@@ -111,115 +111,142 @@
                 <div class="card">
                     @include('includes.alerts')
                     <div class="card-body table-responsive">
-                         <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>S/N</th>
-                                            @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' || Auth::guard('stakeholder')->user()->role == 'Secretariat')
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle text-center">
+                                <thead >
+                                    <tr>
+                                        <th>S/N</th>
+                                        @if(in_array(Auth::guard('stakeholder')->user()->role, ['Field Pastor','Zonal Pastor','Secretariat']))
                                             <th>Chapter</th>
-                                            @endif
-                                            <th>Month/Year</th>
-                                            <th>Approval Status</th>
-                                            <th>Academic Session</th>
-                                            <th>Created on</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($reports as $report)
-                                        <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' || Auth::guard('stakeholder')->user()->role == 'Secretariat')
-                                            <td>{{ $report->chapter->name }}</td>
-                                            @endif
-                                            <td>{{ date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year }}'s report</td>
-                                            <td>
-                                                {{-- Field Status --}}
-                                                @if($report->field_rejected_at)
-                                                    <i class="bx bxs-circle danger font-small-1 mr-50"></i>
-                                                    <small>Field <a href="#fieldRejection{{ $report->id }}" data-toggle="modal" title="View feedback"><span class="info">&#9432;</span></a></small>
-                                                    @include('stakeholder.modals.field_rejection_comment')
-                                                @elseif($report->field_approved_at)
-                                                    <i class="bx bxs-circle success font-small-1 mr-50"></i><small>Field</small><br>
-                                                @else
-                                                    <i class="bx bxs-circle warning font-small-1 mr-50"></i><small>Field</small><br>
-                                                @endif
+                                        @endif
+                                        <th>Month/Year</th>
+                                        <th>Approval Status</th>
+                                        <th>Academic Session</th>
+                                        <th>Created On</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
 
-                                                {{-- Zone Status --}}
+                                <tbody>
+                                    @foreach($reports as $report)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+
+                                        @if(in_array(Auth::guard('stakeholder')->user()->role, ['Field Pastor','Zonal Pastor','Secretariat']))
+                                            <td>{{ $report->chapter->name ?? '—' }}</td>
+                                        @endif
+
+                                        <td>{{ date('F', mktime(0, 0, 0, $report->month, 10)) }}, {{ $report->year }}</td>
+
+                                        <td class="text-start">
+                                            {{-- FIELD --}}
+                                            @php
+                                                $fieldStatus = $report->field_status;
+                                                $zoneStatus = $report->zone_status;
+                                                $natStatus  = $report->status_complete;
+                                            @endphp
+                                            {{-- Zone --}}
+                                            <div class="d-flex align-items-center" style="margin-bottom:5px">
+                                                <small class="ms-1 text-muted">Zone &nbsp</small>
                                                 @if($report->zone_rejected_at)
-                                                    <i class="bx bxs-circle danger font-small-1 mr-50"></i>
-                                                    <small>Zone <a href="#zoneRejection{{ $report->id }}" data-toggle="modal" title="View feedback"><span class="info">&#9432;</span></a></small>
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                    <a href="#zoneRejection{{ $report->id }}" data-toggle="modal" title="View feedback" class="ms-1 text-danger">
+                                                        <i class="bx bx-message-rounded-dots"></i>
+                                                    </a>
                                                     @include('stakeholder.modals.zone_rejection_comment')
-                                                @elseif($report->zone_approved_at)
-                                                    <i class="bx bxs-circle success font-small-1 mr-50"></i><small>Zone</small><br>
+                                                @elseif($report->zone_approved_at || $zoneStatus == 1)
+                                                    <span class="badge bg-success">Approved</span>
                                                 @else
-                                                    <i class="bx bxs-circle warning font-small-1 mr-50"></i><small>Zone</small><br>
+                                                    <span class="badge bg-warning text-dark">Pending</span>
                                                 @endif
-
-                                                {{-- National Status --}}
-                                                @if($report->national_rejected_at)
-                                                    <i class="bx bxs-circle danger font-small-1 mr-50"></i>
-                                                    <small>National <a href="#nationalRejection{{ $report->id }}" data-toggle="modal" title="View feedback"><span class="info">&#9432;</span></a></small>
-                                                    @include('stakeholder.modals.national_rejection_comment')
-                                                @elseif($report->national_approved_at)
-                                                    <i class="bx bxs-circle success font-small-1 mr-50"></i><small>National</small><br>
+                                            </div>
+                                             {{-- Field --}}
+                                            <div class="d-flex align-items-center" style="margin-bottom:5px">
+                                                <small class="ms-1 text-muted">Field &nbsp</small>
+                                                @if($report->field_rejected_at)
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                    <a href="#fieldRejection{{ $report->id }}" data-toggle="modal" title="View feedback" class="ms-1 text-danger">
+                                                        <i class="bx bx-message-rounded-dots"></i>
+                                                    </a>
+                                                    @include('stakeholder.modals.field_rejection_comment')
+                                                @elseif($report->field_approved_at || $fieldStatus == 1)
+                                                    <span class="badge bg-success">Approved</span>
                                                 @else
-                                                    <i class="bx bxs-circle warning font-small-1 mr-50"></i><small>National</small><br>
+                                                    <span class="badge bg-warning text-dark">Pending</span>
                                                 @endif
-                                            
-                                                @if(!is_null($report->zone_reject_comment))
-                                                <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Zone <a data-target="#zoneRejection{{ $report->id }}" data-toggle="modal" title="Veiw feedback"  href="#zoneRejection{{ $report->id }}"><span class="info">&#9432;</span></small></a>
-                                                @include('stakeholder.modals.zone_rejection_comment')
-                                                @endif
-                                                @if(is_null($report->zone_reject_comment))
-                                                <i class="{{ ($report->zone_status == 0) ? 'bx bxs-circle warning font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>Zone</small><br>
-                                                @endif
+                                            </div>
 
-                                                @if(!is_null($report->field_reject_comment))
-                                                <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Field <a data-target="#fieldRejection{{ $report->id }}" data-toggle="modal" title="Veiw feedback"  href="#fieldRejection{{ $report->id }}"><span  class="info">&#9432;</span></small></a>
-                                                @include('stakeholder.modals.field_rejection_comment')
+                                            {{-- National --}}
+                                            <div class="d-flex align-items-center">
+                                                <small class="ms-1 text-muted">National &nbsp</small>
+                                                @if($report->national_rejected_at || $report->status_complete_reject_comment)
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                    <a href="#secretariatRejection{{ $report->id }}" data-toggle="modal" title="View feedback" class="ms-1 text-danger">
+                                                        <i class="bx bx-message-rounded-dots"></i>
+                                                    </a>
+                                                    @include('stakeholder.modals.secretariat_rejection_comment')
+                                                @elseif($report->national_approved_at || $natStatus == 1)
+                                                    <span class="badge bg-success">Approved</span>
+                                                @else
+                                                    <span class="badge bg-warning text-dark">Pending</span>
                                                 @endif
-                                                @if(is_null($report->field_reject_comment))
-                                                <i class="{{ ($report->field_status == 0) ? 'bx bxs-circle warning font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>Field</small><br>
-                                                @endif
+                                            </div>
+                                        </td>
 
-                                                @if(!is_null($report->status_complete_reject_comment))
-                                               <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>National <a data-target="#secretariatRejection{{ $report->id }}" data-toggle="modal" title="Veiw feedback"  href="#secretariatRejection{{ $report->id }}"><span  class="info">&#9432;</span></small></a>
-                                                @include('stakeholder.modals.secretariat_rejection_comment')
-                                                @endif
-                                                @if(is_null($report->status_complete_reject_comment))
-                                                <i class="{{ ($report->field_status == 0) ? 'bx bxs-circle warning font-small-1 mr-50' : 'bx bxs-circle success font-small-1 mr-50' }}"></i><small>National</small><br>
-                                                @endif
-                                            </td>
-                                            <td>{{ $report->session }}</td>
-                                            
-                                            <td>{{ $report->created_at->format('d-m-Y:h-m-s') }}</td>
-                                            
-                                            <td style="padding-left: 5px;padding-right: 5px;">
-                                                <a class="actions" data-toggle="tooltip" title="View Report" href="{{ route('stakeholders.reports.show', $report->id) }}"> <i class="fa fa-eye actions"></i></a>
-                                               
-                                            
-                                                @if((Auth::guard('stakeholder')->user()->role == 'Field Pastor' && $report->field_status == 0) || (Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' && $report->zone_status == 0) || (Auth::guard('stakeholder')->user()->role == 'President' && $report->zone_status == 0) || Auth::guard('stakeholder')->user()->role == 'Secretariat' )
-                                             
-                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Edit Report" href="{{ route('stakeholders.reports.edit', $report->id) }}"> <i class="fa fa-pencil"></i></a>
+                                        <td>{{ $report->session }}</td>
+                                        <td>{{ $report->created_at->format('d M Y, h:i A') }}</td>
 
-                                                @endif
-                                                @if(Auth::guard('stakeholder')->user()->role == 'Secretariat')
-                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Report" href="{{ route('stakeholders.reports.delete', $report->id) }}"> <i class="fa fa-trash actions"></i></a>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                      
-                                        @endforeach
-                                    </tbody>
-                                    
-                                </table>
-                            </div>
+                                        <td class="text-center">
+                                            {{-- View --}}
+                                            <a href="{{ route('stakeholders.reports.show', $report->id) }}" class="text-primary mx-1" title="View Report">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+
+                                            {{-- Edit --}}
+                                            @if(
+                                                (Auth::guard('stakeholder')->user()->role == 'Field Pastor' && $fieldStatus == 0) ||
+                                                (Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' && $zoneStatus == 0) ||
+                                                (in_array(Auth::guard('stakeholder')->user()->role, chapterStakeholders()) && $zoneStatus == 0) ||
+                                                Auth::guard('stakeholder')->user()->role == 'Secretariat'
+                                            )
+                                                <a href="{{ route('stakeholders.reports.edit', $report->id) }}" class="text-warning mx-1" title="Edit Report" onclick="return confirm('Are you sure you want to edit this report?');">
+                                                    <i class="fa fa-edit"></i>
+                                                </a>
+                                            @endif
+
+                                            {{-- Print --}}
+                                            <a href="{{ route('stakeholders.reports.print', $report->id) }}" target="_blank" class="text-success mx-1" title="Print Report">
+                                                <i class="fa fa-print"></i>
+                                            </a>
+
+                                            {{-- Nudge --}}
+                                            <a href="{{ route('stakeholders.reports.nudge', $report->id) }}" class="text-indigo-600 mx-1" title="Send Nudge">
+                                                <i class="fa fa-bullhorn"></i>
+                                            </a>
+
+                                            {{-- Delete --}}
+                                            @if(Auth::guard('stakeholder')->user()->role == 'Secretariat')
+                                                <a href="{{ route('stakeholders.reports.delete', $report->id) }}" class="text-danger mx-1" title="Delete Report" onclick="return confirm('Are you sure you want to delete this report?');">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="3 6 5 6 21 6"/>
+                                                        <path d="M19 6l-2 14H7L5 6"/>
+                                                        <path d="M10 11v6"/>
+                                                        <path d="M14 11v6"/>
+                                                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                                    </svg>
+                                                </a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+
                             <div class="mt-3">
                                 {{ $reports->links() }}
                             </div>
                         </div>
+
                         <!-- Pagination -->
                     </div>
                 </div>

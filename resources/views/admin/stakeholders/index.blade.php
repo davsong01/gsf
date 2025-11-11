@@ -39,7 +39,7 @@
                                             <td>{{ $stakeholder->phone }}</td>
                                             <td>{{ $stakeholder->email }}</td>
                                             <td>
-                                                @if(in_array($stakeholder->role, ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary']) && !is_null($stakeholder->chapter_id))<span>{{$stakeholder->role}}, </span><a target="_blank" style="color:blue" href="{{ route('chapters.edit', $stakeholder->chapter->id) }}">{{ $stakeholder->chapter->name ?? 'N/A' }}</a>@endif
+                                                @if(in_array($stakeholder->role, chapterStakeholders()) && !is_null($stakeholder->chapter_id))<span>{{$stakeholder->role}}, </span><a target="_blank" style="color:blue" href="{{ route('chapters.edit', $stakeholder->chapter->id) }}">{{ $stakeholder->chapter->name ?? 'N/A' }}</a>@endif
                                                 @if($stakeholder->role == 'Zonal Pastor' && !is_null($stakeholder->zone_id))<span style="color:blue">Zonal Pastor, </span>{{ $stakeholder->zone->name ?? 'N/A' }}@endif
                                                 @if($stakeholder->role == 'Field Pastor' && !is_null($stakeholder->field_id)) <span style="color:blue">Field Pastor, </span>{{ $stakeholder->field->name ?? 'N/A' }}@endif
                                                 @if($stakeholder->role == 'Secretariat')Official @endif

@@ -14,4 +14,9 @@ class StakeholderQuestionSection extends Model
     {
         return $this->hasMany(StakeholderQuestionSubSection::class, 'section_id');
     }
+
+    public function scopeIsActive($query)
+    {
+        return $query->where('status', 1);
+    }
 }

@@ -15,7 +15,7 @@
                 <li class=" nav-item {{ Request::is('reports*') ? 'active' : '' }}"><a href="{{ route('stakeholders.dashboard') }}"><i class="fa fa-desktop" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Dashboard</span></a>
                 </li>
                                   
-                <li class=" nav-item {{ Request::is('reports*') ? 'active' : '' }}"><a href="{{ route('stakeholders.dashboard') }}"><i class="fa fa-file" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Digital Reports</span></a>
+                <li class=" nav-item {{ Request::is('stakeholders.reports*') ? 'active' : '' }}"><a href="{{ route('stakeholders.reports.index') }}"><i class="fa fa-file" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Digital Reports</span></a>
                 </li>
                                 
                 <li class=" nav-item {{ Request::is('stakeholders/payment*') ? 'active' : '' }}"><a href=""><i class="fa fa-money"></i>Proof of Payment</span></a>

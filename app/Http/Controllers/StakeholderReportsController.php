@@ -2,17 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Zone;
+use App\Models\Field;
+use App\Models\Chapter;
 use App\Models\Reports;
 use App\Models\Setting;
 use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use App\Mail\NotificationEmail;
+use App\Models\StakeholderReport;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Models\StakeholderReportAnswer;
 use App\Models\StakeholderReportQuestion;
 use App\Models\StakeholderQuestionSection;
+use App\Services\ReportNotificationService;
 
 class StakeholderReportsController extends Controller
 {
@@ -21,9 +27,128 @@ class StakeholderReportsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $user = Auth::guard('stakeholder')->user();
+        $role = $user->role;
         
+        // Base queries
+        $chapters = Chapter::query();
+        $zones = Zone::query();
+        $fields = Field::query();
+
+        // Scope variables for filtering reports
+        $chapterIds = collect();
+        $zoneIds = collect();
+        $fieldIds = collect();
+
+        /** =====================
+         * ROLE-BASED SCOPING
+         * ===================== */
+        if (in_array($role, ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary'])) {
+            $chapterIds = collect([$user->chapter_id]);
+            $zoneIds = collect([$user->zone_id]);
+            $fieldIds = collect([$user->field_id]);
+        } elseif ($role === 'Zonal Pastor') {
+            $zoneIds = collect([$user->zone_id]);
+
+            // All chapters under this zone
+            $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
+
+            // Fields that contain this zone
+            $fieldIds = Field::whereHas('zones', fn($q) => $q->where('id', $user->zone_id))
+                ->pluck('id');
+        } elseif ($role === 'Field Pastor') {
+            $fieldIds = collect([$user->field_id]);
+
+            // Zones under this field
+            $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
+
+            // Chapters under all zones in this field
+            $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
+        }
+
+        // Secretariat → full access (no scoping)
+        elseif ($role === 'Secretariat') {
+            $chapterIds = Chapter::pluck('id');
+            $zoneIds = Zone::pluck('id');
+            $fieldIds = Field::pluck('id');
+        }
+
+        /** =====================
+         * FILTER REPORTS BY SCOPED IDS
+         * ===================== */
+        $reports = StakeholderReport::query()
+            ->when($chapterIds->isNotEmpty(), fn($q) => $q->whereIn('chapter_id', $chapterIds))
+            ->when($zoneIds->isNotEmpty(), fn($q) => $q->whereIn('zone_id', $zoneIds))
+            ->when($fieldIds->isNotEmpty(), fn($q) => $q->whereIn('field_id', $fieldIds));
+
+        /** =====================
+         * DATE FILTERS
+         * ===================== */
+        if ($request->filled('from_date')) {
+            $reports->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $reports->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        /** =====================
+         * MANUAL FILTERS
+         * ===================== */
+        if ($request->filled('chapter_filter')) {
+            $reports->where('chapter_id', $request->chapter_filter);
+        }
+
+        if ($request->filled('zone_filter')) {
+            $reports->where('zone_id', $request->zone_filter);
+        }
+
+        if ($request->filled('field_filter')) {
+            $reports->where('field_id', $request->field_filter);
+        }
+
+        /** =====================
+         * STATUS FILTERS
+         * ===================== */
+        if ($request->filled('status_filter')) {
+            $statusMap = [
+                'field_pending' => ['field_status', 0],
+                'field_approved' => ['field_status', 1],
+                'field_rejected' => ['field_status', 2],
+                'zone_pending' => ['zone_status', 0],
+                'zone_approved' => ['zone_status', 1],
+                'zone_rejected' => ['zone_status', 2],
+                'national_pending' => ['national_status', 0],
+                'national_approved' => ['national_status', 1],
+                'national_rejected' => ['national_status', 2],
+            ];
+
+            if (isset($statusMap[$request->status_filter])) {
+                [$column, $value] = $statusMap[$request->status_filter];
+                $reports->where($column, $value);
+            }
+        }
+
+        /** =====================
+         * EXECUTE QUERIES
+         * ===================== */
+        $reports = $reports->with(['chapter', 'zone', 'field'])
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        $chapters = $chapters->whereIn('id', $chapterIds)->orderBy('name')->get();
+        $zones = $zones->whereIn('id', $zoneIds)->orderBy('name')->get();
+        $fields = $fields->whereIn('id', $fieldIds)->orderBy('name')->get();
+
+        /** =====================
+         * REDIRECT FOR FINANCIAL SECRETARY
+         * ===================== */
+        if ($role === 'Financial Secretary') {
+            return redirect(route('stakeholderpayment.index'));
+        }
+        return view('stakeholder.index', compact('reports', 'chapters', 'fields', 'zones'));
     }
 
     /**
@@ -37,7 +162,7 @@ class StakeholderReportsController extends Controller
         $user = Auth::guard('stakeholder')->user();
         $chapter = $user->chapter;
 
-        $sections = StakeholderQuestionSection::with([
+        $sections = StakeholderQuestionSection::isActive()->with([
             'subsections.questions' => function ($query) {
                 $query->orderBy('order');
             }
@@ -68,29 +193,34 @@ class StakeholderReportsController extends Controller
         $checks = $this->checks($stakeholder);
         
         // Validate the form data
-        // $validated = $request->validate([
-        //     'responses' => 'required|array',
-        //     'responses.*' => 'nullable',
-        //     'confirm_information' => 'accepted',
-        // ]);
+        $validated = $request->validate([
+            'responses' => 'required|array',
+            'responses.*' => 'nullable',
+            // 'confirm_information' => 'accepted',
+        ]);
 
+        $chapter = Chapter::with('zone:id','field:id')->where('id', $stakeholder->chapter_id)->first();
+        
         DB::beginTransaction();
 
         try {
             // Build report meta data
             $reportData = [
                 'chapter_id' => $stakeholder->chapter_id,
-                'zone_id' => $stakeholder->zone_id,
-                'field_id' => $stakeholder->field_id,
-                'year' => date('Y'),
-                'month' => date('n'),
+                'zone_id' => $stakeholder->zone_id ?? $chapter?->zone->id,
+                'field_id' => $stakeholder->field_id ?? $chapter?->field->id,
+                'stakeholder_id' => $stakeholder->id,
+                'session' => $validated['responses']['session'] ?? null,
+                'year' => $validated['responses']['year'] ?? null,
+                'month' => $validated['responses']['month'] ?? null,
+
             ];
-            dd($reportData, $stakeholder);
+
             // Create the main report record
             $report = StakeholderReport::create($reportData);
-
+            
             // Save each response to StakeholderReportAnswer
-            foreach ($validated['questions'] as $slug => $answer) {
+            foreach ($validated['responses'] as $slug => $answer) {
                 $question = StakeholderReportQuestion::where('slug', $slug)->first();
                 if ($question) {
                     StakeholderReportAnswer::create([
@@ -101,18 +231,8 @@ class StakeholderReportsController extends Controller
                 }
             }
 
-            // Send notification email
-            if ($report->zone && $report->zone->stakeholder) {
-                $mailData = [
-                    'type' => 'zone',
-                    'addressee' => $report->zone->stakeholder->name,
-                    'chapter' => $report->chapter->name,
-                    'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year,
-                ];
-
-                Mail::to($report->zone->stakeholder->email)->send(new NotificationEmail($mailData));
-            }
-
+            ReportNotificationService::handleReportSubmissionSubmission($report, $stakeholder, 'submit');
+            
             DB::commit();
 
             return redirect(route('stakeholder.dashboard'))->with('message', 'Report saved successfully');
@@ -161,31 +281,38 @@ class StakeholderReportsController extends Controller
      * @param  \App\Reports  $reports
      * @return \Illuminate\Http\Response
      */
-    public function edit(Reports $report)
+    public function edit(StakeholderReport $report)
     {
-        if($report->zone_status == 1){
-            return abort(404);
-        }        
+        $report->load('answers'); // eager load answers
         $months = $this->getMonths();
+        $user = Auth::guard('stakeholder')->user();
+        $chapter = $user->chapter;
+
+        $sections = StakeholderQuestionSection::isActive()->with([
+            'subsections.questions' => function ($query) {
+                $query->orderBy('order');
+            }
+        ])->orderBy('id')->get();
+
+        // Only used for static/default fields in the form (chapter info, month/year/session)
+        $prefillData = [
+            'chapter_name' => $chapter->name ?? '',
+            'year_established' => $chapter->year_established ?? '',
+            'president_name' => optional($chapter->stakeholders->where('role', 'Chapter President')->first())->name ?? '',
+        ];
+
+        // Prepare answers array keyed by question_slug for edit mode
+        $answersData = [];
+        if ($report->answers) {
+            foreach ($report->answers as $answer) {
+                $decoded = json_decode($answer->answer, true);
+                $answersData[$answer->question_slug] = $decoded ?? $answer->answer;
+            }
+        }
         
-
-        if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' || Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
-            $editStatus = 'readonly';
-        }
-
-        if(Auth::guard('stakeholder')->user()->role == 'President'){
-
-            $editStatus = '';
-        }
-
-        if(Auth::guard('stakeholder')->user()->role == 'Secretariat'){
-
-            $editStatus = 'readonly';
-        }
-
-
-        return view('stakeholder.update_report', compact('months', 'report', 'editStatus'));
+        return view('stakeholder.create', compact('months', 'report', 'sections', 'prefillData', 'answersData'));
     }
+
 
     /**
      * Update the specified resource in storage.
