@@ -1,692 +1,318 @@
 @extends('layouts.stakeholderdashboard')
-@section('title', 'Add new report')
+
+@section('extra_styles')
+<style>
+    .section-card {
+        background-color: #f9f9f9;
+        border: 1px solid #d1d1d1;
+        border-radius: 8px;
+        margin-top: 25px;
+        padding: 10px;
+    }
+
+    .header-section{
+        background-color: #004080;
+        color: #fff;
+        padding: 12px 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        font-size: 1.25rem;
+    }
+
+    .sub-section-card {
+        border-left: 4px solid #004080;
+        background-color: #ffffff;
+        padding: 5px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+
+    .sub-section{
+        color: #004080;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+
+    label {
+        margin-top: 15px !important;
+        font-weight: 500;
+    }
+
+    .totals-row {
+        font-weight: bold;
+        background-color: #f2f2f2;
+    }
+
+    .dynamic-table input, .income-table input {
+        height: calc(1.8em + 0.75rem + 2px);
+        padding: 0.375rem 0.75rem;
+    }
+
+    .dynamic-table th, .income-table th {
+        background-color: #e9ecef;
+        text-align: center;
+    }
+
+    .dynamic-table td, .income-table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        margin-bottom: 20px;
+    }
+</style>
+@endsection
+
+@section('title', 'Add/Edit Report')
+
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('stakeholder.dashboard') }}">Report</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('stakeholders.dashboard') }}">Report</a></li>
 @endsection
+
 @section('active')
-<li class="breadcrumb-item">Add New report</li>
+<li class="breadcrumb-item">{{ isset($report) ? 'Edit Report' : 'Add New Report' }}</li>
 @endsection
+
 @section('content')
 <div class="content-body">
-    <!-- Basic Inputs start -->
     <section id="basic-input">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4 class="card-title">Add New Report</h4>
-                        @include('includes.alerts')
-                    </div>
-                    <div class="card-content">
-                        <div class="card-body">
-                            <form action="{{ route('reports.store') }}"
-                                onsubmit="return confirm('You are about to submit a new report, action is irreversible');"
-                                method="POST" enctype="multipart/form-data">
-                                @csrf
-                              
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 1: <br>Report Period </h6></label>
+        <form action="{{ isset($report) ? route('stakeholders.reports.update', $report->id) : route('stakeholders.reports.store') }}"
+              method="POST" enctype="multipart/form-data"
+              onsubmit="return confirm('You are about to submit this report, action is irreversible');">
+            @csrf
+            @if(isset($report))
+                @method('PUT')
+            @endif
+
+            @foreach($sections as $section)
+            <div class="section-card">
+                <h3 class="header-section">{{ $section->name }}</h3>
+
+                @foreach($section->subsections as $subsection)
+                <div class="sub-section-card">
+                    <h5 class="sub-section">{{ $subsection->name }}</h5>
+
+                    <div class="row">
+                    @foreach($subsection->questions as $question)
+                        @php
+                            $value = old('responses.' . $question->slug) 
+                                ?? ($prefillData[$question->slug] ?? '');
+                        @endphp
+
+                        <div class="{{ $question->width_class ?? 'col-md-6' }} mb-1">
+                            <label for="{{ $question->slug }}">
+                                {{ $question->label }}
+                                @if($question->is_required) <span class="text-danger">*</span> @endif
+                            </label>
+
+                            @switch($question->type)
+                                @case('text')
+                                @case('year')
+                                @case('month')
+                                @case('number')
+                                @case('date')
+                                    <input type="{{ $question->type }}" 
+                                           class="form-control" 
+                                           id="{{ $question->slug }}" 
+                                           name="responses[{{ $question->slug }}]" 
+                                           value="{{ $value }}"
+                                           @if($question->is_required) required @endif>
+                                    @break
+
+                                @case('textarea')
+                                    <textarea class="form-control" 
+                                              id="{{ $question->slug }}" 
+                                              name="responses[{{ $question->slug }}]" 
+                                              rows="3"
+                                              @if($question->is_required) required @endif>{{ $value }}</textarea>
+                                    @break
+
+                                @case('select')
+                                    <select class="form-select" 
+                                            id="{{ $question->slug }}" 
+                                            name="responses[{{ $question->slug }}]"
+                                            @if($question->is_required) required @endif>
+                                        <option value="">Select...</option>
+                                        @foreach($question->options as $optKey => $optLabel)
+                                            <option value="{{ $optKey }}" {{ $value == $optKey ? 'selected' : '' }}>
+                                                {{ $optLabel }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @break
+
+                                @case('dynamic_table')
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered dynamic-table" data-slug="{{ $question->slug }}">
+                                            <thead>
+                                                <tr>
+                                                    @foreach($question->options as $col)
+                                                        <th>{{ $col['label'] ?? $col }}</th>
+                                                    @endforeach
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @php
+                                                    $rows = old('responses.' . $question->slug, $prefillData[$question->slug] ?? [[]]);
+                                                @endphp
+                                                {{-- @foreach($rows as $row)
+                                                <tr>
+                                                    @foreach($question->options as $col)
+                                                        @php $colLabel = $col['label'] ?? $col; @endphp
+                                                        <td>
+                                                            <input type="{{ $col['type'] ?? 'text' }}" 
+                                                                   name="responses[{{ $question->slug }}][][{{ $colLabel }}]" 
+                                                                   class="form-control"
+                                                                   value="{{ $row[$colLabel] ?? '' }}"
+                                                                   @if(!empty($col['required'])) required @endif>
+                                                        </td>
+                                                    @endforeach
+                                                    <td>
+                                                        <span style="color:green" class="add-row"><i class="fa fa-plus"></i></span>
+                                                        <span style="color:red" class="remove-row"><i class="fa fa-minus"></i></span>
+                                                    </td>
+                                                </tr>
+                                                @endforeach --}}
+                                                @foreach($rows as $rowIndex => $row)
+                                                    <tr>
+                                                        @foreach($question->options as $col)
+                                                            @php $colLabel = $col['label'] ?? $col; @endphp
+                                                            <td>
+                                                                <input type="{{ $col['type'] ?? 'text' }}" 
+                                                                    name="responses[{{ $question->slug }}][{{ $rowIndex }}][{{ $colLabel }}]" 
+                                                                    class="form-control"
+                                                                    value="{{ $row[$colLabel] ?? '' }}"
+                                                                    @if(!empty($col['required'])) required @endif>
+                                                            </td>
+                                                        @endforeach
+                                                        <td>
+                                                            <button type="button" class="btn btn-sm btn-success add-row">+</button>
+                                                            <button type="button" class="btn btn-sm btn-danger remove-row">-</button>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <div class="col-md-3 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="session">Academic Session</label>
-                                                <input type="text" value="{{ old('session') }}" class="form-control" name="session"
-                                                id="session" placeholder="e.g. 2020/2021" required>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-3 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="semester">Semester</label>
-                                            <select class="form-control" name="semester"
-                                                id="semester" required>
-                                                <option value="">--Select Option--</option>
-                                                <option value="1">1st</option>
-                                                <option value="2">2nd</option>
-                                                <option value="3">3rd</option>
-                                            </select>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-3 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="day">Day</label>
-                                            <select class="form-control" name="day"
-                                                id="day" required>
-                                                <option value="">--Select Option--</option>
-                                                @foreach(range(1,31) as $day)
-                                                <option value="{{ $day}}" {{ old('day') == $day ? 'selected' : '' }}>{{ $day }}</option>
+                                    @break
+
+                                @case('income_table')
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered income-table" data-slug="{{ $question->slug }}">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Week</th>
+                                                    @foreach($question->options['columns'] as $col)
+                                                        <th>{{ $col }}</th>
+                                                    @endforeach
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($question->options['rows'] as $week)
+                                                <tr>
+                                                    <td>{{ $week }}</td>
+                                                    @foreach($question->options['columns'] as $col)
+                                                    <td>
+                                                        @if($col['type'] == 'Remarks')
+                                                        <input type="text" class="form-control"
+                                                               name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
+                                                               value="{{ $value[$week][$col] ?? '' }}">
+                                                        @else
+                                                        <input type="number" min="0" step="0.01" class="form-control numeric-input"
+                                                               name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
+                                                               value="{{ $value[$week][$col] ?? '' }}">
+                                                        @endif
+                                                    </td>
+                                                    @endforeach
+                                                </tr>
                                                 @endforeach
-                                            </select>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-3 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="month">Month</label>
-                                            <select class="form-control" name="month"
-                                                id="month" required>
-                                                <option value="">--Select Option--</option>
-                                                @foreach($months as $month=>$value)
-                                                <option value="{{ $value }}" {{ old('month') == $value ? 'selected' : '' }}>{{ $month }}</option>
-                                                @endforeach
-                                            </select>
-                                        </fieldset>
-                                    </div>
-                                    
-                                </div>
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 2:<br> CHAPTER DETAILS </h6></label>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="president_name">Name of President</label>
-                                                <input type="text" name="president_name" class="form-control" value="{{ old('president_name') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="president_number">Number of President</label>
-                                                <input type="text" name="president_number" class="form-control" value="{{ old('president_number') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="gen_sec_name">Name of General Secretary</label>
-                                                <input type="text" name="gen_sec_name" class="form-control" value="{{ old('gen_sec_name') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="gen_sec_number">Number of General Secretary</label>
-                                                <input type="text" name="gen_sec_number" class="form-control" value="{{ old('gen_sec_number') }}">
-                                        </fieldset>
-                                    </div>
-                                    
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="evang_sec_name">Name of Evangelism Secretary</label>
-                                                <input type="text" name="evang_sec_name" class="form-control" value="{{ old('evang_sec_name') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="evang_sec_number">Number of Evangelism Secretary</label>
-                                                <input type="text" name="evang_sec_number" class="form-control" value="{{ old('evang_sec_number') }}">
-                                        </fieldset>
-                                    </div>
-
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="fin_sec_name">Name of Financial Secretary</label>
-                                                <input type="text" name="fin_sec_name" class="form-control" value="{{ old('fin_sec_name') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="fin_sec_number">Number of Financial Secretary</label>
-                                                <input type="text" name="fin_sec_number" class="form-control" value="{{ old('fin_sec_number') }}">
-                                        </fieldset>
-                                    </div>
-
-                                </div>
-                                    <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 3: <br>WEEKLY PROGRAMS - Bible Study </h6></label>
-                                    </div>                        
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="bible_study_venue">Bible study Venue</label>
-                                                <input type="text" name="bible_study_venue" class="form-control" value="{{ old('bible_study_venue') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="bible_study_time">Bible study Time</label>
-                                                <input type="time" name="bible_study_time" class="form-control" value="{{ old('bible_study_time') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="bible_study_highest_attendance">Bible study Highest attendance</label>
-                                                <input type="number" min="1" name="bible_study_highest_attendance" class="form-control" value="{{ old('bible_study_highest_attendance') }}" required>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="bible_study_lowest_attendance">Bible study lowest attendance</label>
-                                                <input type="number" min="1" name="bible_study_lowest_attendance" class="form-control" value="{{ old('bible_study_lowest_attendance') }}">
-                                        </fieldset>
-                                    </div>
-
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>WEEKLY PROGRAMS - Prayer Meeting</h6></label>
-                                    </div> 
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="prayer_meeting_venue">Prayer meeting Venue</label>
-                                                <input type="text" name="prayer_meeting_venue" class="form-control" value="{{ old('prayer_meeting_venue') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="prayer_meeting_time">Prayer Meeting Time</label>
-                                                <input type="time" name="prayer_meeting_time" class="form-control" value="{{ old('prayer_meeting_time') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="prayer_meeting_highest_attendance">Prayer Meeting Highest attendance</label>
-                                                <input type="number" min="1" name="prayer_meeting_highest_attendance" class="form-control" value="{{ old('prayer_meeting_highest_attendance') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="prayer_meeting_lowest_attendance">Prayer meeting lowest attendance</label>
-                                                <input type="number"min="1" name="prayer_meeting_lowest_attendance" class="form-control" value="{{ old('prayer_meeting_lowest_attendance') }}">
-                                        </fieldset>
-                                    </div>
-                                    
-                                </div>
-                                   
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>WEEKLY PROGRAMS - BELIEVER'S FOUNDATION CLASS </h6></label>
-                                    </div>                        
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="believer_foundation_class_venue">Believer's foundation class Venue</label>
-                                                <input type="text" class="form-control" name="believer_foundation_class_venue" value="{{ old('believer_foundation_class_venue') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="believer_foundation_class_time">Believer's foundation cass Time</label>
-                                                <input type="time" class="form-control" value="{{ old('believer_foundation_class_time') }}" name="believer_foundation_class_time">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="believer_foundation_class_highest_attendance">Believer's foundation Highest attendance</label>
-                                                <input type="number" min="1" class="form-control" name="believer_foundation_class_highest_attendance" value="{{ old('believer_foundation_class_highest_attendance') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="believer_foundation_class_lowest_attendance">Beliver foundation class lowest attendance</label>
-                                                <input type="number" min="1" class="form-control" name="believer_foundation_class_lowest_attendance" value="{{ old('believer_foundation_class_lowest_attendance') }}">
-                                        </fieldset>
-                                    </div>
-
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>WEEKLY PROGRAMS - Sunday School</h6></label>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="sunday_school_highest_attendance">Sunday school Highest attendance</label>
-                                                <input type="number" min="1" name="sunday_school_highest_attendance" class="form-control" value="{{ old('sunday_school_highest_attendance') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="sunday_school_lowest_attendance">Sunday School lowest attendance</label>
-                                                <input type="number"min="1" name="sunday_school_lowest_attendance" class="form-control" value="{{ old('sunday_school_lowest_attendance') }}">
-                                        </fieldset>
-                                    </div>
-
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>WEEKLY PROGRAMS - Sunday Worship Service</h6></label>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="sunday_highest_attendance">Sunday Worship Highest attendance</label>
-                                                <input type="number" min="1" name="sunday_highest_attendance" class="form-control" value="{{ old('sunday_highest_attendance') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="sunday_lowest_attendance">Sunday lowest attendance</label>
-                                                <input type="number"min="1" name="sunday_lowest_attendance" class="form-control" value="{{ old('sunday_lowest_attendance') }}">
-                                        </fieldset>
-                                    </div>
-                                    
-                                </div>
-                              
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 4: <br>VISIT TO GOFAMINT ASSEMBLY </h6></label>
-                                    </div>                        
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="visit_to_assembly_venue">Venue</label>
-                                                <input type="text" name="visit_to_assembly_venue" class="form-control" value="{{ old('visit_to_assembly_venue') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="visit_to_assembly_time">Time</label>
-                                                <input type="time" name="visit_to_assembly_time" class="form-control" value="{{ old('visit_to_assembly_time') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="visit_to_assembly_fellowship_attendance">Fellowship attendance</label>
-                                                <input type="number" name="visit_to_assembly_fellowship_attendance" min="1" class="form-control" value="{{ old('visit_to_assembly_fellowship_attendance') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="visit_to_assembly_fellowship_activity">Fellowship's activity in the assembly</label><br>
-                                            <textarea name="visit_to_assembly_fellowship_activity" id="visit_to_assembly_fellowship_activity" style="width:100%" rows="5" value="{{ old('visit_to_assembly_fellowship_activity') }}">{{ old('visit_to_assembly_fellowship_activity') }}</textarea>
-                                        </fieldset>
-                                    </div>
-                                </div>
-
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 5: <br>SPECIAL PROGRAMS </h6></label>
-                                    </div>                        
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="special_programs">Name & Objectives - List each on a new line with Date/Venue/Time/Attendance</label><br>
-                                            <textarea name="special_programs" id="special_programs" style="width:100%" rows="5" value="{{ old('special_programs') }}">{{ old('special_programs') }}</textarea>
-                                        </fieldset>
-                                    </div>
-                                </div>
-
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 6: <br>HOLY COMMUNION SERVICE</h6></label>
-                                    </div>  
-                                    <div class="col-md-12 col-sm-12">
-                                        <label for="">Any Holy communion service conducted?</label>
-                                        <fieldset class="form-group">
-                                            <select name="holy_communion" id="holy_communion" class="form-control communion">
-                                                <option value="No">No</option>
-                                                <option value="Yes">Yes</option>
-                                            </select>
-                                        </fieldset>
-                                    </div>
-                                    <div class="communion-details">                      
-                                        <div class="col-md-12 col-sm-12">
-                                            <fieldset class="form-group">
-                                                <label for="holy_communion_minister">Name of minister</label><br>
-                                                <input type="text" name="holy_communion_minister" class="form-control" value="{{ old('holy_communion_minister') }}">
-                                            </fieldset>
-                                        </div>
-                                        <div class="col-md-12 col-sm-12">
-                                            <fieldset class="form-group">
-                                                <label for="holy_communion_minister_rank">Rank of minister</label><br>
-                                                <input type="text" class="form-control" name= "holy_communion_minister_rank" value="{{ old('holy_communion_minister_rank') }}">
-                                            </fieldset>
-                                        </div>
-                                    
-                                        <div class="col-md-12 col-sm-12">
-                                            <fieldset class="form-group">
-                                                <label for="holy_communion_attendance">Holy Communion Attendance</label><br>
-                                                <input type="text" class="form-control" name="holy_communion_attendance" value="{{ old('holy_communion_attendance') }}">
-                                            </fieldset>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 7: <br>EVANGELISM</h6></label>
-                                    </div>  
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="">Give a brief report of the fellowship corporate evangelism this month</label><br>
-                                            <textarea name="evangelism_report" id="evangelism_report" style="width:100%" rows="5" value="{{ old('evangelism_report') }}">{{ old('evangelism_report') }}</textarea>
-                                        </fieldset>
-                                    </div>
-                                    
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="evangelism_number_of_souls">No of souls won</label><br>
-                                            <input type="number" name="evangelism_number_of_souls" class="form-control" value="{{ old('evangelism_number_of_souls') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="evangelism_number_of_souls_who_joined_fellowship">No of souls who joined the fellowship</label><br>
-                                            <input type="number" name="evangelism_number_of_souls_who_joined_fellowship" class="form-control" value="{{ old('evangelism_number_of_souls_who_joined_fellowship') }}">
-                                        </fieldset>
-                                    </div>
-                                    
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="evangelism_number_of_converts_baptized">No of converts baptize</label><br>
-                                            <input type="number" name="evangelism_number_of_converts_baptized" class="form-control" value="{{ old('evangelism_number_of_converts_baptized') }}">
-                                        </fieldset>
-                                    </div>
-                                </div>
-                                {{-- Offering --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 8: <br>OFFERING</h6></label>
-                                    </div>  
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="bible_study_offering">Total Bible Study Offering for the Month (&#8358;)</label><br>
-                                            <input type="number" min="1" step=".01" class="form-control" name="bible_study_offering" id="bible_study_offering" value="{{ old('bible_study_offering') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="prayer_meeting_offering">Total Prayer Meeting Offering for the Month (&#8358;)</label><br>
-                                            <input type="number" min="1" step=".01" class="form-control" name="prayer_meeting_offering" id="prayer_meeting_offering" value="{{ old('prayer_meeting_offering') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="special_program_offering">Total Special Programme Offering (&#8358;)</label><br>
-                                            <input type="number" min="1" step=".01" class="form-control" name="special_program_offering" id="special_program_offering" value="{{ old('special_program_offering') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_special_program_offering">Other Special Programme Offering (&#8358;)</label><br>
-                                            <input type="number" min="1" class="form-control" name="other_special_program_offering" id="other_special_program_offering" value="{{ old('other_special_program_offering') }}">
-                                            
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="thanksgiving_offering">Thanksgiving Offering (First Sunday Service) for the Month (&#8358;)</label><br>
-                                            <input type="number" min="1" step=".01" class="form-control" name="thanksgiving_offering" id="thanksgiving_offering" value="{{ old('thanksgiving_offering') }}">
-                                            
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="total_sunday_worship_offering">Total Sunday worship offering (excluding First Sunday) (&#8358;)</label><br>
-                                            <input type="number" step=".01" class="form-control" name="total_sunday_worship_offering" id="total_sunday_worship_offering" value="{{ old('total_sunday_worship_offering') }}">
-                                            
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="grand_total_offering">Grand Total Offering (&#8358;)</label><br>
-                                            <input type="number" class="form-control" name="grand_total_offering" id="grand_total_offering" step=".01" value="{{ old('grand_total_offering') }}">
-                                        </fieldset>
-                                    </div>
-                                </div>
-
-                                {{-- Tithe --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 9: <br>TITHE</h6></label>
-                                    </div>  
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="president_tithe">President's Tithe (&#8358;)</label><br>
-                                            <input type="number" step=".01" min="1" class="form-control" name="president_tithe" id="president_tithe" value="{{ old('president_tithe') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="total_executive_tithe">Total Executive Tithe (&#8358;)</label><br>
-                                            <input type="number" min="1" step=".01" class="form-control" name="total_executive_tithe" id="total_executive_tithe" value="{{ old('total_executive_tithe') }}">
-                                            
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="total_workers_tithe">Total Workers Tithe (&#8358;)</label><br>
-                                            <input type="number" min="1" step=".01" class="form-control" name="total_workers_tithe" id="total_workers_tithe" value="{{ old('total_workers_tithe') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="total_members_tithe">Total Members Tithe (&#8358;)</label><br>
-                                            <input type="number" min="1" step=".01" class="form-control" name="total_members_tithe" id="total_members_tithe" value="{{ old('total_members_tithe') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="grand_total_tithe">Grand Total Tithe (&#8358;)</label><br>
-                                            <input type="number" min="1" step=".01" class="form-control" name="grand_total_tithe" id="grand_total_tithe" value="{{ old('grand_total_tithe') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="grand_total_tithe">Tithe of Tithe (to be remitted to National Secretariat) (&#8358;)</label><br>
-                                            <input type="number" min="1" step=".01" class="form-control" name="tithe_of_tithe" id="tithe_of_tithe" value="{{ old('tithe_of_tithe') }}">
-                                        </fieldset>
-                                    </div>
-                                </div>
-
-                                {{-- Other Chapter levies --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 10: <br>OTHER CHAPTER LEVIES/CONTRIBUTION</h6></label>
-                                    </div>  
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_purpose">Purpose</label><br>
-                                            <input type="text" class="form-control" name="other_levies_purpose" id="other_levies_purpose" value="{{ old('other_levies_purpose') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_projection">Projection</label><br>
-                                            <input type="text" class="form-control" name="other_levies_projection" id="other_levies_projection" value="{{ old('other_levies_projection') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_period_of_collection">Period of Collection</label><br>
-                                            <input type="text" class="form-control" name="other_levies_period_of_collection" id="other_levies_period_of_collection" value="{{ old('other_levies_period_of_collection') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_total_amount">Total Amount collected this Month (&#8358;)</label><br>
-                                            <input type="number" step=".01" min="1" class="form-control" name="other_levies_total_amount" id="other_levies_total_amount" value="{{ old('other_levies_total_amount') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="other_levies_total_accumulation">Total Accumulation since Program began (&#8358;)</label><br>
-                                            <input type="number" step=".01" min="1" class="form-control" name="other_levies_total_accumulation" id="other_levies_total_accumulation" value="{{ old('other_levies_total_accumulation') }}">
-                                        </fieldset>
-                                    </div>
-                                </div>
-
-                                {{-- Expenses --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 11: <br>EXPENSES</h6></label>
-                                    </div>  
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="capital_projects">Capital Projects (&#8358;)</label><br>
-                                            <input type="number" class="form-control" step=".01" min="1" name="capital_projects" id="capital_projects" value="{{ old('capital_projects') }}">
-                                            
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="recurrent_expenses">Recurrent Expenses (&#8358;)</label><br>
-                                            <input type="number" class="form-control" step=".01" min="1" name="recurrent_expenses" id="recurrent_expenses" value="{{ old('recurrent_expenses') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="maintenance">Maintenance (&#8358;)</label><br>
-                                            <input type="number" class="form-control" step=".01" min="1" name="maintenance" id="maintenance" value="{{ old('maintenance') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="misc">Miscellaneous (&#8358;)</label><br>
-                                            <input type="number" class="form-control" step=".01" min="1" name="misc" id="misc" value="{{ old('misc') }}">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="expenses_grand_total ">Grand Total (&#8358;)</label><br>
-                                            <input type="number" class="form-control" step=".01" min="1" name="expenses_grand_total " id="expenses_grand_total " value="{{ old('expenses_grand_total ') }}">
-                                        </fieldset>
-                                    </div>
-                                    
-        
-                                </div>
-
-                                {{-- Summary --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 12: <br>SUMMARY</h6></label>
-                                    </div>  
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="spiritual_state">Give a brief summary of the spiritual state of the fellowship (may include outstanding testimonies) in the month</label><br>
-                                            <textarea name="spiritual_state" id="spiritual_state" style="width:100%" rows="5" value="{{ old('spiritual_state') }}">{{ old('spiritual_state') }}</textarea>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="challenges">Any Challenge(s) or development which you want the NCP to be aware of </label><br>
-                                            <textarea name="challenges" id="challenges" style="width:100%" rows="5" value="{{ old('challenges') }}">{{ old('challenges') }}</textarea>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="proposed_capital_project">Any proposed Capital Project </label><br>
-                                            <textarea name="proposed_capital_project" id="proposed_capital_project" style="width:100%" rows="5" value="{{ old('proposed_capital_project') }}">{{ old('proposed_capital_project') }}</textarea>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="completed_capital_project">Any completed Capital Project:  </label><br>
-                                            <textarea name="completed_capital_project" id="completed_capital_project" style="width:100%" rows="5" value="{{ old('completed_capital_project') }}">{{ old('completed_capital_project') }}</textarea>
-                                        </fieldset>
-                                    </div>
-                                </div>
-
-                                {{-- Signatures and Dates --}}
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 13: <br>SIGNATURES AND DATES</h6></label>
-                                    </div>  
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label>President's Signature</label><br>
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->signature }}" style="width:60px" alt="">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label>Gen Sec's Signature</label><br>
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->gen_sec_signature }}" style="width:60px" alt="">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label>Fin Sec's Signature</label><br>
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->fin_sec_signature }}" style="width:60px" alt="">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label>Evang Sec's Signature</label><br>
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->evang_sec_signature }}" style="width:60px" alt="">
-                                        </fieldset>
-                                    </div>
-
-                                    @if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor')
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>ZONAL PASTOR APPROVAL</h6></label>
-                                    </div>  
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="zonal_pastor_approval">I </label>
-                                            <input type="text" name="zonal_pastor_approval" value="{{  Auth::guard('stakeholder')->user()->name }}"> strongly affirm that the above information is true and agrees with my own records. 
-                                        </fieldset>
-                                    </div>
-                                    @endif
-                                    
-                                </div>
-
-                                {{-- Official use only --}}
-                                @if(Auth::guard('stakeholder')->user()->role == 'Field Pastor' || Auth::guard('stakeholder')->user()->role == 'Secretary' )
-                                <hr style="border-top: 1px solid red;">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <label class="sections"><h6>Section 14: <br>OFFICIAL USE</h6></label>
-                                    </div>  
-                                   
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="field_pastor_comment">FIELD PASTOR COMMENT</label>
-                                            <textarea name="field_pastor_comment" id="field_pastor_comment" style="width:100%" rows="5" value="{{ old('field_pastor_comment') }}">{{ old('field_pastor_comment') }}</textarea>
-                                        </fieldset>
-                                    </div>
-                                    @if(Auth::guard('stakeholder')->user()->role == 'Secretary' )
-                                    <div class="col-md-12 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="ncp_comment">NCP's COMMENT</label>
-                                            <textarea name="ncp_comment" id="ncp_comment" style="width:100%" rows="5" value="{{ old('ncp_comment') }}">{{ old('ncp_comment') }}</textarea>
-                                        </fieldset>
-                                    </div>
-                                    @endif
-                                </div>
-                                @endif
-                            </div>
-                        
-                           
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <button class="btn btn-primary" style="width:100%" type="submit">Send Report</button>
-                                </div>
-                            </div>
-                            </form>
-
+                                            </tbody>
+                                            <tfoot>
+                                                <tr class="totals-row">
+                                                    <td>Totals</td>
+                                                    @foreach($question->options['columns'] as $col)
+                                                        <td class="total-cell" data-column="{{ $col }}">0</td>
+                                                    @endforeach
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                    @break
+                            @endswitch
                         </div>
+                    @endforeach
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @endforeach
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="form-check">
+                        <input type="checkbox" name="confirm_information" value="1" class="form-check-input" id="confirmInfo" required>
+                        <label class="form-check-label fw-semibold" for="confirmInfo">
+                            I hereby confirm that all information provided in this report is true, current, and accurate to the best of my knowledge.
+                        </label>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <div class="mt-4">
+                <button class="btn btn-primary w-100" type="submit">{{ isset($report) ? 'Update Report' : 'Submit' }}</button>
+            </div>
+        </form>
+    </section>
 </div>
-</section>
-<!-- Basic Inputs end -->
-</div>
-<script> 
-$(document).ready(function(){
-    var value = $('#communion').find(':selected');
-    console.log(value);
-    alert(value);
-});
-})
 
+@endsection
 
-    $('#communion').on('change', function(){
-        alert('as');
-        console.log($('#communion').val());
-           
-            if($('#communion').val()=='Yes'){
-                $('.communion-details').css('display','block');
-               
-            }else if($('#communion').val()=='No'){
-                $('.communion-details').css('display','none');
-               
-            }
-    }); 
-    
+@section('extra_scripts')
+<script>
+    // Dynamic table row add/remove
+    $(document).on('click', '.add-row', function(){
+        let table = $(this).closest('table');
+        let newRow = table.find('tbody tr:first').clone();
+        newRow.find('input').val('');
+        table.find('tbody').append(newRow);
+        recalcTotals(table);
+    });
 
+    $(document).on('click', '.remove-row', function(){
+        let table = $(this).closest('table');
+        if(table.find('tbody tr').length > 1){
+            $(this).closest('tr').remove();
+            recalcTotals(table);
+        }
+    });
+
+    // Income Table Totals
+    function recalcTotals(table){
+        if(table.hasClass('income-table')){
+            table.find('tfoot td.total-cell').each(function(){
+                let col = $(this).data('column');
+                let sum = 0;
+                table.find('tbody tr').each(function(){
+                    let val = parseFloat($(this).find('input[name*="['+col+']"]').val()) || 0;
+                    sum += val;
+                });
+                $(this).text(sum.toFixed(2));
+            });
+        }
+    }
+
+    $(document).on('input', '.income-table .numeric-input', function(){
+        let table = $(this).closest('table');
+        recalcTotals(table);
+    });
+
+    // Initialize totals on page load
+    $('.income-table').each(function(){
+        recalcTotals($(this));
+    });
 </script>
-
 @endsection

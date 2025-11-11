@@ -155,7 +155,7 @@
                         </tr>
                         <tr><td><span class="data-heading">Number of President</span> : {{ $report->president_number }}</td></tr>
                         <tr><td><span class="data-heading">Name of General Secretary</span> : {{ $report->gen_sec_name }}</td></tr>
-                        <tr><td><span class="data-heading">Number of General Secretary</span> : {{ $report->gen_sec_bumber }}</td></tr>
+                        <tr><td><span class="data-heading">Number of General Secretary</span> : {{ $report->gen_sec_number }}</td></tr>
                         <tr><td><span class="data-heading">Name of Evangelism Secretary</span> : {{ $report->evang_sec_name }}</td></tr>
                         <tr><td><span class="data-heading">Number of Evangelism Secretary</span> : {{ $report->evang_sec_number }}</td></tr>
                         <tr><td><span class="data-heading">Name of Financial Secretary</span> : {{ $report->fin_sec_name }}</td></tr>

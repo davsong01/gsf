@@ -8,12 +8,6 @@ use App\Http\Controllers\Controller;
 
 class StakeholderLoginController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('guest')->except('logout');
-        $this->middleware('guest:stakeholder')->except('logout');;
-    }
-
     public function showStakeholderLoginForm()
     {
         return view('auth.stakeholder.login', ['url' => 'stakeholder']);
@@ -21,24 +15,30 @@ class StakeholderLoginController extends Controller
 
     public function stakeholderLogin(Request $request)
     {
-      
-        $this->validate($request, [
-            'email'   => 'required|email',
-            'password' => 'required'
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
         ]);
-       
-        if (Auth::guard('stakeholder')->attempt(['email'=>$request->email, 'password' => $request->password])) {
-            return redirect()->intended('/stakeholderdashboard')->with('message', 'welcome');
-        }
-        //Authentication failed...
-        return $this->loginFailed();
 
-    }           
+        $credentials = [
+            'email'    => $request->email,
+            'password' => $request->password,
+            'status'   => 'active', // Only allow active users
+        ];
+
+        if (Auth::guard('stakeholder')->attempt($credentials)) {
+            return redirect()->intended('/stakeholders/dashboard');
+        }
+
+        // Authentication failed
+        return $this->loginFailed();
+    }
+
 
     public function logout(Request $request)
     {
         $request->session()->invalidate();
-        return redirect(route('stakeholder.login'));
+        return redirect(route('stakeholders.login'));
     
     }
 

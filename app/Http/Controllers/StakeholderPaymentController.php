@@ -65,19 +65,19 @@ class StakeholderPaymentController extends Controller
     public function create()
     {
 		if (Auth::guard('stakeholder')->user()->role == 'President') {
-            $reports = Reports::whereDoesntHave('stakeholderpayment')->whereChapterId(Auth::guard('stakeholder')->user()->chapter_id)->orderBy('created_at', 'desc')->get();
+            $reports =  StakeholderReport::whereDoesntHave('stakeholderpayment')->whereChapterId(Auth::guard('stakeholder')->user()->chapter_id)->orderBy('created_at', 'desc')->get();
             			
 		}
         else if (Auth::guard('stakeholder')->user()->role == 'Field Pastor') {
-            $reports = Reports::whereFieldId(Auth::guard('stakeholder')->user()->field_id)->orderBy('created_at', 'desc')->get();		
+            $reports =  StakeholderReport::whereFieldId(Auth::guard('stakeholder')->user()->field_id)->orderBy('created_at', 'desc')->get();		
 		} 
 
         else if (Auth::guard('stakeholder')->user()->role == 'Zonal Pastor') {
-            $reports = Reports::whereZoneId(Auth::guard('stakeholder')->user()->zone_id)->orderBy('created_at', 'desc')->get();		
+            $reports =  StakeholderReport::whereZoneId(Auth::guard('stakeholder')->user()->zone_id)->orderBy('created_at', 'desc')->get();		
 		} 
 
         else if (Auth::guard('stakeholder')->user()->role == 'Secretariat' || Auth::guard('stakeholder')->user()->role == 'Financial Secretary') {
-            $reports = Reports::orderBy('created_at', 'desc')->get();		
+            $reports =  StakeholderReport::orderBy('created_at', 'desc')->get();		
 		} 
 
         $descriptions = $this->getDescriptions();
@@ -114,7 +114,7 @@ class StakeholderPaymentController extends Controller
             $filePath = $file . '.' . $fileextension;
         }
 
-        $report = Reports::select('chapter_id', 'zone_id', 'field_id', 'month', 'year')->whereId($data['report'])->first();
+        $report =  StakeholderReport::select('chapter_id', 'zone_id', 'field_id', 'month', 'year')->whereId($data['report'])->first();
     
         $payment = StakeholderPayment::create([
             'report_id' => $data['report'],

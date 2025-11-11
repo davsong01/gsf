@@ -43,6 +43,11 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+        'protected_uploads' => [
+            'driver' => 'local',
+            'root' => base_path('protected_uploads'), // root folder in project
+            'visibility' => 'private',
+        ],
 
         's3' => [
             'driver' => 's3',

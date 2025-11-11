@@ -32,6 +32,11 @@ class Chapter extends Model
         return $this->hasOne(Stakeholder::class);
     }
 
+    public function stakeholders()
+    {
+        return $this->hasMany(Stakeholder::class);
+    }
+
     public function zone(){
         return $this->belongsTo(Zone::class);
     }

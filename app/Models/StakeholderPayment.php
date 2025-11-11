@@ -12,7 +12,7 @@ class StakeholderPayment extends Model
     protected $guarded = [];
     
     public function report(){
-        return $this->belongsTo(Reports::class);
+        return $this->belongsTo( StakeholderReport::class);
     }
 
     public function chapter(){

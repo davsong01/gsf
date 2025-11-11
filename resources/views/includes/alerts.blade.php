@@ -8,14 +8,14 @@
 @if(session()->get('error'))
 <div class="alert alert-danger" role="alert">
       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <strong>Whoops!</strong> {{ session()->get('error')}}
+        {{ session()->get('error')}}
 </div>
 @endif
 
 @if(session()->get('any'))
 <div class="alert alert-warning" role="alert">
       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <strong>Whoops!</strong> {!! session()->get('any') !!}
+        {!! session()->get('any') !!}
 </div>
 @endif
 

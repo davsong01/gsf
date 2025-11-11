@@ -30,7 +30,7 @@
             <div class="signin-inner mt-3 mt-lg-0 bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-500">
                 @include('includes.alerts')
 
-                <form action="{{ route('stakeholder.login') }}" method="POST">
+                <form action="{{ route('stakeholders.login') }}" method="POST">
                   @csrf
                     <div class="form-group"><label for="email">Email</label>
                     <div class="input-group mb-4">

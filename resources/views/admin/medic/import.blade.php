@@ -47,7 +47,7 @@
 										<button type="button" class="close" data-dismiss="alert" aria-label="Close">
 											<span aria-hidden="true">&times;</span>
 										</button>
-										<strong>Whoops!</strong> {{ $message }}
+										  {{ $message }}
 									</div>
 									@enderror
 

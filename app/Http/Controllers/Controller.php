@@ -227,13 +227,13 @@ class Controller extends BaseController
         } else {
             $image = Image::make($image);
         }
-       
+        
         $image->save($location . '/' . $imgName);
         
         return $location . '/' . $imgName;
     }
 
-     protected function uploadFile($file, $location)
+    protected function uploadFile($file, $location)
     {
         $fileName = time() . rand(11111111, 9999999) . '.' . $file->getClientOriginalExtension();
         $file->move($location, $fileName );

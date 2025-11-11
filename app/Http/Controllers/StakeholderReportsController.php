@@ -7,11 +7,14 @@ use App\Models\Setting;
 use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use App\Mail\NotificationEmail;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Models\StakeholderReportQuestion;
+use App\Models\StakeholderQuestionSection;
 
-class ReportsController extends Controller
+class StakeholderReportsController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -31,8 +34,25 @@ class ReportsController extends Controller
     public function create()
     {
         $months = $this->getMonths();
+        $user = Auth::guard('stakeholder')->user();
+        $chapter = $user->chapter;
 
-        return view('stakeholder.create', compact('months'));
+        $sections = StakeholderQuestionSection::with([
+            'subsections.questions' => function ($query) {
+                $query->orderBy('order');
+            }
+        ])->orderBy('id')->get();
+
+        $prefillData = [
+            'chapter_name' => $chapter->name ?? '',
+            'month' => date('m'),
+            'year' => date('Y'),
+            'year_established' => $chapter->year_established ?? '',
+            'session' => date('Y') - 1 . '/'. date('Y'),
+            'president_name' => optional($chapter->stakeholders->where('role', 'Chapter President')->first())->name ?? '',
+        ];
+        
+        return view('stakeholder.create', compact('months', 'sections', 'prefillData'));
     }
 
     /**
@@ -43,38 +63,87 @@ class ReportsController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $this->validateRequestData($request);
-        
-        if(is_null(Auth::guard('stakeholder')->user()->signature) || is_null(Auth::guard('stakeholder')->user()->gen_sec_signature) || is_null(Auth::guard('stakeholder')->user()->fin_sec_signature) || is_null(Auth::guard('stakeholder')->user()->evang_sec_signature)){
-            return back()->with('message', 'Kindly Upload signatures first, you will only need to do this once');
-        }
+        $stakeholder = Auth::guard('stakeholder')->user();
 
-        if(!is_null(Auth::guard('stakeholder')->user()->chapter_id)){
-            $data['chapter_id'] = Auth::guard('stakeholder')->user()->chapter_id;
-        }
+        $checks = $this->checks($stakeholder);
         
-        $data['zone_id'] = Auth::guard('stakeholder')->user()->zone_id;       
-        $data['year'] = date('Y');       
-        $data['field_id'] = Auth::guard('stakeholder')->user()->field_id;       
+        // Validate the form data
+        // $validated = $request->validate([
+        //     'responses' => 'required|array',
+        //     'responses.*' => 'nullable',
+        //     'confirm_information' => 'accepted',
+        // ]);
 
-        $report = Reports::create($data);
-        
-        //Send Email  
-        if($report->zone->stakeholder){
-            $data = [
-                'type' => 'zone',
-                'addressee' => $report->zone->stakeholder->name,
-                'chapter' => $report->chapter->name,
-                'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year,
+        DB::beginTransaction();
+
+        try {
+            // Build report meta data
+            $reportData = [
+                'chapter_id' => $stakeholder->chapter_id,
+                'zone_id' => $stakeholder->zone_id,
+                'field_id' => $stakeholder->field_id,
+                'year' => date('Y'),
+                'month' => date('n'),
             ];
+            dd($reportData, $stakeholder);
+            // Create the main report record
+            $report = StakeholderReport::create($reportData);
 
-            Mail::to($report->zone->stakeholder->email)->send(new NotificationEmail($data));
+            // Save each response to StakeholderReportAnswer
+            foreach ($validated['questions'] as $slug => $answer) {
+                $question = StakeholderReportQuestion::where('slug', $slug)->first();
+                if ($question) {
+                    StakeholderReportAnswer::create([
+                        'report_id' => $report->id,
+                        'question_id' => $question->id,
+                        'answer_value' => is_array($answer) ? json_encode($answer) : $answer,
+                    ]);
+                }
+            }
+
+            // Send notification email
+            if ($report->zone && $report->zone->stakeholder) {
+                $mailData = [
+                    'type' => 'zone',
+                    'addressee' => $report->zone->stakeholder->name,
+                    'chapter' => $report->chapter->name,
+                    'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year,
+                ];
+
+                Mail::to($report->zone->stakeholder->email)->send(new NotificationEmail($mailData));
+            }
+
+            DB::commit();
+
+            return redirect(route('stakeholder.dashboard'))->with('message', 'Report saved successfully');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            dd($e->getMessage());
+            return back()->withErrors(['error' => 'An error occurred while saving the report. ' . $e->getMessage()]);
         }
-    
-
-		return redirect(route('stakeholder.dashboard'))->with('message', 'Report saved successfully');
     }
 
+    public function checks($stakeholder){
+
+        $data = [
+            'status' => true,
+            'message' => 'success'
+        ];
+
+        if (
+            is_null($stakeholder->signature) ||
+            is_null($stakeholder->gen_sec_signature) ||
+            is_null($stakeholder->fin_sec_signature) ||
+            is_null($stakeholder->evang_sec_signature)
+        ) {
+            $data = [
+                'status' => false,
+                'message' => 'Kindly upload signatures first, you will only need to do this once'
+            ];
+        }
+
+        return $data;
+    }
     /**
      * Display the specified resource.
      *
@@ -94,7 +163,6 @@ class ReportsController extends Controller
      */
     public function edit(Reports $report)
     {
-       
         if($report->zone_status == 1){
             return abort(404);
         }        
@@ -128,7 +196,6 @@ class ReportsController extends Controller
      */
     public function update(Request $request, Reports $report)
     {
-        
         if(Auth::guard('stakeholder')->user()->role == 'President'){
             $data = $this->validateRequestData($request);
         
@@ -231,7 +298,7 @@ class ReportsController extends Controller
      */
     public function rejectReport(Request $request){
         // dd(Auth::guard('stakeholder')->user()->role);
-        $report = Reports::whereId($request->report_id)->first();
+        $report =  StakeholderReport::whereId($request->report_id)->first();
         if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
             $type = 'zonalRejection';
             $report->zone_reject_comment = $request->comment;
@@ -279,7 +346,7 @@ class ReportsController extends Controller
 
     public function delete($id){
         if(Auth::guard('stakeholder')->user()->role != 'Secretariat') return abort(404);
-        $report = Reports::find($id);
+        $report =  StakeholderReport::find($id);
         if($report->stakeholderpayment){
             if (file_exists(base_path() . '/uploads/paymentproof' . '/' . $report->stakeholderpayment->image ))
                 unlink( base_path() . '/uploads/paymentproof' . '/' . $report->stakeholderpayment->image );
@@ -293,87 +360,32 @@ class ReportsController extends Controller
 
    
 
-    private function validateRequestData($request){
-        $data = $this->validate($request, [
-            'session' => 'required',
-            'semester' => 'required|numeric',
-            'day' => 'required|numeric',
-            'month' => 'required',
-            'president_name' => 'required',
-            'president_number' => 'required',
-            'gen_sec_name' => 'nullable',
-            'gen_sec_number' => 'nullable',
-            'evang_sec_name' => 'nullable',
-            'evang_sec_number' => 'nullable',
-            'fin_sec_name' => 'nullable',
-            'fin_sec_number' => 'nullable',
-            'bible_study_venue' => 'nullable',
-            'bible_study_time' => 'nullable',
-            'bible_study_highest_attendance' => 'nullable',
-            'bible_study_lowest_attendance' => 'nullable',
-            'prayer_meeting_venue' => 'nullable',
-            'prayer_meeting_time' => 'nullable',
-            'prayer_meeting_highest_attendance' => 'nullable',
-            'prayer_meeting_lowest_attendance' => 'nullable',
-            'believer_foundation_class_venue' => 'nullable',
-            'believer_foundation_class_time' => 'nullable',
-            'believer_foundation_class_highest_attendance' => 'nullable',
-            'believer_foundation_class_lowest_attendance' => 'nullable',
-            'sunday_school_highest_attendance' => 'nullable',
-            'sunday_school_lowest_attendance' => 'nullable',
-            'sunday_highest_attendance' => 'nullable',
-            'sunday_lowest_attendance' => 'nullable',
-            'visit_to_assembly_venue' => 'nullable',
-            'visit_to_assembly_time' => 'nullable',
-            'visit_to_assembly_fellowship_attendance' => 'nullable',
-            'visit_to_assembly_fellowship_activity' => 'nullable',
-            'special_programs' => 'nullable',
-            'evangelism_report' => 'nullable',
-            'evangelism_number_of_souls' =>  'nullable',
-            'evangelism_number_of_souls_who_joined_fellowship' =>  'nullable',
-            'evangelism_follow_up_efforts' =>  'nullable',
-            'evangelism_number_of_converts_baptized' =>  'nullable',
-            'bible_study_offering' =>  'nullable',
-            'prayer_meeting_offering' =>  'nullable',
-            'special_program_offering' =>  'nullable',
-            'other_special_program_offering' =>  'nullable',
-            'thanksgiving_offering' =>  'nullable',
-            'total_sunday_worship_offering' =>  'nullable',
-            'grand_total_offering' =>  'nullable',
-            'president_tithe' =>  'nullable',
-            'total_executive_tithe' =>  'nullable',
-            'total_workers_tithe' =>  'nullable',
-            'total_members_tithe' =>  'nullable',
-            'grand_total_tithe' =>  'nullable',
-            'tithe_of_tithe' =>  'nullable',
-            'other_levies_purpose' =>  'nullable',
-            'other_levies_projection' =>  'nullable',
-            'other_levies_period_of_collection' =>  'nullable',
-            'other_levies_total_amount' =>  'nullable',
-            'other_levies_total_accumulation' =>  'nullable',
-            'capital_projects' =>  'nullable',
-            'recurrent_expenses' =>  'nullable',
-            'maintenance' =>  'nullable',
-            'misc' =>  'nullable',
-            'expenses_grand_total' =>  'nullable',
-            'spiritual_state' =>  'nullable',
-            'challenges' =>  'nullable',
-            'proposed_capital_project' =>  'nullable',
-            'completed_capital_project' =>  'nullable',
-            'president_signature' =>  'nullable',
-            'gen_sec_signature' =>  'nullable',
-            'evan_sec_signature' =>  'nullable',
-            'fin_sec_signature' =>  'nullable',
-            'zonal_pastor_approval' =>  'nullable',
-            'zonal_pastor_affirmation' =>    'nullable',
-            'field_pastor_approval' =>  'nullable',
-            'field_pastor_comment' =>  'nullable',
-            'communion' => 'nullable',
-            'holy_communion_minister' => 'nullable',
-            'holy_communion_minister_rank' => 'nullable',
-            'holy_communion_attendance' => 'nullable',
-        ]);
+    // private function validateRequestData($request){
+    //     $rules = [];
 
-        return $data;
-    }
+    //     foreach ($sections as $section) {
+    //         foreach ($section->subsections as $subsection) {
+    //             foreach ($subsection->questions as $question) {
+    //                 $field = 'responses.' . $question->slug;
+
+    //                 // Build rules dynamically
+    //                 $rules[$field] = $question->is_required ? 'required' : 'nullable';
+
+    //                 // Add type-based validation if quantifiable or specific
+    //                 if ($question->type === 'number' || $question->is_quantifiable) {
+    //                     $rules[$field] .= '|numeric';
+    //                 } elseif ($question->type === 'date') {
+    //                     $rules[$field] .= '|date';
+    //                 } elseif ($question->type === 'email') {
+    //                     $rules[$field] .= '|email';
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     // Now validate using dynamic rules
+    //     $data = $this->validate($request, $rules);
+
+    //     return $data;
+    // }
 }
