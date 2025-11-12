@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image as Image;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class FileUploadService
 {
@@ -35,7 +36,6 @@ class FileUploadService
         return route('protected.download', ['file' => $encodedPath]);
     }
 
-
     /**
      * Generate a unique filename with timestamp and random string.
      */
@@ -43,5 +43,26 @@ class FileUploadService
     {
         $extension = $file->getClientOriginalExtension();
         return Str::random(8) . '.' . $extension;
+    }
+
+    public static function uploadImage($image, $location, $width = null, $height = null)
+    {
+        // Make sure the directory exists
+        if (!file_exists($location)) {
+            mkdir($location, 0755, true); // recursive mkdir with permissions
+        }
+
+        $imgName = time() . rand(11111111, 9999999) . '.' . $image->getClientOriginalExtension();
+
+        // Resize if width and height are provided
+        if ($width && $height) {
+            $image = Image::make($image)->resize($width, $height);
+        } else {
+            $image = Image::make($image);
+        }
+
+        $image->save($location . '/' . $imgName);
+
+        return $location . '/' . $imgName;
     }
 }

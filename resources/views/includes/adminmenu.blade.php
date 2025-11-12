@@ -5,8 +5,11 @@
         <ul class="menu-content">
             <li class="is_shown"><a href="{{ route('ministry.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Ministries</span></a>
             </li>
+            <li class="is_shown"><a href="{{ route('conference_speakers.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Conference Speakers</span></a>
+            </li>
         </ul>
     </li>
+    
 @endif
 <li class="nav-item {{ Request::is('conferencemanagement*') ? 'active' : '' }}"><a href="{{ route('conferencemanagement.index') }}"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Dashboard">Conference</span></a>
 </li>

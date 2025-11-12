@@ -67,8 +67,15 @@
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('conferencestaff*') ? 'active' : '' }}" href="{{ route('conference.staff', $edition->id) }}">Conference Staff</a>
                         </li>
+            
                         <li class="nav-item">
-                          <a class="nav-link {{ Request::is('conferenceeditions*') ? 'active' : '' }}" href="{{ route('edit.conference.edition', $edition->id) }}">Settings</a>
+                          <a class="nav-link {{ Request::is('conference-plans*') ? 'active' : '' }}" href="{{ route('conference_plans.index', $edition->id) }}">Conference Plans</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link {{ Request::is('conference-schedule*') ? 'active' : '' }}" href="{{ route('conference_schedule.index', $edition->id) }}">Conference Schedule</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link {{ Request::is('conferenceeditions*') ? 'active' : '' }}" href="{{ route('edit.conference.edition', $edition->id) }}">General Settings</a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('conferenceutilitytools*') ? 'active' : '' }}" href="{{ route('conference.utility.tools', ['edition'=>$edition->id]) }}">Utility Tools</a>

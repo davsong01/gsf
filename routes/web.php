@@ -20,7 +20,6 @@ use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\StakeholderReportsController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\MaterialController;
@@ -35,12 +34,16 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UtilityToolsController;
 use App\Http\Controllers\CriticalEmailController;
 use App\Http\Controllers\MinistryFieldController;
+use App\Http\Controllers\ConferencePlanController;
 use App\Http\Controllers\PaymentProviderController;
 use App\Http\Controllers\StakeholderLoginController;
 use App\Http\Controllers\ConferenceEditionController;
 use App\Http\Controllers\ConferenceSettingController;
+use App\Http\Controllers\ConferenceSpeakerController;
+use App\Http\Controllers\ConferenceScheduleController;
 use App\Http\Controllers\StakeholderAccountController;
 use App\Http\Controllers\StakeholderPaymentController;
+use App\Http\Controllers\StakeholderReportsController;
 use App\Http\Controllers\ConferenceManagementController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\DynamicImageGeneratorController;
@@ -402,6 +405,33 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('payouts', PayoutController::class);
     Route::resource('donations', DonationController::class);
+
+    Route::prefix('conference-plans/{edition}')->name('conference_plans.')->group(function () {
+        Route::get('/', [ConferencePlanController::class, 'index'])->name('index');
+        Route::get('/create', [ConferencePlanController::class, 'create'])->name('create');
+        Route::post('/', [ConferencePlanController::class, 'store'])->name('store');
+        Route::get('/{conferencePlan}/edit', [ConferencePlanController::class, 'edit'])->name('edit');
+        Route::put('/{conferencePlan}', [ConferencePlanController::class, 'update'])->name('update');
+        Route::delete('/{conferencePlan}', [ConferencePlanController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('conference-schedule/{edition}')->name('conference_schedule.')->group(function () {
+        Route::get('/', [ConferenceScheduleController::class, 'index'])->name('index');
+        Route::get('/create', [ConferenceScheduleController::class, 'create'])->name('create');
+        Route::post('/', [ConferenceScheduleController::class, 'store'])->name('store');
+        Route::get('/{conferenceSchedule}/edit', [ConferenceScheduleController::class, 'edit'])->name('edit');
+        Route::put('/{conferenceSchedule}', [ConferenceScheduleController::class, 'update'])->name('update');
+        Route::delete('/{conferenceSchedule}', [ConferenceScheduleController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('conference-speakers')->name('conference_speakers.')->group(function () {
+        Route::get('/', [ConferenceSpeakerController::class, 'index'])->name('index');
+        Route::get('/create', [ConferenceSpeakerController::class, 'create'])->name('create');
+        Route::post('/', [ConferenceSpeakerController::class, 'store'])->name('store');
+        Route::get('/{conferenceSpeaker}/edit', [ConferenceSpeakerController::class, 'edit'])->name('edit');
+        Route::put('/{conferenceSpeaker}', [ConferenceSpeakerController::class, 'update'])->name('update');
+        Route::delete('/{conferenceSpeaker}', [ConferenceSpeakerController::class, 'destroy'])->name('destroy');
+    });
 
 });
 

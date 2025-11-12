@@ -6,6 +6,7 @@ use App\Models\Field;
 use App\Models\Hostel;
 use App\Models\Chapter;
 use App\Models\Payment;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
@@ -30,7 +31,7 @@ class HostelController extends Controller
                 $hostel->chapters = Chapter::whereIn('id', $hostel->chapter_ids)->get();
             });
 
-            $unallocatedHostels = Payment::whereNull('hostel_id')->where('conference_edition_id', $edition->id)->count();
+            $unallocatedHostels = Transaction::whereNull('hostel_id')->where('conference_edition_id', $edition->id)->count();
 
             return view('conference_management.admin.hostel.index', compact('hostels', 'count','edition','hostelsToMerge', 'unallocatedHostels'));
         }return abort(404);
@@ -111,7 +112,7 @@ class HostelController extends Controller
         $hostel = Hostel::findOrFail($id);
 
         // check if hostel has any participant
-        $hasPayment = Payment::where('hostel_id', $id)->where('conference_edition_id', $request->edition)->count();
+        $hasPayment = Transaction::where('hostel_id', $id)->where('conference_edition_id', $request->edition)->count();
         
         if($hasPayment > 0){
             return back()->with('error','Hostel has participants, cannot delete!');

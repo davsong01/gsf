@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Field;
 use App\Models\Chapter;
+use App\Models\Transaction;
 use Illuminate\Database\Eloquent\Model;
 
 class Food extends Model
@@ -20,7 +21,7 @@ class Food extends Model
 
     public function payments()
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Transaction::class);
     }
 
     public function field()
