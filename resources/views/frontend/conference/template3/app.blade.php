@@ -67,10 +67,10 @@
                                         @if($setting->speaker_section_status)
                                         <li><a class="menu-item" href="{{ url('/').'#section-speakers' }}">Speakers</a></li>
                                         @endif
-                                        @if(!empty(conferenceSchedule()))
+                                        @if($setting->schedules)
                                         <li><a class="menu-item" href="{{ url('/').'#section-schedule' }}">Schedule</a></li>
                                         @endif
-                                        <li><a class="menu-item" href="{{ url('/').'#section-venue' }}">Venue</a></li>
+                                        {{-- <li><a class="menu-item" href="{{ url('/').'#section-venue' }}">Venue</a></li> --}}
                                         @if($setting->faq_section_status)
                                         <li><a class="menu-item" href="{{ url('/').'#section-faq' }}">FAQ</a></li>
                                         @endif

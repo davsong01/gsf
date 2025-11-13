@@ -51,7 +51,7 @@ class ConferenceEditionController extends Controller
             $ministries = Ministry::where('status', 'active')->latest()->get();
             $faqs = ConferenceFaq::where('status', 1)->orderBy('display_order')->get();
             $speakers = ConferenceSpeaker::where('status', 1)->latest()->get();
-
+            
             return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders', 'ministries', 'faqs','speakers'));
         }
     }

@@ -16,6 +16,7 @@ use App\Models\ConferenceFaq;
 use App\Models\GeneralSetting;
 use App\Models\ConferenceSpeaker;
 use App\Imports\GeneralUsersImport;
+use App\Models\ConferenceSchedule;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -51,9 +52,9 @@ class HomeController extends Controller
 
             $faqs = ConferenceFaq::whereIn('id', $setting->faq_ids ?? [])->orderBy('display_order')->get();
             $speakers = ConferenceSpeaker::whereIn('id', $setting->speaker_ids ?? [])->get();
-            $schedule = conferenceSchedule();
+            $schedule = ConferenceSchedule::where('status', 1)->where('conference_edition_id', $setting->id)->get();
             $plans = conferencePlans($setting);
-
+            
             return view('frontend.conference.template'. $this->conference->template_id.'.welcome')
                 ->with('events',$events)
                 ->with('setting',$setting)

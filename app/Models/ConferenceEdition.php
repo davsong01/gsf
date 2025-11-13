@@ -9,6 +9,7 @@ use App\Models\Ministry;
 use App\Models\TempUser;
 use App\Models\Transaction;
 use App\Models\PaymentProvider;
+use App\Models\ConferenceSchedule;
 use Illuminate\Database\Eloquent\Model;
 
 class ConferenceEdition extends Model
@@ -59,6 +60,11 @@ class ConferenceEdition extends Model
     public function ministry()
     {
         return $this->belongsTo(Ministry::class);
+    }
+
+    public function schedules()
+    {
+        return $this->hasMany(ConferenceSchedule::class);
     }
 
     public function paymentprovider()
