@@ -1,4 +1,15 @@
 @extends('frontend.conference.template3.app')
+<style>
+    .speaker-img {
+        height: 400px;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        width: 100%;
+        border-radius: 6px;
+    }
+
+</style>
 @section('content')
 <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800">
     <div class="gradient-edge-top op-6 h-50 color"></div>
@@ -196,7 +207,7 @@
     </div>
 </section>
 
-@if(!empty($speakers))
+@if($speakers->count() && $setting->speaker_section_status)
 <section id="section-speakers" class="bg-dark section-dark text-light">
     <div class="container">
         <div class="row g-4 justify-content-center">
@@ -210,20 +221,25 @@
 
         <div class="row g-4">
             @foreach ($speakers as $speaker)
-                <div class="col-lg-4">
+                <div class="col-lg-4 col-md-6 mb-4">
                     <div class="hover relative rounded-1 overflow-hidden wow fadeIn scale-in-mask">
-                        <img src="{{ asset($speaker['image']) }}" class="w-100 hover-scale-1-1" alt="{{ $speaker['name'] }}">
+                        <img 
+                            src="{{ asset($speaker->image) }}" 
+                            class="w-100 hover-scale-1-1 speaker-img" 
+                            alt="{{ $speaker->name }}"
+                        >
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                         <div class="abs w-100 start-0 bottom-0 z-3">
                             <div class="bg-blur p-4 m-4 rounded-1 text-light text-center relative z-2">
-                                <h3 class="mb-0">{{ $speaker['name'] }}</h3>
-                                <span>{{ $speaker['title'] }}</span>
+                                <h3 class="mb-0">{{ $speaker->name }}</h3>
+                                <span>{{ $speaker->title }}</span>
                             </div>
                             <div class="gradient-edge-bottom h-100 op-8"></div>
                         </div>
                     </div>
                 </div>
             @endforeach
+
         </div>
     </div>
 </section>
@@ -384,7 +400,7 @@
   </div>
 </section> --}}
 
-@if(!empty($faqs))
+@if(!empty($faqs) && $setting->faq_section_status)
 <section  id="section-faq" class="bg-dark section-dark text-light">
     <div class="container">
         <div class="row g-4">

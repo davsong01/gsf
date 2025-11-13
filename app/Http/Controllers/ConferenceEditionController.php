@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\ConferenceFaq;
 use App\Models\PaymentProvider;
 use App\Models\ConferenceEdition;
+use App\Models\ConferenceSpeaker;
 use App\Services\DynamicImageGeneratorService;
 
 class ConferenceEditionController extends Controller
@@ -49,8 +50,9 @@ class ConferenceEditionController extends Controller
             $paymentproviders = PaymentProvider::where('status', 'active')->get();
             $ministries = Ministry::where('status', 'active')->latest()->get();
             $faqs = ConferenceFaq::where('status', 1)->orderBy('display_order')->get();
+            $speakers = ConferenceSpeaker::where('status', 1)->latest()->get();
 
-            return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders', 'ministries', 'faqs'));
+            return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders', 'ministries', 'faqs','speakers'));
         }
     }
 

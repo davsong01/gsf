@@ -18,7 +18,7 @@ class ConferenceEdition extends Model
         'template_settings' => 'array',
         'conference_speakers' => 'array',
         'faq_ids' => 'array',
-        'speakers_ids' => 'array'
+        'speaker_ids' => 'array'
     ];
 
     public function transactions(){

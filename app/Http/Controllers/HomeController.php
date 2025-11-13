@@ -14,6 +14,7 @@ use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use App\Models\ConferenceFaq;
 use App\Models\GeneralSetting;
+use App\Models\ConferenceSpeaker;
 use App\Imports\GeneralUsersImport;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
@@ -48,8 +49,8 @@ class HomeController extends Controller
                 'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
             ];
 
-            $faqs = ConferenceFaq::whereIn('id', $setting->faq_ids)->orderBy('display_order')->get();
-            $speakers = conferenceSpeakers();
+            $faqs = ConferenceFaq::whereIn('id', $setting->faq_ids ?? [])->orderBy('display_order')->get();
+            $speakers = ConferenceSpeaker::whereIn('id', $setting->speaker_ids ?? [])->get();
             $schedule = conferenceSchedule();
             $plans = conferencePlans($setting);
 
