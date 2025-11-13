@@ -17,7 +17,8 @@ class ConferenceEdition extends Model
     protected $casts = [
         'template_settings' => 'array',
         'conference_speakers' => 'array',
-        'conference_faqs' => 'array'
+        'faq_ids' => 'array',
+        'speakers_ids' => 'array'
     ];
 
     public function transactions(){

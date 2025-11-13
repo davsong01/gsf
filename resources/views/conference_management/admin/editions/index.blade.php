@@ -21,7 +21,7 @@
                     <div class="card-header">
                         <h4 class="card-title">All Conference Editions</h4>
                         @if(auth()->user()->conference_role == 'superadmin')
-                        <a href="{{ route('conferenceeditions.create') }}" class="btn btn-primary mt-1">Add conference editions</a>
+                        <a href="{{ route('conferenceeditions.create') }}" class="btn btn-primary mt-1">Add conference edition</a>
                         @endif
                         @include('includes.alerts')
                     </div>

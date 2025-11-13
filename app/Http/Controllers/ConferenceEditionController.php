@@ -6,10 +6,11 @@ use App\Models\User;
 use App\Models\Payment;
 use App\Models\Donation;
 use App\Models\Material;
+use App\Models\Ministry;
 use Illuminate\Http\Request;
+use App\Models\ConferenceFaq;
 use App\Models\PaymentProvider;
 use App\Models\ConferenceEdition;
-use App\Models\Ministry;
 use App\Services\DynamicImageGeneratorService;
 
 class ConferenceEditionController extends Controller
@@ -32,7 +33,24 @@ class ConferenceEditionController extends Controller
     public function create()
     {
         if (auth()->user()->role == 1) {
-            return view('conference_management.admin.editions.create');
+            $edition = ConferenceEdition::find($id);
+            $paymentproviders = PaymentProvider::where('status', 'active')->get();
+            $ministries = Ministry::where('status', 'active')->latest()->get();
+            $faqs = ConferenceFaq::where('status', 1)->orderBy('display_order')->get();
+
+            return view('conference_management.admin.editions.create', compact('edition', 'paymentproviders', 'ministries', 'faqs'));
+        }
+    }
+
+    public function edit(ConferenceEdition $conferenceEdition, $id)
+    {
+        if (auth()->user()->role == 1) {
+            $edition = ConferenceEdition::find($id);
+            $paymentproviders = PaymentProvider::where('status', 'active')->get();
+            $ministries = Ministry::where('status', 'active')->latest()->get();
+            $faqs = ConferenceFaq::where('status', 1)->orderBy('display_order')->get();
+
+            return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders', 'ministries', 'faqs'));
         }
     }
 
@@ -200,16 +218,6 @@ class ConferenceEditionController extends Controller
      * @param  \App\ConferenceEdition  $conferenceEdition
      * @return \Illuminate\Http\Response
      */
-    public function edit(ConferenceEdition $conferenceEdition, $id)
-    {
-        if (auth()->user()->role == 1) {
-            $edition = ConferenceEdition::find($id);
-            $paymentproviders = PaymentProvider::where('status', 'active')->get();
-            $ministries = Ministry::where('status', 'active')->latest()->get();
-            
-            return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders', 'ministries'));
-        }
-    }
 
     /**
      * Update the specified resource in storage.

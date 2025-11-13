@@ -66,6 +66,22 @@
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label for="registration_fields">Registration Fields</label>
+                            <select name="registration_fields[]" id="registration_fields" class="form-control" required multiple>
+                                @php
+                                    $selectedFields = old('registration_fields', isset($conferencePlan->registration_fields) ? $conferencePlan->registration_fields : []);
+                                @endphp
+
+                                @foreach($registration_fields as $field)
+                                    <option value="{{ $field->id }}" {{ in_array($field->id, $selectedFields) ? 'selected' : '' }}>
+                                        {{ $field->label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
 
                     <div class="col-md-6">
                         <div class="form-group mb-2">

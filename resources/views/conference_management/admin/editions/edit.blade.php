@@ -268,6 +268,42 @@
                     
                                     <input type="hidden" name="id" value="{{ $edition->id }}">
                                 </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h3>FAQ Settings</h3>
+                                    </div>
+
+                                    <div class="col-12 mb-2">
+                                        <label class="form-label fw-bold">Select Applicable FAQs</label>
+                                        <div class="row">
+                                            
+                                            @forelse($faqs as $faq)
+                                                <div class="col-md-6 col-sm-6">
+                                                    <div class="form-check">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            class="form-check-input" 
+                                                            id="faq_{{ $faq->id }}" 
+                                                            name="faq_ids[]" 
+                                                            value="{{ $faq->id }}"
+                                                            {{ isset($edition) && in_array($faq->id, $edition->faq_ids ?? []) ? 'checked' : '' }}
+                                                        >
+                                                        <label class="form-check-label" for="faq_{{ $faq->id }}">
+                                                            {{ $faq->question }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            @empty
+                                                <div class="col-12">
+                                                    <p class="text-muted">No active FAQs available.</p>
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" name="id" value="{{ $edition->id }}">
+                                </div>
+
                                 {{-- certificate --}}
                                 <?php 
                                     $service = new App\Services\DynamicImageGeneratorService;

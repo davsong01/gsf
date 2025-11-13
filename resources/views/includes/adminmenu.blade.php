@@ -7,6 +7,8 @@
             </li>
             <li class="is_shown"><a href="{{ route('conference_speakers.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Conference Speakers</span></a>
             </li>
+             <li class="is_shown"><a href="{{ route('conference_faqs.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Conference FAQs</span></a>
+            </li>
         </ul>
     </li>
     

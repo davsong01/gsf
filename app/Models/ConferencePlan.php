@@ -10,5 +10,5 @@ class ConferencePlan extends Model
     use HasFactory;
     protected $guarded;
     
-    protected $casts = ['items' => 'array'];
+    protected $casts = ['items' => 'array', 'registration_fields' => 'array'];
 }

@@ -32,6 +32,7 @@ use App\Http\Controllers\UserEmailsController;
 use App\Http\Controllers\StakeholderController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UtilityToolsController;
+use App\Http\Controllers\ConferenceFaqController;
 use App\Http\Controllers\CriticalEmailController;
 use App\Http\Controllers\MinistryFieldController;
 use App\Http\Controllers\ConferencePlanController;
@@ -431,6 +432,15 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('/{conferenceSpeaker}/edit', [ConferenceSpeakerController::class, 'edit'])->name('edit');
         Route::put('/{conferenceSpeaker}', [ConferenceSpeakerController::class, 'update'])->name('update');
         Route::delete('/{conferenceSpeaker}', [ConferenceSpeakerController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('conference-faqs')->name('conference_faqs.')->group(function () {
+        Route::get('/', [ConferenceFaqController::class, 'index'])->name('index');
+        Route::get('/create', [ConferenceFaqController::class, 'create'])->name('create');
+        Route::post('/', [ConferenceFaqController::class, 'store'])->name('store');
+        Route::get('/{conferenceFaq}/edit', [ConferenceFaqController::class, 'edit'])->name('edit');
+        Route::put('/{conferenceFaq}', [ConferenceFaqController::class, 'update'])->name('update');
+        Route::delete('/{conferenceFaq}', [ConferenceFaqController::class, 'destroy'])->name('destroy');
     });
 
 });

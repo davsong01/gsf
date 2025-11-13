@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Models\MinistryField;
 use App\Models\ConferencePlan;
 use App\Models\ConferenceEdition;
 
@@ -31,8 +32,10 @@ class ConferencePlanController extends Controller
     public function create()
     {
         $edition = $this->edition;
-
-        return view('admin.conference_plans.create', compact('edition'));
+        
+        $registration_fields = $edition->ministry->fields->where('status', 1)->where('field_usage', 'registration')->sortBy('display_order');
+        
+        return view('admin.conference_plans.create', compact('edition', 'registration_fields'));
     }
 
     /**
@@ -47,15 +50,15 @@ class ConferencePlanController extends Controller
             'type'   => 'required|in:single,multiple',
             'status' => 'required|in:0,1',
             'level'  => 'required|string|max:100',
+            'registration_fields' => 'required',
         ]);
 
         $edition = $this->edition;
         
-        // Convert textarea input to array (split by comma or newline)
         $itemsArray = null;
         if (!empty($request->items)) {
             $itemsArray = preg_split('/[\r\n,]+/', trim($request->items));
-            $itemsArray = array_filter(array_map('trim', $itemsArray)); // clean up blanks
+            $itemsArray = array_filter(array_map('trim', $itemsArray));
         }
         
         ConferencePlan::create([
@@ -65,6 +68,7 @@ class ConferencePlanController extends Controller
             'type'   => $request->type,
             'status' => $request->status,
             'level'  => $request->level,
+            'registration_fields' => $request->registration_fields,
             'conference_edition_id' => $edition->id
         ]);
 
@@ -79,8 +83,9 @@ class ConferencePlanController extends Controller
     {
         $edition = $this->edition;
         $conferencePlan = ConferencePlan::where('id', request()->conferencePlan)->first();
+        $registration_fields = $edition->ministry->fields->where('status', 1)->where('field_usage', 'registration')->sortBy('display_order');
 
-        return view('admin.conference_plans.create', compact('conferencePlan','edition'));
+        return view('admin.conference_plans.create', compact('conferencePlan','edition', 'registration_fields'));
     }
 
     /**
@@ -98,6 +103,7 @@ class ConferencePlanController extends Controller
             'type'   => 'required|in:single,multiple',
             'status' => 'required|in:0,1',
             'level'  => 'required|string|max:100',
+            'registration_fields' => 'required',
         ]);
 
         $itemsArray = null;
@@ -113,6 +119,7 @@ class ConferencePlanController extends Controller
             'type'   => $request->type,
             'status' => $request->status,
             'level'  => $request->level,
+            'registration_fields' => $request->registration_fields,
         ]);
 
         return redirect()->route('conference_plans.index', ['edition' => $edition->id])->with('message', 'Conference plan updated successfully.');

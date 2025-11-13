@@ -12,6 +12,7 @@ use App\Models\NewListing;
 use App\Models\TempMember;
 use App\Models\Stakeholder;
 use Illuminate\Http\Request;
+use App\Models\ConferenceFaq;
 use App\Models\GeneralSetting;
 use App\Imports\GeneralUsersImport;
 use Illuminate\Support\Facades\Hash;
@@ -47,7 +48,7 @@ class HomeController extends Controller
                 'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
             ];
 
-            $faqs = conferenceFaqs();
+            $faqs = ConferenceFaq::whereIn('id', $setting->faq_ids)->orderBy('display_order')->get();
             $speakers = conferenceSpeakers();
             $schedule = conferenceSchedule();
             $plans = conferencePlans($setting);

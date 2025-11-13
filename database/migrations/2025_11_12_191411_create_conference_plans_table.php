@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('price', 11,2)->nullable();
             $table->string('type')->default('single'); // multiple
             $table->string('level')->default('Participant'); // Participant, Moderator, Alumni, etc
+            $table->json('registration_fields')->nullable();
 
             $table->timestamps();
         });

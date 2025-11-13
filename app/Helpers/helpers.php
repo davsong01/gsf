@@ -200,37 +200,6 @@ if (!function_exists('generalSetting')) {
 }
 
 
-if (!function_exists('conferenceFaqs')) {
-    function conferenceFaqs(?array $ids = null)
-    {
-        $faqs = [
-            [
-                'id' => 'accordion-a1',
-                'question' => 'When will the Conference start?',
-                'answer' => 'The Conference will commence on Thursday night with an opening session which is often characterized with the power of the Spirit and an all-encompassing display of joy.',
-            ],
-            [
-                'id' => 'accordion-a2',
-                'question' => 'Where does the conference take place?',
-                'answer' => 'The Conference will hold at the International Gospel City of The Gospel Faith Mission International located at Ogunmakin, Ogun State along Lagos-Ibadan Express Way.',
-            ],
-            [
-                'id' => 'accordion-a3',
-                'question' => 'How can I get the latest news?',
-                'answer' => 'Please stay connected to our social media handles on Facebook, Instagram and X: gsfnational.',
-            ],
-            [
-                'id' => 'accordion-a4',
-                'question' => 'How can my Church sponsor this event?',
-                'answer' => 'For individual or corporate sponsorship of the event, please reach out to the following contacts: +234 805 263 8670, +234 816 447 8392, +234 7013 530858.',
-            ],
-        ];
-
-
-        return $faqs;
-    }
-}
-
 if (!function_exists('conferenceSpeakers')) {
     function conferenceSpeakers()
     {
