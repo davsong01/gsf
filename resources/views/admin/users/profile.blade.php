@@ -86,8 +86,8 @@
                                 <fieldset class="form-group">
                                     <label for="sex">Gender</label>
                                     <select class="form-control" name="sex" id="sex" required {{ isset($setting) && $setting->status == 'active'?'disabled':'' }}>
-                                        <option value="Male" {{ $user->sex == 'Male' ? 'selected' : ''}}>Male</option>
-                                        <option value="Female" {{ $user->sex == 'Female' ? 'selected' : ''}}>Female</option>
+                                        <option value="Male" {{ $user->gender == 'Male' ? 'selected' : ''}}>Male</option>
+                                        <option value="Female" {{ $user->gender == 'Female' ? 'selected' : ''}}>Female</option>
                                     </select>
                                 </fieldset>
                                 <fieldset class="form-group">

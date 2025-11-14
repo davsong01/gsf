@@ -283,7 +283,7 @@ class Controller extends BaseController
     //     $user = User::UpdateOrCreate(['email' => $data['email']], [
     //         'name' => $data['name'],
     //         'phone' => $data['phone'],
-    //         'sex' => $data['sex'] ?? null,
+    //         'gender' => $data['gender'] ?? null,
     //         'chapter_id' => $data['chapter']??null,
     //         'passport' => $data['passport']??null,
     //         'slug' => Str::slug($data['name']),

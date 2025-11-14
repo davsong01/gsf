@@ -13,6 +13,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\CriticalEmail;
+use App\Models\ConferencePlan;
 use App\Services\PaymentService;
 use App\Models\ConferenceEdition;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Services\DynamicImageGeneratorService;
 use App\Services\ServicePointAllocationService;
 use App\Http\Controllers\CriticalEmailController;
+use App\Models\TransactionAllocationField;
 
 class ConferenceManagementController extends Controller
 {
@@ -98,8 +100,29 @@ class ConferenceManagementController extends Controller
 
 	public function edit($id, Request $request)
 	{
-		$user = $payment = Transaction::with('user')->whereId($id)->first();
-		$edition = ConferenceEdition::find($request->edition);
+		$user = Transaction::with(['user', 'allocationFields'])->findOrFail($id);
+
+		$edition = ConferenceEdition::findOrFail($request->edition);
+
+		// Build base query once
+		$plansQuery = ConferencePlan::where('status', 1)
+			->where('conference_edition_id', $edition->id);
+
+		// Clone the query BEFORE applying where for current plan
+		$currentPlan = (clone $plansQuery)
+			->where('id', $user->conference_plan_id)
+			->first();
+
+		// Fetch all plans
+		$plans = $plansQuery->get();
+
+		$fields = $currentPlan?->fields()->sortBy('display_order');
+		$registrationFields = reformatRegistrationFields($fields);
+
+		$filledFields = $user->allocationFields
+			->pluck('value', 'key')
+			->toArray();
+		
 		$moderator = Transaction::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 
 		$chapters = Chapter::all();
@@ -107,17 +130,17 @@ class ConferenceManagementController extends Controller
 		$foods = Food::where('conference_edition_id', $edition->id)->orderBy('name')->get();
 
 		if (auth()->user()->role == 1) {
-			return view('conference_management.admin.users.edit', compact('user', 'hostels', 'foods', 'chapters', 'edition'));
+			return view('conference_management.admin.users.edit', compact('user', 'hostels', 'foods', 'chapters', 'edition', 'plans', 'registrationFields','filledFields'));
 		}
 
 		if (!$moderator) {
 			return abort(404);
 		} else {
-			if ($user->user->sex == 'Female') {
+			if ($user->user->gender == 'Female') {
 				$hostels = Hostel::where(['conference_edition_id' => $edition->id, 'level' => 'Participant', 'type' => 'Female'])->where('capacity', '>', 'allocation')->orderBy('name')->get();
 			}
 
-			if ($user->user->sex == 'Male') {
+			if ($user->user->gender == 'Male') {
 				$hostels = Hostel::where(['conference_edition_id' => $edition->id, 'level' => 'Participant', 'type' => 'Male'])->where('capacity', '>', 'allocation')->orderBy('name')->get();
 			}
 
@@ -185,7 +208,7 @@ class ConferenceManagementController extends Controller
 				'name' => 'required|min:3',
 				'email' => 'required',
 				'phone' => 'required',
-				'sex' => 'required',
+				'gender' => 'required',
 				'chapter' => 'required|numeric',
 				'passport' => 'nullable|max:200',
 				'transid' => 'nullable',
@@ -295,7 +318,7 @@ class ConferenceManagementController extends Controller
 				'name' => 'required|min:3',
 				'email' => 'required|unique:users,email',
 				'phone' => 'required',
-				'sex' => 'required',
+				'gender' => 'required',
 				'payment_type' => 'nullable',
 				'transid' => 'nullable',
 			]);
@@ -312,7 +335,7 @@ class ConferenceManagementController extends Controller
 				'name' => $data['name'],
 				'email' => $data['email'],
 				'phone' => $data['phone'],
-				'sex' => $data['sex'],
+				'gender' => $data['gender'],
 				'slug' => Str::slug($data['name']),
 				'chapter_id' => auth()->user()->chapter_id,
 				'passport' => $data['passport'],
@@ -425,7 +448,7 @@ class ConferenceManagementController extends Controller
 			"name" => $data['name'],
 			"email" => $data['email'],
 			"phone" => $data['phone'],
-			"sex" => $data['sex'],
+			"sex" => $data['gender'],
 			"passport" => $data['passport'],
 			"role" => 1,
 			'slug' => Str::slug($data['name']),
@@ -468,22 +491,22 @@ class ConferenceManagementController extends Controller
 		$data = $this->validate($request, [
 			'name' => 'required',
 			'phone' => 'required',
-			'sex' => 'in:Male,Female',
+			'gender' => 'in:Male,Female',
 			'passport' => 'nullable|max:200',
 			'level' => 'required',
 			'email' => 'sometimes'
 		]);
-
+		
 		if ($request->has('passport')) {
 			$update['passport'] = $this->uploadImage($data['passport'], 'images/passports', 400, 400);
 		}
 		
 		$update['phone'] = $request['phone'] ?? $user->phone;
 		$update['name'] = $request['name'] ?? $user->name;
-		$update['sex'] = $request['sex'] ?? $user->sex;
+		$update['gender'] = $request['gender'] ?? $user->gender;
 
 		// handle gender change
-		if ($request->has('sex') && $request['sex'] != $user->sex) {
+		if ($request->has('gender') && $request['gender'] != $user->gender) {
 			$hostel_allocation = HostelAllocationService::assignHostel($payment, $request->all());
 			
 			$data['allocated_hostel_data'] = $hostel_allocation;
@@ -493,7 +516,7 @@ class ConferenceManagementController extends Controller
 			
 			// If no hostel
 			if (!isset($paymentupdate['hostel_id']) && empty($paymentupdate['hostel_id'])) {
-				return back()->with('error', "There is no {$request->sex} hostel available at the moment. Changes not saved!");
+				return back()->with('error', "There is no {$request->gender} hostel available at the moment. Changes not saved!");
 			} else {
 				HostelAllocationService::reduceHostelAllocation($payment);
 			}
@@ -517,7 +540,7 @@ class ConferenceManagementController extends Controller
 				$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
 				$paymentupdate['hostel_id'] = $hostel_allocation['hostel_id'];
 
-				// dd($paymentupdate['hostel_id'],$payment->level, $request['sex']);
+				// dd($paymentupdate['hostel_id'],$payment->level, $request['gender']);
 				if (!isset($paymentupdate['hostel_id']) && empty($paymentupdate['hostel_id'])) {
 					return back()->with('error', 'Sorry, there is no available hostel for you at the moment. Changes not saved!');
 				} else {
@@ -548,26 +571,17 @@ class ConferenceManagementController extends Controller
 		return back()->with('message', 'Operation succesful');
 	}
 
-
 	public function adminUpdate(Request $request, $id){
-		$payment = Transaction::with('user')->whereId($id)->first();
-		$user = $payment->user;
-
-		$data = $this->validate($request, [
-			'name' => 'required',
-			'phone' => 'required',
-			'sex' => 'in:Male,Female',
-			'passport' => 'nullable|max:200',
-			'level' => 'required',
-			'email' => 'sometimes'
-		]);
+		$transaction = Transaction::with('user')->whereId($id)->first();
+		$user = $transaction->user;
 
 		if (auth()->user()->role != 1 && auth()->user()->conference_role != 'superadmin') {
 			return back()->with('message', 'You are not authorized to access this resource');
 		}
 		
-		$setting = ConferenceEdition::where('status', 'active')->where('id', $payment->conference_edition_id)->first();
-		
+		$setting = ConferenceEdition::where('status', 'active')->where('id', $transaction->conference_edition_id)->first();
+		$data = $request->all();
+
 		DB::beginTransaction();
 
 		try {
@@ -575,20 +589,26 @@ class ConferenceManagementController extends Controller
 				$update['passport'] = $this->uploadImage($data['passport'], 'images/passports', 400, 400);
 			}
 
-			$update['phone'] = $request['phone'] ?? $user->phone;
-			$update['name'] = $request['name'] ?? $user->name;
-			$update['sex'] = $request['sex'] ?? $user->sex;
-			$update['email'] = $request['email'] ?? $user->email;
+			$update['phone'] = $paymentupdate['phone'] = $data['registration_fields']['phone'] ?? $user->phone;
+			$update['name'] = $paymentupdate['name'] = $data['registration_fields']['name'] ?? $user->name;
+			$update['gender'] = $paymentupdate['gender'] = $data['registration_fields']['gender'] ?? $user->gender;
+			$update['email'] = $paymentupdate['email'] = $data['registration_fields']['email'] ?? $user->email;
 
 			// handle gender change, automatic hostel
-			if ($request->has('sex') && $request['sex'] != $user->sex) {
-				$paymentArray = array_merge($data, $payment->ToArray());
-				$paymentArray['field_id'] = $payment->user->campus->id;
-				$paymentArray['setting'] = $setting;
+			if ($update['gender'] != $user->gender) {
+				$paymentArray = array_merge($data, $transaction->ToArray());
+				$paymentArray['gender'] = $update['gender'];
 
-				$hostel_allocation = HostelAllocationService::assignHostel($paymentArray);
-				$data['allocated_hostel_data'] = $hostel_allocation;
+				$paymentArray['field_id'] = $transaction?->user?->campus?->id;
+				$paymentArray['setting'] = $setting;
+				if ($request->has('hostel_id') && $request['hostel_id'] != $transaction->hostel_id) {
+					$paymentArray['new_hostel_id'] = $request['hostel_id'] ?? null;
+				}
 				
+				$hostel_allocation = HostelAllocationService::assignHostel($transaction, $paymentArray);
+
+				$data['allocated_hostel_data'] = $hostel_allocation;
+
 				$paymentupdate['hostel_allocation_number'] = $hostel_allocation['hostel_allocation_number'];
 				$paymentupdate['hostel_allocation_type'] = $hostel_allocation['hostel_allocation_type'];
 				$paymentupdate['hostel_id'] = $hostel_allocation['hostel_id'];
@@ -598,14 +618,16 @@ class ConferenceManagementController extends Controller
 					return back()->with('error', 'Sorry, there is no available hostel for you at the moment. Changes not saved!');
 				}
 
-				$this->reduceHostelAllocation($payment);
-			}else if ($request->has('hostel_id') && $request['hostel_id'] != $payment->hostel_id) {
-				$paymentArray = array_merge($data, $payment->ToArray());
-				$paymentArray['field_id'] = $user->campus->id;
+				HostelAllocationService::reduceHostelAllocation($transaction);
+			} elseif ($request->has('hostel_id') && $request['hostel_id'] != $transaction->hostel_id) {
+				$paymentArray = array_merge($data, $transaction->ToArray());
+				$paymentArray['gender'] = $update['gender'] ?? $paymentArray['gender'];
+
+				$paymentArray['field_id'] = $user?->campus?->id;
 				$paymentArray['setting'] = $setting;
 				$paymentArray['new_hostel_id'] = $request['hostel_id'];
 
-				$hostel_allocation = HostelAllocationService::assignHostel($paymentArray);
+				$hostel_allocation = HostelAllocationService::assignHostel($transaction, $paymentArray);
 
 				$data['allocated_hostel_data'] = $hostel_allocation;
 
@@ -615,21 +637,22 @@ class ConferenceManagementController extends Controller
 
 				if (!isset($paymentupdate['hostel_id']) || empty($paymentupdate['hostel_id'])) {
 					DB::rollBack();
-					return back()->with('error', 'Sorry, there is no available hostel at the moment. Changes not saved!');
+					return back()->with('error', $hostel_allocation['message'] ?? 'Sorry, there is no available hostel at the moment. Changes not saved!');
 				}
 
-				$this->reduceHostelAllocation($payment);
+				HostelAllocationService::reduceHostelAllocation($transaction);
 			}
+
 
 			// handle password
 			if ($request->has('password') && !empty($request->password)) {
 				$update['password'] = Hash::make($request['password']);
 			}
-
+			
 			// handle food change
-			if ($request->has('food_id') && $request['food_id'] != $payment->food_id) {
-				$paymentArray = array_merge($data, $payment->ToArray());
-				$paymentArray['field_id'] = $payment->user->campus->id;
+			if ($request->has('food_id') && $request['food_id'] != $transaction->food_id) {
+				$paymentArray = array_merge($data, $transaction->ToArray());
+				$paymentArray['field_id'] = $transaction?->user?->campus?->id;
 
 				$paymentArray['new_food_id'] = $request['food_id'];
 				$service_point = ServicePointAllocationService::assignFoodStand($paymentArray);
@@ -639,21 +662,34 @@ class ConferenceManagementController extends Controller
 				$paymentupdate['service_point_allocation_type'] = $service_point['service_point_allocation_type'];
 				$paymentupdate['food_id'] = $service_point['service_point_allocation_id'];
 			} else {
-				$paymentupdate['food_id'] = $payment->food_id;
+				$paymentupdate['food_id'] = $transaction->food_id;
 			}
 			
 			$user->update($update);
-
-			if (isset($paymentupdate)) {
-				$payment->update($paymentupdate);
+			
+			if (!empty($paymentupdate)) {
+				$transaction->update($paymentupdate);
 			}
 
+			// Update registration fields
+			if(!empty($data['registration_fields'])){
+				foreach ($data['registration_fields'] as $key => $value) {
+					$transaction->allocationFields()
+						->where('key', $key)
+						->update(['value' => $value]);
+				}
+
+			}
+			// END UPDATE registrationn fields
+			// $user = $user->fresh();
+			// $transaction = $transaction->fresh();
+			
 			DB::commit();
 
 			return back()->with('message', 'Operation successful');
 		} catch (\Throwable $th) {
 			DB::rollBack();
-			dd('hold');
+			dd('hold',  $th->getMessage() . ', ' . $th->getFile() . ', ' . $th->getLine());
 			return back()->with('error', $th->getMessage(). ', '.$th->getFile(). ', '.$th->getLine());
 		}
 	}

@@ -69,7 +69,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 		$phone = trim($row['phone']);
 		$level = trim($this->data['import_level']);
 		$password = Hash::make(trim($row['phone']));
-		$sex = $row['sex'] ?? null;
+		$sex = $row['gender'] ?? null;
 		$registration_status = $row['registration_status'] ?? 'Pending';
 		$slot = $row['slot'] ?? 1;
 		$slot_filled = $row['slot_filled'] ?? 1;
@@ -92,7 +92,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			'type' => $this->type,
 			'chapter_id' => $chapter_id ?? null,
 			'chapter' => $chapter_id ?? null,
-			'sex' => $sex,
+			'gender' => $sex,
 			'registration_status' => $registration_status,
 			'slot' => $slot,
 			'slot_filled' => $slot_filled,

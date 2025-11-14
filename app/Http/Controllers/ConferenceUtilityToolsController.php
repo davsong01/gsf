@@ -85,7 +85,7 @@ class ConferenceUtilityToolsController extends Controller
                         'type' => $type,
                         'chapter_id' => $tempuser->chapter_id ?? null,
                         'chapter' => $tempuser->chapter_id ?? null,
-                        'sex' => $tempuser->gender,
+                        'gender' => $tempuser->gender,
                         'registration_status' => 'Complete',
                         'slot' => $slot,
                         'slot_filled' => $slot_filled,

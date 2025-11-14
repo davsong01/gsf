@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\MinistryField;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ConferencePlan extends Model
 {
@@ -11,4 +12,9 @@ class ConferencePlan extends Model
     protected $guarded;
     
     protected $casts = ['items' => 'array', 'registration_fields' => 'array'];
+
+    public function scopeFields(){
+        $fields = MinistryField::whereIn('id', $this->registration_fields)->where('status', 1)->get();
+        return $fields;
+    }
 }

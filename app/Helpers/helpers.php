@@ -15,29 +15,6 @@ if (!function_exists('chapterStakeholders')) {
     }
 }
 
-if (!function_exists('registrationTypeNames')) {
-    function registrationTypeNames(?array $ids = null)
-    {
-        $types = [
-            1 => 'Individual Registration',
-            2 => 'Group Registration',
-            3 => 'Alumni Registration',
-            5 => 'Donation',
-        ];
-
-        if (is_null($ids)) {
-            // return full list if no argument is passed
-            return $types;
-        }
-
-        // return matched names for given IDs
-        return collect($ids)
-            ->map(fn($id) => $types[$id] ?? 'Unknown')
-            ->all();
-    }
-}
-
-
 if (!function_exists("hostelAssignmentTypes")) {
     function hostelAssignmentTypes()
     {

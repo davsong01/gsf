@@ -41,7 +41,7 @@
                                                 <td>
                                                     Name:  {{ $user->name }} <br>
                                                     Phone:  {{ $user->phone }} <br>
-                                                    Gender:  {{ $user->sex }}
+                                                    Gender:  {{ $user->gender }}
                                                 </td>
                                                 <td>{{ $user->campus->name }}</td>   
                                                 <td>

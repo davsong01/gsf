@@ -39,11 +39,9 @@
                         <p class="mb-1"><strong>Email:</strong> {{ $transaction->email ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Phone:</strong> {{ $transaction->phone ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Gender:</strong> {{ ucfirst($transaction->gender ?? 'N/A') }}</p>
-                        @if(!empty(registrationTypeNames([$transaction->type])[0]))
                         <p class="mb-1"><strong>Registration Type:</strong> 
-                            {{ registrationTypeNames([$transaction->type])[0] }}
+                            {{ $transaction->conferenceplan->title }}
                         </p>
-                        @endif
                         @if(!empty($transaction->location))
                             <p class="mb-1"><strong>Location:</strong> {{ $transaction->location }}</p>
                         @endif

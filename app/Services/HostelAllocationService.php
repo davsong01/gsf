@@ -24,12 +24,14 @@ class HostelAllocationService
 
         try {
             $setting = $transaction->edition;
+            
             $level = $transaction->level === 'Moderator' ? 'Participant' : $transaction->level;
-            $gender = $newData['sex'] ?? $transaction->gender;
+            $gender = $newData['gender'] ?? $transaction->gender;
+            
             $conference_edition_id = $transaction->conference_edition_id;
             
             DB::beginTransaction();
-
+            
             // --- CASE 1: Admin manually set hostel ---
             if (!empty($newData['new_hostel_id'])) {
                 $hostel = Hostel::where('id', $newData['new_hostel_id'])
@@ -63,13 +65,17 @@ class HostelAllocationService
 
             // --- CASE 2: Automatic allocation ---
             $allocationType = $setting->hostel_assignment_type ?? null;
-            $chapterField = $transaction->allocationFields->where('key', 'chapter')->first();
+            $chapterField = $transaction->allocationFields
+                ->first(function ($field) {
+                    return in_array($field->key, ['chapter', 'chapter_id'], true);
+                });
+            
             $fieldField = $transaction->allocationFields->where('key', 'field_id')->first();
-
+            
             $chapter_id = $chapterField->value ?? null;
             $field_id = $fieldField->value ?? null;
             $hostel = null;
-
+            
             if (in_array($level, ['Official', 'Medical'])) {
                 $hostel = Hostel::where([
                     'level' => $level,
@@ -93,6 +99,7 @@ class HostelAllocationService
                             ->whereRaw('allocation < capacity')
                             ->inRandomOrder()
                             ->first();
+
                         break;
 
                     case 'random':
@@ -190,6 +197,7 @@ class HostelAllocationService
             ];
         } catch (\Throwable $e) {
             DB::rollBack();
+            // dd($e->getMessage(), ' Line:'. $e->getLine());
             \Log::error('Hostel assignment failed', [
                 'transaction_id' => $transaction->id ?? null,
                 'error' => $e->getMessage(),

@@ -32,11 +32,11 @@ class AlumniController extends Controller
 
             $user = User::findorFail($id);
 
-            if($user->sex == 'Female'){
+            if($user->gender == 'Female'){
                $hostels = Hostel::whereType('Female')->whereLevel('Alumni')->get();
            }
 
-           if($user->sex == 'Male'){
+           if($user->gender == 'Male'){
                $hostels = Hostel::whereType('Male')->whereLevel('Alumni')->get();
            }
             $chapters = Chapter::all();

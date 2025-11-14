@@ -44,8 +44,8 @@
                                     <label for="sex">Gender</label>
                                     <select class="form-control" name="sex" id="sex" required>
                                          <option value="">--Select Gender--</option>
-                                         <option value="Male" {{ $official->sex == 'Male' ? 'selected' : ''}}>Male</option>
-                                         <option value="Female" {{ $official->sex == 'Female' ? 'selected' : ''}}>Female</option>
+                                         <option value="Male" {{ $official->gender == 'Male' ? 'selected' : ''}}>Male</option>
+                                         <option value="Female" {{ $official->gender == 'Female' ? 'selected' : ''}}>Female</option>
                                     </select>
                                 </fieldset>
                             

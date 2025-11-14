@@ -1,20 +1,20 @@
 
 <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="fa fa-bars"></i><span class="menu-title" data-i18n="Kanban">Dashboard</span></a></li>
 @if(auth()->user()->conference_role == 'superadmin')
-    <li class="nav-item {{ Request::is('conferencemanagement.index*') ? 'open' : '' }}"><a href="#"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Content">General Settings</span></a>
+    <li class="nav-item {{ Request::is('conferencemanagement.index*') ? 'open' : '' }}"><a href="#"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Content">Conference Mgt</span></a>
         <ul class="menu-content">
             <li class="is_shown"><a href="{{ route('ministry.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Ministries</span></a>
             </li>
             <li class="is_shown"><a href="{{ route('conference_speakers.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Conference Speakers</span></a>
             </li>
-             <li class="is_shown"><a href="{{ route('conference_faqs.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Conference FAQs</span></a>
+            <li class="is_shown"><a href="{{ route('conference_faqs.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Conference FAQs</span></a>
+            </li>
+            <li class="is_shown"><a href="{{ route('conferencemanagement.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Conferences</span></a>
             </li>
         </ul>
     </li>
     
 @endif
-<li class="nav-item {{ Request::is('conferencemanagement*') ? 'active' : '' }}"><a href="{{ route('conferencemanagement.index') }}"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Dashboard">Conference</span></a>
-</li>
 
 @if(auth()->user()->conference_role == 'superadmin')
 <li class="nav-item {{ Request::is('stakeholder*') ? 'open' : '' }}"><a href="#"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Content">Digital Reports</span></a>

@@ -109,10 +109,10 @@
 
                             <fieldset class="form-group">
                                 <label for="sex">Gender</label>
-                                <select class="form-control @error('sex')is-invalid @enderror" name="sex" id="sex" required>
+                                <select class="form-control @error('gender')is-invalid @enderror" name="sex" id="sex" required>
                                     <option value="">--Select Option--</option>
-                                    <option value="Male" {{ ($user->user->sex == 'Male' || old('sex') == 'Male') ? 'selected' : ''}}>Male</option>
-                                    <option value="Female" {{ ($user->user->sex == 'Female' || old('sex') == 'Female') ? 'selected' : ''}}>Female</option>
+                                    <option value="Male" {{ ($user->user->gender == 'Male' || old('gender') == 'Male') ? 'selected' : ''}}>Male</option>
+                                    <option value="Female" {{ ($user->user->gender == 'Female' || old('gender') == 'Female') ? 'selected' : ''}}>Female</option>
                                     </select>
                                 
                             </fieldset>

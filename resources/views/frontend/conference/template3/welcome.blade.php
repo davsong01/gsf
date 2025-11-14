@@ -339,26 +339,33 @@
 
         <div class="row g-4 justify-content-center mt-4">
             @foreach($plans as $plan)
-                @if($plan['show'])
+                @php
+                    $items = $plan->items ?? [];
+                @endphp
+
                 <div class="col-md-4">
                     <div class="d-ticket p-4 bg-dark-2 rounded-1 text-center h-100 position-relative wow fadeInUp">
-                        <img style="border-radius: 50%;" src="{{ asset($setting->conference_logo) }}" class="w-80px mb-4" alt="">
-                        <h2 class="mb-2">{{ $plan['title'] }}</h2>
-                        <h4 class="mb-4">&#8358;{{ $plan['price'] }}</h4>
+                        <img style="border-radius: 50%;" 
+                            src="{{ asset($setting->conference_logo) }}" 
+                            class="w-80px mb-4" 
+                            alt="">
+
+                        <h2 class="mb-2">{{ $plan->title }}</h2>
+                        <h4 class="mb-4">&#8358;{{ number_format($plan->price, 2) }}</h4>
 
                         <ul class="ul-check mb-4 text-start">
-                            @foreach($plan['items'] as $item)
+                            @foreach($items ?? [] as $item)
                                 <li>{{ $item }}</li>
                             @endforeach
                         </ul>
-
-                        <a class="btn-main fx-slide w-100 mt-auto" href="{{ route('conference.registration', $plan['route_id']) }}">
-                            <span>Register{{ $plan['per_participant'] ? ' /Participant' : '' }}</span>
+                        
+                        <a class="btn-main fx-slide w-100 mt-auto" href="{{ route('conference.registration', $plan->id) }}">
+                            <span>Get Started</span>
                         </a>
                     </div>
                 </div>
-                @endif
             @endforeach
+
         </div>
     </div>
 </section>

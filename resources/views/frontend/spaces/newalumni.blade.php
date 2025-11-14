@@ -61,8 +61,8 @@
                                 <label for="sex">Gender</label>
                                 <select class="form-control" name="sex" id="sex" required>
                                       <option value="">--Select Gender--</option>
-                                    <option value="Male" {{ old('sex') == 'Male' ? 'selected' : ''}}>Male</option>
-                                    <option value="Female" {{ old('sex') == 'Female' ? 'selected' : ''}}>Female</option>
+                                    <option value="Male" {{ old('gender') == 'Male' ? 'selected' : ''}}>Male</option>
+                                    <option value="Female" {{ old('gender') == 'Female' ? 'selected' : ''}}>Female</option>
                                 </select>
                             </fieldset>
                             <input type="hidden" name="status" value="1">

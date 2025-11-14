@@ -54,12 +54,12 @@
 
                                         <fieldset class="form-group">
                                             <label for="sex">Gender</label>
-                                            <select class="form-control @error('sex')is-invalid @enderror" name="sex"
+                                            <select class="form-control @error('gender')is-invalid @enderror" name="sex"
                                                 id="sex" required>
                                                 <option value="">--Select Option--</option>
-                                                <option value="Male" {{ old('sex') == 'Male' ? 'selected' : '' }}>
+                                                <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>
                                                     Male</option>
-                                                <option value="Female" {{ old('sex') == 'Female' ? 'selected' : '' }}>
+                                                <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>
                                                     Female</option>
                                             </select>
                                            

@@ -27,7 +27,7 @@
                     <div class="col-md-6">
                         <div class="form-group mb-2">
                             <label for="price">Plan Price</label>
-                            <input type="number" min="1" name="price" id="price" value="{{ old('price', $conferencePlan->price ?? '') }}" class="form-control" required>
+                            <input type="number" min="1" name="price" id="price" value="{{ old('price', $conferencePlan->price ?? '') }}" class="form-control">
                         </div>
                     </div>
 
@@ -38,6 +38,7 @@
                                 <option value="">-- Select Type --</option>
                                 <option value="single" {{ old('type', $conferencePlan->type ?? '') == 'single' ? 'selected' : '' }}>Single</option>
                                 <option value="multiple" {{ old('type', $conferencePlan->type ?? '') == 'multiple' ? 'selected' : '' }}>Multiple</option>
+                                <option value="donation" {{ old('type', $conferencePlan->type ?? '') == 'donation' ? 'selected' : '' }}>Donation</option>
                             </select>
                         </div>
                     </div>
@@ -52,6 +53,9 @@
                                 <option value="Alumni" {{ old('level', $conferencePlan->level ?? '') == 'Alumni' ? 'selected' : '' }}>Alumni</option>
                                 <option value="GSF Nec" {{ old('level', $conferencePlan->level ?? '') == 'GSF Nec' ? 'selected' : '' }}>GSF Nec</option>
                                 <option value="GYF Nec" {{ old('level', $conferencePlan->level ?? '') == 'GYF Nec' ? 'selected' : '' }}>GYF Nec</option>
+                                <option value="Choir" {{ old('level', $conferencePlan->level ?? '') == 'Choir' ? 'selected' : '' }}>Choir</option>
+                                <option value="Official" {{ old('level', $conferencePlan->level ?? '') == 'Official' ? 'selected' : '' }}>Official</option>
+                                <option value="Medical" {{ old('level', $conferencePlan->level ?? '') == 'Medical' ? 'selected' : '' }}>Medical</option>
                             </select>
                         </div>
                     </div>

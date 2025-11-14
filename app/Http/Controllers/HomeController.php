@@ -13,10 +13,11 @@ use App\Models\TempMember;
 use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use App\Models\ConferenceFaq;
+use App\Models\ConferencePlan;
 use App\Models\GeneralSetting;
 use App\Models\ConferenceSpeaker;
-use App\Imports\GeneralUsersImport;
 use App\Models\ConferenceSchedule;
+use App\Imports\GeneralUsersImport;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -50,10 +51,11 @@ class HomeController extends Controller
                 'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
             ];
 
-            $faqs = ConferenceFaq::whereIn('id', $setting->faq_ids ?? [])->orderBy('display_order')->get();
-            $speakers = ConferenceSpeaker::whereIn('id', $setting->speaker_ids ?? [])->get();
+            $faqs = ConferenceFaq::where('status', 1)->whereIn('id', $setting->faq_ids ?? [])->orderBy('display_order')->get();
+            $speakers = ConferenceSpeaker::where('status', 1)->whereIn('id', $setting->speaker_ids ?? [])->get();
             $schedule = ConferenceSchedule::where('status', 1)->where('conference_edition_id', $setting->id)->get();
-            $plans = conferencePlans($setting);
+            $plans = ConferencePlan::where('status', 1)->where('conference_edition_id', $setting->id)->get();
+            // conferencePlans($setting);
             
             return view('frontend.conference.template'. $this->conference->template_id.'.welcome')
                 ->with('events',$events)
@@ -89,41 +91,64 @@ class HomeController extends Controller
         }
     }
 
+    // public function regPage($type)
+    // {
+    //     if (isset($type) && $this->conference) {
+    //         $plan = ConferencePlan::where('id', $type)->where('conference_edition_id', $this->conference->id)->first();
+
+    //         $chapters = Chapter::orderBy('name')->get();
+    //         $fields = Field::orderBy('name')->get();
+    //         $setting = $this->conference;
+
+    //         $conference_year = Carbon::parse($setting->start_date)->year;
+    //         $alumnis_amount = [
+    //             'alumni_registration_fee' => $setting->alumni_registration_fee,
+    //             'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
+    //         ];
+
+    //         $title = '';
+
+    //         if($type == 1){
+    //             $title = 'Single Registration';
+    //         }
+
+    //         if ($type == 2) {
+    //             $title = 'Mass Registration';
+    //         }
+
+    //         if ($type == 3) {
+    //             $title = 'Alumni Registration';
+    //         }
+
+    //         $registrationFields = reformatRegistrationFields(
+    //             $setting->ministry
+    //                 ->fields()
+    //                 ->where('field_usage', 'registration')
+    //                 ->orderBy('display_order', 'ASC')
+    //                 ->get()
+    //         );
+    //         return view('frontend.conference.template'. $this->conference->template_id.'.registration',compact('title','chapters','setting','conference_year','alumnis_amount','type', 'fields', 'registrationFields'));
+    //     } else {
+    //         return abort(404);
+    //     }
+    // }
     public function regPage($type)
     {
         if (isset($type) && $this->conference) {
+            $plan = ConferencePlan::where('id', $type)->where('conference_edition_id', $this->conference->id)->first();
+
+            if(!$plan){
+                return back()->with('error', 'Invalid Registration Type Selected');
+            }
+
             $chapters = Chapter::orderBy('name')->get();
-            $fields = Field::orderBy('name')->get();
             $setting = $this->conference;
-
             $conference_year = Carbon::parse($setting->start_date)->year;
-            $alumnis_amount = [
-                'alumni_registration_fee' => $setting->alumni_registration_fee,
-                'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
-            ];
-            
-            $title = '';
-
-            if($type == 1){
-                $title = 'Single Registration';
-            }
-
-            if ($type == 2) {
-                $title = 'Mass Registration';
-            }
-
-            if ($type == 3) {
-                $title = 'Alumni Registration';
-            }
-
-            $registrationFields = reformatRegistrationFields(
-                $setting->ministry
-                    ->fields()
-                    ->where('field_usage', 'registration')
-                    ->orderBy('display_order', 'ASC')
-                    ->get()
-            );
-            return view('frontend.conference.template'. $this->conference->template_id.'.registration',compact('title','chapters','setting','conference_year','alumnis_amount','type', 'fields', 'registrationFields'));
+            $title = $plan->title;
+            $fields = $plan->fields()->sortBy('display_order');
+            $registrationFields = reformatRegistrationFields($fields);
+                
+            return view('frontend.conference.template' . $this->conference->template_id . '.registration', compact('title', 'chapters', 'setting', 'conference_year', 'type', 'fields', 'registrationFields','plan'));
         } else {
             return abort(404);
         }
@@ -152,7 +177,7 @@ class HomeController extends Controller
 
     public function chapters() {
         $chapters = Chapter::withCount('users')->where('id','<>',86)->get();
-       
+        
         return view('frontend.' . frontendTemplate() . '.campuses', compact('chapters'));
         // return view('frontend.main.chapters', compact('chapters'));
     }
