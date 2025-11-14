@@ -13,7 +13,7 @@
             @endif
             
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped zero-configuration">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -21,7 +21,6 @@
                             <th>Order</th>
                             <th>Type</th>
                             <th>Usage</th>
-                            <th>Registration Types</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -37,18 +36,6 @@
                             <td>{{ ucfirst($field->display_order) }}</td>
                             <td>{{ ucfirst($field->type) }}</td>
                             <td>{{ ucfirst($field->field_usage) }}</td>
-                            @php
-                                $names = collect($field->registration_types ?? [])
-                                    ->map(function ($id) {
-                                        $types = registrationTypeNames();
-                                        return $types[$id] ?? null;
-                                    })
-                                    ->filter()
-                                    ->implode(', ');
-                            @endphp
-
-                            <td>{{ $names ?: '—' }}</td>
-
                             <td>{{ $field->status ? 'Active' : 'Inactive' }}</td>
                             <td>
                                 <a href="{{ route('ministries.fields.edit', [$ministry->id, $field->id]) }}" class="btn btn-sm btn-info">Edit</a>

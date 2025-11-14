@@ -13,34 +13,6 @@ class PaymentService {
         return date('Ymd') . '-' . strtoupper(Str::random(6));
     }
 
-    // public static function calculateRegistrationAmount($data)
-    // {
-    //     $type = $data['type'];
-    //     $setting = $data['setting'];
-
-    //     switch ($type) {
-    //         // Individual Registration
-    //         case '1':
-    //             $expectedAmount = $setting->registration_fee;
-    //             break;
-
-    //         // Fellowship Registration
-    //         case '2':
-    //             $participants = (int) $data['participants'];
-    //             $expectedAmount = $setting->registration_fee * $participants;
-    //             break;
-
-    //         // Alumni Registration
-    //         case '3':
-    //             $alumniType = $data->alumni_type;
-    //             $expectedAmount = $setting->$alumniType ?? 0;
-
-    //             break;
-    //     }
-
-    //     return $expectedAmount;
-    // }
-
     public static function initializeTransaction(array $data)
     {
         $setting = $data['setting'];

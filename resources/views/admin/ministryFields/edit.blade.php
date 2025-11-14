@@ -90,13 +90,7 @@
                         $selectedTypes = is_array($selectedTypes) ? $selectedTypes : [];
                     @endphp
 
-                    <select name="registration_types[]" id="registration_types" class="form-control" multiple>
-                        @foreach (registrationTypeNames() as $id => $name)
-                            <option value="{{ $id }}" {{ in_array($id, $selectedTypes) ? 'selected' : '' }}>
-                                {{ $name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    
                     
                     <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple.</small>
                 </div>

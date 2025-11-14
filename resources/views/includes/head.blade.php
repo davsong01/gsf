@@ -55,9 +55,11 @@
 	@yield('extra_styles')
 	<!---Modal CSS-->
 	<style>
-		#cke_notifications_area_about {
+		#cke_notifications_area_about,#cke_notifications_area_content {
 			display: none;
 		}
+
+		
 		.vertical-alignment-helper {
 			display: table;
 			height: 100%;

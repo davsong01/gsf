@@ -65,12 +65,14 @@ class PaymentController extends Controller
 		$request['setting'] = $setting;
 
 		if(!in_array($plan->type, ['donation'])){
-			$amount = $plan->price;
-		}else{
-			$amount = $request->amount;
+			$request['amount'] = $plan->price;
 		}
+		
+		if (in_array($plan->type, ['multiple'])) {
+			$request['amount'] = $plan->price * ($request->no_of_participants ?? $request->participants);
+		}
+		
 
-		$request['amount'] = $amount;
 		$request['plan'] = $plan;
 		
 		$transaction = PaymentService::initializeTransaction($request->all());

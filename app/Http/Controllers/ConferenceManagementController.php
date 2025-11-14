@@ -730,11 +730,11 @@ class ConferenceManagementController extends Controller
 	public function participants($type = '', $edition = '')
 	{
 		$count = 1;
-
+		
 		if (auth()->user()->role == 1) {
-			$participants = Transaction::with('user')->where('conference_edition_id', $edition)->wherehas('user')->orderBy('created_at', 'desc')->where('level', $type)->get();
+			$participants = Transaction::with('user')->where('conference_edition_id', $edition)->wherehas('user')->where('level', $type)->latest()->take(10)->get();
 			$edition = ConferenceEdition::find($edition);
-
+			
 			return view('conference_management.admin.users.index', compact('participants', 'count', 'edition', 'type'));
 		}
 	}

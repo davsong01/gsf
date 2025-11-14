@@ -14,8 +14,6 @@
                         <h4 class="card-title">All Hostels for {{ $edition->conference_theme }}</h4>
                         @if(auth()->user()->conference_role == 'superadmin')
                             <a href="{{ route('hostels.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Hostel</a>        
-                            <a href="{{ route('hostels.repair.allocation',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-info mt-1">Repair Hostel Allocation</a>   
-                            <a href="{{ route('hostels.auto.allocate',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-success mt-1">Auto Allocate ({{ $unallocatedHostels }})</a>   
                             <button style="" class="btn btn-dark mt-1" data-toggle="modal"  data-target="#hostel-merger">Hostel Merger</button>
                         @endif                
                     </div>
@@ -150,45 +148,57 @@
 <script>
 $(document).ready(function () {
     $('#deallocate').on('change', function () {
-        var hostelId = $(this).val();
-        var remaining = $('option:selected', this).data('remaining');
-        
-        if (hostelId) {
-            $.ajax({
-                url: '{{ route("get.available.hostels") }}',
-                method: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    deallocated_hostel_id: hostelId,
-                    edition_id: {{ $edition->id }}
-                },
-                success: function (response) {
-                    if (response.status && response.hostels.length > 0) {
-                        let options = '<option value="">-- Select Hostel to Allocate --</option>';
-                        response.hostels.forEach(function (hostel) {
-                            let remaining = hostel.capacity - hostel.payments_count;
-                            options += `<option value="${hostel.id}" data-remaining="${remaining}">
-                                            ${hostel.name} (${hostel.allocation} Allocated | ${remaining} Remaining)
-                                        </option>`;
-                        });
+    var hostelId = $(this).val();
 
-                        $('#allocate').html(options);
-                        $('#allocateContainer').slideDown();
+    if (hostelId) {
+        $.ajax({
+            url: '{{ route("get.available.hostels", ["edition" => $edition->id]) }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                deallocated_hostel_id: hostelId,
+                edition_id: {{ $edition->id }}
+            },
+            success: function (response) {
 
-                        $('#number').slideDown();
-                        $('#amount').val('').removeAttr('max'); // reset
-                    } else {
-                        $('#allocateContainer').hide();
-                        $('#number').hide();
-                        $('#allocate').html('<option value="">No available hostels</option>');
-                        $('#amount').val('').removeAttr('max');
-                    }
+                if (response.status && response.hostels.length > 0) {
+
+                    let options = '<option value="">-- Select Hostel to Allocate --</option>';
+                    response.hostels.forEach(function (hostel) {
+                        let remaining = hostel.capacity - hostel.payments_count;
+                        options += `<option value="${hostel.id}" data-remaining="${remaining}">
+                                        ${hostel.name} (${hostel.allocation} Allocated | ${remaining} Remaining)
+                                    </option>`;
+                    });
+
+                    $('#allocate').html(options);
+                    $('#allocateContainer').slideDown();
+
+                    // ADD required
+                    $('#allocate').attr('required', true);
+
+                    $('#number').slideDown();
+                    $('#amount').val('').removeAttr('max');
+
+                } else {
+
+                    $('#allocateContainer').hide();
+                    $('#number').hide();
+                    $('#allocate').html('<option value="">No available hostels</option>');
+
+                    // REMOVE required because it's hidden
+                    $('#allocate').removeAttr('required');
+
+                    $('#amount').val('').removeAttr('max');
                 }
-            });
-        } else {
-            $('#allocateContainer').hide();
+            }
+        });
+    } else {
+        $('#allocateContainer').hide();
+        $('#allocate').removeAttr('required');
         }
     });
+
 
     $('#allocate').on('change', function () {
         let remaining = $('option:selected', this).data('remaining');

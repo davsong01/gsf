@@ -15,33 +15,21 @@
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('showedition*') ? 'active' : '' }}" href="{{ route('show.conference.edition',['id'=>$edition->id]) }}">Dashboard</a>
                         </li>
-                        <li class="nav-item">
-                          <a class="nav-link {{ Request::is('conferenceparticipants/Participant*') ? 'active' : '' }}" href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">Participants</a>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link {{ Request::is('conferenceparticipants/Moderator*') ? 'active' : '' }}" href="{{ route('conference.participants',['type'=>'Moderator', 'edition'=>$edition->id]) }}">Moderators</a>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link {{ Request::is('conferenceparticipants/Choir*') ? 'active' : '' }}" href="{{ route('conference.participants',['type'=>'Choir', 'edition'=>$edition->id]) }}">Choristers</a>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link {{ Request::is('conferenceparticipants/Medic*') ? 'active' : '' }}" href="{{ route('conference.participants', ['type'=>'Medical', 'edition'=>$edition->id]) }}">Medics</a>
-                        </li>
-                          <li class="nav-item">
-                          <a class="nav-link {{ Request::is('conferenceparticipants/Alumni*') ? 'active' : '' }}" href="{{ route('conference.participants', ['type'=>'Alumni', 'edition'=>$edition->id]) }}">Alumni</a>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link {{ Request::is('conferenceparticipants/Nec*') ? 'active' : '' }}" href="{{ route('conference.participants',['type'=>'Nec', 'edition'=>$edition->id]) }}">Nec</a>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link {{ Request::is('conferenceparticipants/Official*') ? 'active' : '' }}" href="{{ route('conference.participants', ['type'=>'Official', 'edition'=>$edition->id]) }}">Officials</a>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link {{ Request::is('tempusers*') ? 'active' : '' }}" href="{{ route('tempusers.index',['edition'=>$edition->id]) }}">Attempted Transactions</a>
-                        </li>
-                        <li class="nav-item">
+                        
+                        @if($edition->conferenceplans)
+                            @foreach($edition->conferenceplans as $plan)
+                                <li class="nav-item">
+                                    <a class="nav-link {{ Request::is('conferenceparticipants/'.$plan->level.'*') ? 'active' : '' }}"
+                                      href="{{ route('conference.participants', ['type' => $plan->level, 'edition' => $edition->id]) }}">
+                                        {{ $plan->level }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        @endif
+
+                        {{-- <li class="nav-item">
                           <a class="nav-link {{ Request::is('donations*') ? 'active' : '' }}" href="{{ route('donations.index',['edition'=>$edition->id]) }}">Donations</a>
-                        </li>
+                        </li> --}}
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('hostels*') ? 'active' : '' }}" href="{{ route('hostels.index',['edition'=>$edition->id]) }}">Hostels</a>
                         </li>
