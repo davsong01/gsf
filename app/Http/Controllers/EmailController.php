@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Email;
-use App\Models\Payment;
 use App\Jobs\sendMails;
-use App\Models\ConferenceEdition;
+use App\Models\Payment;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Services\EmailService;
 use App\Mail\NotificationEmail;
+use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -37,8 +39,9 @@ class EmailController extends Controller
     public function create(Request $request)
     {
         $edition = ConferenceEdition::find($request->edition);
-        
-        return view('conference_management.admin.emails.create',compact('edition'));
+        $conferenceplans = $edition->conferenceplans;
+
+        return view('conference_management.admin.emails.create',compact('edition', 'conferenceplans'));
     }
 
     /**
@@ -55,37 +58,19 @@ class EmailController extends Controller
             'content' => 'required | min: 10'
         ]);
 
-        $recipients = Payment::join('users', 'transactions.user_id', '=', 'users.id')
+        $recipients = Transaction::join('users', 'transactions.user_id', '=', 'users.id')
             ->where(['transactions.conference_edition_id' => $request->edition])
             ->select('users.name', 'users.email', 'users.phone','transactions.level')
             ->orderBy('transactions.created_at', 'desc');
-       
+        
         if($data['recipient'] == 'All'){
             $recipients = $recipients->get();
+        }else{
+            $recipients = $recipients->where('level', $request->recipient)->get();
         }
-
-        if($data['recipient'] == 'Nec'){
-            $recipients = $recipients->whereLevel('Nec')->get();
-        }
-
-        if($data['recipient'] == 'Moderators'){
-            $recipients = $recipients->whereLevel('Mederator')->get();
-        }
-
-        if($data['recipient'] == 'Alumni'){
-            $recipients = $recipients->whereLevel('Alumni')->get();
-        }
-
-        if($data['recipient'] == 'Officials'){
-            $recipients = $recipients->whereLevel('Official')->get();
-        }
-
-        if ($data['recipient'] == 'Participants') {
-            $recipients = $recipients->whereLevel('Participant')->get();
-        }
-       
+        
         $data['type'] = 'email';
-       
+        
         $recipients = $recipients->toArray();
 
         Email::create([
@@ -96,18 +81,16 @@ class EmailController extends Controller
             'conference_edition_id' => $request->edition,
             'count' => count($recipients),
         ]);
+        
+        $email = [
+            'subject' => $data['subject'],
+            'recipients' => $recipients,
+            'type' => 'conference_bulk_email',
+            'content' =>  $data['content'],
+        ];
 
-        foreach($recipients as $recipient){
-            $email = [
-                'subject' => $data['subject'],
-                'recipient_name' => $recipient['name'],
-                'recipient' => $recipient['email'],
-                'type' => 'conference_bulk_email',
-                'content' =>  $data['content'],
-            ];
+        EmailService::logEmail($email);
 
-            $this->logEmail($email);
-        }
         // sendEmails::dispatch($details);
         // $mail = new sendMails($data, $recipients);
         // dispatch($mail);

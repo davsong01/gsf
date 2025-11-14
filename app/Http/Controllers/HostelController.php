@@ -42,7 +42,9 @@ class HostelController extends Controller
         $fields = Field::all();
         $chapters = Chapter::all();
         $edition = ConferenceEdition::find($request->edition);
-        return view('conference_management.admin.hostel.create',compact('edition','fields','chapters'));
+        $conferenceplans = $edition->conferenceplans;
+
+        return view('conference_management.admin.hostel.create',compact('edition','fields','chapters', 'conferenceplans'));
     }
 
     public function participantExport(Request $request, $id){
@@ -97,7 +99,9 @@ class HostelController extends Controller
         $fields = Field::all();
         $chapters = Chapter::all();
         $edition = ConferenceEdition::find($request->edition);
-        return view('conference_management.admin.hostel.edit', compact('hostel','edition','chapters','fields'));
+        $conferenceplans = $edition->conferenceplans;
+        
+        return view('conference_management.admin.hostel.edit', compact('hostel','edition','chapters','fields', 'conferenceplans'));
     }
 
     public function update(Request $request, Hostel $hostel)

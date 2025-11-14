@@ -34,12 +34,9 @@
                                 <fieldset class="form-group">
                                     <label for="level">Level</label>
                                     <select class="form-control" name="level" id="level" required>
-                                        <option value="Alumni" {{ $food->level == 'Admin' ? 'selected' : ''}}>Alumni</option>
-                                        <option value="Participant" {{ $food->level == 'Participant' ? 'selected' : ''}}>Participant</option>
-                                        <option value="Choir" {{ $food->level == 'Choir' ? 'selected' : ''}}>Choir</option>
-                                        <option value="Official" {{ $food->level == 'Official' ? 'selected' : ''}}>Official</option>
-                                        <option value="Medical" {{ $food->level == 'Medical' ? 'selected' : ''}}>Medical</option>
-                                        <option value="Nec" {{ $food->level == 'Nec' ? 'selected' : ''}}>Nec</option>
+                                        @foreach($conferenceplans as $plan)
+                                        <option value="{{$plan->level}}" {{ $food->level == $plan->level ? 'selected' : ''}}>{{ $plan->level }}</option>
+                                        @endforeach
                                     </select>
                                 </fieldset>
                             

@@ -41,7 +41,9 @@ class FoodController extends Controller
         $fields = Field::all();
         $chapters = Chapter::all();
         $edition = ConferenceEdition::find($request->edition);
-        return view('conference_management.admin.food.create',compact('edition', 'fields','chapters'));
+        $conferenceplans = $edition->conferenceplans;
+
+        return view('conference_management.admin.food.create',compact('edition', 'fields','chapters', 'conferenceplans'));
     }
 
     public function store(Request $request)
@@ -77,8 +79,9 @@ class FoodController extends Controller
         $edition = ConferenceEdition::find($request->edition);
         $fields = Field::all();
         $chapters = Chapter::all();
-        
-        return view('conference_management.admin.food.edit', compact('food','edition','fields','chapters'));
+        $conferenceplans = $edition->conferenceplans;
+
+        return view('conference_management.admin.food.edit', compact('food','edition','fields','chapters', 'conferenceplans'));
     }
 
     public function update(Request $request, Food $food)

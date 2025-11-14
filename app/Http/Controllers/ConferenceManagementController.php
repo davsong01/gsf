@@ -965,9 +965,9 @@ class ConferenceManagementController extends Controller
 		$count = 1;
 
 		if (auth()->user()->role == 1) {
-			$participants = User::join('payments', 'payments.user_id', '=', 'users.id')
-				->where('payments.conference_edition_id', $edition->id)
-				->select('users.*', 'payments.level', 'payments.amount_paid', 'payments.transid')
+			$participants = User::join('transactions', 'transactions.user_id', '=', 'users.id')
+				->where('transactions.conference_edition_id', $edition->id)
+				->select('users.*', 'transactions.level', 'transactions.amount_paid', 'transactions.transid')
 				->orderBy('users.created_at', 'desc')->onlyTrashed()->get();
 			// dd($participants);
 			return view('conference_management.admin.users.trashed', compact('participants', 'count', 'edition'));

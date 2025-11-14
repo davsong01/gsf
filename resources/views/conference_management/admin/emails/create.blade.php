@@ -28,25 +28,21 @@
                                         <select class="form-control" name="recipient" id="recipient" required>
                                             <option value="">--Select--</option>
                                             <option value="All">All</option>
-                                            <option value="Participants">Participants</option>
-                                            <option value="Nec">Nec</option>
-                                            <option value="Moderators">Moderators</option>
-                                            <option value="Alumni">Alumni</option>
-                                            <option value="Ofiicials">Ofiicials</option>
+                                            @foreach($conferenceplans as $plan)
+                                            <option value="{{$plan->level}}">{{ $plan->level }}</option>
+                                            @endforeach
                                         </select>
                                     </fieldset>
-                                 
+                                    
                                     <fieldset class="form-group">
                                         <label for="phone">Subject</label>
                                         <input type="text" class="form-control" id="subject" name="subject" value="{{ old('subject') }}" placeholder="Enter subject" required>
                                     </fieldset>
-                                   
+                                    
                                     <fieldset class="form-group">
                                         <label for="content">Content</label>
                                         <textarea class="form-control" id="content" rows="3" name="content" rows="10" cols="200">{{ old('content') }}</textarea required>
-                                        <div class="form-control-position">
-                                           &#9745;
-                                        </div>
+                                        <div class="form-control-position">&#9745;</div>
                                     </fieldset>
                                 </div>
                                 <input type="hidden" name="edition" value="{{ $edition->id }}">
