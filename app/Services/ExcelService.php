@@ -40,4 +40,30 @@ class ExcelService
             }
         }, $filename);
     }
+
+    public static function import($file, bool $ignoreHeaders = false): array
+    {
+        $rows = Excel::toCollection(null, $file);
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        $sheet = $rows->first()->toArray();
+
+        if ($ignoreHeaders) {
+            // Return all rows as numeric arrays
+            return array_map(fn($row) => array_values($row), $sheet);
+        }
+
+        // First row as headers
+        $headers = array_map(fn($header) => (string) $header, array_shift($sheet));
+
+        $data = [];
+        foreach ($sheet as $row) {
+            $data[] = array_combine($headers, array_values($row));
+        }
+
+        return $data;
+    }
 }

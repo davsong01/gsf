@@ -202,7 +202,7 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-	public function store(Request $request, User $user)
+	public function store(Request $request)
 	{
 		if (auth()->user()->role == 1) {
 			$validator =  Validator::make($request->all(), [
@@ -327,7 +327,7 @@ class ConferenceManagementController extends Controller
 				: [];
 
 			// merge correctly
-			$newUserArray = array_merge($newUserArray, $fields);
+			$newUserArray = array_merge($fields, $newUserArray);
 			
 			if ($moderator->slot_filled >= $moderator->slot) {
 				DB::rollBack();
@@ -341,7 +341,7 @@ class ConferenceManagementController extends Controller
 				$newUserArray['plan']    = $plan;
 				$newUserArray['amount']  = $plan->price;
 				$newUserArray['setting'] = $setting;
-
+				
 				$transaction = PaymentService::initializeTransaction($newUserArray);
 				
 				if (!$transaction['status']) {
@@ -627,7 +627,7 @@ class ConferenceManagementController extends Controller
 				}
 			}
 
-			if ($data['registration_fields']['participants']) {
+			if (isset($data['registration_fields']['participants'])) {
 				$paymentupdate['slot'] = $data['registration_fields']['participants'] ?? $transaction->slot;
 			}
 
@@ -911,80 +911,36 @@ class ConferenceManagementController extends Controller
 
 	public function import(Request $request)
 	{
-		$edition = ConferenceEdition::find($request->edition) ?? activeConferenceEdition();
 		
+// "name" => "sdsdsdsdsd"
+//   "email" => "aa@gmail.com"
+//   "phone" => "0930493434"
+//   "gender" => "Male"
+		// dd($request->all());
+
 		if (auth()->user()->role == 1 || auth()->user()->isModerator($this->edition)) {
 			$data = $this->validate($request, [
 				'file' => 'required|mimes:xlsx,csv',
-				'import_level' => 'required|in:Participant,Moderator,Alumni,Nec,Choir',
-			]);
-
-			$data['chapter_id'] = auth()->user()->isAdmin() ? $request->chapter_id : auth()->user()->chapter_id;
-			$data['edition'] = $edition;
-			
-			if(auth()->user()->isAdmin()){
-				if(empty($data['chapter_id'])){
-					return back()->with('error', 'Chapter Id is empty');
-				}
-			}
-			$redirectRoute = auth()->user()->isAdmin() ? route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) : route('conferenceusers.import.index');
-
-			if (!auth()->user()->isAdmin()) {
-				$payment = Transaction::where([
-					'user_id' => auth()->user()->id,
-					'conference_edition_id' => $request->edition,
-					'registration_status' => 'Complete'
-				])->first();
-
-				$sRedirectRoute = route('conferencemanagement.show', [
-					'conferencemanagement' => $payment->id,
-					'edition' => $request->edition
-				]);
-				if ($payment && $payment->slot_filled >= $payment->slot) {
-					return back()->with('error', 'You have already exhausted your registration slots');
-				}
-			} else {
-				$sRedirectRoute = route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]);
-			}
-		} else return abort(404);
-
-		try {
-			$import = new ConferenceUsersImport($data, $payment ?? null);
-			Excel::import($import, $request->file('file'));
-
-			$failures = $import->failures();
-
-			if ($failures->isNotEmpty()) {
-				$failureDetails = $failures->map(function ($failure) {
-					return [
-						'row' => $failure->row(),
-						'data' => $failure->values(),
-						'errors' => $failure->errors(),
-					];
-				});
-
-				return redirect($redirectRoute)->with([
-					'failures' => $failureDetails,
-					'error' => 'Some rows failed to import.',
-				]);
-			} else {
-
-				return redirect($sRedirectRoute)->with([
-					'message' => 'Upload Successful',
-				]);
-			}
-		} catch (\Exception $e) {
-			// dd($e->getMessage(), $e->getLine(), $e->getFile());
-			return redirect($redirectRoute)->with([
-				'error' => 'Something went wrong, please try again: ' . $e->getMessage(),
+				'import_level' => 'required',
 			]);
 		}
+
+		$participants = ExcelService::import($request->file('file'));
+
+		foreach($participants as $participant){
+			request()->merge($participant);
+
+			$this->store(request());
+		}
+
+		return redirect(route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]));
+
 	}
 
 	public function adminImport(Request $request)
 	{
 		$edition = ConferenceEdition::find($request->edition) ?? activeConferenceEdition();
-
+		
 		$data = $this->validate($request, [
 			'file' => 'required|mimes:xlsx,csv',
 			'chapter_id' => 'nullable',
@@ -992,40 +948,11 @@ class ConferenceManagementController extends Controller
 		]);
 		
 		$data['setting'] = $edition;
-		// $redirectRoute = auth()->user()->isAdmin() ? route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) : route('conferenceusers.import.index');
-		// $sRedirectRoute = route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]);
-
-		// try {
-			$import = new ConferenceUsersImport($data);
-			Excel::import($import, $request->file('file'));
-
-			$failures = $import->failures();
-
-			if ($failures->isNotEmpty()) {
-				$failureDetails = $failures->map(function ($failure) {
-					return [
-						'row' => $failure->row(),
-						'data' => $failure->values(),
-						'errors' => $failure->errors(),
-					];
-				});
-
-				return redirect(route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) )->with([
-					'failures' => $failureDetails,
-					'error' => 'Some rows failed to import.',
-				]);
-			} else {
-
-				return redirect(route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]))->with([
-					'message' => 'Upload Successful',
-				]);
-			}
-		// } catch (\Exception $e) {
-		// 	dd($e->getMessage());
-		// 	return redirect(route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) )->with([
-		// 		'error' => 'Something went wrong, please try again: ' . $e->getMessage(),
-		// 	]);
-		// }
+		$redirectRoute = auth()->user()->isAdmin() ? route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) : route('conferenceusers.import.index');
+		
+		return redirect(route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]))->with([
+			'message' => 'Upload Successful',
+		]);
 	}
 
 
