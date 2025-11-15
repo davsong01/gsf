@@ -23,7 +23,6 @@
                         @if(auth()->user()->conference_role == 'superadmin')
                         <a href="{{ route('conferenceeditions.create') }}" class="btn btn-primary mt-1">Add conference edition</a>
                         @endif
-                        @include('includes.alerts')
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">

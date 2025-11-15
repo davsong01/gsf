@@ -54,13 +54,7 @@
                                         
                                         </fieldset>
                                     </div>
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="registration_fee">Registration Fee</label>
-                                        <fieldset class="form-group ">
-                                            <input type="number" class="form-control" name="registration_fee" value="{{ old('registration_fee') ?? $edition->registration_fee }}" id="registration_fee">
-                                        
-                                        </fieldset>
-                                    </div>
+                                    
                                     <div class="col-sm-6 col-md-6">
                                         <label for="official_email">Official Email</label>
                                         <fieldset class="form-group ">
@@ -69,21 +63,7 @@
 
                                         </fieldset>
                                     </div>
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="new_alumni_registration_fee">New Alumni Fee</label>
-                                        <fieldset class="form-group ">
-                                            <input type="number" class="form-control" name="new_alumni_registration_fee" value="{{ old('new_alumni_registration_fee') ?? $edition->new_alumni_registration_fee }}" id="new_alumni_registration_fee" required>
-                                            
-                                        </fieldset>
-                                    </div>
                                     
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="alumni_registration_fee">Old Alumni Fee</label>
-                                        <fieldset class="form-group ">
-                                            <input type="number" class="form-control" name="alumni_registration_fee" value="{{ old('alumni_registration_fee') ?? $edition->alumni_registration_fee }}" id="alumni_registration_fee" required>
-                                            
-                                        </fieldset>
-                                    </div>
                                     {{-- {{dd($edition)}} --}}
                                     <div class="col-sm-6 col-md-6">
                                         <label for="start_date">Conference Start Date</label>

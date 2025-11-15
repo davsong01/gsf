@@ -35,12 +35,11 @@ class ConferenceEditionController extends Controller
     public function create()
     {
         if (auth()->user()->role == 1) {
-            $edition = ConferenceEdition::find($id);
             $paymentproviders = PaymentProvider::where('status', 'active')->get();
             $ministries = Ministry::where('status', 'active')->latest()->get();
             $faqs = ConferenceFaq::where('status', 1)->orderBy('display_order')->get();
 
-            return view('conference_management.admin.editions.create', compact('edition', 'paymentproviders', 'ministries', 'faqs'));
+            return view('conference_management.admin.editions.create', compact('paymentproviders', 'ministries', 'faqs'));
         }
     }
 
@@ -65,26 +64,7 @@ class ConferenceEditionController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $this->validate($request, [
-            "status" => "required",
-            "conference_theme" => "required",
-            "registration_fee" => "required",
-            "official_email" => "required",
-            "new_alumni_registration_fee" => "required|numeric",
-            "start_date" => "required",
-            "alumni_registration_fee" => "required",
-            "end_date" => "required",
-            "start_registration" => "required",
-            "close_registration" => "required",
-            // "random_hostel" => "required",
-            "random_foodstand" => "required",
-            "reg_prefix" => "required",
-            "conference_overview" => "required",
-            "PAYSTACK_SECRET_KEY" => "required",
-            "PAYSTACK_PUBLIC_KEY" => "required",
-            "MERCHANT_EMAIL" => "required",
-            "mission" => "required",
-        ]);
+        $data = $request->all();
         
         // Check if existing active
         $active = ConferenceEdition::where('status','active')->count();
@@ -94,7 +74,7 @@ class ConferenceEditionController extends Controller
         }
 
         ConferenceEdition::create($data);
-        return redirect(route('conferenceeditions.index'))->with('message', 'Operation Successful');
+        return redirect(route('conferencemanagement.index'))->with('message', 'Operation Successful');
     }
 
     /**

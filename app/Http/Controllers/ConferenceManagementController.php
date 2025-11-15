@@ -40,7 +40,7 @@ class ConferenceManagementController extends Controller
 		// Admin
 		if (auth()->user()->role == 1) {
 			if (auth()->user()->conference_role == 'superadmin') {
-				$editions = ConferenceEdition::with('ministry')->get();
+				$editions = ConferenceEdition::with('ministry')->latest()->get();
 			} else {
 				$editions = ConferenceEdition::with('ministry')->where('id', $this->edition->id)->get();
 			}
