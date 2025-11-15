@@ -2,11 +2,54 @@
 
 use App\Models\Field;
 use App\Models\Chapter;
+use Illuminate\Support\Str;
 use App\Models\GeneralSetting;
 use Illuminate\Support\Carbon;
 use App\Models\ConferenceEdition;
 
+if (!function_exists('generateSampleValue')) {
+    function generateSampleValue($type, $name)
+    {
+        $slugName = Str::slug($name, '_');
 
+        $nameSamples = [
+            'name'          => 'David Oghi',
+            'gender'        => 'Male',
+            'phone'         => '08143511076',
+            'state'         => 'Lagos',
+            'country'       => 'Nigeria',
+            'chapter'       => Chapter::where('id', 19)->value('name'),
+            'chapter_id'    => Chapter::where('id', 19)->value('name'),
+            'assembly_id'   => 'Wonders Cathdral, Magodo',
+            'district_id'   => 'Magodo Headquarters',
+            'region_id'     => 'Region 12',
+        ];
+
+        // Check for manual override
+        foreach ($nameSamples as $key => $value) {
+            if (str_contains($slugName, $key)) {
+                return $value;
+            }
+        }
+
+        return match (strtolower($type)) {
+            'email'     => fake()->safeEmail(),
+            'phone'     => fake()->phoneNumber(),
+            'number'    => fake()->numberBetween(10, 500),
+            'text'      => fake()->sentence(3),
+            'name'      => fake()->name(),
+            default     => fake()->word(),
+        };
+    }
+}
+
+
+if (!function_exists('participantAllowedUpdateFields')) {
+    function participantAllowedUpdateFields()
+    {
+        return ['name', 'gender','phone'];
+    }
+}
 
 if (!function_exists('chapterStakeholders')) {
     function chapterStakeholders()

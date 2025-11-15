@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Chapter;
 use App\Models\TempUser;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\ConferenceEdition;
 use Illuminate\Support\Facades\DB;

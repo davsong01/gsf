@@ -119,7 +119,8 @@
                                         <td>{{ $participant->user->email }}</td>
                                         <td>{{ $participant->user->phone }}</td>
                                         <td>&#8358;{{ $participant->amount_paid }}</td>
-                                        <td>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
+                                        <td> 
+                                            @if(($participant->moderator) && in_array($participant->level, ['Participant', 'Moderator'])){{ $participant->moderator->name }}
                                             @else N/A @endif
                                         </td>
                                         
@@ -144,14 +145,6 @@
                                                 class="btn btn-sm btn-primary text-nowrap">
                                                     <i class="bx bxs-edit me-1"></i> Edit
                                                 </a>
-
-                                                {{-- Print/Download Conference I.D --}}
-                                                {{-- @if($participant->registration_status == 'Complete')
-                                                    <a href="{{ route('participants.card', ['id' => $participant->id, 'edition' => $participant->conference_edition_id]) }}"
-                                                    class="btn btn-sm btn-secondary text-nowrap">
-                                                        <i class="fa fa-print me-1"></i> Print I.D
-                                                    </a>
-                                                @endif --}}
 
                                                 {{-- Delete Participant --}}
                                                 @if(auth()->user()->id != $participant->user_id)

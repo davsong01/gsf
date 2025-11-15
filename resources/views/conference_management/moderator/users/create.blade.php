@@ -53,9 +53,9 @@
                                         </fieldset>
 
                                         <fieldset class="form-group">
-                                            <label for="sex">Gender</label>
-                                            <select class="form-control @error('gender')is-invalid @enderror" name="sex"
-                                                id="sex" required>
+                                            <label for="gender">Gender</label>
+                                            <select class="form-control @error('gender')is-invalid @enderror" name="gender"
+                                                id="gender" required>
                                                 <option value="">--Select Option--</option>
                                                 <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>
                                                     Male</option>
@@ -68,7 +68,7 @@
                                     </div>
                                     <div class="col-md-6 col-sm-12">
                                          <fieldset class="form-group @error('passport')is-invalid @enderror">
-                                            <label for="sex">Upload Passport (Only jpeg and png files of less than 200kb allowed)</label>
+                                            <label for="gender">Upload Passport (Only jpeg and png files of less than 200kb allowed)</label>
                                             <input type="file" accept="image/*" class="form-control" name="passport"
                                                 id="passport">
                                         </fieldset>

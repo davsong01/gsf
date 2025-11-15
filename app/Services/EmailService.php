@@ -158,4 +158,20 @@ class EmailService {
 
         CriticalEmail::insert($insert);
     }
+
+    /**
+     * Send all registration-related emails.
+     */
+    public static function sendRegistrationEmails($transaction)
+    {
+        $emailData['transaction'] = $transaction;
+
+        // Welcome email to participant
+        $emailData['type'] = 'welcome_mail';
+        self::logEmail($emailData);
+
+        // Notify admin/new registration
+        $emailData['type'] = 'new_registration';
+        self::logEmail($emailData);
+    }
 }

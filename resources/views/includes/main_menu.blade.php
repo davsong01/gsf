@@ -17,20 +17,18 @@
                 style="color:yellow !important; font-weight:bolder" href="{{ route('stop.switchuser') }}" aria-expanded="false"><i class="fa fa-arrow-left"></i><span
                     class="hide-menu">BACK TO ADMIN</span></a></li>
             @endif
-            
             @if(auth()->user()->role == 1)
             {{-- Admin menus --}}
                 @include('includes.adminmenu')
             @elseif(auth()->user()->role == 3)
-            
-            {{-- Publicity sec menu --}}
+                {{-- Publicity sec menu --}}
                 @include('includes.subadminmenu')
-            @endif
-            @if(isset($edition) && $edition->status == 'active')
-                @if(auth()->user()->role != 1)
-                    @include('includes.membermenu')
-                @endif
             @else
+                @if(isset($edition) && $edition->status == 'active')
+                    @if(auth()->user()->role != 1)
+                        @include('includes.membermenu')
+                    @endif
+                @endif
             @endif
         </ul> 
     </div>

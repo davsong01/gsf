@@ -60,8 +60,8 @@
                                 </fieldset>
 
                                 <fieldset class="form-group">
-                                    <label for="sex">Sex</label>
-                                    <select class="form-control" name="sex" id="sex" required>
+                                    <label for="gender">Gender</label>
+                                    <select class="form-control" name="gender" id="gender" required>
                                         <option value="Male" {{ $user->gender == 'Male' ? 'selected' : ''}}>Male</option>
                                         <option value="Female" {{ $user->gender == 'Female' ? 'selected' : ''}}>Female</option>
                                     </select>

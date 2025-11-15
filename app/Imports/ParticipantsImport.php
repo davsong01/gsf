@@ -98,8 +98,8 @@ class UsersImport implements ToModel, WithHeadingRow
 				'email.unique' => 'One or more email already exists, please check the email field and try again',
 				'phone.unique' => 'One or more phone number already exists, please check the phone number field and try again',
 
-				'sex.in' => 'One or more sex/gender is wrong, try Male/Female, please check the sex field and try again',
-				'sex.required' => 'One or more sex/gender is wrong, try Male/Female, please check the sex field and try again',
+				'gender.in' => 'One or more gender/gender is wrong, try Male/Female, please check the gender field and try again',
+				'gender.required' => 'One or more gender/gender is wrong, try Male/Female, please check the gender field and try again',
 				'chapter.exists' => 'One or more chapter is using a non existing chapter, please check the chapter field and try again',
 				// 'registration_status.in' => 'One or more registration status is wrong, try Pending/Complete, please check the registration status field and try again',
 			]
@@ -123,7 +123,7 @@ class UsersImport implements ToModel, WithHeadingRow
 		$chapter = isset($row['chapter']) ?
 			DB::table('chapters')->whereName(trim($row['chapter']))->pluck('id')->first()
 			: null;
-		$sex = isset($row['gender']) ? $row['gender'] : null;
+		$gender = isset($row['gender']) ? $row['gender'] : null;
 		$registration_status = isset($row['registration_status']) ? $row['registration_status'] : 'Pending';
 		$slot = isset($row['slot']) ? $row['slot'] : 1;
 		$slot_filled = isset($row['slot_filled']) ? $row['slot_filled'] : 1;
@@ -181,7 +181,7 @@ class UsersImport implements ToModel, WithHeadingRow
 			'food_id' => $food_id,
 			'hostel_id' => $hostel_id,
 			'chapter' => $chapter,
-			'gender' => $sex,
+			'gender' => $gender,
 			'registration_status' => $registration_status,
 			'slot' => $slot,
 			'slot_filled' => $slot_filled,

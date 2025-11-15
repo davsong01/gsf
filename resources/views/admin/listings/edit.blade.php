@@ -34,8 +34,8 @@
             </div>
             <div class="col-md-6 col-sm-12">
                 <fieldset class="form-group">
-                    <label for="sex">Gender</label>
-                    <select disabled class="form-control" name="sex" id="sex" required>
+                    <label for="gender">Gender</label>
+                    <select disabled class="form-control" name="gender" id="gender" required>
                         <option value="Male" {{ $user->gender == 'Male' ? 'selected' : ''}}>Male</option>
                         <option value="Female" {{ $user->gender == 'Female' ? 'selected' : ''}}>Female</option>
                     </select>
@@ -58,7 +58,7 @@
             </div>
             <div class="col-md-6 col-sm-12">
                 <fieldset class="form-group">
-                    <label for="sex">Campus Portfolio</label>
+                    <label for="gender">Campus Portfolio</label>
                     <select disabled class="form-control" name="portfolio" id="portfolio">
                         @foreach ( $portfolios as $key=>$portfolio)
                         <option value="{{ $key }}" {{ $user->role == $key ? 'selected' : ''}}>{{ $portfolio }}</option>

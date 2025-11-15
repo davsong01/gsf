@@ -175,4 +175,5 @@ class PaymentService {
     {
         return  'GSF' . $edition->reg_prefix . '-' . $user->id;
     }
+
 }

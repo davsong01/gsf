@@ -36,8 +36,8 @@
                         <input type="text" class='form-control pl-0' name="phone" value="{{ old('phone') }}" required>
                     </div>
                     <div class='form-group-icon mb15'>
-                        <label for="sex">Select Gender</label><br>
-                        <select name="sex" id="sex" class="form-control pl-0" required>
+                        <label for="gender">Select Gender</label><br>
+                        <select name="gender" id="gender" class="form-control pl-0" required>
                             <option value="">Select...</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>

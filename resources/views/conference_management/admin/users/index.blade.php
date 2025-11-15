@@ -83,7 +83,8 @@
                                                 <strong>Pro. Charge: </strong>&#8358;{{ number_format($participant->provider_charge) }} <br>
                                                 <strong>Total Paid: </strong>&#8358;{{ number_format($participant->total_amount ?? $participant->amount_paid) }} <br>
                                             </td>
-                                            <td></strong>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
+                                            
+                                            <td></strong>@if(isset($participant->moderator->name) || in_array($type, ['Participant', 'Moderator'])  && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
                                                 @else N/A @endif</td>
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                                 <a class="actions" data-toggle="tooltip" title="View/Edit User" href="{{ route('conference.participants.edit', ['edition'=>$edition->id,'id'=>$participant->id]) }}"> <i class="bx bxs-edit actions"></i></a>

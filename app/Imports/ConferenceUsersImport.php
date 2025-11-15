@@ -69,7 +69,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 		$phone = trim($row['phone']);
 		$level = trim($this->data['import_level']);
 		$password = Hash::make(trim($row['phone']));
-		$sex = $row['gender'] ?? null;
+		$gender = $row['gender'] ?? null;
 		$registration_status = $row['registration_status'] ?? 'Pending';
 		$slot = $row['slot'] ?? 1;
 		$slot_filled = $row['slot_filled'] ?? 1;
@@ -92,7 +92,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			'type' => $this->type,
 			'chapter_id' => $chapter_id ?? null,
 			'chapter' => $chapter_id ?? null,
-			'gender' => $sex,
+			'gender' => $gender,
 			'registration_status' => $registration_status,
 			'slot' => $slot,
 			'slot_filled' => $slot_filled,
@@ -162,7 +162,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			'*.phone' => 'required',
 			'*.conference_number' => 'nullable|unique:users,conference_number',
 			'*.registration_status' => 'nullable|in:Pending,Complete',
-			'*.sex' => $this->data['import_level'] === 'Participant' ? 'required|in:Male,Female' : 'nullable|in:Male,Female',
+			'*.gender' => $this->data['import_level'] === 'Participant' ? 'required|in:Male,Female' : 'nullable|in:Male,Female',
 			'*.chapter' => 'nullable|exists:chapters,name',
 		];
 		
@@ -175,8 +175,8 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			'*.name.required' => "One or more $level do not have a name.",
 			'*.name.min' => "One or more $level name is too short (min 3).",
 			'*.name.max' => "One or more $level name is too long (max 200).",
-			'*.sex.required' => "One or more $level have no gender.",
-			'*.sex.in' => "One or more $level gender is invalid.",
+			'*.gender.required' => "One or more $level have no gender.",
+			'*.gender.in' => "One or more $level gender is invalid.",
 			'*.chapter.exists' => "One or more $level chapter does not exist.",
 		];
 	}

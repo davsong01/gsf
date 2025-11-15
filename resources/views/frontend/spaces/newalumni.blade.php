@@ -58,8 +58,8 @@
                             </fieldset>
 
                             <fieldset class="form-group">
-                                <label for="sex">Gender</label>
-                                <select class="form-control" name="sex" id="sex" required>
+                                <label for="gender">Gender</label>
+                                <select class="form-control" name="gender" id="gender" required>
                                       <option value="">--Select Gender--</option>
                                     <option value="Male" {{ old('gender') == 'Male' ? 'selected' : ''}}>Male</option>
                                     <option value="Female" {{ old('gender') == 'Female' ? 'selected' : ''}}>Female</option>

@@ -199,7 +199,7 @@ class PaymentController extends Controller
 
 		// Send emails
 		$transaction->user = $user;
-		$this->sendRegistrationEmails($transaction);
+		EmailService::sendRegistrationEmails($transaction);
 
 		// Auto-login (if needed)
 		if ($admin !== 'admin') {
@@ -231,22 +231,6 @@ class PaymentController extends Controller
 		]);
 
 		return true;
-	}
-
-	/**
-	 * Send all registration-related emails.
-	 */
-	protected function sendRegistrationEmails($transaction)
-	{
-		$emailData['transaction'] = $transaction;
-
-		// Welcome email to participant
-		$emailData['type'] = 'welcome_mail';
-		EmailService::logEmail($emailData);
-
-		// Notify admin/new registration
-		$emailData['type'] = 'new_registration';
-		EmailService::logEmail($emailData);
 	}
 
 
