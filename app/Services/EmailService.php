@@ -4,35 +4,38 @@ namespace App\Services;
 use App\Models\CriticalEmail;
 
 class EmailService {
-    public static function getContent($type, $transaction)
+    public static function getContent($type, $transaction=null, $extraData=null)
     {
         $subject = '';
         $content = '';
-        $conferenceTheme = $transaction->edition->conference_theme ?? 'GSF National Conference';
-        $user = $transaction->user ?? null;
-        $fields = $transaction->allocationFields;
-
-        $registrationDetails = "
-        <strong>Name:</strong> {$transaction->name}<br>
-        <strong>Email:</strong> {$transaction->email}<br>
-        <strong>Phone:</strong> {$transaction->phone}<br>
-        <strong>Amount Paid:</strong> &#8358;" . number_format($transaction->amount_paid ?? $transaction->amount ?? 0) . "<br><br>
-        <strong>Service Charge:</strong> &#8358;" . number_format($transaction->provider_charge ?? 0) . "<br><br>
-        <strong>Total Amount Paid:</strong> &#8358;" . number_format($transaction->total_amount ?? (($transaction->amount_paid ?? 0) + ($transaction->provider_charge ?? 0))) . "<br><br>";
-
-        $allocationDetails = '';
-        if (!empty($transaction->hostel_id)) {
-            $allocationDetails .= "<strong>Allocated Hostel:</strong> {$transaction->hostel->name}<br>Hostel Allocation Number: {$transaction->hostel_allocation_number}<br>";
+        
+        if(!empty($transaction)){
+            $conferenceTheme = $transaction->edition->conference_theme ?? 'GSF National Conference';
+            $user = $transaction->user ?? null;
+            $fields = $transaction->allocationFields;
+            
+            $registrationDetails = "
+            <strong>Name:</strong> {$transaction->name}<br>
+            <strong>Email:</strong> {$transaction->email}<br>
+            <strong>Phone:</strong> {$transaction->phone}<br>
+            <strong>Amount Paid:</strong> &#8358;" . number_format($transaction->amount_paid ?? $transaction->amount ?? 0) . "<br><br>
+            <strong>Service Charge:</strong> &#8358;" . number_format($transaction->provider_charge ?? 0) . "<br><br>
+            <strong>Total Amount Paid:</strong> &#8358;" . number_format($transaction->total_amount ?? (($transaction->amount_paid ?? 0) + ($transaction->provider_charge ?? 0))) . "<br><br>";
+    
+            $allocationDetails = '';
+            if (!empty($transaction->hostel_id)) {
+                $allocationDetails .= "<strong>Allocated Hostel:</strong> {$transaction->hostel->name}<br>Hostel Allocation Number: {$transaction->hostel_allocation_number}<br>";
+            }
+            if (!empty($transaction->food_id)) {
+                $allocationDetails .= "<br><strong>Allocated Service Point:</strong> {$transaction->food->name}<br>Service Point Allocation Number: {$transaction->service_point_allocation_number}<br><br>";
+            }
+    
+            $loginDetails = $user ? "
+            <strong>Login ID:</strong> {$user->family_id}<br>
+            <strong>Password:</strong> {$transaction->phone}<br><br>
+            You can login and change your password for security reasons.<br><br>
+            <a style='color:white;text-decoration:none;background-color:#29166f;padding:7px;border-radius:5px;' href='" . route('login') . "'>Login</a><br><br>" : '';
         }
-        if (!empty($transaction->food_id)) {
-            $allocationDetails .= "<br><strong>Allocated Service Point:</strong> {$transaction->food->name}<br>Service Point Allocation Number: {$transaction->service_point_allocation_number}<br><br>";
-        }
-
-        $loginDetails = $user ? "
-        <strong>Login ID:</strong> {$user->family_id}<br>
-        <strong>Password:</strong> {$transaction->phone}<br><br>
-        You can login and change your password for security reasons.<br><br>
-        <a style='color:white;text-decoration:none;background-color:#29166f;padding:7px;border-radius:5px;' href='" . route('login') . "'>Login</a><br><br>" : '';
 
         switch ($type) {
             case 'welcome_mail':
@@ -106,7 +109,10 @@ class EmailService {
                 <strong>Transaction ID:</strong> {$transaction->transid}<br><br>
                 Thanks.";
                 break;
-
+            case 'conference_bulk_email';
+                $subject = $extraData['subject'] ?? null;
+                $content = $extraData['content'] ?? null;
+                break;
             default:
                 $subject = 'GSF Notification';
                 $content = 'No content available for this notification type.';
@@ -122,17 +128,50 @@ class EmailService {
     public static function logEmail($data)
     {
         $type = $data['type'];
-        $transaction = $data['transaction'];
-
-        $emailContent = self::getContent($type, $transaction);
+        $transaction = $data['transaction'] ?? null;
+        
+        $emailContent = self::getContent($type, $transaction, $data);
+        
         $subject = $emailContent['subject'];
         $content = $emailContent['content'];
         
-        CriticalEmail::create([
-            'recipient' => in_array($type, ['new_registration']) ? $transaction->edition->official_email : $transaction->email,
-            'type' => $type,
-            'subject' => $subject,
-            'content' => $content,
-        ]);
+        $insert = [];
+
+        if($data['type'] == 'conference_bulk_email'){
+            $recipients = $data['recipients'] ?? null;
+            foreach($recipients as $recipient){
+                $insert[] = [
+                    'recipient' => $recipient['email'],
+                    'type' => $type,
+                    'subject' => $subject,
+                    'content' => $content,
+                ];
+            }
+        }else{
+            $insert[] = [
+                'recipient' => in_array($type, ['new_registration']) ? $transaction->edition->official_email : $transaction->email,
+                'type' => $type,
+                'subject' => $subject,
+                'content' => $content,
+            ];
+        }
+
+        CriticalEmail::insert($insert);
+    }
+
+    /**
+     * Send all registration-related emails.
+     */
+    public static function sendRegistrationEmails($transaction)
+    {
+        $emailData['transaction'] = $transaction;
+
+        // Welcome email to participant
+        $emailData['type'] = 'welcome_mail';
+        self::logEmail($emailData);
+
+        // Notify admin/new registration
+        $emailData['type'] = 'new_registration';
+        self::logEmail($emailData);
     }
 }

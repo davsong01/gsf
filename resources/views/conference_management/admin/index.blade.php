@@ -23,21 +23,26 @@
                     
             </div>
         </div>
-        <div class="col-md-3 col-12 dashboard-users-success">
-            <div class="card text-center">
-                <a href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">
-                    <div class="card-content">
-                        <div class="card-body py-1">
-                            <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
-                                {{ $registered_participants }}
+
+        @if($plans)
+            @foreach($plans as $plan)
+            <div class="col-md-3 col-12 dashboard-users-success">
+                <div class="card text-center">
+                    <a href="{{ route('conference.participants',['type'=>$plan->level, 'edition'=>$edition->id]) }}">
+                        <div class="card-content">
+                            <div class="card-body py-1">
+                                <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
+                                    {{ $plan->registered->where('status','Complete')->count() }}
+                                </div>
+                                <div class="text-muted line-ellipsis">{{ $plan->level }}</div>
+                                <h3 class="mb-0"></h3>
                             </div>
-                            <div class="text-muted line-ellipsis">Participants</div>
-                            <h3 class="mb-0"></h3>
                         </div>
-                    </div>
-                </a>
+                    </a>
+                </div>
             </div>
-        </div>
+            @endforeach
+        @endif
         <div class="col-md-3 col-12 dashboard-users-success">
             <div class="card text-center">
                 <a href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">

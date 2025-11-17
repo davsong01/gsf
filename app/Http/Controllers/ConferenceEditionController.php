@@ -6,10 +6,13 @@ use App\Models\User;
 use App\Models\Payment;
 use App\Models\Donation;
 use App\Models\Material;
+use App\Models\Ministry;
 use Illuminate\Http\Request;
+use App\Models\ConferenceFaq;
+use App\Models\ConferencePlan;
 use App\Models\PaymentProvider;
 use App\Models\ConferenceEdition;
-use App\Models\Ministry;
+use App\Models\ConferenceSpeaker;
 use App\Services\DynamicImageGeneratorService;
 
 class ConferenceEditionController extends Controller
@@ -32,7 +35,24 @@ class ConferenceEditionController extends Controller
     public function create()
     {
         if (auth()->user()->role == 1) {
-            return view('conference_management.admin.editions.create');
+            $paymentproviders = PaymentProvider::where('status', 'active')->get();
+            $ministries = Ministry::where('status', 'active')->latest()->get();
+            $faqs = ConferenceFaq::where('status', 1)->orderBy('display_order')->get();
+
+            return view('conference_management.admin.editions.create', compact('paymentproviders', 'ministries', 'faqs'));
+        }
+    }
+
+    public function edit(ConferenceEdition $conferenceEdition, $id)
+    {
+        if (auth()->user()->role == 1) {
+            $edition = ConferenceEdition::find($id);
+            $paymentproviders = PaymentProvider::where('status', 'active')->get();
+            $ministries = Ministry::where('status', 'active')->latest()->get();
+            $faqs = ConferenceFaq::where('status', 1)->orderBy('display_order')->get();
+            $speakers = ConferenceSpeaker::where('status', 1)->latest()->get();
+            
+            return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders', 'ministries', 'faqs','speakers'));
         }
     }
 
@@ -44,26 +64,7 @@ class ConferenceEditionController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $this->validate($request, [
-            "status" => "required",
-            "conference_theme" => "required",
-            "registration_fee" => "required",
-            "official_email" => "required",
-            "new_alumni_registration_fee" => "required|numeric",
-            "start_date" => "required",
-            "alumni_registration_fee" => "required",
-            "end_date" => "required",
-            "start_registration" => "required",
-            "close_registration" => "required",
-            // "random_hostel" => "required",
-            "random_foodstand" => "required",
-            "reg_prefix" => "required",
-            "conference_overview" => "required",
-            "PAYSTACK_SECRET_KEY" => "required",
-            "PAYSTACK_PUBLIC_KEY" => "required",
-            "MERCHANT_EMAIL" => "required",
-            "mission" => "required",
-        ]);
+        $data = $request->all();
         
         // Check if existing active
         $active = ConferenceEdition::where('status','active')->count();
@@ -73,7 +74,7 @@ class ConferenceEditionController extends Controller
         }
 
         ConferenceEdition::create($data);
-        return redirect(route('conferenceeditions.index'))->with('message', 'Operation Successful');
+        return redirect(route('conferencemanagement.index'))->with('message', 'Operation Successful');
     }
 
     /**
@@ -86,14 +87,13 @@ class ConferenceEditionController extends Controller
     {
         if (auth()->user()->role == 1) {
             $edition = ConferenceEdition::with(['transactions', 'donations'])->where('id', $id)->first();
-            $payments = $edition->transactions;
+            $transactions = $edition->transactions;
             
-            $registered_participants = clone $payments;
-            $registered_participants = $registered_participants->where('registration_status', 'Complete')->where('level','Participant')->count();
+            $plans = ConferencePlan::with('registered')->where('conference_edition_id', $edition->id)->get();
+            
 
-            $registered_moderators = clone $payments;
+            $registered_moderators = clone $transactions;
             $registered_moderators = $registered_moderators->where('registration_status', 'Complete')->where('level', 'Moderator');
-
             $moderators = $registered_moderators; // Keep original collection
 
             $registered_moderators_count = $moderators->count();
@@ -101,19 +101,20 @@ class ConferenceEditionController extends Controller
             $slots_filled = $moderators->sum('slot_filled');
             $unallocated_slots = $total_slots - $slots_filled;
             
-            $pending_registration = clone $payments;
+            $pending_registration = clone $transactions;
             $pending_registration = $pending_registration->where('registration_status', 'Pending')->count();
 
-            $completed_registration = clone $payments;
+            $completed_registration = clone $transactions;
             $completed_registration = $completed_registration->where('registration_status', 'Pending')->count();
             
-            $total = clone $payments;
-            $total = $total->where('registration_status', 'Complete')->where('conference_edition_id', $id)->sum('amount_paid');
+            // allow
+            $total = clone $transactions;
+            $total = $total->where('registration_status', 'Complete')->where('conference_edition_id', $id)->sum('total_amount');
 
             $donations = $edition->donations->sum('amount');
             $materials = Material::where('conference_edition_id', $id)->count();
-            
-            return view('conference_management.admin.index', compact('registered_participants', 'pending_registration', 'completed_registration', 'total', 'donations', 'materials', 'edition', 'registered_moderators_count', 'total_slots', 'unallocated_slots','slots_filled'));
+            // end allow
+            return view('conference_management.admin.index', compact('plans', 'pending_registration', 'completed_registration', 'total', 'donations', 'materials', 'edition', 'registered_moderators_count', 'total_slots', 'unallocated_slots','slots_filled'));
         }
     }
 
@@ -200,16 +201,6 @@ class ConferenceEditionController extends Controller
      * @param  \App\ConferenceEdition  $conferenceEdition
      * @return \Illuminate\Http\Response
      */
-    public function edit(ConferenceEdition $conferenceEdition, $id)
-    {
-        if (auth()->user()->role == 1) {
-            $edition = ConferenceEdition::find($id);
-            $paymentproviders = PaymentProvider::where('status', 'active')->get();
-            $ministries = Ministry::where('status', 'active')->latest()->get();
-            
-            return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders', 'ministries'));
-        }
-    }
 
     /**
      * Update the specified resource in storage.

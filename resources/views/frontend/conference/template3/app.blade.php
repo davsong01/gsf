@@ -64,14 +64,16 @@
                                 <div class="de-flex-col header-col-mid">
                                     <ul id="mainmenu">
                                         <li><a class="menu-item" href="{{ url('/').'#section-about' }}">Details</a></li>
-                                        @if(!empty(conferenceSpeakers()))
+                                        @if($setting->speaker_section_status)
                                         <li><a class="menu-item" href="{{ url('/').'#section-speakers' }}">Speakers</a></li>
                                         @endif
-                                        @if(!empty(conferenceSchedule()))
+                                        @if($setting->schedules)
                                         <li><a class="menu-item" href="{{ url('/').'#section-schedule' }}">Schedule</a></li>
                                         @endif
-                                        <li><a class="menu-item" href="{{ url('/').'#section-venue' }}">Venue</a></li>
+                                        {{-- <li><a class="menu-item" href="{{ url('/').'#section-venue' }}">Venue</a></li> --}}
+                                        @if($setting->faq_section_status)
                                         <li><a class="menu-item" href="{{ url('/').'#section-faq' }}">FAQ</a></li>
+                                        @endif
                                         {{-- <li><a class="menu-item" href="news.html">Donate</a></li> --}}
                                         @auth
                                         <li class="menu-item">

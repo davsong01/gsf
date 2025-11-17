@@ -18,7 +18,7 @@
                             <div class="dropdown-menu dropdown-menu-right pb-0">
                                 
                             <div class="dropdown-divider mb-0"></div>
-                                <a class="dropdown-item" href="{{ route('stakeholder.logout') }}" onclick="return alert('You are about to log out')">
+                                <a class="dropdown-item" href="{{ route('stakeholders.logout') }}" onclick="return alert('You are about to log out')">
                                     <i class="bx bx-power-off mr-50"></i>Logout
                                 </a> 
                             </div>

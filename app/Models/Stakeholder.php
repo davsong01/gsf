@@ -28,12 +28,13 @@ class Stakeholder extends Authenticatable
         'day',
         'month',
         'year',
-        'portfolio'
+        'portfolio',
+        'status'
     ];
- 
-     protected $hidden = [
-         'password',
-     ];
+    
+    protected $hidden = [
+        'password',
+    ];
 
     public function zone(){
         return $this->belongsTo(Zone::class);

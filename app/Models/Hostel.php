@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Field;
 use App\Models\Chapter;
 use App\Models\Payment;
+use App\Models\Transaction;
 use Illuminate\Database\Eloquent\Model;
 
 class Hostel extends Model
@@ -23,7 +24,7 @@ class Hostel extends Model
 
     public function payments()
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Transaction::class);
     }
 
     public function getFieldIdsAttribute($value)

@@ -89,7 +89,7 @@ class ModeratorController extends Controller
 
         // dd($request->all());
             $moderator->name = $request->name;
-            $moderator->sex = $request->sex;
+            $moderator->gender = $request->gender;
             $moderator->email = $request->email;
             $moderator->phone = $request->phone;
             $moderator->chapter = $request->chapter;

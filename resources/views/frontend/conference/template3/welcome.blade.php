@@ -1,4 +1,15 @@
 @extends('frontend.conference.template3.app')
+<style>
+    .speaker-img {
+        height: 400px;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        width: 100%;
+        border-radius: 6px;
+    }
+
+</style>
 @section('content')
 <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800">
     <div class="gradient-edge-top op-6 h-50 color"></div>
@@ -196,7 +207,7 @@
     </div>
 </section>
 
-@if(!empty($speakers))
+@if($speakers->count() && $setting->speaker_section_status)
 <section id="section-speakers" class="bg-dark section-dark text-light">
     <div class="container">
         <div class="row g-4 justify-content-center">
@@ -210,32 +221,36 @@
 
         <div class="row g-4">
             @foreach ($speakers as $speaker)
-                <div class="col-lg-4">
+                <div class="col-lg-4 col-md-6 mb-4">
                     <div class="hover relative rounded-1 overflow-hidden wow fadeIn scale-in-mask">
-                        <img src="{{ asset($speaker['image']) }}" class="w-100 hover-scale-1-1" alt="{{ $speaker['name'] }}">
+                        <img 
+                            src="{{ asset($speaker->image) }}" 
+                            class="w-100 hover-scale-1-1 speaker-img" 
+                            alt="{{ $speaker->name }}"
+                        >
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                         <div class="abs w-100 start-0 bottom-0 z-3">
                             <div class="bg-blur p-4 m-4 rounded-1 text-light text-center relative z-2">
-                                <h3 class="mb-0">{{ $speaker['name'] }}</h3>
-                                <span>{{ $speaker['title'] }}</span>
+                                <h3 class="mb-0">{{ $speaker->name }}</h3>
+                                <span>{{ $speaker->title }}</span>
                             </div>
                             <div class="gradient-edge-bottom h-100 op-8"></div>
                         </div>
                     </div>
                 </div>
             @endforeach
+
         </div>
     </div>
 </section>
 @endif
 
-@if(!empty($schedule))
+@if($schedule->count())
 <section id="section-schedule" class="bg-dark section-dark text-light">
     <div class="container">
         <div class="row g-4 gx-5 justify-content-center">
             <div class="col-lg-6 text-center">
-                {{-- <div class="subtitle s2 mb-3 wow fadeInUp" data-wow-delay=".0s">Event Schedule</div> --}}
-                <h2 class="wow fadeInUp" data-wow-delay=".2s">4 Days of Spiritual Illumination</h2>
+                <h2 class="wow fadeInUp" data-wow-delay=".2s">{{ $schedule->count() }} Days of Spiritual Illumination</h2>
             </div>
         </div>
 
@@ -243,11 +258,11 @@
             <div class="col-lg-12">
                 <div class="de-tab plain">
                     {{-- Days Navigation --}}
-                    <ul class="d-tab-nav mb-4 pb-4 d-flex justify-content-between">
+                    <ul class="d-tab-nav mb-4 pb-4 d-flex flex-wrap justify-content-center gap-3">
                         @foreach($schedule as $index => $day)
                             <li class="{{ $loop->first ? 'active-tab' : '' }}">
-                                <h3>Day {{ $index + 1 }}</h3>
-                                {{ $day['date'] }}
+                                <h3>{{ $day->day }}</h3>
+                                <small>{{ \Carbon\Carbon::parse($day->date)->format('M d, Y') }}</small>
                             </li>
                         @endforeach
                     </ul>
@@ -255,29 +270,47 @@
                     {{-- Schedule Content --}}
                     <ul class="d-tab-content pt-3 wow fadeInUp">
                         @foreach($schedule as $day)
+                            @php
+                                $sessions = $day->sessions ?? [];
+                            @endphp
+
                             <li>
-                                @foreach($day['sessions'] as $session)
+                                @forelse($sessions as $session)
+                                    @php
+                                        $speaker = \App\Models\ConferenceSpeaker::find($session['speaker_id']);
+                                    @endphp
+
                                     <div class="border-white-bottom-op-2 pb-5 mb-5 {{ $loop->last ? 'pb-5 mb-5' : '' }}">
                                         <div class="row g-4 align-items-center">
-                                            <div class="col-md-2">
-                                                {{ $session['time'] }}
+                                            <div class="col-md-2 col-4 text-warning fw-bold">
+                                                {{ $session['time'] ?? '' }}
                                             </div>
-                                            <div class="col-md-4">
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ asset($session['image']) }}" class="w-100px rounded-1 me-4" alt="">
-                                                    <div>
-                                                        <h5 class="mb-0">{{ $session['speaker'] }}</h5>
-                                                        {{ $session['title'] }}
+
+                                            <div class="col-md-4 col-8">
+                                                @if($speaker)
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="{{ asset($speaker->image) }}" 
+                                                            alt="{{ $speaker->name }}" 
+                                                            class="rounded-1 me-3" 
+                                                            style="height:80px; width:80px; object-fit:cover;">
+                                                        <div>
+                                                            <h5 class="mb-1">{{ $speaker->name }}</h5>
+                                                            <small class="text-muted">{{ $speaker->title }}</small>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                @else
+                                                    <em>No speaker info</em>
+                                                @endif
                                             </div>
+
                                             <div class="col-md-6">
-                                                <h3>{{ $session['title'] }}</h3>
-                                                <p class="fs-15 mb-0">{{ $session['description'] }}</p>
+                                                <p class="fs-15 mb-0">{{ $session['description'] ?? '' }}</p>
                                             </div>
                                         </div>
                                     </div>
-                                @endforeach
+                                @empty
+                                    <p class="text-muted text-center">No sessions scheduled for this day.</p>
+                                @endforelse
                             </li>
                         @endforeach
                     </ul>
@@ -287,7 +320,7 @@
     </div>
 </section>
 @endif
-
+{{-- @if($plans->count()) --}}
 <section id="section-tickets" class="bg-dark section-dark text-light pt-40 relative jarallax" aria-label="section">
     <img src="{{ asset('conference_templates/template3/images/background/7.webp') }}" class="jarallax-img" alt="">
     <div class="gradient-edge-top"></div>
@@ -297,94 +330,48 @@
     <div class="container relative z-2">
         <div class="row g-4 gx-5 justify-content-center">
             <div class="col-lg-6 text-center">
-                <h2 class="wow fadeInUp" data-wow-delay=".2s">Secure Your Nayoco 2026 Pass</h2>
+                <h2 class="wow fadeInUp" data-wow-delay=".2s">Secure Your {{$setting->conference_theme}} Pass</h2>
                 <p class="lead wow fadeInUp" data-wow-delay=".4s">
-                    Join us for four days of divine encounters, worship, and transformation. Choose your pass and be part of The Shining Lights experience.
+                    Join us for divine encounters, worship, and transformation. Choose your pass and be part of The Shining Lights experience.
                 </p>
             </div>
         </div>
 
         <div class="row g-4 justify-content-center mt-4">
             @foreach($plans as $plan)
-                @if($plan['show'])
+                @php
+                    $items = $plan->items ?? [];
+                @endphp
+
                 <div class="col-md-4">
                     <div class="d-ticket p-4 bg-dark-2 rounded-1 text-center h-100 position-relative wow fadeInUp">
-                        <img style="border-radius: 50%;" src="{{ asset($setting->conference_logo) }}" class="w-80px mb-4" alt="">
-                        <h2 class="mb-2">{{ $plan['title'] }}</h2>
-                        <h4 class="mb-4">&#8358;{{ $plan['price'] }}</h4>
+                        <img style="border-radius: 50%;" 
+                            src="{{ asset($setting->conference_logo) }}" 
+                            class="w-80px mb-4" 
+                            alt="">
+
+                        <h2 class="mb-2">{{ $plan->title }}</h2>
+                        <h4 class="mb-4">&#8358;{{ number_format($plan->price, 2) }}</h4>
 
                         <ul class="ul-check mb-4 text-start">
-                            @foreach($plan['items'] as $item)
+                            @foreach($items ?? [] as $item)
                                 <li>{{ $item }}</li>
                             @endforeach
                         </ul>
-
-                        <a class="btn-main fx-slide w-100 mt-auto" href="{{ route('conference.registration', $plan['route_id']) }}">
-                            <span>Register{{ $plan['per_participant'] ? ' /Participant' : '' }}</span>
+                        
+                        <a class="btn-main fx-slide w-100 mt-auto" href="{{ route('conference.registration', $plan->id) }}">
+                            <span>Get Started</span>
                         </a>
                     </div>
                 </div>
-                @endif
             @endforeach
+
         </div>
     </div>
 </section>
+{{-- @endif --}}
 
-{{-- <section id="section-venue" class="bg-dark section-dark text-light pt-40 relative jarallax" aria-label="section">
-  <div class="container relative z-2">
-    <div class="row g-4 justify-content-center">
-        <div class="col-lg-6 text-center">
-            <h2 class="wow fadeInUp" data-wow-delay=".2s">Location & Venue</h2>
-            <p class="lead wow fadeInUp" data-wow-delay=".6s">Join us at Gospel CIty - Lagos–Ibadan Exp Way, Ogunmakin, Ogun State, Nigeria</p>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-sm-6">
-            <img src="{{ asset('conference_templates/template3/images/misc/l1.webp')}}" class="w-100 rounded-1 wow scale-in-mask" alt="">
-        </div>
-
-        <div class="col-sm-6">
-            <img src="{{ asset('conference_templates/template3/images/misc/l2.webp')}} " class="w-100 rounded-1 wow scale-in-mask" alt="">
-        </div>
-
-        <div class="clearfix"></div>
-
-        <div class="col-lg-4 col-md-6 mb-sm-30">
-            <div class="d-flex justify-content-center wow fadeInUp" data-wow-delay=".2s">
-                <i class="fs-60 id-color icofont-google-map"></i>
-                <div class="ms-3">
-                    <h4 class="mb-0">Address</h4>
-                    <p>Gospel City. Lagos Ibadan Expressway. Ogunmakin. Ogun state.</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-4 col-md-6 mb-sm-30">
-            <div class="d-flex justify-content-center wow fadeInUp" data-wow-delay=".4s">
-                <i class="fs-60 id-color icofont-phone"></i>
-                <div class="ms-3">
-                    <h4 class="mb-0">Phone</h4>
-                    <p>Call: {{ $setting->official_phone}}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4 col-md-6 mb-sm-30">
-            <div class="d-flex justify-content-center wow fadeInUp" data-wow-delay=".6s">
-                <i class="fs-60 id-color icofont-envelope"></i>
-                <div class="ms-3">
-                    <h4 class="mb-0">Email</h4>
-                    <p>{{ $setting->official_email }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-  </div>
-</section> --}}
-
-@if(!empty($faqs))
+@if(!empty($faqs) && $setting->faq_section_status)
 <section  id="section-faq" class="bg-dark section-dark text-light">
     <div class="container">
         <div class="row g-4">

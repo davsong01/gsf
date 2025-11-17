@@ -8,7 +8,9 @@ use App\Models\Material;
 use App\Models\Ministry;
 use App\Models\TempUser;
 use App\Models\Transaction;
+use App\Models\ConferencePlan;
 use App\Models\PaymentProvider;
+use App\Models\ConferenceSchedule;
 use Illuminate\Database\Eloquent\Model;
 
 class ConferenceEdition extends Model
@@ -16,6 +18,9 @@ class ConferenceEdition extends Model
     protected $guarded = [];
     protected $casts = [
         'template_settings' => 'array',
+        'conference_speakers' => 'array',
+        'faq_ids' => 'array',
+        'speaker_ids' => 'array'
     ];
 
     public function transactions(){
@@ -56,6 +61,16 @@ class ConferenceEdition extends Model
     public function ministry()
     {
         return $this->belongsTo(Ministry::class);
+    }
+
+    public function conferenceplans()
+    {
+        return $this->hasMany(ConferencePlan::class);
+    }
+
+    public function schedules()
+    {
+        return $this->hasMany(ConferenceSchedule::class);
     }
 
     public function paymentprovider()

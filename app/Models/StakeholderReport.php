@@ -8,12 +8,9 @@ use App\Models\Chapter;
 use App\Models\ReportRejection;
 use App\Models\StakeholderPayment;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Reports extends Model
+class StakeholderReport extends Model
 {
-    use SoftDeletes;
-
     protected $guarded = [];
     public function chapter(){
         return $this->belongsTo(Chapter::class);
@@ -30,8 +27,15 @@ class Reports extends Model
     public function zone(){
         return $this->belongsTo(Zone::class);
     }
-    public function rejections(){
-        return $this->hasMany(ReportRejection::class, 'report_id');
+    
+    public function stakeholder()
+    {
+        return $this->belongsTo(Stakeholder::class);
+    }
+
+    public function answers()
+    {
+        return $this->hasMany(StakeholderReportAnswer::class, 'report_id');
     }
 
 }

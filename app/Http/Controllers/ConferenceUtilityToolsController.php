@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Chapter;
 use App\Models\TempUser;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\ConferenceEdition;
 use Illuminate\Support\Facades\DB;
@@ -85,7 +86,7 @@ class ConferenceUtilityToolsController extends Controller
                         'type' => $type,
                         'chapter_id' => $tempuser->chapter_id ?? null,
                         'chapter' => $tempuser->chapter_id ?? null,
-                        'sex' => $tempuser->gender,
+                        'gender' => $tempuser->gender,
                         'registration_status' => 'Complete',
                         'slot' => $slot,
                         'slot_filled' => $slot_filled,

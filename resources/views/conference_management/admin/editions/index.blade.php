@@ -21,9 +21,8 @@
                     <div class="card-header">
                         <h4 class="card-title">All Conference Editions</h4>
                         @if(auth()->user()->conference_role == 'superadmin')
-                        <a href="{{ route('conferenceeditions.create') }}" class="btn btn-primary mt-1">Add conference editions</a>
+                        <a href="{{ route('conferenceeditions.create') }}" class="btn btn-primary mt-1">Add conference edition</a>
                         @endif
-                        @include('includes.alerts')
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -35,8 +34,6 @@
                                             <th>Ministry</th>
                                             <th>Theme</th>
                                             <th>Dates</th>
-                                            <th>Fee Details</th>
-                                            <th>Analytics</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -53,23 +50,11 @@
                                                 <span style="color:red">{{ \Carbon\Carbon::parse($edition->start_date)->format('F j, Y') }}</span> - 
                                                 <span style="color:green">{{ \Carbon\Carbon::parse($edition->end_date)->format('F j, Y') }}</span> <br>
 
-                                                <small class="blue">Start Reg: {{ \Carbon\Carbon::parse($edition->start_registration)->format('F j, Y') }}</small>
+                                                <small class="blue">Start Reg: {{ \Carbon\Carbon::parse($edition->start_registration)->format('F j, Y') }}</small> <br>
                                                 <small class="blue">Close Reg: {{ \Carbon\Carbon::parse($edition->close_registration)->format('F j, Y') }}</small>
                                             </td>
+
                                             
-                                            <td>Participant: &#8358;{{ number_format($edition->registration_fee) }}<br>
-                                                <small class="blue">
-                                                    New Alumni: &#8358;{{ number_format($edition->new_alumni_registration_fee) }}<br>
-                                                    Old Alumni: &#8358;{{ number_format($edition->alumni_registration_fee) }}<br>
-                                                </small>
-                                            </td>
-                                            <td>Attempted: {{ $edition->attemptedPayments()->count() }}<br>
-                                                <small>
-                                                    {{-- Participants: {{ $edition->participantCount() }}<br>
-                                                    Alumni: {{ $edition->alumniCount() }}<br>
-                                                    Total: {{ $edition->payments->count() }}<br> --}}
-                                                </small>
-                                            </td>
                                             <td>
                                                 <a style="margin-bottom: 3px;" href="{{ route('show.conference.edition', $edition->id) }}" class="btn btn-success btn-sm"><i class="fa fa-eye"></i> View</a> 
                                                 @if(auth()->user()->conference_role == 'superadmin')

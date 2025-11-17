@@ -54,13 +54,7 @@
                                         
                                         </fieldset>
                                     </div>
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="registration_fee">Registration Fee</label>
-                                        <fieldset class="form-group ">
-                                            <input type="number" class="form-control" name="registration_fee" value="{{ old('registration_fee') ?? $edition->registration_fee }}" id="registration_fee">
-                                        
-                                        </fieldset>
-                                    </div>
+                                    
                                     <div class="col-sm-6 col-md-6">
                                         <label for="official_email">Official Email</label>
                                         <fieldset class="form-group ">
@@ -69,21 +63,7 @@
 
                                         </fieldset>
                                     </div>
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="new_alumni_registration_fee">New Alumni Fee</label>
-                                        <fieldset class="form-group ">
-                                            <input type="number" class="form-control" name="new_alumni_registration_fee" value="{{ old('new_alumni_registration_fee') ?? $edition->new_alumni_registration_fee }}" id="new_alumni_registration_fee" required>
-                                            
-                                        </fieldset>
-                                    </div>
                                     
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="alumni_registration_fee">Old Alumni Fee</label>
-                                        <fieldset class="form-group ">
-                                            <input type="number" class="form-control" name="alumni_registration_fee" value="{{ old('alumni_registration_fee') ?? $edition->alumni_registration_fee }}" id="alumni_registration_fee" required>
-                                            
-                                        </fieldset>
-                                    </div>
                                     {{-- {{dd($edition)}} --}}
                                     <div class="col-sm-6 col-md-6">
                                         <label for="start_date">Conference Start Date</label>
@@ -268,6 +248,96 @@
                     
                                     <input type="hidden" name="id" value="{{ $edition->id }}">
                                 </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h3>FAQ Settings</h3>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="faq_section_status">Faq Section Status</label>
+                                        <fieldset class="form-group">
+                                            <select class="form-control" name="faq_section_status" id="faq_section_status" required>
+                                                <option value="">Select...</option>
+                                                <option value="1" {{ $edition->faq_section_status == '1' ? 'selected' : ''}}>Active</option>
+                                                <option value="0" {{ $edition->faq_section_status == '0' ? 'selected' : ''}}>Inactive</option>
+                                            </select>
+                                        </fieldset>
+                                    </div>
+                                    <div class="col-12 mb-2">
+                                        <label class="form-label fw-bold">Select Applicable FAQs</label>
+                                        <div class="row">
+                                            
+                                            @forelse($faqs as $faq)
+                                                <div class="col-md-6 col-sm-6">
+                                                    <div class="form-check">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            class="form-check-input" 
+                                                            id="faq_{{ $faq->id }}" 
+                                                            name="faq_ids[]" 
+                                                            value="{{ $faq->id }}"
+                                                            {{ isset($edition) && in_array($faq->id, $edition->faq_ids ?? []) ? 'checked' : '' }}
+                                                        >
+                                                        <label class="form-check-label" for="faq_{{ $faq->id }}">
+                                                            {{ $faq->question }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            @empty
+                                                <div class="col-12">
+                                                    <p class="text-muted">No active FAQs available.</p>
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" name="id" value="{{ $edition->id }}">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h3>Conference Speakers Settings</h3>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="speaker_section_status">Speaker Section Status</label>
+                                        <fieldset class="form-group">
+                                            <select class="form-control" name="speaker_section_status" id="speaker_section_status" required>
+                                                <option value="">Select...</option>
+                                                <option value="1" {{ $edition->speaker_section_status == '1' ? 'selected' : ''}}>Active</option>
+                                                <option value="0" {{ $edition->speaker_section_status == '0' ? 'selected' : ''}}>Inactive</option>
+                                            </select>
+                                        </fieldset>
+                                    </div>
+                                    <div class="col-12 mb-2">
+                                        <label class="form-label fw-bold">Select Applicable Speakers</label>
+                                        <div class="row">
+                                            
+                                            @forelse($speakers as $speaker)
+                                                <div class="col-md-6 col-sm-6">
+                                                    <div class="form-check">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            class="form-check-input" 
+                                                            id="speaker_{{ $speaker->id }}" 
+                                                            name="speaker_ids[]" 
+                                                            value="{{ $speaker->id }}"
+                                                            {{ isset($edition) && in_array($speaker->id, $edition->speaker_ids ?? []) ? 'checked' : '' }}
+                                                        >
+                                                        <label class="form-check-label" for="speaker_{{ $speaker->id }}">
+                                                            {{ $speaker->name }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            @empty
+                                                <div class="col-12">
+                                                    <p class="text-muted">No active FAQs available.</p>
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" name="id" value="{{ $edition->id }}">
+                                </div>
+
                                 {{-- certificate --}}
                                 <?php 
                                     $service = new App\Services\DynamicImageGeneratorService;

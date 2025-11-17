@@ -1,7 +1,6 @@
-
 <footer class="footer footer-static footer-light">
 	<p class="clearfix mb-0"><span class="float-left d-inline-block"></span><span
-			class="float-right d-sm-inline-block d-none">&copy; {{ date('Y') }} GSF | Built with love by<a class="text-uppercase"
+			class="float-right d-sm-inline-block d-none">&copy; {{ date('Y') }} {{ strtoupper($edition->ministry->code ?? env('APP_NAME'))}} | Built with love by<a class="text-uppercase"
 				href="https://davidoghi.com/" target="_blank">Techdaves</a></span>
 		<button class="btn btn-primary btn-icon scroll-top" type="button"><i class="fa fa-arrow-up" aria-hidden="true"></i>
 		</button>

@@ -72,7 +72,7 @@
                                 @include('includes.bootstrap5alerts')
 
                                 @foreach($registrationFields as $field)
-                                    @if($field['status'] && in_array($type, $field['registration_types']))
+                                    @if($field['status'])
                                         <div class="field-set position-relative mb-3">
                                             @php
                                                 $name = $field['name'];
@@ -98,7 +98,6 @@
                                                         <option value="other" {{ $oldValue === 'other' ? 'selected' : '' }}>Other</option>
                                                     @endif
                                                 </select>
-
                                             @elseif($field['type'] == 'textarea')
                                                 <label>{{ $field['label'] }}</label>
                                                 <textarea name="{{ $name }}" class="form-underline h-100px"
@@ -121,7 +120,8 @@
                             </div>
                         </div>
 
-                        <input type="hidden" name="type" value="{{ $type }}">
+                        <input type="hidden" name="conference_plan_id" value="{{$plan->id}}">
+
                         <div class="mt-3">
                             <button type="submit" class="btn-main w-100">Submit Details</button>
                         </div>

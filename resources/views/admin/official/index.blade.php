@@ -55,7 +55,7 @@
 											<td>{{ $participant->name }}</td>
 											<td>{{ $participant->email }}</td>
 											<td>{{ $participant->phone }}</td>
-											<td>{{ $participant->sex }}</td>
+											<td>{{ $participant->gender }}</td>
 											<td style="color:green">{{ isset($participant->moderator) ?$participant->moderator->name : 'N/A'}}</td>
 											<td style="padding-left: 5px;padding-right: 5px;">
 												<a class="actions" data-toggle="tooltip" title="View/Edit Official"

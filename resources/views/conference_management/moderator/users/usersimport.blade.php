@@ -41,14 +41,14 @@
 									class="@if($errors->any()) has-error @endif">
 									@csrf
 									<input type="file" name="file" class="form-control" accept=".csv, .xlsv, .xls, .xlsx" required>
-									<input type="hidden" name="import_level" value="Participant">
+									<input type="hidden" name="import_level" value="{{$type}}">
 									<br>
 									@error('file')
 									<div class="alert alert-danger" role="alert">
 										<button type="button" class="close" data-dismiss="alert" aria-label="Close">
 											<span aria-hidden="true">&times;</span>
 										</button>
-										<strong>Whoops!</strong> {{ $message }}
+										  {{ $message }}
 									</div>
 									@enderror
 

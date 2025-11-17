@@ -227,13 +227,13 @@ class Controller extends BaseController
         } else {
             $image = Image::make($image);
         }
-       
+        
         $image->save($location . '/' . $imgName);
         
         return $location . '/' . $imgName;
     }
 
-     protected function uploadFile($file, $location)
+    protected function uploadFile($file, $location)
     {
         $fileName = time() . rand(11111111, 9999999) . '.' . $file->getClientOriginalExtension();
         $file->move($location, $fileName );
@@ -283,7 +283,7 @@ class Controller extends BaseController
     //     $user = User::UpdateOrCreate(['email' => $data['email']], [
     //         'name' => $data['name'],
     //         'phone' => $data['phone'],
-    //         'sex' => $data['sex'] ?? null,
+    //         'gender' => $data['gender'] ?? null,
     //         'chapter_id' => $data['chapter']??null,
     //         'passport' => $data['passport']??null,
     //         'slug' => Str::slug($data['name']),

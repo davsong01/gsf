@@ -54,14 +54,9 @@
                                                 <small>
                                                     Students: {{ $chapter->users->where('status', 0)->count() }} <br>
                                                     Alumni: {{ $chapter->users->where('status', 1)->count() }} 
-                                                    {{-- @if($setting) --}}
-                                                    <br>
-                                                    Conference Participants: {{ $chapter->registerdParticipants->count() }}
-                                                    {{-- @endif --}}
+                                                    Stakeholders: {{ $chapter->stakeholders->where('status', 1)->count() }} 
                                                 </small>
-                                                
                                             </td>
-                                           
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Update chapter details" href="{{ route('chapters.edit', $chapter->id) }}"> <i class="bx bxs-edit actions"></i>
                                             </a>
@@ -71,7 +66,6 @@
                                             <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete chapter" href="{{ route('chapters.delete', $chapter->id) }}"> <i class="fa fa-trash actions"></i></
                                             </a>
                                         </tr>
-                                      
                                         @endforeach
                                     </tbody>
                                     

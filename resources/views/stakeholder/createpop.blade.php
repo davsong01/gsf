@@ -1,7 +1,7 @@
 @extends('layouts.stakeholderdashboard')
 @section('title', 'Add new proof of payment')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('stakeholder.dashboard') }}">Proof of Payment</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('stakeholders.dashboard') }}">Proof of Payment</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Add New proof of payment</li>

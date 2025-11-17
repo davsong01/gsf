@@ -131,7 +131,7 @@ class DonationController extends Controller
     public function prepareUserData($data){
         $data['name'] = $data['name'] ?? null;
         $data['phone'] = $data['phone'] ?? null;
-        $data['sex'] = $data['gender'] ?? null;
+        $data['gender'] = $data['gender'] ?? null;
         $data['type'] = $data['type'] ?? null;
         $data['email'] = $data['email'] ?? null;
         $data['password'] = bcrypt($data['phone']);

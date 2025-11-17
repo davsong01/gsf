@@ -2,32 +2,61 @@
 
 use App\Models\Field;
 use App\Models\Chapter;
+use Illuminate\Support\Str;
 use App\Models\GeneralSetting;
 use Illuminate\Support\Carbon;
 use App\Models\ConferenceEdition;
 
-if (!function_exists('registrationTypeNames')) {
-    function registrationTypeNames(?array $ids = null)
+if (!function_exists('generateSampleValue')) {
+    function generateSampleValue($type, $name)
     {
-        $types = [
-            1 => 'Individual Registration',
-            2 => 'Group Registration',
-            3 => 'Alumni Registration',
-            5 => 'Donation',
+        $slugName = Str::slug($name, '_');
+
+        $nameSamples = [
+            'name'          => 'David Oghi',
+            'gender'        => 'Male',
+            'phone'         => '08143511076',
+            'state'         => 'Lagos',
+            'country'       => 'Nigeria',
+            'chapter'       => Chapter::where('id', 19)->value('name'),
+            'chapter_id'    => Chapter::where('id', 19)->value('name'),
+            'assembly_id'   => 'Wonders Cathdral, Magodo',
+            'district_id'   => 'Magodo Headquarters',
+            'region_id'     => 'Region 12',
         ];
 
-        if (is_null($ids)) {
-            // return full list if no argument is passed
-            return $types;
+        // Check for manual override
+        foreach ($nameSamples as $key => $value) {
+            if (str_contains($slugName, $key)) {
+                return $value;
+            }
         }
 
-        // return matched names for given IDs
-        return collect($ids)
-            ->map(fn($id) => $types[$id] ?? 'Unknown')
-            ->all();
+        return match (strtolower($type)) {
+            'email'     => fake()->safeEmail(),
+            'phone'     => fake()->phoneNumber(),
+            'number'    => fake()->numberBetween(10, 500),
+            'text'      => fake()->sentence(3),
+            'name'      => fake()->name(),
+            default     => fake()->word(),
+        };
     }
 }
 
+
+if (!function_exists('participantAllowedUpdateFields')) {
+    function participantAllowedUpdateFields()
+    {
+        return ['name', 'gender','phone'];
+    }
+}
+
+if (!function_exists('chapterStakeholders')) {
+    function chapterStakeholders()
+    {
+        return ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary'];
+    }
+}
 
 if (!function_exists("hostelAssignmentTypes")) {
     function hostelAssignmentTypes()
@@ -190,37 +219,6 @@ if (!function_exists('generalSetting')) {
     }
 }
 
-
-if (!function_exists('conferenceFaqs')) {
-    function conferenceFaqs(?array $ids = null)
-    {
-        $faqs = [
-            [
-                'id' => 'accordion-a1',
-                'question' => 'When will the Conference start?',
-                'answer' => 'The Conference will commence on Thursday night with an opening session which is often characterized with the power of the Spirit and an all-encompassing display of joy.',
-            ],
-            [
-                'id' => 'accordion-a2',
-                'question' => 'Where does the conference take place?',
-                'answer' => 'The Conference will hold at the International Gospel City of The Gospel Faith Mission International located at Ogunmakin, Ogun State along Lagos-Ibadan Express Way.',
-            ],
-            [
-                'id' => 'accordion-a3',
-                'question' => 'How can I get the latest news?',
-                'answer' => 'Please stay connected to our social media handles on Facebook, Instagram and X: gsfnational.',
-            ],
-            [
-                'id' => 'accordion-a4',
-                'question' => 'How can my Church sponsor this event?',
-                'answer' => 'For individual or corporate sponsorship of the event, please reach out to the following contacts: +234 805 263 8670, +234 816 447 8392, +234 7013 530858.',
-            ],
-        ];
-
-
-        return $faqs;
-    }
-}
 
 if (!function_exists('conferenceSpeakers')) {
     function conferenceSpeakers()

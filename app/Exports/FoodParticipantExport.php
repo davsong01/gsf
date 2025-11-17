@@ -32,7 +32,7 @@ class FoodParticipantExport implements WithHeadings, FromQuery
 		->Join('food', 'food.id', '=', 'transactions.food_id')
 		->leftJoin('chapters', 'chapters.id', '=', 'users.chapter_id')
 		->where(['food_id'=> $this->data['food_id']])
-		->select('users.family_id', 'transactions.transid', 'users.name', 'users.email', 'users.phone', 'users.sex', 'chapters.name as chapter', 'transactions.created_at as registration_date','transactions.amount_paid','transactions.level','food.name as food')
+		->select('users.family_id', 'transactions.transid', 'users.name', 'users.email', 'users.phone', 'users.gender', 'chapters.name as chapter', 'transactions.created_at as registration_date','transactions.amount_paid','transactions.level','food.name as food')
 		->orderBy('users.created_at', 'desc');
 
 		return $participants;

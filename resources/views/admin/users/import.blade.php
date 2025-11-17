@@ -86,7 +86,7 @@
 										<button type="button" class="close" data-dismiss="alert" aria-label="Close">
 											<span aria-hidden="true">&times;</span>
 										</button>
-										<strong>Whoops!</strong> {{ $message }}
+										  {{ $message }}
 									</div>
 									@enderror
 									<button class="btn btn-success submit-button">Import File</button>

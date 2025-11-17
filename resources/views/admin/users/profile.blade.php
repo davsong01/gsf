@@ -49,7 +49,9 @@
                             <div class="col-md-9">
                                 <label for="">Overview</label> <br>
                                 <span><strong>Family ID:</strong> {{ $user->family_id }}</span> <br>
+                                @if($user->campus)
                                 <span><strong>Campus:</strong> GSF, {{ $user->campus->name ?? '' }} </span> <br>
+                                @endif
                                 @if(!is_null($president))
                                 <span><em><b>Current President:</b></em> {{ $president->name }}</span><br>
                                 <span><em><b>Current President's Phone:</b></em> {{  $president->phone }}</span><br>
@@ -84,10 +86,10 @@
                                 </fieldset>
                                
                                 <fieldset class="form-group">
-                                    <label for="sex">Gender</label>
-                                    <select class="form-control" name="sex" id="sex" required {{ isset($setting) && $setting->status == 'active'?'disabled':'' }}>
-                                        <option value="Male" {{ $user->sex == 'Male' ? 'selected' : ''}}>Male</option>
-                                        <option value="Female" {{ $user->sex == 'Female' ? 'selected' : ''}}>Female</option>
+                                    <label for="gender">Gender</label>
+                                    <select class="form-control" name="gender" id="gender" required {{ isset($setting) && $setting->status == 'active'?'disabled':'' }}>
+                                        <option value="Male" {{ $user->gender == 'Male' ? 'selected' : ''}}>Male</option>
+                                        <option value="Female" {{ $user->gender == 'Female' ? 'selected' : ''}}>Female</option>
                                     </select>
                                 </fieldset>
                                 <fieldset class="form-group">

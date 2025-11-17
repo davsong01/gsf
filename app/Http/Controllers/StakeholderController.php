@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Zone;
 use App\Models\Field;
 use App\Models\Chapter;
-use App\Models\Stakeholder;
 use Illuminate\Http\File;
+use App\Models\Stakeholder;
 use Illuminate\Http\Request;
+use App\Services\FileUploadService;
+use App\Rules\UniqueStakeholderRole;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Intervention\Image\Facades\Image;
@@ -24,7 +26,6 @@ class StakeholderController extends Controller
     { 
         $count = 1;
         if (auth()->user()->role == 1) {
-
 			$stakeholders = Stakeholder::orderBy('created_at', 'desc')->get();
 			return view('admin.stakeholders.index', compact('stakeholders', 'count'));
 			
@@ -46,7 +47,7 @@ class StakeholderController extends Controller
         $months = $this->getMonths();
         $portfolios = $this->getPortfolios();
 
-        return view('admin.stakeholders.create', compact('zones', 'fields', 'chapters', 'months', 'portfolios'));
+        return view('admin.stakeholders.edit', compact('zones', 'fields', 'chapters', 'months', 'portfolios'));
     }
 
     /**
@@ -57,51 +58,97 @@ class StakeholderController extends Controller
      */
     public function store(Request $request)
     {
-     
-        $data = $this->validate($request, [
-            'signature' => 'nullable|mimes:jpeg,jpg,png',
-            'name' => 'required',
-            'phone' => 'required',
-            'email' => 'required',
-            'field_id' => 'nullable|numeric',
-            'zone_id' => 'nullable|numeric',
-            'chapter_id' => 'nullable|numeric',
-            'role' => 'required',
-            'password' => 'nullable',
-            'day' => 'required|numeric',
-            'month' => 'required|numeric',
-            'year' => 'nullable|numeric',
-            'portfolio' => 'nullable'
+        $validated = $request->validate([
+            'name'       => ['required', 'string', 'max:255'],
+            'email'      => ['required', 'email', 'max:255', 'unique:stakeholders,email'],
+            'phone'      => ['nullable', 'string', 'max:20'],
+            'password'   => ['nullable', 'string', 'min:8'],
+            'day'        => ['required', 'integer', 'between:1,31'],
+            'month'      => ['required', 'integer', 'between:1,12'],
+            'year'       => ['nullable', 'digits:4'],
+            'role'       => ['required', 'string', new UniqueStakeholderRole($request->all())],
+            'chapter_id' => ['nullable', 'integer', 'exists:chapters,id'],
+            'zone_id'    => ['nullable', 'integer', 'exists:zones,id'],
+            'field_id'   => ['nullable', 'integer', 'exists:fields,id'],
+            'portfolio'  => ['nullable', 'string', 'max:255'],
+            'signature'  => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'status' => ['required', 'in:active,inactive'],
         ]);
-       
-        //Handle password
-        if ($request['password']) {
-			$password = Hash::make($request['password']);
-		} else {
-			$password = Hash::make($request['12345@GSF2021']);
-		}
-        if ($request->has('signature')) {
-           $filename = $this->uploadImage($request->signature, 'sign', 400, 400);
-        }
-        
-        $stakeholder = Stakeholder::create([
-            'signature' => $filename ?? null,
-            'name' => $data['name'],
-            'phone' => $data['phone'],
-            'email' => $data['email'],
-            'field_id' => $data['field_id'],
-            'zone_id' => $data['zone_id'],
-            'chapter_id' => $data['chapter_id'],
-            'role' => $data['role'],
-            'password' => $password,
-            'day' => $data['day'],
-            'day' => $data['day'],
-            'month' => $data['month'],
-            'portfolio' => $data['portfolio'],
-        ]);
-        // dd($data, $stakeholder);
-        return redirect(route('staff.index'))->with('message', 'Operation Successful'); 
 
+        $role = $request->input('role');
+        $chapterRoles = ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary'];
+
+        $stakeholder = new Stakeholder();
+
+        // Role-based assignments
+        switch (true) {
+            case in_array($role, $chapterRoles):
+                $chapter = Chapter::find($request->chapter_id);
+                $stakeholder->fill([
+                    'chapter_id' => $request->chapter_id,
+                    'portfolio'  => null,
+                    'zone_id'    => $chapter?->zone?->id,
+                    'field_id'   => $chapter?->field?->id,
+                ]);
+                break;
+
+            case $role === 'Zonal Pastor':
+                $zone = Zone::find($request->zone_id);
+                $stakeholder->fill([
+                    'zone_id'    => $zone?->id,
+                    'field_id'   => $zone?->field_id,
+                    'chapter_id' => null,
+                    'portfolio'  => null,
+                ]);
+                break;
+
+            case $role === 'Field Pastor':
+                $stakeholder->fill([
+                    'field_id'   => $request->field_id,
+                    'zone_id'    => null,
+                    'chapter_id' => null,
+                    'portfolio'  => null,
+                ]);
+                break;
+
+            case $role === 'Portfolio':
+                $stakeholder->fill([
+                    'portfolio'  => $request->portfolio,
+                    'chapter_id' => null,
+                    'field_id'   => null,
+                    'zone_id'    => null,
+                ]);
+                break;
+        }
+
+        // Password handling
+        $stakeholder->password = Hash::make(
+            $request->filled('password') ? $request->password : '12345@GSF2021'
+        );
+
+        // Signature handling
+        if ($request->hasFile('signature')) {
+            $stakeholder->signature = FileUploadService::secureUpload(
+                $request->file('signature'),
+                'signatures'
+            );
+        }
+
+        // General info
+        $stakeholder->fill([
+            'name'  => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'role'  => $role,
+            'status'  => $request->status,
+            'day'   => $request->day,
+            'month' => $request->month,
+            'year'  => $request->year,
+        ])->save();
+
+        return redirect()
+            ->route('stakeholderpersonnel.index')
+            ->with('message', 'Operation Successful');
     }
 
     /**
@@ -121,10 +168,10 @@ class StakeholderController extends Controller
      * @param  \App\Stakeholder  $stakeholder
      * @return \Illuminate\Http\Response
      */
-    public function edit(Stakeholder $staff)
+    public function edit(Stakeholder $stakeholderpersonnel)
     {
+        $stakeholder = $stakeholderpersonnel;
         $fields = Field::all();
-        $stakeholder = $staff;
         $zones = Zone::all();
         $chapters = Chapter::all();
         $months = $this->getMonths();
@@ -140,71 +187,107 @@ class StakeholderController extends Controller
      * @param  \App\Stakeholder  $stakeholder
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Stakeholder $staff)
+    public function update(Request $request, Stakeholder $stakeholderpersonnel)
     {
-        $stakeholder = $staff;
+        $stakeholder = $stakeholderpersonnel;
 
-        if($request['role'] == 'President'){
-            $stakeholder->chapter_id = $request->chapter_id;
-            $stakeholder->portfolio = null;
-            $stakeholder->zone_id = null;
-            $stakeholder->field_id = null;
+        // Validate input
+        $validated = $request->validate([
+            'name'       => ['required', 'string', 'max:255'],
+            'email'      => ['required', 'email', 'max:255', 'unique:stakeholders,email,' . $stakeholder->id],
+            'phone'      => ['nullable', 'string', 'max:20'],
+            'password'   => ['nullable', 'string', 'min:8'],
+            'day'        => ['required', 'integer', 'between:1,31'],
+            'month'      => ['required', 'integer', 'between:1,12'],
+            'year'       => ['nullable', 'digits:4'],
+            'role'       => ['required', 'string', new UniqueStakeholderRole($request->all(), $stakeholder->id)],
+            'chapter_id' => ['nullable', 'integer', 'exists:chapters,id'],
+            'zone_id'    => ['nullable', 'integer', 'exists:zones,id'],
+            'field_id'   => ['nullable', 'integer', 'exists:fields,id'],
+            'portfolio'  => ['nullable', 'string', 'max:255'],
+            'signature'  => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'status' => ['required', 'in:active,inactive'],
+        ]);
+
+        $role = $request->input('role');
+        $chapterRoles = ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary'];
+
+        // Role-based assignments
+        switch (true) {
+            case in_array($role, $chapterRoles):
+                $chapter = Chapter::find($request->chapter_id);
+
+                $stakeholder->fill([
+                    'chapter_id' => $request->chapter_id,
+                    'portfolio'  => null,
+                    'zone_id'    => $chapter?->zone?->id,
+                    'field_id'   => $chapter?->field?->id,
+                ]);
+                break;
+
+            case $role === 'Zonal Pastor':
+                $zone = Zone::find($request->zone_id);
+                $stakeholder->fill([
+                    'zone_id'    => $zone?->id,
+                    'field_id'   => $zone?->field_id,
+                    'chapter_id' => null,
+                    'portfolio'  => null,
+                ]);
+                break;
+
+            case $role === 'Field Pastor':
+                $stakeholder->fill([
+                    'field_id'   => $request->field_id,
+                    'zone_id'    => null,
+                    'chapter_id' => null,
+                    'portfolio'  => null,
+                ]);
+                break;
+
+            case $role === 'Portfolio':
+                $stakeholder->fill([
+                    'portfolio'  => $request->portfolio,
+                    'chapter_id' => null,
+                    'field_id'   => null,
+                    'zone_id'    => null,
+                ]);
+                break;
         }
 
-        if($request['role'] == 'Zonal Pastor'){
-            $stakeholder->zone_id = $request->zone_id;
-            $stakeholder->field_id = Zone::whereId($request->zone_id)->value('field_id');
-            $stakeholder->chapter_id = null;
-            $stakeholder->portfolio = null;
+        // Password handling
+        if ($request->filled('password')) {
+            $stakeholder->password = Hash::make($request->password);
+        } elseif (!$stakeholder->password) {
+            $stakeholder->password = Hash::make('12345@GSF0101');
         }
 
-        if($request['role'] == 'Field Pastor'){
-            $stakeholder->field_id = $request->field_id;
-            $stakeholder->zone_id = null;
-            $stakeholder->chapter_id = null;
-            $stakeholder->portfolio = null;
+        // Signature handling
+        if ($request->hasFile('signature')) {
+            $stakeholder->signature = FileUploadService::secureUpload(
+                $request->file('signature'),
+                'signatures',
+                $stakeholder->signature
+            );
         }
 
-        if($request['role'] == 'Portfolio'){
-            $stakeholder->portfolio = $request->portfolio;
-            $stakeholder->chapter_id = null;
-            $stakeholder->field_id = null;
-            $stakeholder->zone_id = null;
+        // Update general info
+        $stakeholder->fill([
+            'name'  => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'role'  => $role,
+            'day'   => $request->day,
+            'month' => $request->month,
+            'year'  => $request->year,
+            'status'  => $request->status,
+        ])->save();
 
-        }
-
-        if ($request['password']) {
-			$password = Hash::make($request['password']);
-		} else {
-			$password = Hash::make($request['12345@GSF2021']);
-		}
-
-        if ($request['signature']) {
-            if (file_exists(base_path() . '/uploads/signatures' . '/' . $stakeholder->signature))
-            unlink( base_path() . '/uploads/signatures' . '/' . $stakeholder->signature);
-
-            $filename = date('d-M-Y-s') . '-' . pathinfo($request->signature->getClientOriginalName(), PATHINFO_FILENAME);
-            $extension = $request->signature->getClientOriginalExtension();
-            Storage::disk('uploads')->putFileAs('signatures', new File($request->signature->path()), $filename.'.'.$extension);
-            $signature = $filename . '.' . $extension;
-        }else{
-            $signature = $stakeholder->signature;
-        }
-        
-        $stakeholder->signature = $signature;
-        $stakeholder->name = $request->name;
-        $stakeholder->phone = $request->phone;
-        $stakeholder->email = $request->email;
-        $stakeholder->role = $request->role;
-        $stakeholder->password = $password;
-        $stakeholder->day = $request->day;
-        $stakeholder->month = $request->month;
-        $stakeholder->year = $request->year;
-
-        $stakeholder->save();
-
-        return redirect(route('staff.index'))->with('message', 'Update Successfull');
+        return redirect()
+            ->route('stakeholderpersonnel.index')
+            ->with('message', 'Update Successful');
     }
+
+
 
     /**
      * Remove the specified resource from storage.

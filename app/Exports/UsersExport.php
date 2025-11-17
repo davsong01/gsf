@@ -7,7 +7,7 @@ use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class UsersExport implements WithHeadings, FromQuery
+class UserExport implements WithHeadings, FromQuery
 {
 	use Exportable;
 
@@ -51,7 +51,7 @@ class UsersExport implements WithHeadings, FromQuery
 				'food.name as foodstand',
 				'transactions.purpose',
 				'transactions.location',
-				'users.sex'
+				'users.gender'
 			)
 			->orderBy('uploaded_by_users.name')
 			->orderBy('users.created_at', 'asc');

@@ -41,7 +41,7 @@ class OfficialController extends Controller
 				'name' => 'required|min:3',
 				'email' => 'required|unique:users,email',
 				'phone' => 'required',
-				'sex' => 'required',
+				'gender' => 'required',
                 'passport' => 'nullable|max:200',
                 'password' => 'nullable',
 			]);
@@ -70,7 +70,7 @@ class OfficialController extends Controller
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'],
-                'sex' => $data['sex'],
+                'gender' => $data['gender'],
                 'password' => $password,
                 'slot' => 1,
                 'slot_filled' => 1,

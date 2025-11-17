@@ -6,6 +6,7 @@ use App\Models\Food;
 use App\Models\User;
 use App\Models\Hostel;
 use App\Models\Chapter;
+use App\Models\ConferencePlan;
 use App\Models\ConferenceEdition;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\TransactionAllocationField;
@@ -24,6 +25,11 @@ class Transaction extends Model
     public function allocationFields()
     {
         return $this->hasMany(TransactionAllocationField::class);
+    }
+
+    public function conferenceplan()
+    {
+        return $this->belongsTo(ConferencePlan::class, 'conference_plan_id');
     }
 
     public function conferenceEdition()

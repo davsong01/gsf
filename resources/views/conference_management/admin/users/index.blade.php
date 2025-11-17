@@ -28,7 +28,7 @@
                                             <th>Date</th>
                                             <th>Avatar</th>
                                             <th>Details</th>
-                                            <th>Amount Paid</th>
+                                            <th>Amount</th>
                                             <th>Uploaded by</th>
                                             <th>Actions</th>
                                         </tr>
@@ -36,27 +36,23 @@
                                     <tbody>
                                         @if(isset($participants) && $participants->count() > 0)
                                         @foreach($participants as $participant)
-                                       
+                                        
                                         <tr>
                                             <td>{{ $count++ }}</td>
                                             <td>{{ $participant->created_at->format('Y-m-d : h-i-a') }} <br>
-                                               <strong>Status: </strong> @if($participant->registration_status == 'Complete')
-                                                <i class="bx bxs-circle success font-small-1 mr-50"></i> @else
-                                                <i class="bx bxs-circle danger font-small-1 mr-50"></i>
-                                                @endif <br>
-                                                <strong>Campus:</strong>{{ isset($participant->user->campus) ? $participant->user->campus->name : 'N/A'}} <br>
-                                                <strong>Level:</strong> {{ $participant->level }}
+                                                <strong>Reg Plan:</strong> {{ $participant->level }}
                                                 @if(isset($participant->hostel_id)) <br>
                                                 <strong>Hostel:</strong> {{ $participant->hostel->name }}
                                                 @endif
                                                 @if(isset($participant->food_id)) <br>
-                                                <strong>Service Point:</strong> {{ $participant->food->name }}
+                                                <strong>Service Point:</strong> {{ $participant->food->name }} <br>
                                                 @endif
+                                                <strong>Payment Provider:</strong> {{ $participant?->paymentprovider?->name }}
+
                                                 @if($type == 'Moderator') <br>
                                                 <span>
                                                     <strong style="color:blue">Slots:</strong> {{ $participant->slot }} <br>
                                                     <strong style="color:blue">Slots Available:</strong> {{ $participant->slot - $participant->slot_filled }} 
-
                                                 </span>
                                                 @endif <br>
                                                 <span style="color:blue">Payment Location: <strong>{{ $participant->location ?? 'Online' }}</strong></span> <br>
@@ -71,17 +67,27 @@
                                                     <span style="color:red">
                                                         <strong>Trans ID:</strong> {{ $participant->transid }} <br>
                                                     </span>
+                                                    <span>
+                                                        <strong>Trans Status:</strong><span style="color:{{$participant->status == 'Complete' ? 'green' : 'red'}}"> {{ $participant->status }} <br></span>
+                                                    </span>
+                                                    <span>
+                                                        <strong>Reg. Status:</strong><span style="color:{{$participant->registration_status == 'Complete' ? 'green' : 'red'}}"> {{ $participant->registration_status }} <br></span>
+                                                    </span>
                                                     <strong>Name:</strong> {{ $participant->user->name }} <br>
                                                     <strong>Email:</strong> {{ $participant->user->email }} <br>
                                                     <strong>Phone:</strong> {{ $participant->user->phone }} <br>
                                                 </small>
                                             </td>
-                                            <td>&#8358;{{ number_format($participant->amount_paid) ?? 0 }}</td>
-                                            <td></strong>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
+                                            <td>
+                                                <strong>Amount: </strong>&#8358;{{ number_format($participant->amount_paid) }} <br>
+                                                <strong>Pro. Charge: </strong>&#8358;{{ number_format($participant->provider_charge) }} <br>
+                                                <strong>Total Paid: </strong>&#8358;{{ number_format($participant->total_amount ?? $participant->amount_paid) }} <br>
+                                            </td>
+                                            
+                                            <td></strong>@if(isset($participant?->moderator?->name) || in_array($type, ['Participant', 'Moderator'])  && ($participant->level) == 'Participant'){{ $participant?->moderator?->name }}
                                                 @else N/A @endif</td>
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                                <a class="actions" data-toggle="tooltip" title="View/Edit User" href="{{ route('conference.participants.edit', ['edition'=>$edition->id,'id'=>$participant->id]) }}"> <i class="bx bxs-edit actions"></i></
-                                                </a>
+                                                <a class="actions" data-toggle="tooltip" title="View/Edit User" href="{{ route('conference.participants.edit', ['edition'=>$edition->id,'id'=>$participant->id]) }}"> <i class="bx bxs-edit actions"></i></a>
                                                 <a class="actions" onclick="return confirm('You are about to resend welcome email to this participant?');" data-toggle="tooltip" data-placement="top" title="Resend welcome mail"
                                                     href="{{ route('participants.resendmail', ['edition'=>$edition->id,'id'=>$participant->id]) }}"><i
                                                         class="fa fa-envelope"></i>
@@ -105,6 +111,7 @@
                                                 </a>
                                                 @endif
                                             </td>
+                                            
                                         </tr>
                                         @endforeach
                                         @endif

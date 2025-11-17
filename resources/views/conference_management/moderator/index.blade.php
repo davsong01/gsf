@@ -77,7 +77,6 @@
                     <a href="{{ route('conference.participants.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new participant <strong>({{ ($thispayment->slot -  ($thispayment->slot_filled )) }} slot(s) left)</strong></a>  
                     <a class="btn btn-info mt-1" href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id,'type'=>'Participant']) }}">Import Participants</a>
 
-                    {{-- <a href="{{ route('moderator.conference.import.index') }}" class="btn btn-primary mt-1">Import</a> --}}
                     @endif
                     
                 </div>
@@ -89,11 +88,9 @@
                                     <tr>
                                         <th>S/N</th>
                                         <th>Passport</th>
-                                        <th>Family ID</th>
+                                        <th>Details</th>
                                         <th>Status</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
+                                       
                                         <th>Amount Paid</th>
                                         <th>Uploaded by</th>
                                         <th>Actions</th>
@@ -108,34 +105,23 @@
                                         <td>
                                             <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->user->passport ? '/'.$participant->user->passport : '/images/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
                                         </td>
-                                        <td>{{ $participant->user->family_id }}</td>
+                                        <td>
+                                            <strong>Login ID:</strong> {{ $participant->user->family_id }} <br>
+                                            <strong>Name:</strong> {{ $participant->user->name }} <br>
+                                            <strong>Email:</strong> {{ $participant->user->email }} <br>
+                                            <strong>Phone:</strong> {{ $participant->user->phone }} <br>
+                                            
+                                        </td>
                                         <td>@if($participant->registration_status == 'Complete')
                                             <i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small> @else
                                             <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Pending</small>
                                             @endif
                                         </td>
-                                        
-                                        <td>{{ $participant->user->name }}</td>
-                                        <td>{{ $participant->user->email }}</td>
-                                        <td>{{ $participant->user->phone }}</td>
-                                        <td>&#8358;{{ $participant->amount_paid }}</td>
-                                        <td>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
+                                        <td>&#8358;{{ number_format($participant->total_amount) }}</td>
+                                        <td> 
+                                            @if(($participant->moderator) && in_array($participant->level, ['Participant', 'Moderator'])){{ $participant->moderator->name }}
                                             @else N/A @endif
                                         </td>
-                                        
-                                        {{-- <td style="padding-left: 5px;padding-right: 5px;">
-                                            <a class="actions" data-toggle="tooltip" title="View/Edit Participant" href="{{ route('conference.participants.edit', ['edition'=>$participant->conference_edition_id,'id'=>$participant->id]) }}"> <i class="bx bxs-edit actions"></i>
-                                            </a>
-                                            
-                                            @if($participant->registration_status == 'Complete')
-                                                <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('participants.card', ['id'=>$participant->id, 'edition'=>$participant->conference_edition_id]) }}"> <i class="fa fa-print actions"></i>
-                                                </a>
-                                            @endif
-                                            @if(auth()->user()->id != $participant->user_id)
-                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Participant" href="{{ route('conferenceparticipants.delete',['id'=>$participant->user_id,'edition'=>$participant->conference_edition_id,'payment_id'=>$participant->id]) }}"> <i class="fa fa-trash actions"></i>
-                                                </a>
-                                            @endif
-                                        </td> --}}
                                         <td class="text-center align-middle">
                                             <div class="d-flex flex-column align-items-stretch" style="min-width: 180px; gap: 6px;">
 
@@ -144,14 +130,6 @@
                                                 class="btn btn-sm btn-primary text-nowrap">
                                                     <i class="bx bxs-edit me-1"></i> Edit
                                                 </a>
-
-                                                {{-- Print/Download Conference I.D --}}
-                                                {{-- @if($participant->registration_status == 'Complete')
-                                                    <a href="{{ route('participants.card', ['id' => $participant->id, 'edition' => $participant->conference_edition_id]) }}"
-                                                    class="btn btn-sm btn-secondary text-nowrap">
-                                                        <i class="fa fa-print me-1"></i> Print I.D
-                                                    </a>
-                                                @endif --}}
 
                                                 {{-- Delete Participant --}}
                                                 @if(auth()->user()->id != $participant->user_id)
@@ -162,7 +140,7 @@
                                                         ]) }}"
                                                     onclick="return confirm('Are you really sure?');"
                                                     class="btn btn-sm btn-danger text-nowrap">
-                                                        <i class="fa fa-trash"></i> Delete
+                                                        <i class="fa fa-trash me-1" style="font-size: 1.2rem;top: 1px"></i> Delete
                                                     </a>
                                                 @endif
 

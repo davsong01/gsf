@@ -12,7 +12,7 @@
                 <div class="card">
                     <div class="card-content">
                         <div class="card-body card-dashboard">
-                            <a href="{{ route('edition.fix.attempted',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Fix Attempted Registration ({{$count}})</a>        
+                            {{-- <a href="{{ route('edition.fix.attempted',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Fix Attempted Registration ({{$count}})</a>         --}}
                             {{-- <a href="{{ route('edition.fix.attempted',['edition'=>$edition->id]) }}" class="btn btn-info mt-1">Download Consolidate Participants</a>         --}}
                         </div>
                     </div>

@@ -1,7 +1,7 @@
 @extends('layouts.stakeholderdashboard')
 @section('title', 'Edit report')
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('stakeholder.dashboard') }}">Report</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('stakeholders.dashboard') }}">Report</a></li>
 @endsection
 @section('active')
 <li class="breadcrumb-item">Add New report</li>

@@ -114,13 +114,13 @@
 										value="{{ old('phone') ?? auth()->user()->phone }}" required $state>
 								</fieldset>
 								<fieldset class="form-group">
-									<label for="sex">Gender</label>
-									<select class="form-control" name="sex" id="sex" required $state>
+									<label for="gender">Gender</label>
+									<select class="form-control" name="gender" id="gender" required $state>
 										<option value="">--Select Option--</option>
-										<option value="Male" {{ auth()->user()->sex == 'Male' ? 'selected' : ''}}>
+										<option value="Male" {{ auth()->user()->gender == 'Male' ? 'selected' : ''}}>
 											Male</option>
 										<option value="Female"
-											{{ auth()->user()->sex == 'Female' ? 'selected' : ''}}>Female</option>
+											{{ auth()->user()->gender == 'Female' ? 'selected' : ''}}>Female</option>
 									</select>
 								</fieldset>
 								

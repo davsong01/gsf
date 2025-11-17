@@ -50,7 +50,7 @@ class UsersImport implements ToModel, WithHeadingRow
 		dd($this->import_level);
 		switch ($this->import_level) {
 			case 'Participant':
-				$validation_rule['sex'] = 'required|in:Male,Female';
+				$validation_rule['gender'] = 'required|in:Male,Female';
 				$type = 1;
 				$prefix = 'AOP';
 				$chapter = auth::user()->chapter;
@@ -98,8 +98,8 @@ class UsersImport implements ToModel, WithHeadingRow
 				'email.unique' => 'One or more email already exists, please check the email field and try again',
 				'phone.unique' => 'One or more phone number already exists, please check the phone number field and try again',
 
-				'sex.in' => 'One or more sex/gender is wrong, try Male/Female, please check the sex field and try again',
-				'sex.required' => 'One or more sex/gender is wrong, try Male/Female, please check the sex field and try again',
+				'gender.in' => 'One or more gender/gender is wrong, try Male/Female, please check the gender field and try again',
+				'gender.required' => 'One or more gender/gender is wrong, try Male/Female, please check the gender field and try again',
 				'chapter.exists' => 'One or more chapter is using a non existing chapter, please check the chapter field and try again',
 				// 'registration_status.in' => 'One or more registration status is wrong, try Pending/Complete, please check the registration status field and try again',
 			]
@@ -116,14 +116,14 @@ class UsersImport implements ToModel, WithHeadingRow
 		$conference_number = isset($row['conference_number']) ? trim($row['conference_number']) : null;
 		$hostel_id = isset($row['hostel_name']) ?
 			DB::table('hostels')->whereName(trim($row['hostel_name']))->pluck('id')->first()
-			: DB::table('hostels')->whereLevel($level)->whereType($row['sex'])->whereColumn('allocation', '<', 'hostels.capacity')->pluck('id')->first();
+			: DB::table('hostels')->whereLevel($level)->whereType($row['gender'])->whereColumn('allocation', '<', 'hostels.capacity')->pluck('id')->first();
 		$food_id = isset($row['food_name']) ?
 			DB::table('food')->whereName(trim($row['food_name']))->pluck('id')->first()
 			: DB::table('food')->whereLevel($level)->whereColumn('allocation', '<', 'food.capacity')->pluck('id')->first();
 		$chapter = isset($row['chapter']) ?
 			DB::table('chapters')->whereName(trim($row['chapter']))->pluck('id')->first()
 			: null;
-		$sex = isset($row['sex']) ? $row['sex'] : null;
+		$gender = isset($row['gender']) ? $row['gender'] : null;
 		$registration_status = isset($row['registration_status']) ? $row['registration_status'] : 'Pending';
 		$slot = isset($row['slot']) ? $row['slot'] : 1;
 		$slot_filled = isset($row['slot_filled']) ? $row['slot_filled'] : 1;
@@ -181,7 +181,7 @@ class UsersImport implements ToModel, WithHeadingRow
 			'food_id' => $food_id,
 			'hostel_id' => $hostel_id,
 			'chapter' => $chapter,
-			'sex' => $sex,
+			'gender' => $gender,
 			'registration_status' => $registration_status,
 			'slot' => $slot,
 			'slot_filled' => $slot_filled,

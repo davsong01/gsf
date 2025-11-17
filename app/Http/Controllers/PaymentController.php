@@ -23,6 +23,7 @@ use App\Models\ConferenceEdition;
 use App\Services\PaystackService;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\ConferencePlan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -53,18 +54,26 @@ class PaymentController extends Controller
 	public function checkout(Request $request){
 		$setting = activeConferenceEdition();
 		$this->frontend = frontendTemplate();
-		$type = $request->type;
 		
+		$plan = ConferencePlan::where('status', 1)->where('id', $request->conference_plan_id)->where('conference_edition_id', $setting->id)->first();
+		
+		if(!$plan){
+			return back()->with('message', 'Invalid registration plan');
+		}
+
 		$setting = $this->conferenceEdition();
 		$request['setting'] = $setting;
 
-		if(!in_array($type, [5])){
-			$amount = PaymentService::calculateRegistrationAmount($request->all());
-		}else{
-			$amount = $request->amount;
+		if(!in_array($plan->type, ['donation'])){
+			$request['amount'] = $plan->price;
 		}
+		
+		if (in_array($plan->type, ['multiple'])) {
+			$request['amount'] = $plan->price * ($request->no_of_participants ?? $request->participants);
+		}
+		
 
-		$request['amount'] = $amount;
+		$request['plan'] = $plan;
 		
 		$transaction = PaymentService::initializeTransaction($request->all());
 		
@@ -86,46 +95,13 @@ class PaymentController extends Controller
 
 	public function showCheckout(Transaction $transaction){
 		$setting = $transaction->edition;
+		$transaction->load('conferenceplan');
 		
 		$transaction->update(['transid' => strtoupper($setting->ministry->code) . '-' . PaymentService::generateTransactionId()]);
-
 		$paymentProvider = $transaction->paymentprovider;
 
 		return view('frontend.conference.template' . $setting->template_id . '.checkout', compact('transaction', 'paymentProvider', 'setting'));
 	}
-
-	// public function redirectToGateway(Request $request)
-	// {
-	// 	$setting = activeConferenceEdition();
-	// 	$this->frontend = frontendTemplate();
-
-	// 	if ($setting->close_registration < now()) {
-	// 		return back()->with('warning', 'Registration for this program has closed');
-	// 		// return redirect(url('/registration/#register'))->with('warning', 'Registration for this program has closed');
-	// 	}
-		
-	// 	$this->validate($request, [
-	// 		'name' => 'required',
-	// 		'email' => 'required|email',
-	// 		'phone' => 'required',
-	// 		'chapter' => 'nullable'
-	// 	]);
-
-		
-	// 	try {
-	// 		$request['amount'] = $request['amount'] * 100;
-	// 		$url = $this->queryPaystack($request->all(), $setting);
-			
-	// 		if (isset($url['error'])) {
-	// 			return back()->with('error', $url['error']);
-	// 		}elseif (isset($url) && !empty($url)) {
-	// 			return redirect()->away($url);
-	// 		}
-		
-	// 	} catch (\Exception $e) {
-	// 		return redirect(url('/registration/#register'))->with('error', $e . 'Transaction token has expired or details not correct. Please refresh the page and try again');
-	// 	}
-	// }
 
 	// public function handleGatewayCallback(Request $request, $admin = "", $transfer_confirm = "", $onsite_confirm = "")
 	public function handleGatewayCallback(Request $request, $reference)
@@ -137,10 +113,10 @@ class PaymentController extends Controller
 			'conference_year' => Carbon::parse($setting->start_date)->year,
 		];
 		
-		$transaction = Transaction::with(['user', 'paymentprovider', 'edition', 'allocationFields'])
+		$transaction = Transaction::with(['user', 'paymentprovider', 'edition','conferenceplan', 'allocationFields'])
 			->where('transid', $reference)
 			->first();
-
+		
 		if (!$transaction) {
 			return response()->json(['error' => 'Transaction not found'], 404);
 		}
@@ -223,7 +199,7 @@ class PaymentController extends Controller
 
 		// Send emails
 		$transaction->user = $user;
-		$this->sendRegistrationEmails($transaction);
+		EmailService::sendRegistrationEmails($transaction);
 
 		// Auto-login (if needed)
 		if ($admin !== 'admin') {
@@ -257,22 +233,6 @@ class PaymentController extends Controller
 		return true;
 	}
 
-	/**
-	 * Send all registration-related emails.
-	 */
-	protected function sendRegistrationEmails($transaction)
-	{
-		$emailData['transaction'] = $transaction;
-
-		// Welcome email to participant
-		$emailData['type'] = 'welcome_mail';
-		EmailService::logEmail($emailData);
-
-		// Notify admin/new registration
-		$emailData['type'] = 'new_registration';
-		EmailService::logEmail($emailData);
-	}
-
 
 	public function thankYouPage($transaction, $extraData){
 		$transaction->fresh();
@@ -299,6 +259,20 @@ class PaymentController extends Controller
 		$provider = $transaction->paymentprovider->slug;
 		
 		if($provider == 'paystack'){
+			return PaystackService::verify($transaction);
+		}
+
+		if ($provider == 'monnify') {
+			return MonnifyService::verify($transaction);
+		}
+	}
+
+	public function requery(Request $request)
+	{
+		$transaction = Transaction::where('transid', $request->transid)->first();
+		$provider = $transaction->paymentprovider->slug;
+		
+		if ($provider == 'paystack') {
 			return PaystackService::verify($transaction);
 		}
 

@@ -11,7 +11,7 @@ use App\Models\Setting;
 use App\Mail\WelcomeMail;
 use App\Models\TempMember;
 use Illuminate\Support\Str;
-use App\Exports\UsersExport;
+use App\Exports\UserExport;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -407,7 +407,7 @@ class UserController extends Controller
 	}
 
 
-	public function usersExport(Request $request)
+	public function userExport(Request $request)
 	{
 		$count = 1;
 		$edition = ConferenceEdition::find($request->edition);
@@ -419,7 +419,7 @@ class UserController extends Controller
 		$data = [
 			'edition_id' => $edition->id,
 		];
-		return Excel::download(new UsersExport($data), 'users_exported.xlsx');
+		return Excel::download(new UserExport($data), 'users_exported.xlsx');
 	}
 
 	public function createEmail(){
@@ -435,7 +435,7 @@ class UserController extends Controller
 			"slug" => "nullable",
 			"phone" => "required",
 			"show_phone" => "nullable",
-			"sex" => "nullable",
+			"gender" => "nullable",
 			"status" => "numeric",
 			"matric_year" => "required|string",
 			"graduation_year" => "nullable|string",

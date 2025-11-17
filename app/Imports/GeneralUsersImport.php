@@ -59,7 +59,7 @@ class GeneralUsersImport extends Controller implements ToModel, WithHeadingRow
 			'chapter' => $this->data['chapter']->id,
 			'email' => trim($row['email']),
 			'phone' => trim($row['phone']),
-			'sex' => trim($row['gender']),
+			'gender' => trim($row['gender']),
 			'matriculation_year' => trim($row['year_of_matriculation']),
 			'graduation_year' => trim($row['year_of_graduation']),
 			'course' => trim($row['course']),

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NecController;
 use App\Services\DynamicImageGenerator;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\CronController;
 use App\Http\Controllers\FoodController;
 use App\Http\Controllers\HomeController;
@@ -19,31 +20,36 @@ use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\MinistryController;
 use App\Http\Controllers\OfficialController;
-use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ModeratorController;
 use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\SwitchUserController;
 use App\Http\Controllers\UserEmailsController;
 use App\Http\Controllers\StakeholderController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UtilityToolsController;
+use App\Http\Controllers\ConferenceFaqController;
 use App\Http\Controllers\CriticalEmailController;
 use App\Http\Controllers\MinistryFieldController;
+use App\Http\Controllers\ConferencePlanController;
 use App\Http\Controllers\PaymentProviderController;
 use App\Http\Controllers\StakeholderLoginController;
 use App\Http\Controllers\ConferenceEditionController;
 use App\Http\Controllers\ConferenceSettingController;
+use App\Http\Controllers\ConferenceSpeakerController;
+use App\Http\Controllers\ConferenceScheduleController;
 use App\Http\Controllers\StakeholderAccountController;
 use App\Http\Controllers\StakeholderPaymentController;
+use App\Http\Controllers\StakeholderReportsController;
 use App\Http\Controllers\ConferenceManagementController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\DynamicImageGeneratorController;
 use App\Http\Controllers\ConferenceUtilityToolsController;
+use App\Http\Controllers\StakeholderReportQuestionController;
 
 Route::get('/queue', function () {
     // Artisan::call('queue:retry all');
@@ -83,7 +89,6 @@ Route:: get('/runcron', [CronController::class, 'cron']);
 Route::get('birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
 
 Route::get('email-cron/{pick?}', [CronController::class, 'emailCron']);
-Route::get('cron/resolve-payment', [CronController::class, 'resolvePayment']);
 
 Route::get('/conference', [ConferenceController::class, 'index']);
 
@@ -136,36 +141,6 @@ Route::controller(HomeController::class)->group(function () {
 
 Route::post('newdonation', [DonationController::class, 'redirectToGateway'])->name('newdonation.save');
 
-Route::controller(StakeholderLoginController::class)->group(function () {
-    //Stakeholder Account
-    Route::get('stakeholders/login', 'showStakeholderLoginForm')->name('stakeholder.loginpage');
-    Route::post('stakeholders/login', 'stakeHolderLogin')->name('stakeholder.login');
-    Route::get('/stakeholderlogout', 'logout')->name('stakeholder.logout');
-});
-
-Route::controller(StakeholderAccountController::class)->group(function () {
-    Route::get('/stakeholderdashboard', 'index')->name('stakeholder.dashboard');
-    Route::get('/stakeholderprofile', 'profile')->name('stakeholder.profile');
-    Route::post('/stakeholderprofile', 'saveProfile')->name('stakeholder.saveprofile');
-});
-
-//Logged in stakeholder Account
-Route::middleware(['stakeholder'])->group(function(){
-    Route::resource('reports', ReportsController::class);
-    Route::controller(ReportsController::class)->group(function () {
-        Route::get('deletereports/{id}', 'delete')->name('reports.delete');
-        Route::post('rejectreports', 'rejectReport')->name('report.reject');
-    });
-    
-    Route::resource('stakeholderpayment', StakeholderPaymentController::class);
-
-    Route::controller(StakeholderPaymentController::class)->group(function () {
-        Route::get('stakeholderpaymentdelete/{id}', 'delete')->name('stakeholderpayment.delete');
-        Route::get('downloadpop/{id}', 'downloadPop')->name('pop.download');
-        Route::post('/pop/export', 'exportPop')->name('pop.export');
-    });
-});
-
 // Registration links
 Route::get( '/registration', [ConferenceController::class, 'index'])->name('index');
 Route::get('/nec/registration/portal/pay', [ConferenceController::class, 'necRegistration'])->name('nec.registration');
@@ -183,13 +158,15 @@ Route::get('/payment/donation-callback', [DonationController::class, 'handleDona
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', [AccountController::class, 'index'])->name('account');
     Route::get('/home', [AccountController::class, 'index'])->name('home');
-    Route::resource('staff', StakeholderController::class);
-    Route::get('staffs/delete/{id}', [StakeholderController::class, 'destroy'])->name('staff.delete');
+    Route::resource('stakeholderpersonnel', StakeholderController::class);
+    Route::get('stakeholderpersonnel/delete/{id}', [StakeholderController::class, 'destroy'])->name('stakeholderpersonnel.delete');
     Route::resource('email', EmailController::class);
     Route::resource('paymentproviders', PaymentProviderController::class);
 
+    Route::prefix('stakeholder')->as('stakeholder.')->group(function () {
+        Route::resource('questions', StakeholderReportQuestionController::class);
+    });
     
-
     // Official
     Route::resource('nec', NecController::class);
     
@@ -291,6 +268,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('user/meal/{id}', 'getMealTicket')->name('meal.ticket');
         
     });
+
+    Route::post('conference-query-payment', [PaymentController::class, 'requery'])->name('conference.queryPayment');
 
     Route::controller(DynamicImageGeneratorController::class)->group(function () {
         Route::post('generate-template-preview/{edition_id}', 'generateTemplatePreview')->name('template.preview');
@@ -429,11 +408,94 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('payouts', PayoutController::class);
     Route::resource('donations', DonationController::class);
 
+    Route::prefix('conference-plans/{edition}')->name('conference_plans.')->group(function () {
+        Route::get('/', [ConferencePlanController::class, 'index'])->name('index');
+        Route::get('/create', [ConferencePlanController::class, 'create'])->name('create');
+        Route::post('/', [ConferencePlanController::class, 'store'])->name('store');
+        Route::get('/{conferencePlan}/edit', [ConferencePlanController::class, 'edit'])->name('edit');
+        Route::put('/{conferencePlan}', [ConferencePlanController::class, 'update'])->name('update');
+        Route::delete('/{conferencePlan}', [ConferencePlanController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('conference-schedule/{edition}')->name('conference_schedule.')->group(function () {
+        Route::get('/', [ConferenceScheduleController::class, 'index'])->name('index');
+        Route::get('/create', [ConferenceScheduleController::class, 'create'])->name('create');
+        Route::post('/', [ConferenceScheduleController::class, 'store'])->name('store');
+        Route::get('/{conferenceSchedule}/edit', [ConferenceScheduleController::class, 'edit'])->name('edit');
+        Route::put('/{conferenceSchedule}', [ConferenceScheduleController::class, 'update'])->name('update');
+        Route::delete('/{conferenceSchedule}', [ConferenceScheduleController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('conference-speakers')->name('conference_speakers.')->group(function () {
+        Route::get('/', [ConferenceSpeakerController::class, 'index'])->name('index');
+        Route::get('/create', [ConferenceSpeakerController::class, 'create'])->name('create');
+        Route::post('/', [ConferenceSpeakerController::class, 'store'])->name('store');
+        Route::get('/{conferenceSpeaker}/edit', [ConferenceSpeakerController::class, 'edit'])->name('edit');
+        Route::put('/{conferenceSpeaker}', [ConferenceSpeakerController::class, 'update'])->name('update');
+        Route::delete('/{conferenceSpeaker}', [ConferenceSpeakerController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('conference-faqs')->name('conference_faqs.')->group(function () {
+        Route::get('/', [ConferenceFaqController::class, 'index'])->name('index');
+        Route::get('/create', [ConferenceFaqController::class, 'create'])->name('create');
+        Route::post('/', [ConferenceFaqController::class, 'store'])->name('store');
+        Route::get('/{conferenceFaq}/edit', [ConferenceFaqController::class, 'edit'])->name('edit');
+        Route::put('/{conferenceFaq}', [ConferenceFaqController::class, 'update'])->name('update');
+        Route::delete('/{conferenceFaq}', [ConferenceFaqController::class, 'destroy'])->name('destroy');
+    });
+
 });
 
-//Get signature Image
-//  Route::get('stakeholdersignature/{image}', function($image){
-//     $realpath = base_path() . '/uploads/signatures'. '/' .$image;
-//         return response()->download($realpath);
-// });
+Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
+    // Stakeholder Login Routes
+    Route::controller(StakeholderLoginController::class)->group(function () {
+        Route::get('/login', 'showStakeholderLoginForm')->name('loginpage');
+        Route::post('/login', 'stakeHolderLogin')->name('login');
+        Route::get('/logout', 'logout')->name('logout');
+    });
 
+    // Routes requiring stakeholder authentication
+    Route::middleware(['stakeholder'])->group(function () {
+        // Reports
+        // Stakeholder Account Routes
+        Route::controller(StakeholderAccountController::class)->group(function () {
+            Route::get('/dashboard', 'dashboard')->name('dashboard');
+            Route::get('/profile', 'profile')->name('profile');
+            Route::post('/profile', 'saveProfile')->name('saveprofile');
+        });
+
+        Route::resource('reports', StakeholderReportsController::class);
+        Route::controller(StakeholderReportsController::class)->group(function () {
+            Route::get('/reports/delete/{report}', 'delete')->name('reports.delete');
+            Route::get('/reports/print/{report}', 'delete')->name('reports.print');
+            Route::get('/reports/nudge/{report}', 'delete')->name('reports.nudge');
+            Route::post('/reports/reject', 'rejectReport')->name('reports.reject');
+        });
+
+        // Payments
+        Route::resource('payments', StakeholderPaymentController::class);
+        Route::controller(StakeholderPaymentController::class)->group(function () {
+            Route::get('/payments/delete/{id}', 'delete')->name('payments.delete');
+            Route::get('/payments/download-pop/{id}', 'downloadPop')->name('pop.download');
+            Route::post('/payments/export-pop', 'exportPop')->name('pop.export');
+        });
+    });
+});
+
+
+//Get signature Image
+Route::get('/protected-files/{file}', function ($file) {
+    $disk = 'protected_uploads';
+
+    // Decode the path
+    $file = base64_decode($file);
+
+    if (!Storage::disk($disk)->exists($file)) {
+        abort(404);
+    }
+
+    $realPath = Storage::disk($disk)->path($file);
+
+    // Return the file as response
+    return response()->file($realPath);
+})->name('protected.download')->middleware('auth');

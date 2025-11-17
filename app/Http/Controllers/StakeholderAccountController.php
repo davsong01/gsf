@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Zone;
+use App\Models\Field;
+use App\Models\Chapter;
 use App\Models\Reports;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
+use App\Models\StakeholderReport;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,36 +21,32 @@ class StakeholderAccountController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+
+    public function dashboard()
     {
+        dd('dashboard');
         $count = 1;
         // return redirect(route('stakeholder.login'));
-        if(!auth::guard('stakeholder')->check())return redirect(route('stakeholder.login'));
-        
-		if (Auth::guard('stakeholder')->user()->role == 'President') {
-            $reports = Reports::whereChapterId(Auth::guard('stakeholder')->user()->chapter_id)->orderBy('created_at', 'desc')->get();
-            			
-		}
-        else if (Auth::guard('stakeholder')->user()->role == 'Field Pastor') {
-            $reports = Reports::whereFieldId(Auth::guard('stakeholder')->user()->field_id)->orderBy('created_at', 'desc')->get();		
-		} 
+        if (!auth::guard('stakeholder')->check()) return redirect(route('stakeholders.login'));
+        $role = Auth::guard('stakeholder')->user()->role;
 
-        else if (Auth::guard('stakeholder')->user()->role == 'Zonal Pastor') {
-            $reports = Reports::whereZoneId(Auth::guard('stakeholder')->user()->zone_id)->orderBy('created_at', 'desc')->get();	
-           	
-		} 
+        if (in_array($role, chapterStakeholders())) {
+            $reports = StakeholderReport::whereChapterId(Auth::guard('stakeholder')->user()->chapter_id)->orderBy('created_at', 'desc')->get();
+        } elseif ($role == 'Field Pastor') {
+            $reports = StakeholderReport::whereFieldId(Auth::guard('stakeholder')->user()->field_id)->orderBy('created_at', 'desc')->get();
+        } elseif ($role == 'Zonal Pastor') {
+            $reports = StakeholderReport::whereZoneId(Auth::guard('stakeholder')->user()->zone_id)->orderBy('created_at', 'desc')->get();
+        } elseif ($role == 'Secretariat') {
+            $reports = StakeholderReport::orderBy('created_at', 'desc')->get();
+        }
 
-        else if (Auth::guard('stakeholder')->user()->role == 'Secretariat') {
-            $reports = Reports::orderBy('created_at', 'desc')->get();		
-		} 
-
-        if(Auth::guard('stakeholder')->user()->role == 'Financial Secretary'){
+        if ($role == 'Financial Secretary') {
             return redirect(route('stakeholderpayment.index'));
         }
 
-        return view('stakeholder.index', compact('reports', 'count'));
+        return view('stakeholder.dashboard', compact('reports', 'count'));
     }
-
+    
     public function profile()
     {
         return view('stakeholder.profile');
@@ -97,7 +97,7 @@ class StakeholderAccountController extends Controller
         }else{
             $fin_sec_signature = Auth::guard('stakeholder')->user()->fin_sec_signature;
         }
-       
+        
         if($request->has('evang_sec_signature')){
             if (!is_null(Auth::guard('stakeholder')->user()->evang_sec_signature) && file_exists(base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->evang_sec_signature))
             unlink( base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->evang_sec_signature);
@@ -124,7 +124,7 @@ class StakeholderAccountController extends Controller
         Auth::guard('stakeholder')->user()->year = $request->year;
 
         Auth::guard('stakeholder')->user()->save();
-               
+        
         return back()->with('message', 'Update Successful');
     }
     /**
