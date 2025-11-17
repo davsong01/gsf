@@ -38,7 +38,7 @@ return new class extends Migration
             }
 
             if (!Schema::hasColumn('stakeholder_reports', 'national_approved_at')) {
-                $table->timestamp('national_approved_at')->nullable()->after('status_complete');
+                $table->timestamp('national_approved_at')->nullable()->after('zone_rejected_at');
             }
 
             if (!Schema::hasColumn('stakeholder_reports', 'national_rejected_at')) {
