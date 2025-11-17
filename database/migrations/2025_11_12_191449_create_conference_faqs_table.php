@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('conference_faqs', function (Blueprint $table) {
             $table->id();
-            $table->intger('display_order')->nullable();
+            $table->integer('display_order')->nullable();
             $table->tinyInteger('status')->default(0);
             $table->string('question')->nullable();
             $table->string('answer')->nullable();
