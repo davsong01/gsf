@@ -4,6 +4,8 @@
         <ul class="menu-content">
             <li class="is_shown"><a href="{{ route('ministry.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Ministries</span></a>
             </li>
+            <li class=" nav-item {{ Request::is('paymentproviders') ? 'active' : '' }}"><a href="{{ route('paymentproviders.index') }}"><i class="fa fa-money"></i><span class="menu-title">Payment Providers</span></a>
+            </li>
             <li class="is_shown"><a href="{{ route('conference_speakers.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Conference Speakers</span></a>
             </li>
             <li class="is_shown"><a href="{{ route('conference_faqs.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Conference FAQs</span></a>
@@ -49,8 +51,7 @@
 
     <li class=" nav-item {{ Request::is('useremails') ? 'active' : '' }}"><a href="{{ route('useremails.index') }}"><i class="fa fa-envelope"></i><span class="menu-title">Emails</span></a>
     </li>
-    <li class=" nav-item {{ Request::is('paymentproviders') ? 'active' : '' }}"><a href="{{ route('paymentproviders.index') }}"><i class="fa fa-money"></i><span class="menu-title">Payment Providers</span></a>
-    </li>
+    
     <li class="nav-item">
         <a class="nav-link {{ Request::is('criticalemails*') ? 'active' : '' }}" href="{{ route('criticalEmail.index') }}"><i class="fa fa-envelope"></i><span class="menu-title" >Logged Emails</a>
     </li>
