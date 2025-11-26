@@ -101,7 +101,7 @@
                                             @elseif($field['type'] == 'textarea')
                                                 <label>{{ $field['label'] }}</label>
                                                 <textarea name="{{ $name }}" class="form-underline h-100px"
-                                                        placeholder="{{ $field['label'] }}"
+                                                        placeholder="Enter {{ $field['label'] }}"
                                                         @if(!empty($field['required'])) required @endif>{{ $oldValue }}</textarea>
 
                                             @else
@@ -110,7 +110,7 @@
                                                     name="{{ $name }}" 
                                                     class="form-underline"
                                                     value="{{ $oldValue }}"
-                                                    placeholder="{{ $field['label'] }}"
+                                                    placeholder="Enter {{ $field['label'] }}"
                                                     @if(!empty($field['required'])) required @endif>
                                             @endif
                                         </div>

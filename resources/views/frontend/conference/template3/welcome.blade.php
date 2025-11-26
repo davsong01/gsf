@@ -11,7 +11,24 @@
 
 </style>
 @section('content')
-<section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800">
+{{-- <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800"> --}}
+{{-- <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800" data-video-src="mp4:video/2.mp4" style="z-index: 0; background-size: cover; background-repeat: no-repeat;"> --}}
+{{-- <section id="section-hero"
+    class="section-dark no-top no-bottom text-light jarallax relative mh-800"
+    style="
+        background-image: url('conference_templates/template3/images/background/stars.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    ">
+</section> --}}
+<section id="section-hero"
+    class="section-dark no-top no-bottom text-light jarallax relative mh-800"
+    style="z-index: 0;">
+    
+    <img class="jarallax-img" src="{{asset('conference_templates/template3/images/background/stars.jpg')}}" alt="">
+
+
     <div class="gradient-edge-top op-6 h-50 color"></div>
     <div class="gradient-edge-bottom"></div>
     <div class="sw-overlay op-8"></div>
@@ -39,7 +56,7 @@
                     </div>
 
                     <div class="spacer-single"></div>
-                    <a class="btn-main mx-2 fx-slide" href="{{ url('/').'#section-tickets' }}"><span>Book slot</span></a>
+                    <a class="btn-main mx-2 fx-slide" href="{{ url('/').'#section-tickets' }}"><span>Save your seat</span></a>
                     @if(!empty(conferenceSchedule()))
                         <a class="btn-main btn-line mx-2 fx-slide" href="{{ url('/').'#section-schedule' }}"><span>View Schedule</span></a>
                     @endif
@@ -117,7 +134,7 @@
                             </div>
                         </div>
                         <div class="gradient-edge-bottom h-100"></div>
-                        <img src="{{ asset('conference_templates/template3/images/news/s3.webp') }}" class="w-100 hover-scale-1-1" alt="Spiritual Renewal">
+                        <img src="{{ asset('conference_templates/template3/images/news/spiritual.jpg') }}" class="w-100 hover-scale-1-1" alt="Spiritual Renewal">
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                     </div>
                 </div>
@@ -133,7 +150,7 @@
                             </div>
                         </div>
                         <div class="gradient-edge-bottom h-100"></div>
-                        <img src="{{ asset('conference_templates/template3/images/news/s3.webp')}}" class="w-100 hover-scale-1-1" alt="Inspiring Teachings">
+                        <img src="{{ asset('conference_templates/template3/images/news/teachings.jpg')}}" class="w-100 hover-scale-1-1" alt="Inspiring Teachings">
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                     </div>
                 </div>
@@ -149,7 +166,7 @@
                             </div>
                         </div>
                         <div class="gradient-edge-bottom h-100"></div>
-                        <img src="{{ asset('conference_templates/template3/images/news/s3.webp') }}" class="w-100 hover-scale-1-1" alt="Fellowship">
+                        <img src="{{ asset('conference_templates/template3/images/news/connect.jpg') }}" class="w-100 hover-scale-1-1" alt="Fellowship">
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                     </div>
                 </div>
@@ -165,7 +182,7 @@
                             </div>
                         </div>
                         <div class="gradient-edge-bottom h-100"></div>
-                        <img src="{{ asset('conference_templates/template3/images/news/s3.webp') }}" class="w-100 hover-scale-1-1" alt="Youth Empowerment">
+                        <img src="{{ asset('conference_templates/template3/images/news/empowernment.jpg') }}" class="w-100 hover-scale-1-1" alt="Youth Empowerment">
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                     </div>
                 </div>
@@ -181,7 +198,7 @@
                             </div>
                         </div>
                         <div class="gradient-edge-bottom h-100"></div>
-                        <img src="{{ asset('conference_templates/template3/images/news/s3.webp')}}" class="w-100 hover-scale-1-1" alt="Divine Encounter">
+                        <img src="{{ asset('conference_templates/template3/images/news/encounter.jpg')}}" class="w-100 hover-scale-1-1" alt="Divine Encounter">
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                     </div>
                 </div>
@@ -193,11 +210,11 @@
                         <div class="abs p-40 bottom-0 z-2">
                             <div class="relative wow fadeInUp">
                                 <h4>The Shining Lights Mandate</h4>
-                                <p class="mb-0">Be part of a movement to shine God’s light in every sphere of life—academics, ministry, business, and leadership.</p>
+                                <p class="mb-0">Be part of a movement to shine God’s light in every sphere of life—academics, ministry, business, etc.</p>
                             </div>
                         </div>
                         <div class="gradient-edge-bottom h-100"></div>
-                        <img src="{{ asset('conference_templates/template3/images/news/s3.webp') }}" class="w-100 hover-scale-1-1" alt="Shining Lights Mandate">
+                        <img src="{{ asset('conference_templates/template3/images/news/movement.jpg') }}" class="w-100 hover-scale-1-1" alt="Shining Lights Mandate">
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                     </div>
                 </div>
