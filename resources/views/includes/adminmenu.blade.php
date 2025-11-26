@@ -4,7 +4,7 @@
         <ul class="menu-content">
             <li class="is_shown"><a href="{{ route('ministry.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Ministries</span></a>
             </li>
-            <li class=" nav-item {{ Request::is('paymentproviders') ? 'active' : '' }}"><a href="{{ route('paymentproviders.index') }}"><i class="fa fa-money"></i><span class="menu-title">Payment Providers</span></a>
+            <li class="is_shown"><a href="{{ route('paymentproviders.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-title">Payment Providers</span></a>
             </li>
             <li class="is_shown"><a href="{{ route('conference_speakers.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Conference Speakers</span></a>
             </li>
