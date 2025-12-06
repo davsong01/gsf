@@ -60,7 +60,7 @@
                                 <a href="{{ route('student.single', $user->slug) }}" target="_blank" class="btn btn-dark">View Profile</a>
                                 @endif
                                 @if(!auth()->user()->isAdmin() && auth()->user()->status == 1)
-                                <a href="{{ route('alumni.single', $user->slug)  }}" target="_blank" class="btn btn-dark">View Profile</a>
+                                <a href="{{ route('student.single', $user->slug)  }}" target="_blank" class="btn btn-dark">View Profile</a>
                                 @endif
                             </div>
                         </div>

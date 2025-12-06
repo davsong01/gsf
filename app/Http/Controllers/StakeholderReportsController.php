@@ -177,7 +177,7 @@ class StakeholderReportsController extends Controller
             'president_name' => optional($chapter->stakeholders->where('role', 'Chapter President')->first())->name ?? '',
         ];
         
-        return view('stakeholder.create', compact('months', 'sections', 'prefillData'));
+        return view('stakeholder.create', compact('months', 'sections', 'prefillData', 'user'));
     }
 
     /**
@@ -190,8 +190,8 @@ class StakeholderReportsController extends Controller
     {
         $stakeholder = Auth::guard('stakeholder')->user();
 
-        $checks = $this->checks($stakeholder);
-        
+        // $checks = $this->checks($stakeholder);
+        // dd($checks);
         // Validate the form data
         $validated = $request->validate([
             'responses' => 'required|array',

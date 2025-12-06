@@ -24,7 +24,6 @@ class StakeholderAccountController extends Controller
 
     public function dashboard()
     {
-        dd('dashboard');
         $count = 1;
         // return redirect(route('stakeholder.login'));
         if (!auth::guard('stakeholder')->check()) return redirect(route('stakeholders.login'));

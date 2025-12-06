@@ -341,7 +341,8 @@ class StakeholderQuestionSeeder extends Seeder
                                 'status' => 1,
                                 'options' => $ratingOptions,
                                 'is_quantifiable' => true,
-                                'role' => 'Zonal Pastor'
+                                'role' => 'Zonal Pastor',
+                                'access_roles' => ['Zonal Pastor']
                             ],
                             [
                                 'label' => 'Quality of message/teaching/prayer topics',

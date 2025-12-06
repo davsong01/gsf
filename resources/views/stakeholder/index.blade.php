@@ -8,10 +8,13 @@
 <div class="content-body">
     <section id="reports-dashboard">
         <div class="row mb-3">
+            {{-- {{dd(Auth::guard('stakeholder')->user())}} --}}
             <div class="col-12 d-flex justify-content-between align-items-center">
                 <h4 class="card-title">All Reports</h4>
                 @if(in_array(Auth::guard('stakeholder')->user()->role, chapterStakeholders()))
+                @if(canAddThisMonthReport(Auth::guard('stakeholder')->user()))
                 <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">Add This Month's Report</a>
+                @endif
                 @endif
             </div>
         </div>

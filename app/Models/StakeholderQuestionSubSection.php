@@ -10,6 +10,10 @@ class StakeholderQuestionSubSection extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'access_roles' => 'array',
+    ];
+
     public function questions()
     {
         return $this->hasMany(StakeholderReportQuestion::class, 'sub_section_id');

@@ -10,6 +10,11 @@
         padding: 10px;
     }
 
+    .add-row,
+    .remove-row {
+        padding: 0.167rem 0.5rem !important;
+    }
+
     .header-section {
         background-color: #004080;
         color: #fff;
@@ -69,15 +74,7 @@
 </style>
 @endsection
 
-@section('title', 'Add/Edit Report')
-
-@section('item')
-<li class="breadcrumb-item"> <a href="{{ route('stakeholders.dashboard') }}">Report</a></li>
-@endsection
-
-@section('active')
-<li class="breadcrumb-item">{{ isset($report) ? 'Edit Report' : 'Add New Report' }}</li>
-@endsection
+@section('title', isset($report) ? 'Edit Report' : 'Add Report')
 
 @section('content')
 <div class="content-body">
@@ -91,18 +88,31 @@
             @endif
 
             @foreach($sections as $section)
+            @if(canAccess($stakeholder, $section))
             <div class="section-card">
                 <h3 class="header-section">{{ $section->name }}</h3>
 
                 @foreach($section->subsections as $subsection)
+                @if(canAccess($stakeholder, $subsection))
                 <div class="sub-section-card">
                     <h5 class="sub-section">{{ $subsection->name }}</h5>
-
                     <div class="row">
                         @foreach($subsection->questions as $question)
+                        @if(canAccess($stakeholder, $question))
                         @php
-                        $value = old('responses.' . $question->slug)
-                        ?? ($prefillData[$question->slug] ?? '');
+                        $value = old('responses.' . $question->slug);
+
+                        if(isset($report) && $report->answers) {
+                        $answer = $report->answers->firstWhere('question_id', $question->id);
+                        if($answer) {
+                        $decoded = json_decode($answer->answer_value, true);
+                        $value = $decoded ?? $answer->answer_value;
+                        }
+                        }
+
+                        if(!$value && isset($prefillData[$question->slug])) {
+                        $value = $prefillData[$question->slug];
+                        }
                         @endphp
 
                         <div class="{{ $question->width_class ?? 'col-md-6' }} mb-1">
@@ -159,27 +169,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                        $rows = old('responses.' . $question->slug, $prefillData[$question->slug] ?? [[]]);
-                                        @endphp
-                                        {{-- @foreach($rows as $row)
-                                                <tr>
-                                                    @foreach($question->options as $col)
-                                                        @php $colLabel = $col['label'] ?? $col; @endphp
-                                                        <td>
-                                                            <input type="{{ $col['type'] ?? 'text' }}"
-                                        name="responses[{{ $question->slug }}][][{{ $colLabel }}]"
-                                        class="form-control"
-                                        value="{{ $row[$colLabel] ?? '' }}"
-                                        @if(!empty($col['required'])) required @endif>
-                                        </td>
-                                        @endforeach
-                                        <td>
-                                            <span style="color:green" class="add-row"><i class="fa fa-plus"></i></span>
-                                            <span style="color:red" class="remove-row"><i class="fa fa-minus"></i></span>
-                                        </td>
-                                        </tr>
-                                        @endforeach --}}
+                                        @php $rows = $value ?? [[]]; @endphp
                                         @foreach($rows as $rowIndex => $row)
                                         <tr>
                                             @foreach($question->options as $col)
@@ -219,17 +209,7 @@
                                         <tr>
                                             <td>{{ $week }}</td>
                                             @foreach($question->options['columns'] as $col)
-                                            <td>
-                                                @if($col == 'Remarks')
-                                                <input type="text" class="form-control"
-                                                    name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
-                                                    value="{{ $value[$week][$col] ?? '' }}">
-                                                @else
-                                                <input type="number" min="0" step="0.01" class="form-control numeric-input"
-                                                    name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
-                                                    value="{{ $value[$week][$col] ?? '' }}">
-                                                @endif
-                                            </td>
+                                            <td>{{ $value[$week][$col] ?? '' }}</td>
                                             @endforeach
                                         </tr>
                                         @endforeach
@@ -247,18 +227,21 @@
                             @break
                             @endswitch
                         </div>
+                        @endif
                         @endforeach
                     </div>
                 </div>
+                @endif
                 @endforeach
             </div>
+            @endif
             @endforeach
 
             <div class="card mb-4">
                 <div class="card-body">
                     <div class="form-check">
                         <input type="checkbox" name="confirm_information" value="1" class="form-check-input" id="confirmInfo" required>
-                        <label class="form-check-label fw-semibold" for="confirmInfo">
+                        <label style="margin-top: 0 !important" class="form-check-label fw-semibold" for="confirmInfo">
                             I hereby confirm that all information provided in this report is true, current, and accurate to the best of my knowledge.
                         </label>
                     </div>
@@ -272,11 +255,8 @@
     </section>
 </div>
 
-@endsection
-
 @section('extra_scripts')
 <script>
-    // Dynamic table row add/remove
     $(document).on('click', '.add-row', function() {
         let table = $(this).closest('table');
         let newRow = table.find('tbody tr:first').clone();
@@ -293,7 +273,6 @@
         }
     });
 
-    // Income Table Totals
     function recalcTotals(table) {
         if (table.hasClass('income-table')) {
             table.find('tfoot td.total-cell').each(function() {
@@ -313,7 +292,6 @@
         recalcTotals(table);
     });
 
-    // Initialize totals on page load
     $('.income-table').each(function() {
         recalcTotals($(this));
     });

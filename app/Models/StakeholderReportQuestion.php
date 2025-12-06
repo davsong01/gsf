@@ -11,6 +11,7 @@ class StakeholderReportQuestion extends Model
 
     protected $casts = [
         'options' => 'array',
+        'access_roles' => 'array',
     ];
 
     public function answers()

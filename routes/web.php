@@ -180,6 +180,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::prefix('stakeholder')->as('stakeholder.')->group(function () {
         Route::resource('questions', StakeholderReportQuestionController::class);
+        // Route::resource('sections', StakeholderReportQuestionController::class);
     });
     
     // Official

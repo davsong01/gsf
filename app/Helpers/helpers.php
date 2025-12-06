@@ -6,6 +6,76 @@ use Illuminate\Support\Str;
 use App\Models\GeneralSetting;
 use Illuminate\Support\Carbon;
 use App\Models\ConferenceEdition;
+use App\Models\StakeholderReport;
+
+if (!function_exists('canAddThisMonthReport')) {
+    function canAddThisMonthReport($stakeholder)
+    {
+        if (!isset($stakeholder->chapter_id)) {
+            return false; 
+        }
+
+        // Get current year and month
+        $currentYear = Carbon::now()->year;
+        $currentMonth = Carbon::now()->month;
+
+        // Check if report exists for this stakeholder's chapter for current month
+        $reportExists = StakeholderReport::where('chapter_id', $stakeholder->chapter_id)
+            ->whereYear('created_at', $currentYear)
+            ->whereMonth('created_at', $currentMonth)
+            ->exists();
+
+        return !$reportExists;
+    }
+}
+
+if (!function_exists('getSectionAccess')) {
+    /**
+     * Determine edit/view access for a stakeholder on a model.
+     *
+     * @param \App\Models\User $stakeholder
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @return array ['edit' => bool, 'view' => bool]
+     */
+    function getSectionAccess($stakeholder, $model)
+    {
+        // Static access hierarchy from lowest to highest
+        $accessLevel = ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary', 'Zonal Pastor', 'Field Pastor', 'Secretariat', 'NCP'];
+        
+        
+        $roles = $model->access_roles ?? ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary']; // array cast in the model
+        $role = $stakeholder->role;
+
+        // Edit access: role explicitly allowed
+        $edit = in_array($role, $roles);
+
+        // View access: if user's role is higher than or equal to the lowest allowed role
+        $lowestRoleIndex = null;
+        foreach ($roles as $r) {
+            $idx = array_search($r, $accessLevel);
+            if ($idx !== false) {
+                if ($lowestRoleIndex === null || $idx < $lowestRoleIndex) {
+                    $lowestRoleIndex = $idx;
+                }
+            }
+        }
+
+        $userIndex = array_search($role, $accessLevel);
+        $view = false;
+        if ($lowestRoleIndex !== null && $userIndex !== false) {
+            $view = $userIndex >= $lowestRoleIndex;
+        }
+
+        // If edit is true, view must always be true
+        if ($edit) {
+            $view = true;
+        }
+
+        return ['edit' => $edit, 'view' => $view];
+    }
+}
+
+
 
 if (!function_exists('generateSampleValue')) {
     function generateSampleValue($type, $name)
@@ -42,7 +112,6 @@ if (!function_exists('generateSampleValue')) {
         };
     }
 }
-
 
 if (!function_exists('participantAllowedUpdateFields')) {
     function participantAllowedUpdateFields()
