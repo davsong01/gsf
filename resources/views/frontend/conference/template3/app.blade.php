@@ -145,6 +145,10 @@
                                             <i class="fa-brands fa-telegram"></i>
                                         </a>
                                     @endif
+
+                                    <a href="https://wa.me/+2348139219164" target="_blank" rel="noopener noreferrer">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </a>
                                 </div>
 
                             </div>

@@ -33,16 +33,14 @@
     <div class="gradient-edge-bottom"></div>
     <div class="sw-overlay op-8"></div>
     <div class="abs abs-centered z-2 w-80">
-                    <div class="container wow scaleIn" data-wow-duration="3s">
-                        <div class="row">
-                            <div class="col-lg-6 text-center">
-                            <h2 class="wow fadeInUp" data-wow-delay=".2s">Secure Your {{$setting->conference_theme}} Pass</h2>
-                            @if(!empty($setting->close_registration))
-                                <p class="lead wow fadeInUp" data-wow-delay=".4s">
-                                    Join us for divine encounters, worship, and transformation. Registration closes on {{ \Carbon\Carbon::parse($setting->close_registration)->format('F j, Y') }}. Choose your pass and be part of The Shining Lights experience.
-                                </p>
-                            @endif
-                        </div>
+        <div class="container wow scaleIn" data-wow-duration="3s">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h1 class="fs-100 text-uppercase fs-sm-12vw mb-4 lh-1">{{ $setting->conference_theme }}</h1>
+
+                    <div class="d-block d-md-flex justify-content-center">
+                        <div class="d-flex justify-content-center align-items-center mx-4">
+                            <i class="fa fa-calendar id-color me-3"></i>
                             <?php
                                 $start = \Carbon\Carbon::parse($setting->start_date);
                                 $end = \Carbon\Carbon::parse($setting->end_date);
@@ -351,7 +349,7 @@
             <div class="col-lg-6 text-center">
                 <h2 class="wow fadeInUp" data-wow-delay=".2s">Secure Your {{$setting->conference_theme}} Pass</h2>
                 <p class="lead wow fadeInUp" data-wow-delay=".4s">
-                    Join us for divine encounters, worship, and transformation. <strong> Registration closes on {{ $setting->close_registration ? \Carbon\Carbon::parse($setting->close_registration)->format('F j, Y') : 'TBA' }}</strong>. Choose your pass and be part of The Shining Lights experience.
+                    Join us for divine encounters, worship, and transformation.@if(!empty($setting->close_registration)) Registration closes on {{ $setting->close_registration ? \Carbon\Carbon::parse($setting->close_registration)->format('F j, Y') : 'TBA' }}.@endif Choose your pass and be part of The Shining Lights experience.
                 </p>
             </div>
         </div>
@@ -442,7 +440,8 @@ jQuery(document).ready(function($) {
 });
 </script>
 @endsection
-@section('facebook', $setting->facebook)
+
+@section('facebook', $setting->facebook_page)
 @section('facebook_event_page', $setting->facebook_event_page)
 @section('instagram', $setting->instagram)
 @section('telegram', $setting->telegram)
