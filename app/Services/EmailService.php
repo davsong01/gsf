@@ -145,6 +145,8 @@ class EmailService {
                     'type' => $type,
                     'subject' => $subject,
                     'content' => $content,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
             }
         }else{
@@ -153,6 +155,8 @@ class EmailService {
                 'type' => $type,
                 'subject' => $subject,
                 'content' => $content,
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
         }
 

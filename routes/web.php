@@ -85,10 +85,10 @@ Route::get('/clear', function () {
     echo "<p>Fully optimized.*</p>";
 });
 
-Route:: get('/runcron', [CronController::class, 'cron']);
-Route::get('birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
+Route:: get('cron/birthday-notification', [CronController::class, 'cron']);
+Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
 
-Route::get('email-cron/{pick?}', [CronController::class, 'emailCron']);
+Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
 
 Route::get('/conference', [ConferenceController::class, 'index']);
 
