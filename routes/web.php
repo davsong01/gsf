@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\CriticalEmail;
+use App\Services\EmailService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NecController;
@@ -89,7 +91,20 @@ Route:: get('cron/birthday-notification', [CronController::class, 'cron']);
 Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
 
 Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
+Route::get('/preview-email/{id}', function ($id) {
+    $email = CriticalEmail::with('settings')->findOrFail($id);
 
+    $data = [
+        'settings' => $email->settings,
+        'type'     => $email->type,
+        'recipient' => $email->recipient,
+        'content'  => $email->content,
+        'subject'  => $email->subject,
+        'attachments' => $email->attachments,
+    ];
+
+    return EmailService::sendEmail($data, true);
+});
 Route::get('/conference', [ConferenceController::class, 'index']);
 
 Route::controller(HomeController::class)->group(function () {

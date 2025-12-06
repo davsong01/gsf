@@ -12,6 +12,7 @@ use App\Mail\NotificationEmail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\PaymentController;
+use App\Services\EmailService;
 
 class CronController extends Controller
 {
@@ -75,43 +76,64 @@ class CronController extends Controller
     public function emailCron($pick = 10)
     {
         $hourlyRate = 150;
-        
+
+        // Normalize requested pick
+        $pick = (int) $pick;
+        if ($pick < 1) {
+            $pick = 10; // default fallback
+        }
+
         $oneHourAgo = Carbon::now()->subHours(1);
         ini_set('max_execution_time', 600); //5 minutes
-       
+
         // Check how many have been sent within the hour
-        $sentWithinTheHour = CriticalEmail::where('status', 1)->whereBetween('sent_at', [$oneHourAgo, now()])->count();
-        // \Log::info('Emails sending start at: ' .now());
+        $sentWithinTheHour = CriticalEmail::where('status', 1)
+            ->whereBetween('sent_at', [$oneHourAgo, now()])
+            ->count();
+
+        // If we've already hit hourly limit, stop
         if ($sentWithinTheHour >= $hourlyRate) {
             \Log::info(now() . ' : Hourly email rate exceeded on server. ' . $sentWithinTheHour . ' emails already sent this hour');
             echo ('Hourly email rate exceeded on server. ' . $sentWithinTheHour . ' emails already sent this hour');
-        } else {
-            $pick = $hourlyRate - $sentWithinTheHour;
-
-            $emails = CriticalEmail::where('status', 0)->whereNull('sent_at')->take($pick)->get();
-            $count = 0;
-            
-            foreach ($emails as $email) {
-                $data['type'] = $email->type;
-                $data['recipient'] = $email->recipient;
-                $data['content'] = $email->content;
-                $data['subject'] = $email->subject;
-                $data['attachments'] = $email->attachments;
-                
-                $res = $this->sendEmail($data);
-                
-                if (isset($res['message']) && $res['message'] == 'success') {
-                    $count++;
-                    $email->status = 1;
-                    $email->sent_at = now();
-                    $email->errors = NULL;
-                    $email->save();
-                } else {
-                    $email->errors = $res['error'];
-                    $email->save();
-                }
-            }
-            echo $count . ' emails sent successfully';
+            return;
         }
+
+        // Respect requested pick but cap to remaining allowance
+        $allowed = $hourlyRate - $sentWithinTheHour;
+        $toFetch = min($pick, $allowed);
+
+        if ($toFetch <= 0) {
+            \Log::info(now() . ' : No emails allowed to be sent at this time. Allowed: ' . $allowed . ' Requested: ' . $pick);
+            echo 'No emails can be sent at this time';
+            return;
+        }
+
+        $emails = CriticalEmail::with('settings')->where('status', 0)->whereNull('sent_at')->take($toFetch)->get();
+        $count = 0;
+        
+        foreach ($emails as $email) {
+            $data['settings'] = $email->settings ?? null;
+            $data['type'] = $email->type;
+            $data['recipient'] = $email->recipient;
+            $data['content'] = $email->content;
+            $data['subject'] = $email->subject;
+            $data['attachments'] = $email->attachments;
+            
+            $res = EmailService::sendEmail($data);
+            
+            if (isset($res['message']) && $res['message'] == 'success') {
+                $count++;
+                $email->status = 1;
+                $email->sent_at = now();
+                $email->errors = NULL;
+                $email->save();
+            } else {
+                $email->errors = $res['error'] ?? null;
+                $email->save();
+            }
+        }
+
+        echo $count . ' emails sent successfully';
     }
+
 }

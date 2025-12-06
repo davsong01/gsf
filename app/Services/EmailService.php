@@ -2,6 +2,8 @@
 namespace App\Services;
 
 use App\Models\CriticalEmail;
+use App\Mail\NotificationEmail;
+use Illuminate\Support\Facades\Mail;
 
 class EmailService {
     public static function getContent($type, $transaction=null, $extraData=null)
@@ -38,7 +40,7 @@ class EmailService {
         }
 
         switch ($type) {
-            case 'welcome_mail':
+            case 'conference_registration_welcome_mail':
                 $subject = "Welcome to {$conferenceTheme}";
                 $content = "
                 Dear {$transaction->name}, <br><br>
@@ -143,6 +145,7 @@ class EmailService {
                 $insert[] = [
                     'recipient' => $recipient['email'],
                     'type' => $type,
+                    'conference_edition_id' => $transaction->conference_edition_id,
                     'subject' => $subject,
                     'content' => $content,
                     'created_at' => now(),
@@ -153,6 +156,7 @@ class EmailService {
             $insert[] = [
                 'recipient' => in_array($type, ['new_registration']) ? $transaction->edition->official_email : $transaction->email,
                 'type' => $type,
+                'conference_edition_id' => $transaction->conference_edition_id,
                 'subject' => $subject,
                 'content' => $content,
                 'created_at' => now(),
@@ -171,11 +175,33 @@ class EmailService {
         $emailData['transaction'] = $transaction;
 
         // Welcome email to participant
-        $emailData['type'] = 'welcome_mail';
+        $emailData['type'] = 'conference_registration_welcome_mail';
         self::logEmail($emailData);
 
         // Notify admin/new registration
         $emailData['type'] = 'new_registration';
         self::logEmail($emailData);
+    }
+
+
+    public static function sendEmail($data, $preview = false)
+    {
+        try {
+
+            if ($preview) {
+                return (new NotificationEmail($data))->render();
+            }
+
+            Mail::to($data['recipient'])->send(new NotificationEmail($data));
+
+            return [
+                'message' => 'success'
+            ];
+        } catch (\Exception $e) {
+            \Log::error($e->getMessage());
+            return [
+                'error' => $e->getMessage(),
+            ];
+        }
     }
 }

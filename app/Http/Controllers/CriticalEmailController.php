@@ -11,7 +11,7 @@ class CriticalEmailController extends Controller
 {
     public function getContent($data=null){
         switch ($data['type']) {
-            case 'welcome_mail':
+            case 'conference_registration_welcome_mail':
                 $account = "<a style='color: white;text-decoration: none;background-color: #29166f;padding: 7px;border-radius: 5px;' href='". route('conferencemanagement.index', ['edition' => $data['conference_edition_id']])."'>Login</a>";
                 
                 $content = "Dear ".$data['name']. ", <br><br>

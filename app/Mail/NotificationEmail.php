@@ -118,7 +118,7 @@ class NotificationEmail extends Mailable
             ->subject('New Registration');
         }
       
-        if (isset($this->data['type']) && $this->data['type'] == 'welcome_mail') {
+        if (isset($this->data['type']) && $this->data['type'] == 'conference_registration_welcome_mail') {
             return $this->markdown('emails.welcomeMail')->subject('Thank you for registering');
         }
 

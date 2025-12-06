@@ -294,7 +294,7 @@ class ConferenceManagementController extends Controller
 			]);
 
 			// Log Email
-			$data['type'] = 'welcome_mail';
+			$data['type'] = 'conference_registration_welcome_mail';
 			$data['amount'] = $data['amount_paid'];
 			$data['family_id'] = $family_id;
 			$data['chapter'] = isset($user->campus->name) ? $user->campus->name : '';
@@ -825,7 +825,7 @@ class ConferenceManagementController extends Controller
 		$payment = Transaction::find($id);
 		$user = User::where('id', $payment->user_id)->first();
 
-		$criticalEmail = CriticalEmail::where('recipient', $user->email)->where('type', 'welcome_mail')->where('status', 1)->first();
+		$criticalEmail = CriticalEmail::where('recipient', $user->email)->where('type', 'conference_registration_welcome_mail')->where('status', 1)->first();
 
 		if ($criticalEmail) {
 			$data['type'] = $criticalEmail->type;
