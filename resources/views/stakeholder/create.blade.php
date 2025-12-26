@@ -231,15 +231,26 @@
                                                                                             name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
                                                                                             value="{{ $value[$week][$col] ?? '' }}"
                                                                                             {{ $disabled }}
-                                                                                            @if($qAccess['edit'] && $col != 'Remarks') required @endif>
+                                                                                            @if($qAccess['edit'] && $col != 'Remarks') required min="1" @endif>
                                                                                     </td>
                                                                                 @endforeach
                                                                             </tr>
                                                                         @endforeach
                                                                     </tbody>
+                                                                    <tfoot>
+                                                                        <tr class="totals-row">
+                                                                            <td>Totals</td>
+                                                                            @foreach($question->options['columns'] as $col)
+                                                                                @if($col != 'Remarks')
+                                                                                <td class="total-cell" data-column="{{ $col }}">0</td>
+                                                                                @endif
+                                                                            @endforeach
+                                                                        </tr>
+                                                                    </tfoot>
                                                                 </table>
                                                             </div>
                                                             @break
+
                                                     @endswitch
                                                 </div>
                                             @endif

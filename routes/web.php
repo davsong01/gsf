@@ -39,6 +39,7 @@ use App\Http\Controllers\CriticalEmailController;
 use App\Http\Controllers\MinistryFieldController;
 use App\Http\Controllers\ConferencePlanController;
 use App\Http\Controllers\PaymentProviderController;
+use App\Http\Controllers\StakeholderRoleController;
 use App\Http\Controllers\StakeholderLoginController;
 use App\Http\Controllers\ConferenceEditionController;
 use App\Http\Controllers\ConferenceSettingController;
@@ -50,6 +51,7 @@ use App\Http\Controllers\StakeholderReportsController;
 use App\Http\Controllers\ConferenceManagementController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\DynamicImageGeneratorController;
+use App\Http\Controllers\StakeholderPermissionController;
 use App\Http\Controllers\ConferenceUtilityToolsController;
 use App\Http\Controllers\StakeholderReportQuestionController;
 
@@ -177,9 +179,14 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('stakeholderpersonnel/delete/{id}', [StakeholderController::class, 'destroy'])->name('stakeholderpersonnel.delete');
     Route::resource('email', EmailController::class);
     Route::resource('paymentproviders', PaymentProviderController::class);
+    Route::resource('stakeholderroles', StakeholderRoleController::class);
+    Route::resource('stakeholderpermissions', StakeholderPermissionController::class);
+
+    
 
     Route::prefix('stakeholder')->as('stakeholder.')->group(function () {
         Route::resource('questions', StakeholderReportQuestionController::class);
+        
         // Route::resource('sections', StakeholderReportQuestionController::class);
     });
     

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Zone;
 use App\Models\Field;
 use App\Models\Chapter;
+use App\Models\StakeholderRole;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -51,5 +52,37 @@ class Stakeholder extends Authenticatable
     public function user()
     {
         return $this->belongsTo(User::class, 'email','email');
+    }
+
+    // public function roles()
+    // {
+    //     return $this->belongsToMany(
+    //         StakeholderRole::class,
+    //         'stakeholder_has_roles'
+    //     );
+    // }
+    public function roles()
+    {
+        return $this->belongsToMany(
+            StakeholderRole::class,
+            'stakeholder_stakeholder_roles'
+        );
+    }
+
+    public function permissions()
+    {
+        return $this->roles()
+            ->with('permissions:id,slug')
+            ->get()
+            ->pluck('permissions')
+            ->flatten()
+            ->unique('id')
+            ->values();
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        return $this->permissions()
+            ->contains('slug', $permission);
     }
 }

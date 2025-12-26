@@ -384,7 +384,7 @@ class StakeholderReportsController extends Controller
             }
         }
         
-        return view('stakeholder.create', compact('months', 'report', 'sections', 'prefillData', 'answersData'));
+        return view('stakeholder.create', compact('user','months', 'report', 'sections', 'prefillData', 'answersData'));
     }
 
 
