@@ -5,6 +5,7 @@ use App\Models\Chapter;
 use Illuminate\Support\Str;
 use App\Models\GeneralSetting;
 use Illuminate\Support\Carbon;
+use App\Models\StakeholderRole;
 use App\Models\ConferenceEdition;
 use App\Models\StakeholderReport;
 
@@ -123,9 +124,43 @@ if (!function_exists('participantAllowedUpdateFields')) {
 if (!function_exists('chapterStakeholders')) {
     function chapterStakeholders()
     {
-        return ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary'];
+        $roles = StakeholderRole::whereIn('slug', ['chapter-representative'])->pluck('id')->toArray();
+        return $roles;
     }
 }
+
+if (!function_exists('zoneStakeholders')) {
+    function zoneStakeholders()
+    {
+        $roles = StakeholderRole::whereIn('slug', ['zonal-pastor'])->pluck('id')->toArray();
+        return $roles;
+    }
+}
+
+if (!function_exists('fieldStakeholders')) {
+    function fieldStakeholders()
+    {
+        $roles = StakeholderRole::whereIn('slug', ['field-pastor'])->pluck('id')->toArray();
+        return $roles;
+    }
+}
+
+if (!function_exists('secretariatStakeholders')) {
+    function secretariatStakeholders()
+    {
+        $roles = StakeholderRole::whereIn('slug', ['secretariat'])->pluck('id')->toArray();
+        return $roles;
+    }
+}
+
+if (!function_exists('ncpStakeholders')) {
+    function ncpStakeholders()
+    {
+        $roles = StakeholderRole::whereIn('slug', ['ncp'])->pluck('id')->toArray();
+        return $roles;
+    }
+}
+
 
 if (!function_exists("hostelAssignmentTypes")) {
     function hostelAssignmentTypes()

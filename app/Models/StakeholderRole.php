@@ -10,7 +10,7 @@ class StakeholderRole extends Model
 {
     protected $table = 'stakeholder_roles';
 
-    protected $fillable = ['name', 'slug', 'description'];
+    protected $fillable = ['name', 'slug', 'description','status'];
 
     public function permissions()
     {

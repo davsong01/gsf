@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Services\FileUploadService;
 use App\Rules\UniqueStakeholderRole;
 use App\Http\Controllers\Controller;
+use App\Models\StakeholderRole;
 use Illuminate\Support\Facades\Hash;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +27,7 @@ class StakeholderController extends Controller
     { 
         $count = 1;
         if (auth()->user()->role == 1) {
-			$stakeholders = Stakeholder::orderBy('created_at', 'desc')->get();
+			$stakeholders = Stakeholder::with('role')->orderBy('created_at', 'desc')->get();
 			return view('admin.stakeholders.index', compact('stakeholders', 'count'));
 			
 		}else{
@@ -45,9 +46,9 @@ class StakeholderController extends Controller
         $zones = Zone::all();
         $chapters = Chapter::all();
         $months = $this->getMonths();
-        $portfolios = $this->getPortfolios();
+        $roles = StakeholderRole::where('status', 'active')->get();
 
-        return view('admin.stakeholders.edit', compact('zones', 'fields', 'chapters', 'months', 'portfolios'));
+        return view('admin.stakeholders.edit', compact('zones', 'fields', 'chapters', 'months', 'roles'));
     }
 
     /**
@@ -175,9 +176,9 @@ class StakeholderController extends Controller
         $zones = Zone::all();
         $chapters = Chapter::all();
         $months = $this->getMonths();
-        $portfolios = $this->getPortfolios();
+        $roles = StakeholderRole::where('status', 'active')->get();
 
-        return view('admin.stakeholders.edit', compact('stakeholder', 'fields', 'zones', 'chapters', 'portfolios', 'months'));
+        return view('admin.stakeholders.edit', compact('stakeholder', 'fields', 'zones', 'chapters', 'months', 'roles'));
     }
 
     /**
@@ -200,7 +201,7 @@ class StakeholderController extends Controller
             'day'        => ['required', 'integer', 'between:1,31'],
             'month'      => ['required', 'integer', 'between:1,12'],
             'year'       => ['nullable', 'digits:4'],
-            'role'       => ['required', 'string', new UniqueStakeholderRole($request->all(), $stakeholder->id)],
+            'role_id'    => ['required', 'integer'],
             'chapter_id' => ['nullable', 'integer', 'exists:chapters,id'],
             'zone_id'    => ['nullable', 'integer', 'exists:zones,id'],
             'field_id'   => ['nullable', 'integer', 'exists:fields,id'],
@@ -209,12 +210,11 @@ class StakeholderController extends Controller
             'status' => ['required', 'in:active,inactive'],
         ]);
 
-        $role = $request->input('role');
-        $chapterRoles = ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary'];
-
+        $role = StakeholderRole::find($request->input('role_id'));
+       
         // Role-based assignments
         switch (true) {
-            case in_array($role, $chapterRoles):
+            case in_array($role->slug, ['chapter-representative']):
                 $chapter = Chapter::find($request->chapter_id);
 
                 $stakeholder->fill([
@@ -225,7 +225,7 @@ class StakeholderController extends Controller
                 ]);
                 break;
 
-            case $role === 'Zonal Pastor':
+            case in_array($role->slug, ['zonal-pastor']):
                 $zone = Zone::find($request->zone_id);
                 $stakeholder->fill([
                     'zone_id'    => $zone?->id,
@@ -235,7 +235,7 @@ class StakeholderController extends Controller
                 ]);
                 break;
 
-            case $role === 'Field Pastor':
+            case in_array($role->slug, ['field-pastor']):
                 $stakeholder->fill([
                     'field_id'   => $request->field_id,
                     'zone_id'    => null,
@@ -244,7 +244,7 @@ class StakeholderController extends Controller
                 ]);
                 break;
 
-            case $role === 'Portfolio':
+            case $role === 'portfolio':
                 $stakeholder->fill([
                     'portfolio'  => $request->portfolio,
                     'chapter_id' => null,
@@ -280,6 +280,7 @@ class StakeholderController extends Controller
             'month' => $request->month,
             'year'  => $request->year,
             'status'  => $request->status,
+            'role_id'  => $request->role_id,
         ])->save();
 
         return redirect()

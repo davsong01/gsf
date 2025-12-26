@@ -21,19 +21,41 @@
     @if(auth()->user()->conference_role == 'superadmin')
     <li class="nav-item {{ Request::is('stakeholder*') ? 'open' : '' }}"><a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Reports</span></a>
         <ul class="menu-content">
-            <li class="is_shown"><a href="{{ route('ministry.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Reports</span></a>
+            <!-- REPORTS -->
+            <li class="has-sub is_shown">
+                <a href="#">
+                    <i class="bx bx-file"></i>
+                    <span class="menu-item">Reports</span>
+                </a>
+                <ul class="menu-content">
+                    <li><a href="{{ route('ministry.index') }}">All Reports</a></li>
+                </ul>
             </li>
-            <li class="is_shown"><a href="{{ route('stakeholderroles.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Stakeholder Roles</span></a>
+
+            <!-- REPORT STRUCTURE -->
+            <li class="has-sub is_shown">
+                <a href="#">
+                    <i class="bx bx-layer"></i>
+                    <span class="menu-item">Report Structure</span>
+                </a>
+                <ul class="menu-content">
+                    <li><a href="{{ route('stakeholderreportsection.index') }}">Sections</a></li>
+                    <li><a href="{{ route('stakeholderreportsubsection.index') }}">Sub Sections</a></li>
+                    <li><a href="{{ route('stakeholder.questions.index') }}">Items</a></li>
+                </ul>
             </li>
-            <li class="is_shown"><a href="{{ route('stakeholderpermissions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Stakeholder Permissions</span></a>
-            </li>
-            <li class="is_shown"><a href="{{ route('stakeholderpersonnel.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Stakeholders</span></a>
-            </li>
-            <li class="is_shown"><a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Report Sections</span></a>
-            </li>
-            <li class="is_shown"><a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Report Sub Sections</span></a>
-            </li>
-            <li class="is_shown"><a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Report Questions</span></a>
+
+            <!-- ACCESS CONTROL -->
+            <li class="has-sub is_shown">
+                <a href="#">
+                    <i class="bx bx-lock"></i>
+                    <span class="menu-item">Access Control</span>
+                </a>
+                <ul class="menu-content">
+                    <li><a href="{{ route('stakeholderroles.index') }}">Roles</a></li>
+                    <li><a href="{{ route('stakeholderpermissions.index') }}">Permissions</a></li>
+                    <li><a href="{{ route('stakeholderpersonnel.index') }}">Stakeholders</a></li>
+                </ul>
             </li>
         </ul>
     </li>

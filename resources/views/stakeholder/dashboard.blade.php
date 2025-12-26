@@ -12,7 +12,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">My Reports</h4>
-                        @if(in_array(Auth::guard('stakeholder')->user()->role, ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary']))
+                        @if(in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders()))
                         <a href="{{ route('reports.create') }}" class="btn btn-primary mt-1">Add this month's report <strong></strong></a>
                         @endif
                         @include('includes.alerts')

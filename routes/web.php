@@ -53,7 +53,9 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\DynamicImageGeneratorController;
 use App\Http\Controllers\StakeholderPermissionController;
 use App\Http\Controllers\ConferenceUtilityToolsController;
+use App\Http\Controllers\StakeholderReportSectionController;
 use App\Http\Controllers\StakeholderReportQuestionController;
+use App\Http\Controllers\StakeholderReportSubSectionController;
 
 Route::get('/queue', function () {
     // Artisan::call('queue:retry all');
@@ -181,13 +183,15 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('paymentproviders', PaymentProviderController::class);
     Route::resource('stakeholderroles', StakeholderRoleController::class);
     Route::resource('stakeholderpermissions', StakeholderPermissionController::class);
-
+    Route::resource('stakeholderreportsection', StakeholderReportSectionController::class);
+    Route::resource('stakeholderreportsubsection', StakeholderReportSubSectionController::class);
     
+
+
 
     Route::prefix('stakeholder')->as('stakeholder.')->group(function () {
         Route::resource('questions', StakeholderReportQuestionController::class);
         
-        // Route::resource('sections', StakeholderReportQuestionController::class);
     });
     
     // Official

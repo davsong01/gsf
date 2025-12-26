@@ -113,16 +113,7 @@
                                                 placeholder="Enter year">
                                         </fieldset>
                                     </div>
-                                    <div class="col-md-4">
-                                        <fieldset class="form-group">
-                                            <label for="chapter_id">Status</label>
-                                            <select class="form-control" name="status" id="status">
-                                                <option value="">--Select--</option>
-                                                <option value="active" {{ old('role', $stakeholder->status ?? '') == 'active' ? 'selected' : '' }}>Active</option>
-                                                <option value="inactive" {{ old('role', $stakeholder->status ?? '') == 'inactive' ? 'selected' : '' }}>InActive</option>
-                                            </select>
-                                        </fieldset>
-                                    </div>
+                                    
                                 </div>
 
                                 {{-- OFFICIAL DETAILS --}}
@@ -130,16 +121,17 @@
                                     <div class="col-md-12">
                                         <label class="sections">Official Details</label><br>
                                     </div>
-
+                                    
                                     <div class="col-md-6">
                                         <fieldset class="form-group">
-                                            <label for="role">Role</label>
-                                            <select class="form-control" name="role" id="role" required>
+                                            <label for="role_id">Role</label>
+                                           
+                                            <select class="form-control" name="role_id" id="role_id" required>
                                                 <option value="">--Select--</option>
-                                                @foreach(['Chapter President','Chapter Secretary','Chapter Financial Secretary','Zonal Pastor','Field Pastor','Secretariat','Portfolio'] as $role)
-                                                    <option value="{{ $role }}"
-                                                        {{ old('role', $stakeholder->role ?? '') == $role ? 'selected' : '' }}>
-                                                        {{ $role }}
+                                                @foreach($roles as $role)
+                                                    <option value="{{ $role->id }}" data-slug="{{ $role->slug }}"
+                                                        {{ old('role_id', $stakeholder->role_id ?? '') == $role->id ? 'selected' : '' }}>
+                                                        {{ $role->name }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -175,21 +167,6 @@
                                             </select>
                                         </fieldset>
 
-                                        {{-- Portfolio --}}
-                                        <fieldset class="form-group selectportfolio" style="display:none;">
-                                            <label for="portfolio">Portfolio</label>
-                                            <select class="form-control" name="portfolio" id="portfolio">
-                                                <option value="">--Select--</option>
-                                                @foreach($portfolios as $portfolio)
-                                                    <option value="{{ $portfolio }}"
-                                                        {{ old('portfolio', $stakeholder->portfolio ?? '') == $portfolio ? 'selected' : '' }}>
-                                                        {{ $portfolio }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </fieldset>
-
-                                        {{-- President --}}
                                         <fieldset class="form-group selectchapter" style="display:none;">
                                             <label for="chapter_id">Chapter</label>
                                             <select class="form-control" name="chapter_id" id="chapter_id">
@@ -207,7 +184,17 @@
 
                                 {{-- PASSWORD & SIGNATURE --}}
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
+                                        <fieldset class="form-group">
+                                            <label for="chapter_id">Status</label>
+                                            <select class="form-control" name="status" id="status">
+                                                <option value="">--Select--</option>
+                                                <option value="active" {{ old('status', $stakeholder->status ?? '') == 'active' ? 'selected' : '' }}>Active</option>
+                                                <option value="inactive" {{ old('status', $stakeholder->status ?? '') == 'inactive' ? 'selected' : '' }}>InActive</option>
+                                            </select>
+                                        </fieldset>
+                                    </div>
+                                    <div class="col-md-4">
                                         <fieldset class="form-group">
                                             <label for="password">
                                                 {{ isset($stakeholder) ? 'Change Password' : 'Password (Default: 12345@GSF0101)' }}
@@ -218,7 +205,7 @@
                                     </div>
 
                                     @if(isset($stakeholder))
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <fieldset class="form-group">
                                             <label for="signature">Signature</label>
                                             <div class="d-flex align-items-center gap-3">
@@ -263,6 +250,7 @@
         </div>
     </section>
 </div>
+
 @endsection
 
 @section('extra_scripts')
@@ -286,15 +274,36 @@ $(document).ready(function () {
     $email.on('input', () => $email.data('manual', true));
 
     // Role logic
-    $('#role').on('change', function () {
-        const role = $(this).val();
+    // $('#role').on('change', function () {
+    //     const role = $(this).val();
+    //     $('.selectfield, .selectzone, .selectportfolio, .selectchapter').hide();
+    //     if(in_array(role, ['secretariat']))
+    //     if (role === 'Chapter President' || role === 'Chapter Secretary' || role === 'Chapter Financial Secretary') $('.selectchapter').show();
+    //     if (role === 'Zonal Pastor') $('.selectzone').show();
+    //     if (role === 'Field Pastor') $('.selectfield').show();
+    //     if (role === 'Portfolio') $('.selectportfolio').show();
+    // }).trigger('change'); // initialize
+    $('#role_id').on('change', function () {
+        const roleSlug = $(this).find('option:selected').data('slug');
+
+        // Hide all conditional fields first
         $('.selectfield, .selectzone, .selectportfolio, .selectchapter').hide();
 
-        if (role === 'Chapter President' || role === 'Chapter Secretary' || role === 'Chapter Financial Secretary') $('.selectchapter').show();
-        if (role === 'Zonal Pastor') $('.selectzone').show();
-        if (role === 'Field Pastor') $('.selectfield').show();
-        if (role === 'Portfolio') $('.selectportfolio').show();
-    }).trigger('change'); // initialize
+        // Show fields based on slug
+        if (['chapter-representative'].includes(roleSlug)) {
+            $('.selectchapter').show();
+        }
+        if (roleSlug === 'zonal-pastor') {
+            $('.selectzone').show();
+        }
+        if (roleSlug === 'field-pastor') {
+            $('.selectfield').show();
+        }
+        if (roleSlug === 'portfolio') {
+            $('.selectportfolio').show();
+        }
+    }).trigger('change');
+
 });
 
 $(document).ready(function () {

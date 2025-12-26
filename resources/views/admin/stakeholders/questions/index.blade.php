@@ -26,6 +26,7 @@
                                             <th>Label</th>
                                             <th>Type</th>
                                             <th>Required</th>
+                                            <th>Permissions</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -33,23 +34,46 @@
                                         @foreach($questions as $question)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $question->section }}</td>
+                                            <td>
+                                                <strong>Section: </strong>{{ optional($question->section)->name ?? '-' }} <br>
+                                                <strong>Sub Section: </strong>{{ optional($question->subsection)->name ?? '-' }}
+                                            </td>
                                             <td>{{ $question->order }}</td>
                                             <td>{{ $question->label }}</td>
                                             <td>{{ ucfirst($question->type) }}</td>
                                             <td>{{ $question->is_required ? 'Yes' : 'No' }}</td>
-                                            
-                                            <td style="padding-left: 5px;padding-right: 5px;">
-                                                <a class="actions" data-toggle="tooltip" title="Edit Question" href="{{ route('stakeholder.questions.edit', $question->id) }}"> 
-                                                    <i class="bx bxs-edit actions"></i>
+
+                                            {{-- QUESTION PERMISSIONS --}}
+                                            <td>
+                                                @if($question->permissions->isNotEmpty())
+                                                    <ul class="mb-0">
+                                                        @foreach($question->permissions as $permission)
+                                                            <li>{{ $permission->name }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                @else
+                                                    <em>No permissions assigned</em>
+                                                @endif
+                                            </td>
+
+                                            <td>
+                                                <a href="{{ route('stakeholder.questions.edit', $question->id) }}"
+                                                class="btn btn-sm btn-info mb-1">
+                                                    Edit
                                                 </a>
-                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you sure you want to delete this question?');" title="Delete Question" href="{{ route('stakeholder.questions.destroy', $question->id) }}"> 
-                                                    <i class="fa fa-trash actions"></i>
-                                                </a>
+
+                                                <form action="{{ route('stakeholder.questions.destroy', $question->id) }}"
+                                                    method="POST"
+                                                    class="d-inline"
+                                                    onsubmit="return confirm('Are you sure you want to delete this question?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                                </form>
                                             </td>
                                         </tr>
                                         @endforeach
-                                    </tbody>    
+                                    </tbody>
                                 </table>
                             </div>
                         </div>

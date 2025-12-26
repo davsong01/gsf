@@ -27,21 +27,21 @@ class StakeholderAccountController extends Controller
         $count = 1;
         // return redirect(route('stakeholder.login'));
         if (!auth::guard('stakeholder')->check()) return redirect(route('stakeholders.login'));
-        $role = Auth::guard('stakeholder')->user()->role;
+        $role = Auth::guard('stakeholder')->user()->role_id;
 
         if (in_array($role, chapterStakeholders())) {
             $reports = StakeholderReport::whereChapterId(Auth::guard('stakeholder')->user()->chapter_id)->orderBy('created_at', 'desc')->get();
-        } elseif ($role == 'Field Pastor') {
+        } elseif (in_array($role, fieldStakeholders())) {
             $reports = StakeholderReport::whereFieldId(Auth::guard('stakeholder')->user()->field_id)->orderBy('created_at', 'desc')->get();
-        } elseif ($role == 'Zonal Pastor') {
+        } elseif (in_array($role, zoneStakeholders())) {
             $reports = StakeholderReport::whereZoneId(Auth::guard('stakeholder')->user()->zone_id)->orderBy('created_at', 'desc')->get();
-        } elseif ($role == 'Secretariat') {
+        } elseif (in_array($role, secretariatStakeholders())) {
             $reports = StakeholderReport::orderBy('created_at', 'desc')->get();
         }
 
-        if ($role == 'Financial Secretary') {
-            return redirect(route('stakeholderpayment.index'));
-        }
+        // if ($role == 'Financial Secretary') {
+        //     return redirect(route('stakeholderpayment.index'));
+        // }
 
         return view('stakeholder.dashboard', compact('reports', 'count'));
     }

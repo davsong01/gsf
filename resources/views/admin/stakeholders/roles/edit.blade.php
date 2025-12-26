@@ -32,22 +32,27 @@
                                 @endif
 
                                 {{-- ROLE DETAILS --}}
-                                <div class="row mb-3">
-                                    <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-6 mb-1">
                                         <label for="name" class="form-label">Role Name</label>
-                                        <input type="text" class="form-control" id="name" name="name"
-                                               value="{{ old('name', $stakeholderRole->name ?? '') }}" required>
+                                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $stakeholderRole->name ?? '') }}" required>
                                     </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-md-12">
+                                    <div class="col-md-6 mb-1">
                                         <label for="slug" class="form-label">Role Slug (Optional)</label>
-                                        <input type="text" class="form-control" id="slug" name="slug"
-                                               value="{{ old('slug', $stakeholderRole->slug ?? '') }}">
+                                        <input type="text" class="form-control" id="slug" name="slug" value="{{ old('slug', $stakeholderRole->slug ?? '') }}">
                                     </div>
+                                    <div class="col-md-6 mb-1">
+                                        <label for="chapter_id">Status</label>
+                                        <select class="form-control" name="status" id="status" required>
+                                            <option value="">--Select--</option>
+                                            <option value="active" {{ old('role', $stakeholderRole->status ?? '') == 'active' ? 'selected' : '' }}>Active</option>
+                                            <option value="inactive" {{ old('role', $stakeholderRole->status ?? '') == 'inactive' ? 'selected' : '' }}>InActive</option>
+                                        </select>
+                                    </div>
+
                                 </div>
 
+                             
                                 {{-- PERMISSIONS --}}
                                 <div class="row mb-3">
                                     <div class="col-md-12">

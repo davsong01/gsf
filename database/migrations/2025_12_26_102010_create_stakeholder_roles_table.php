@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique(); // Chapter President
             $table->string('slug')->unique(); // chapter-president
+            $table->string('status')->default('inactive'); 
             $table->text('description')->nullable();
             $table->timestamps();
         });

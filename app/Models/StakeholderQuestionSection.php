@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class StakeholderQuestionSection extends Model
 {
     use HasFactory;
-
+    protected $guarded = [];
     protected $casts = [
         'access_roles' => 'array',
     ];

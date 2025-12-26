@@ -24,7 +24,7 @@
                                             <th>Name</th>
                                             <th>Phone</th>
                                             <th>Email</th>
-                                            <th>Assignment</th>
+                                            <th>Role</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -38,13 +38,23 @@
                                             </td>
                                             <td>{{ $stakeholder->phone }}</td>
                                             <td>{{ $stakeholder->email }}</td>
+                                            
                                             <td>
-                                                @if(in_array($stakeholder->role, chapterStakeholders()) && !is_null($stakeholder->chapter_id))<span>{{$stakeholder->role}}, </span><a target="_blank" style="color:blue" href="{{ route('chapters.edit', $stakeholder->chapter->id) }}">{{ $stakeholder->chapter->name ?? 'N/A' }}</a>@endif
-                                                @if($stakeholder->role == 'Zonal Pastor' && !is_null($stakeholder->zone_id))<span style="color:blue">Zonal Pastor, </span>{{ $stakeholder->zone->name ?? 'N/A' }}@endif
-                                                @if($stakeholder->role == 'Field Pastor' && !is_null($stakeholder->field_id)) <span style="color:blue">Field Pastor, </span>{{ $stakeholder->field->name ?? 'N/A' }}@endif
-                                                @if($stakeholder->role == 'Secretariat')Official @endif
-                                                @if($stakeholder->role == 'Financial Secretary')Official @endif
-                                                @if($stakeholder->role == 'Portfolio'){{ $stakeholder->portfolio }} @endif
+                                                @if(in_array($stakeholder->role_id, chapterStakeholders()) && !is_null($stakeholder->chapter_id))
+                                                    <span>{{$stakeholder->role->name}}, </span>
+                                                    <a target="_blank" style="color:blue" href="{{ route('chapters.edit', $stakeholder->chapter->id) }}">{{ $stakeholder->chapter->name ?? 'N/A' }}</a>
+                                                @endif
+                                                @if(in_array($stakeholder->role_id, zoneStakeholders()) && !is_null($stakeholder->zone_id))
+                                                    <span style="color:blue">{{$stakeholder->role->name}}, </span>
+                                                    {{ $stakeholder->zone->name ?? 'N/A' }}
+                                                @endif
+                                                @if(in_array($stakeholder->role_id, fieldStakeholders()) && !is_null($stakeholder->field_id)) 
+                                                    <span style="color:blue">{{$stakeholder->role->name}}, </span>{{ $stakeholder->field->name ?? 'N/A' }}
+                                                @endif
+                                                
+                                                @if(in_array($stakeholder->role_id, fieldStakeholders()))
+                                                    {{ $stakeholder->portfolio }} 
+                                                @endif
                                             </td>
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Update stakeholder details" href="{{ route('stakeholderpersonnel.edit', $stakeholder->id) }}"> <i class="bx bxs-edit actions"></i>

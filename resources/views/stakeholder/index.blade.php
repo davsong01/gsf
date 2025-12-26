@@ -11,7 +11,7 @@
             {{-- {{dd(Auth::guard('stakeholder')->user())}} --}}
             <div class="col-12 d-flex justify-content-between align-items-center">
                 <h4 class="card-title">All Reports</h4>
-                @if(in_array(Auth::guard('stakeholder')->user()->role, chapterStakeholders()))
+                @if(in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders()))
                 @if(canAddThisMonthReport(Auth::guard('stakeholder')->user()))
                 <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">Add This Month's Report</a>
                 @endif
@@ -35,9 +35,9 @@
                         <input type="date" name="to_date" id="to_date" class="form-control"
                             value="{{ request('to_date') ?? now()->format('Y-m-d') }}">
                     </div>
-
+                    
                     <!-- Chapter Filter (for non-Field Pastor) -->
-                    @if(in_array(Auth::guard('stakeholder')->user()->role, ['Zonal Pastor','Field Pastor','Portfolio','Secretariat']))
+                    @if(in_array(Auth::guard('stakeholder')->user()->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
                     <div class="col-md-3">
                         <label for="chapter_filter" class="form-label">Chapter</label>
                         <select name="chapter_filter" id="chapter_filter" class="form-control">
@@ -51,7 +51,7 @@
                         </select>
                     </div>
                     @endif
-                    @if(in_array(Auth::guard('stakeholder')->user()->role, ['Field Pastor','Portfolio','Secretariat']))
+                    @if(in_array(Auth::guard('stakeholder')->user()->role_id, array_merge(fieldStakeholders(), secretariatStakeholders(), ncpStakeholders())))
                     <div class="col-md-3">
                         <label for="zone_filter" class="form-label">Zone</label>
                         <select name="zone_filter" id="zone_filter" class="form-control">
@@ -65,7 +65,7 @@
                         </select>
                     </div>
                     @endif
-                    @if(in_array(Auth::guard('stakeholder')->user()->role, ['Portfolio','Secretariat']))
+                    @if(in_array(Auth::guard('stakeholder')->user()->role_id, array_merge(secretariatStakeholders(), ncpStakeholders())))
                     <div class="col-md-3">
                         <label for="field_filter" class="form-label">Field</label>
                         <select name="field_filter" id="field_filter" class="form-control">
@@ -102,11 +102,9 @@
                     <div class="col-md-2">
                         <button class="btn btn-secondary w-100" type="submit">Filter</button>
                     </div>
-
                 </form>
             </div>
         </div>
-
 
         <!-- Reports Table -->
         <div class="row">
@@ -119,7 +117,7 @@
                                 <thead >
                                     <tr>
                                         <th>S/N</th>
-                                        @if(in_array(Auth::guard('stakeholder')->user()->role, ['Field Pastor','Zonal Pastor','Secretariat']))
+                                        @if(in_array(Auth::guard('stakeholder')->user()->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
                                             <th>Chapter</th>
                                         @endif
                                         <th>Month/Year</th>
@@ -135,7 +133,7 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
 
-                                        @if(in_array(Auth::guard('stakeholder')->user()->role, ['Field Pastor','Zonal Pastor','Secretariat']))
+                                        @if(in_array(Auth::guard('stakeholder')->user()->role_id, ['Field Pastor','Zonal Pastor','Secretariat']))
                                             <td>{{ $report->chapter->name ?? '—' }}</td>
                                         @endif
 
@@ -209,7 +207,7 @@
                                             @if(
                                                 (Auth::guard('stakeholder')->user()->role == 'Field Pastor' && $fieldStatus == 0) ||
                                                 (Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' && $zoneStatus == 0) ||
-                                                (in_array(Auth::guard('stakeholder')->user()->role, chapterStakeholders()) && $zoneStatus == 0) ||
+                                                (in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders()) && $zoneStatus == 0) ||
                                                 Auth::guard('stakeholder')->user()->role == 'Secretariat'
                                             )
                                                 <a href="{{ route('stakeholders.reports.edit', $report->id) }}" class="text-warning mx-1" title="Edit Report" onclick="return confirm('Are you sure you want to edit this report?');">

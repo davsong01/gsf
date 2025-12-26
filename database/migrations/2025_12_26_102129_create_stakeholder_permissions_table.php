@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name'); // Edit Report
             $table->string('slug')->unique(); // report.edit
+            $table->string('type')->nullable(); // question,action
             $table->string('description')->nullable(); // report, approval
             $table->timestamps();
         });

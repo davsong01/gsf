@@ -56,6 +56,7 @@ class StakeholderRoleController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:stakeholder_roles,name',
             'slug' => 'nullable|string|max:255|unique:stakeholder_roles,slug',
+            'status' => 'nullable',
             'description' => 'nullable|string',
             'permissions' => 'array',
             'permissions.*' => 'exists:stakeholder_permissions,id',
@@ -64,6 +65,7 @@ class StakeholderRoleController extends Controller
         $role = StakeholderRole::create([
             'name' => $request->name,
             'slug' => $request->slug ?? Str::slug($request->name),
+            'status' => $request->status,
             'description' => $request->description,
         ]);
 
@@ -81,12 +83,14 @@ class StakeholderRoleController extends Controller
             'name' => 'required|string|max:255|unique:stakeholder_roles,name,' . $stakeholderRole->id,
             'slug' => 'nullable|string|max:255|unique:stakeholder_roles,slug,' . $stakeholderRole->id,
             'description' => 'nullable|string',
+            'status' => 'nullable|string',
             'permissions' => 'array',
             'permissions.*' => 'exists:stakeholder_permissions,id',
         ]);
 
         $stakeholderRole->update([
             'name' => $request->name,
+            'status' => $request->status,
             'slug' => $request->slug ?? Str::slug($request->name),
             'description' => $request->description,
         ]);

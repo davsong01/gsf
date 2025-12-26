@@ -4,48 +4,13 @@ namespace App\Services;
 
 use App\Models\Stakeholder;
 use App\Models\StakeholderRole;
-use App\Models\StakeholderPermission;
 use Illuminate\Support\Collection;
+use App\Models\StakeholderPermission;
 use Illuminate\Support\Facades\Cache;
+use App\Models\StakeholderReportQuestion;
 
 class StakeholderRolePermissionService
 {
-    /**
-     * Assign roles to a stakeholder (overwrite existing).
-     */
-    public function syncRolesToStakeholder(Stakeholder $stakeholder, array $roleIds): void
-    {
-        $stakeholder->roles()->sync($roleIds);
-        $this->forgetStakeholderPermissionCache($stakeholder);
-    }
-
-    /**
-     * Add roles to a stakeholder (without detaching existing).
-     */
-    public function addRolesToStakeholder(Stakeholder $stakeholder, array $roleIds): void
-    {
-        $stakeholder->roles()->syncWithoutDetaching($roleIds);
-        $this->forgetStakeholderPermissionCache($stakeholder);
-    }
-
-    /**
-     * Remove roles from a stakeholder.
-     */
-    public function removeRolesFromStakeholder(Stakeholder $stakeholder, array $roleIds): void
-    {
-        $stakeholder->roles()->detach($roleIds);
-        $this->forgetStakeholderPermissionCache($stakeholder);
-    }
-
-    /**
-     * Assign permissions to a role (overwrite existing).
-     */
-    public function syncPermissionsToRole(StakeholderRole $role, array $permissionIds): void
-    {
-        $role->permissions()->sync($permissionIds);
-        $this->forgetRolePermissionCache($role);
-    }
-
     /**
      * Check if stakeholder has a permission (cached).
      */
@@ -120,5 +85,20 @@ class StakeholderRolePermissionService
     protected function stakeholderPermissionCacheKey(Stakeholder $stakeholder): string
     {
         return "stakeholder_permissions_{$stakeholder->id}";
+    }
+
+    public function getSectionAccess(Stakeholder $stakeholder, $sectionOrSubsection): array
+    {
+        // Roles allowed to access this section/subsection
+        $allowedRoles = $sectionOrSubsection->access_roles ?? [];
+
+        // Stakeholder roles
+        $roles = $stakeholder->roles->pluck('id')->toArray();
+
+        $canView = !empty(array_intersect($roles, $allowedRoles));
+
+        return [
+            'view' => $canView,
+        ];
     }
 }

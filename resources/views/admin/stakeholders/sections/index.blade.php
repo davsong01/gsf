@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'Stakeholder Roles')
+@section('title', 'Stakeholder Sections')
 @section('active')
-<li class="breadcrumb-item">Stakeholder Roles</li>
+<li class="breadcrumb-item">Stakeholder Sections</li>
 @endsection
 
 @section('content')
@@ -11,8 +11,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="card-title">All Roles</h4>
-                        <a href="{{ route('stakeholderroles.create') }}" class="btn btn-primary mt-1">Add New Role</a>
+                        <h4 class="card-title">All Sections</h4>
+                        <a href="{{ route('stakeholderreportsection.create') }}" class="btn btn-primary mt-1">Add Section</a>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -22,34 +22,36 @@
                                         <tr>
                                             <th>S/N</th>
                                             <th>Name</th>
-                                            <th>Slug</th>
                                             <th>Status</th>
-                                            <th>Permissions</th>
+                                            <th>Roles with Access</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($roles as $role)
+                                        @foreach($sections as $section)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $role->name }}</td>
-                                            <td>{{ $role->slug }}</td>
-                                            <td>{{ ucfirst($role->status) }}</td>
+                                            <td>{{ $section->name }}</td>
+                                            <td>{{ $section->status ? 'Active' : 'Inactive' }}</td>
                                             <td>
-                                                @if($role->permissions->isNotEmpty())
+                                                @if(!empty($section->access_roles) && count($section->access_roles) > 0)
                                                     <ul class="mb-0">
-                                                        @foreach($role->permissions as $perm)
-                                                            <li>{{ $perm->name }}</li>
+                                                        @foreach($section->access_roles as $roleId)
+                                                            @php
+                                                                $role = \App\Models\StakeholderRole::find($roleId);
+                                                            @endphp
+                                                            @if($role)
+                                                                <li>{{ $role->name }}</li>
+                                                            @endif
                                                         @endforeach
                                                     </ul>
                                                 @else
-                                                    <em>No permissions assigned</em>
+                                                    <em>No roles assigned</em>
                                                 @endif
                                             </td>
-                                            
                                             <td>
-                                                <a href="{{ route('stakeholderroles.edit', $role->id) }}" class="btn btn-sm btn-info">Edit</a>
-                                                <form action="{{ route('stakeholderroles.destroy', $role->id) }}" method="POST" style="display:inline-block">
+                                                <a href="{{ route('stakeholderreportsection.edit', $section->id) }}" class="btn btn-sm btn-info">Edit</a>
+                                                <form action="{{ route('stakeholderreportsection.destroy', $section->id) }}" method="POST" style="display:inline-block">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button onclick="return confirm('Are you sure?')" class="btn btn-sm btn-danger">Delete</button>
@@ -57,7 +59,7 @@
                                             </td>
                                         </tr>
                                         @endforeach
-                                    </tbody>    
+                                    </tbody>
                                 </table>
                             </div>
                         </div>

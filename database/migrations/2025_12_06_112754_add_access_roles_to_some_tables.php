@@ -10,7 +10,6 @@ return new class extends Migration
     {
         $tables = [
             'stakeholder_question_sub_sections',
-            'stakeholder_report_questions',
             'stakeholder_question_sections',
         ];
 
@@ -25,7 +24,6 @@ return new class extends Migration
     {
         $tables = [
             'stakeholder_question_sub_sections',
-            'stakeholder_report_questions',
             'stakeholder_question_sections',
         ];
 

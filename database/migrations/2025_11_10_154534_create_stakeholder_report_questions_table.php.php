@@ -24,7 +24,6 @@ return new class extends Migration
             $table->string('width_class')->default('col-md-6');
             $table->string('section_id')->nullable(); // optional (e.g. 'Personal Section')
             $table->string('sub_section_id')->nullable();
-            $table->string('role')->nullable();
             $table->tinyInteger('status')->default(0);
             $table->boolean('is_quantifiable')->default(false);
             

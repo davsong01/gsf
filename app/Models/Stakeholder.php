@@ -24,7 +24,7 @@ class Stakeholder extends Authenticatable
         'field_id',
         'zone_id',
         'chapter_id',
-        'role',
+        'role_id',
         'password',
         'day',
         'month',
@@ -61,12 +61,9 @@ class Stakeholder extends Authenticatable
     //         'stakeholder_has_roles'
     //     );
     // }
-    public function roles()
+    public function role()
     {
-        return $this->belongsToMany(
-            StakeholderRole::class,
-            'stakeholder_stakeholder_roles'
-        );
+        return $this->belongsTo(StakeholderRole::class, 'role_id')->withDefault();
     }
 
     public function permissions()
