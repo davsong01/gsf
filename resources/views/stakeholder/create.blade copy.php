@@ -74,34 +74,42 @@
 </style>
 @endsection
 
-@section('title', isset($report) ? 'Edit Report' : 'Add Report')
+@section('title', 'Add/Edit Report')
+
+@section('item')
+<li class="breadcrumb-item"> <a href="{{ route('stakeholders.dashboard') }}">Report</a></li>
+@endsection
+
+@section('active')
+<li class="breadcrumb-item">{{ isset($report) ? 'Edit Report' : 'Add New Report' }}</li>
+@endsection
 
 @section('content')
 <div class="content-body">
     <section id="basic-input">
-        <form action="{{ isset($report) ? route('stakeholders.reports.update', $report->id) : route('stakeholders.reports.store') }}"
-            method="POST" enctype="multipart/form-data"
-            onsubmit="return confirm('You are about to submit this report, action is irreversible');">
+        <form action="{{ isset($report) ? route('stakeholders.reports.update', $report->id) : route('stakeholders.reports.store') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('You are about to submit this report, action is irreversible');">
             @csrf
             @if(isset($report))
             @method('PUT')
             @endif
 
             @foreach($sections as $section)
-            @if(canAccess($stakeholder, $section))
+            @php $sectionAccess = getSectionAccess($user, $section); @endphp
+            @if($sectionAccess['view'])
             <div class="section-card">
                 <h3 class="header-section">{{ $section->name }}</h3>
 
                 @foreach($section->subsections as $subsection)
-                @if(canAccess($stakeholder, $subsection))
+                @php $subAccess = getSectionAccess($user, $subsection); @endphp
+                @if($subAccess['view'])
                 <div class="sub-section-card">
                     <h5 class="sub-section">{{ $subsection->name }}</h5>
                     <div class="row">
                         @foreach($subsection->questions as $question)
-                        @if(canAccess($stakeholder, $question))
                         @php
-                        $value = old('responses.' . $question->slug);
+                        $qAccess = getSectionAccess($user, $question);
 
+                        $value = old('responses.' . $question->slug);
                         if(isset($report) && $report->answers) {
                         $answer = $report->answers->firstWhere('question_id', $question->id);
                         if($answer) {
@@ -109,16 +117,18 @@
                         $value = $decoded ?? $answer->answer_value;
                         }
                         }
-
                         if(!$value && isset($prefillData[$question->slug])) {
                         $value = $prefillData[$question->slug];
                         }
+
+                        $disabled = !$qAccess['edit'] ? 'disabled' : '';
                         @endphp
 
+                        @if($qAccess['view'])
                         <div class="{{ $question->width_class ?? 'col-md-6' }} mb-1">
                             <label for="{{ $question->slug }}">
                                 {{ $question->label }}
-                                @if($question->is_required) <span class="text-danger">*</span> @endif
+                                @if($question->is_required && $qAccess['edit']) <span class="text-danger">*</span> @endif
                             </label>
 
                             @switch($question->type)
@@ -132,7 +142,8 @@
                                 id="{{ $question->slug }}"
                                 name="responses[{{ $question->slug }}]"
                                 value="{{ $value }}"
-                                @if($question->is_required) required @endif>
+                                {{ $disabled }}
+                                @if($question->is_required && $qAccess['edit']) required @endif>
                             @break
 
                             @case('textarea')
@@ -140,14 +151,16 @@
                                 id="{{ $question->slug }}"
                                 name="responses[{{ $question->slug }}]"
                                 rows="3"
-                                @if($question->is_required) required @endif>{{ $value }}</textarea>
+                                {{ $disabled }}
+                                @if($question->is_required && $qAccess['edit']) required @endif>{{ $value }}</textarea>
                             @break
 
                             @case('select')
                             <select class="form-select"
                                 id="{{ $question->slug }}"
                                 name="responses[{{ $question->slug }}]"
-                                @if($question->is_required) required @endif>
+                                {{ $disabled }}
+                                @if($question->is_required && $qAccess['edit']) required @endif>
                                 <option value="">Select...</option>
                                 @foreach($question->options as $optKey => $optLabel)
                                 <option value="{{ $optKey }}" {{ $value == $optKey ? 'selected' : '' }}>
@@ -165,7 +178,9 @@
                                             @foreach($question->options as $col)
                                             <th>{{ $col['label'] ?? $col }}</th>
                                             @endforeach
+                                            @if($qAccess['edit'])
                                             <th>Action</th>
+                                            @endif
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -179,13 +194,16 @@
                                                     name="responses[{{ $question->slug }}][{{ $rowIndex }}][{{ $colLabel }}]"
                                                     class="form-control"
                                                     value="{{ $row[$colLabel] ?? '' }}"
-                                                    @if(!empty($col['required'])) required @endif>
+                                                    {{ $disabled }}
+                                                    @if(!empty($col['required']) && $qAccess['edit']) required @endif>
                                             </td>
                                             @endforeach
+                                            @if($qAccess['edit'])
                                             <td>
                                                 <button type="button" class="btn btn-sm btn-success add-row">+</button>
                                                 <button type="button" class="btn btn-sm btn-danger remove-row">-</button>
                                             </td>
+                                            @endif
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -209,7 +227,14 @@
                                         <tr>
                                             <td>{{ $week }}</td>
                                             @foreach($question->options['columns'] as $col)
-                                            <td>{{ $value[$week][$col] ?? '' }}</td>
+                                            <td>
+                                                <input type="{{ $col == 'Remarks' ? 'text' : 'number' }}"
+                                                    class="form-control numeric-input"
+                                                    name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
+                                                    value="{{ $value[$week][$col] ?? '' }}"
+                                                    {{ $disabled }}
+                                                    @if($qAccess['edit'] && $col !='Remarks' ) required min="1" @endif>
+                                            </td>
                                             @endforeach
                                         </tr>
                                         @endforeach
@@ -218,13 +243,16 @@
                                         <tr class="totals-row">
                                             <td>Totals</td>
                                             @foreach($question->options['columns'] as $col)
+                                            @if($col != 'Remarks')
                                             <td class="total-cell" data-column="{{ $col }}">0</td>
+                                            @endif
                                             @endforeach
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
                             @break
+
                             @endswitch
                         </div>
                         @endif
@@ -236,6 +264,7 @@
             </div>
             @endif
             @endforeach
+
 
             <div class="card mb-4">
                 <div class="card-body">
@@ -254,9 +283,11 @@
         </form>
     </section>
 </div>
+@endsection
 
 @section('extra_scripts')
 <script>
+    // Dynamic table row add/remove
     $(document).on('click', '.add-row', function() {
         let table = $(this).closest('table');
         let newRow = table.find('tbody tr:first').clone();
@@ -273,6 +304,7 @@
         }
     });
 
+    // Income Table Totals
     function recalcTotals(table) {
         if (table.hasClass('income-table')) {
             table.find('tfoot td.total-cell').each(function() {
@@ -292,6 +324,7 @@
         recalcTotals(table);
     });
 
+    // Initialize totals on page load
     $('.income-table').each(function() {
         recalcTotals($(this));
     });

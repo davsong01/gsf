@@ -83,29 +83,27 @@
 @section('content')
 <div class="content-body">
     <section id="basic-input">
-        <form action="{{ isset($report) ? route('stakeholders.reports.update', $report->id) : route('stakeholders.reports.store') }}"
-              method="POST" enctype="multipart/form-data"
-              onsubmit="return confirm('You are about to submit this report, action is irreversible');">
+        <form action="{{ isset($report) ? route('stakeholders.reports.update', $report->id) : route('stakeholders.reports.store') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('You are about to submit this report, action is irreversible');">
             @csrf
             @if(isset($report))
                 @method('PUT')
             @endif
             
             @foreach($sections as $section)
-                @php $sectionAccess = getSectionAccess($user, $section); @endphp
+                @php $sectionAccess = app('App\Services\StakeholderRolePermissionService'::class)->sectionAccess($user, $section); @endphp
                 @if($sectionAccess['view'])
                     <div class="section-card">
                         <h3 class="header-section">{{ $section->name }}</h3>
 
                         @foreach($section->subsections as $subsection)
-                            @php $subAccess = getSectionAccess($user, $subsection); @endphp
+                            @php $subAccess =  app('App\Services\StakeholderRolePermissionService'::class)->sectionAccess($user, $section); @endphp
                             @if($subAccess['view'])
                                 <div class="sub-section-card">
                                     <h5 class="sub-section">{{ $subsection->name }}</h5>
                                     <div class="row">
                                         @foreach($subsection->questions as $question)
                                             @php
-                                                $qAccess = getSectionAccess($user, $question);
+                                                $qAccess = app('App\Services\StakeholderRolePermissionService'::class)->questionAccess($user, $question);
                                                 
                                                 $value = old('responses.' . $question->slug);
                                                 if(isset($report) && $report->answers) {
@@ -122,138 +120,137 @@
                                                 $disabled = !$qAccess['edit'] ? 'disabled' : '';
                                             @endphp
 
-                                            @if($qAccess['view'])
-                                                <div class="{{ $question->width_class ?? 'col-md-6' }} mb-1">
-                                                    <label for="{{ $question->slug }}">
-                                                        {{ $question->label }}
-                                                        @if($question->is_required && $qAccess['edit']) <span class="text-danger">*</span> @endif
-                                                    </label>
+                                            <div class="{{ $question->width_class ?? 'col-md-6' }} mb-1">
+                                                <label for="{{ $question->slug }}">
+                                                    {{ $question->label }}
+                                                    @if($question->is_required && $qAccess['edit']) <span class="text-danger">*</span> @endif
+                                                </label>
 
-                                                    @switch($question->type)
-                                                        @case('text')
-                                                        @case('year')
-                                                        @case('month')
-                                                        @case('number')
-                                                        @case('date')
-                                                            <input type="{{ $question->type }}"
-                                                                class="form-control"
+                                                @switch($question->type)
+                                                    @case('text')
+                                                    @case('year')
+                                                    @case('month')
+                                                    @case('number')
+                                                    @case('date')
+                                                        <input type="{{ $question->type }}"
+                                                            class="form-control"
+                                                            id="{{ $question->slug }}"
+                                                            name="responses[{{ $question->slug }}]"
+                                                            value="{{ $value }}"
+                                                            {{ $disabled }}
+                                                            @if($question->is_required && $qAccess['edit']) required @endif>
+                                                        @break
+
+                                                    @case('textarea')
+                                                        <textarea class="form-control"
                                                                 id="{{ $question->slug }}"
                                                                 name="responses[{{ $question->slug }}]"
-                                                                value="{{ $value }}"
+                                                                rows="3"
+                                                                {{ $disabled }}
+                                                                @if($question->is_required && $qAccess['edit']) required @endif>{{ $value }}</textarea>
+                                                        @break
+
+                                                    @case('select')
+                                                        <select class="form-select"
+                                                                id="{{ $question->slug }}"
+                                                                name="responses[{{ $question->slug }}]"
                                                                 {{ $disabled }}
                                                                 @if($question->is_required && $qAccess['edit']) required @endif>
-                                                            @break
+                                                            <option value="">Select...</option>
+                                                            @foreach($question->options as $optKey => $optLabel)
+                                                                <option value="{{ $optKey }}" {{ $value == $optKey ? 'selected' : '' }}>
+                                                                    {{ $optLabel }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @break
 
-                                                        @case('textarea')
-                                                            <textarea class="form-control"
-                                                                    id="{{ $question->slug }}"
-                                                                    name="responses[{{ $question->slug }}]"
-                                                                    rows="3"
-                                                                    {{ $disabled }}
-                                                                    @if($question->is_required && $qAccess['edit']) required @endif>{{ $value }}</textarea>
-                                                            @break
-
-                                                        @case('select')
-                                                            <select class="form-select"
-                                                                    id="{{ $question->slug }}"
-                                                                    name="responses[{{ $question->slug }}]"
-                                                                    {{ $disabled }}
-                                                                    @if($question->is_required && $qAccess['edit']) required @endif>
-                                                                <option value="">Select...</option>
-                                                                @foreach($question->options as $optKey => $optLabel)
-                                                                    <option value="{{ $optKey }}" {{ $value == $optKey ? 'selected' : '' }}>
-                                                                        {{ $optLabel }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
-                                                            @break
-
-                                                        @case('dynamic_table')
-                                                            <div class="table-responsive">
-                                                                <table class="table table-bordered dynamic-table" data-slug="{{ $question->slug }}">
-                                                                    <thead>
+                                                    @case('dynamic_table')
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered dynamic-table" data-slug="{{ $question->slug }}">
+                                                                <thead>
+                                                                    <tr>
+                                                                        @foreach($question->options as $col)
+                                                                            <th>{{ $col['label'] ?? $col }}</th>
+                                                                        @endforeach
+                                                                        @if($qAccess['edit'])
+                                                                            <th>Action</th>
+                                                                        @endif
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @php $rows = $value ?? [[]]; @endphp
+                                                                    @foreach($rows as $rowIndex => $row)
                                                                         <tr>
                                                                             @foreach($question->options as $col)
-                                                                                <th>{{ $col['label'] ?? $col }}</th>
+                                                                                @php $colLabel = $col['label'] ?? $col; @endphp
+                                                                                <td>
+                                                                                    <input type="{{ $col['type'] ?? 'text' }}"
+                                                                                        name="responses[{{ $question->slug }}][{{ $rowIndex }}][{{ $colLabel }}]"
+                                                                                        class="form-control"
+                                                                                        value="{{ $row[$colLabel] ?? '' }}"
+                                                                                        {{ $disabled }}
+                                                                                        @if(!empty($col['required']) && $qAccess['edit']) required @endif>
+                                                                                </td>
                                                                             @endforeach
                                                                             @if($qAccess['edit'])
-                                                                                <th>Action</th>
+                                                                                <td>
+                                                                                    <button type="button" class="btn btn-sm btn-success add-row">+</button>
+                                                                                    <button type="button" class="btn btn-sm btn-danger remove-row">-</button>
+                                                                                </td>
                                                                             @endif
                                                                         </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        @php $rows = $value ?? [[]]; @endphp
-                                                                        @foreach($rows as $rowIndex => $row)
-                                                                            <tr>
-                                                                                @foreach($question->options as $col)
-                                                                                    @php $colLabel = $col['label'] ?? $col; @endphp
-                                                                                    <td>
-                                                                                        <input type="{{ $col['type'] ?? 'text' }}"
-                                                                                            name="responses[{{ $question->slug }}][{{ $rowIndex }}][{{ $colLabel }}]"
-                                                                                            class="form-control"
-                                                                                            value="{{ $row[$colLabel] ?? '' }}"
-                                                                                            {{ $disabled }}
-                                                                                            @if(!empty($col['required']) && $qAccess['edit']) required @endif>
-                                                                                    </td>
-                                                                                @endforeach
-                                                                                @if($qAccess['edit'])
-                                                                                    <td>
-                                                                                        <button type="button" class="btn btn-sm btn-success add-row">+</button>
-                                                                                        <button type="button" class="btn btn-sm btn-danger remove-row">-</button>
-                                                                                    </td>
-                                                                                @endif
-                                                                            </tr>
-                                                                        @endforeach
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                            @break
+                                                                    @endforeach
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        @break
 
-                                                        @case('income_table')
-                                                            <div class="table-responsive">
-                                                                <table class="table table-bordered income-table" data-slug="{{ $question->slug }}">
-                                                                    <thead class="table-light">
+                                                    @case('income_table')
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered income-table" data-slug="{{ $question->slug }}">
+                                                                <thead class="table-light">
+                                                                    <tr>
+                                                                        <th>Week</th>
+                                                                        @foreach($question->options['columns'] as $col)
+                                                                            <th>{{ $col }}</th>
+                                                                        @endforeach
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach($question->options['rows'] as $week)
                                                                         <tr>
-                                                                            <th>Week</th>
+                                                                            <td>{{ $week }}</td>
                                                                             @foreach($question->options['columns'] as $col)
-                                                                                <th>{{ $col }}</th>
+                                                                                <td>
+                                                                                    <input type="{{ $col == 'Remarks' ? 'text' : 'number' }}"
+                                                                                        class="form-control numeric-input"
+                                                                                        name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
+                                                                                        value="{{ $value[$week][$col] ?? '' }}"
+                                                                                        {{ $disabled }}
+                                                                                        @if($qAccess['edit'] && $col != 'Remarks') required min="1" @endif>
+                                                                                </td>
                                                                             @endforeach
                                                                         </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        @foreach($question->options['rows'] as $week)
-                                                                            <tr>
-                                                                                <td>{{ $week }}</td>
-                                                                                @foreach($question->options['columns'] as $col)
-                                                                                    <td>
-                                                                                        <input type="{{ $col == 'Remarks' ? 'text' : 'number' }}"
-                                                                                            class="form-control numeric-input"
-                                                                                            name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
-                                                                                            value="{{ $value[$week][$col] ?? '' }}"
-                                                                                            {{ $disabled }}
-                                                                                            @if($qAccess['edit'] && $col != 'Remarks') required min="1" @endif>
-                                                                                    </td>
-                                                                                @endforeach
-                                                                            </tr>
+                                                                    @endforeach
+                                                                </tbody>
+                                                                <tfoot>
+                                                                    <tr class="totals-row">
+                                                                        <td>Totals</td>
+                                                                        @foreach($question->options['columns'] as $col)
+                                                                            @if($col != 'Remarks')
+                                                                            <td class="total-cell" data-column="{{ $col }}">0</td>
+                                                                            @endif
                                                                         @endforeach
-                                                                    </tbody>
-                                                                    <tfoot>
-                                                                        <tr class="totals-row">
-                                                                            <td>Totals</td>
-                                                                            @foreach($question->options['columns'] as $col)
-                                                                                @if($col != 'Remarks')
-                                                                                <td class="total-cell" data-column="{{ $col }}">0</td>
-                                                                                @endif
-                                                                            @endforeach
-                                                                        </tr>
-                                                                    </tfoot>
-                                                                </table>
-                                                            </div>
-                                                            @break
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                        </div>
+                                                        @break
 
-                                                    @endswitch
-                                                </div>
-                                            @endif
+                                                @endswitch
+                                            </div>
+                                            
                                         @endforeach
                                     </div>
                                 </div>

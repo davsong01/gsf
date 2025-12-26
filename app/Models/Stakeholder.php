@@ -68,7 +68,7 @@ class Stakeholder extends Authenticatable
 
     public function permissions()
     {
-        return $this->roles()
+        return $this->role()
             ->with('permissions:id,slug')
             ->get()
             ->pluck('permissions')

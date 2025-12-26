@@ -39,10 +39,6 @@ class StakeholderAccountController extends Controller
             $reports = StakeholderReport::orderBy('created_at', 'desc')->get();
         }
 
-        // if ($role == 'Financial Secretary') {
-        //     return redirect(route('stakeholderpayment.index'));
-        // }
-
         return view('stakeholder.dashboard', compact('reports', 'count'));
     }
     

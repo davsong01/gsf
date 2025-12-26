@@ -30,7 +30,7 @@ class StakeholderReportsController extends Controller
     public function index(Request $request)
     {
         $user = Auth::guard('stakeholder')->user();
-        $role = $user->role;
+        $role = $user->role_id;
         
         // Base queries
         $chapters = Chapter::query();
@@ -45,31 +45,28 @@ class StakeholderReportsController extends Controller
         /** =====================
          * ROLE-BASED SCOPING
          * ===================== */
-        if (in_array($role, ['Chapter President', 'Chapter Secretary', 'Chapter Financial Secretary'])) {
+        if (in_array($role, chapterStakeholders())) {
             $chapterIds = collect([$user->chapter_id]);
             $zoneIds = collect([$user->zone_id]);
             $fieldIds = collect([$user->field_id]);
-        } elseif ($role === 'Zonal Pastor') {
+        } elseif (in_array($role, zoneStakeholders())) {
             $zoneIds = collect([$user->zone_id]);
 
             // All chapters under this zone
             $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
-
             // Fields that contain this zone
             $fieldIds = Field::whereHas('zones', fn($q) => $q->where('id', $user->zone_id))
                 ->pluck('id');
-        } elseif ($role === 'Field Pastor') {
+        } elseif (in_array($role, fieldStakeholders())) {
             $fieldIds = collect([$user->field_id]);
-
             // Zones under this field
             $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
-
             // Chapters under all zones in this field
             $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
         }
 
         // Secretariat → full access (no scoping)
-        elseif ($role === 'Secretariat') {
+        elseif (in_array($role, secretariatStakeholders())) {
             $chapterIds = Chapter::pluck('id');
             $zoneIds = Zone::pluck('id');
             $fieldIds = Field::pluck('id');
