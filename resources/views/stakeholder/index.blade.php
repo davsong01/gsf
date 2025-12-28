@@ -133,7 +133,7 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
 
-                                        @if(in_array(Auth::guard('stakeholder')->user()->role_id, ['Field Pastor','Zonal Pastor','Secretariat']))
+                                        @if(in_array(Auth::guard('stakeholder')->user()->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
                                             <td>{{ $report->chapter->name ?? '—' }}</td>
                                         @endif
 
@@ -161,7 +161,7 @@
                                                     <span class="badge bg-warning text-dark">Pending</span>
                                                 @endif
                                             </div>
-                                             {{-- Field --}}
+                                            {{-- Field --}}
                                             <div class="d-flex align-items-center" style="margin-bottom:5px">
                                                 <small class="ms-1 text-muted">Field &nbsp</small>
                                                 @if($report->field_rejected_at)
@@ -205,10 +205,10 @@
 
                                             {{-- Edit --}}
                                             @if(
-                                                (Auth::guard('stakeholder')->user()->role == 'Field Pastor' && $fieldStatus == 0) ||
-                                                (Auth::guard('stakeholder')->user()->role == 'Zonal Pastor' && $zoneStatus == 0) ||
+                                                (in_array(Auth::guard('stakeholder')->user()->role_id, fieldStakeholders()) && $fieldStatus == 0) ||
+                                                (in_array(Auth::guard('stakeholder')->user()->role_id, zoneStakeholders()) && $zoneStatus == 0) ||
                                                 (in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders()) && $zoneStatus == 0) ||
-                                                Auth::guard('stakeholder')->user()->role == 'Secretariat'
+                                                in_array(Auth::guard('stakeholder')->user()->role_id, secretariatStakeholders())
                                             )
                                                 <a href="{{ route('stakeholders.reports.edit', $report->id) }}" class="text-warning mx-1" title="Edit Report" onclick="return confirm('Are you sure you want to edit this report?');">
                                                     <i class="fa fa-edit"></i>

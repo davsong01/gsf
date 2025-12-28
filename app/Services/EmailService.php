@@ -134,19 +134,21 @@ class EmailService {
         
         $emailContent = self::getContent($type, $transaction, $data);
         
-        $subject = $emailContent['subject'];
-        $content = $emailContent['content'];
+        $subject = $data['subject'] ?? $emailContent['subject'];
+        $content = $data['content'] ?? $emailContent['content'];
         
         $insert = [];
 
-        if($data['type'] == 'conference_bulk_email'){
+        if(in_array($data['type'], ['conference_bulk_email', 'report.update'])){
             $recipients = $data['recipients'] ?? null;
+            
             foreach($recipients as $recipient){
                 $insert[] = [
-                    'recipient' => $recipient['email'],
+                    'recipient' => $recipient['email'] ?? $recipient,
                     'type' => $type,
-                    'conference_edition_id' => $transaction->conference_edition_id,
+                    'conference_edition_id' => $transaction->conference_edition_id ?? null,
                     'subject' => $subject,
+                    'attachments' => !empty($data['attachments']) ? json_encode($data['attachments']) : null,
                     'content' => $content,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -158,13 +160,15 @@ class EmailService {
                 'type' => $type,
                 'conference_edition_id' => $transaction->conference_edition_id,
                 'subject' => $subject,
+                'attachments' => !empty($data['attachments']) ? json_encode($data['attachments']) : null,
                 'content' => $content,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
         }
-
+        
         CriticalEmail::insert($insert);
+        
     }
 
     /**

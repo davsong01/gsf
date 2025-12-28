@@ -171,7 +171,7 @@ class StakeholderReportsController extends Controller
             'year' => date('Y'),
             'year_established' => $chapter->year_established ?? '',
             'session' => date('Y') - 1 . '/'. date('Y'),
-            'president_name' => optional($chapter->stakeholders->where('role', 'Chapter President')->first())->name ?? '',
+            'president_name' => '',
         ];
         
         return view('stakeholder.create', compact('months', 'sections', 'prefillData', 'user'));
@@ -183,129 +183,261 @@ class StakeholderReportsController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    // public function store(Request $request)
+    // {
+    //     $stakeholder = Auth::guard('stakeholder')->user();
+
+    //     // $checks = $this->checks($stakeholder);
+    //     // dd($checks);
+    //     // Validate the form data
+    //     $validated = $request->validate([
+    //         'responses' => 'required|array',
+    //         'responses.*' => 'nullable',
+    //         'confirm_information' => 'accepted',
+    //     ]);
+
+    //     $chapter = Chapter::with('zone:id','field:id')->where('id', $stakeholder->chapter_id)->first();
+
+    //     if (empty($chapter->year_established)) {
+    //         $chapter->update(['year_established' => $validated['responses']['year_established']]);
+    //     }
+
+    //     DB::beginTransaction();
+
+    //     try {
+    //         // Build report meta data
+    //         $reportData = [
+    //             'chapter_id' => $stakeholder->chapter_id,
+    //             'zone_id' => $stakeholder->zone_id ?? $chapter?->zone->id,
+    //             'field_id' => $stakeholder->field_id ?? $chapter?->field->id,
+    //             'stakeholder_id' => $stakeholder->id,
+    //             'session' => $validated['responses']['session'] ?? null,
+    //             'year' => $validated['responses']['year'] ?? null,
+    //             'month' => $validated['responses']['month'] ?? null,
+
+    //         ];
+
+    //         // Create the main report record
+    //         $report = StakeholderReport::create($reportData);
+
+    //         // Save each response to StakeholderReportAnswer
+    //         foreach ($validated['responses'] as $slug => $answer) {
+    //             $question = StakeholderReportQuestion::where('slug', $slug)->first();
+    //             if ($question) {
+    //                 StakeholderReportAnswer::create([
+    //                     'report_id' => $report->id,
+    //                     'question_id' => $question->id,
+    //                     'answer_value' => is_array($answer) ? json_encode($answer) : $answer,
+    //                 ]);
+    //             }
+    //         }
+
+    //         ReportNotificationService::handleReportSubmission($report, $stakeholder, 'submit');
+
+    //         DB::commit();
+
+    //         return redirect(route('stakeholders.reports.index'))->with('message', 'Report saved successfully');
+    //     } catch (\Throwable $e) {
+    //         DB::rollBack();
+
+    //         return back()->withErrors(['error' => 'An error occurred while saving the report. ' . $e->getMessage()]);
+    //     }
+    // }
+
+    // public function update(Request $request, StakeholderReport $report)
+    // {
+    //     $stakeholder = Auth::guard('stakeholder')->user();
+
+    //     // Validate the form data
+    //     $validated = $request->validate([
+    //         'responses' => 'required|array',
+    //         'responses.*' => 'nullable',
+    //         'confirm_information' => 'accepted',
+    //     ]);
+
+    //     if(in_array($stakeholder->role_id, chapterStakeholders())){
+    //         $chapter = Chapter::with('zone:id', 'field:id')
+    //             ->where('id', $stakeholder->chapter_id)
+    //             ->first();
+
+    //         if ($chapter && empty($chapter->year_established)) {
+    //             $chapter->update([
+    //                 'year_established' => $validated['responses']['year_established'] ?? null
+    //             ]);
+    //         }
+    //     }
+
+    //     DB::beginTransaction();
+
+    //     try {
+    //         if(in_array($stakeholder->role_id, chapterStakeholders())) {
+    //             $report->update([
+    //                 'chapter_id' => $stakeholder->chapter_id,
+    //                 'zone_id' => $stakeholder->zone_id ?? $chapter?->zone->id,
+    //                 'field_id' => $stakeholder->field_id ?? $chapter?->field->id,
+    //                 'stakeholder_id' => $stakeholder->id,
+    //                 'session' => $validated['responses']['session'] ?? $report->session,
+    //                 'year' => $validated['responses']['year'] ?? $report->year,
+    //                 'month' => $validated['responses']['month'] ?? $report->month,
+    //             ]);
+    //         }
+
+    //         // Loop through each response and enforce permission
+    //         foreach ($validated['responses'] as $slug => $answer) {
+    //             $question = StakeholderReportQuestion::where('slug', $slug)->first();
+    //             if (!$question) continue;
+
+    //             // Check if stakeholder can edit this question
+    //             $access = app('App\Services\StakeholderRolePermissionService')
+    //                 ->questionAccess($stakeholder, $question);
+
+    //             if (!$access['edit']) {
+    //                 // Skip saving this response
+    //                 continue;
+    //             }
+
+    //             $answerValue = is_array($answer) ? json_encode($answer) : $answer;
+
+    //             // Update existing answer or create new
+    //             StakeholderReportAnswer::updateOrCreate(
+    //                 [
+    //                     'report_id' => $report->id,
+    //                     'question_id' => $question->id,
+    //                 ],
+    //                 [
+    //                     'answer_value' => $answerValue,
+    //                 ]
+    //             );
+    //         }
+
+    //         ReportNotificationService::handleReportSubmission($report, $stakeholder, 'update');
+
+    //         DB::commit();
+    //         dd($validated['responses']);
+
+    //         return redirect(route('stakeholders.reports.index'))
+    //             ->with('message', 'Report updated successfully');
+    //     } catch (\Throwable $e) {
+    //         DD($e->getMessage());
+    //         DB::rollBack();
+    //         return back()->withErrors([
+    //             'error' => 'An error occurred while updating the report. ' . $e->getMessage()
+    //         ]);
+    //     }
+    // }
     public function store(Request $request)
     {
         $stakeholder = Auth::guard('stakeholder')->user();
 
-        // $checks = $this->checks($stakeholder);
-        // dd($checks);
-        // Validate the form data
-        $validated = $request->validate([
-            'responses' => 'required|array',
-            'responses.*' => 'nullable',
-            'confirm_information' => 'accepted',
-        ]);
+        $validated = $this->validateRequest($request);
 
-        $chapter = Chapter::with('zone:id','field:id')->where('id', $stakeholder->chapter_id)->first();
-
-        if (empty($chapter->year_established)) {
-            $chapter->update(['year_established' => $validated['responses']['year_established']]);
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Build report meta data
-            $reportData = [
-                'chapter_id' => $stakeholder->chapter_id,
-                'zone_id' => $stakeholder->zone_id ?? $chapter?->zone->id,
-                'field_id' => $stakeholder->field_id ?? $chapter?->field->id,
-                'stakeholder_id' => $stakeholder->id,
-                'session' => $validated['responses']['session'] ?? null,
-                'year' => $validated['responses']['year'] ?? null,
-                'month' => $validated['responses']['month'] ?? null,
-
-            ];
-
-            // Create the main report record
-            $report = StakeholderReport::create($reportData);
-            
-            // Save each response to StakeholderReportAnswer
-            foreach ($validated['responses'] as $slug => $answer) {
-                $question = StakeholderReportQuestion::where('slug', $slug)->first();
-                if ($question) {
-                    StakeholderReportAnswer::create([
-                        'report_id' => $report->id,
-                        'question_id' => $question->id,
-                        'answer_value' => is_array($answer) ? json_encode($answer) : $answer,
-                    ]);
-                }
-            }
-
-            ReportNotificationService::handleReportSubmissionSubmission($report, $stakeholder, 'submit');
-            
-            DB::commit();
-
-            return redirect(route('stakeholders.reports.index'))->with('message', 'Report saved successfully');
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            
-            return back()->withErrors(['error' => 'An error occurred while saving the report. ' . $e->getMessage()]);
-        }
+        return $this->saveReport($stakeholder, null, $validated);
     }
 
     public function update(Request $request, StakeholderReport $report)
     {
         $stakeholder = Auth::guard('stakeholder')->user();
 
-        $checks = $this->checks($stakeholder);
+        $validated = $this->validateRequest($request);
         
-        // Validate the form data
-        $validated = $request->validate([
+        return $this->saveReport($stakeholder, $report, $validated);
+    }
+
+    /**
+     * Validate request data.
+     */
+    protected function validateRequest(Request $request): array
+    {
+        return $request->validate([
             'responses' => 'required|array',
             'responses.*' => 'nullable',
             'confirm_information' => 'accepted',
         ]);
+    }
 
-        $chapter = Chapter::with('zone:id', 'field:id')->where('id', $stakeholder->chapter_id)->first();
-
-        if(empty($chapter->year_established)){
-            $chapter->update(['year_established' => $validated['responses']['year_established']]);
-        }
-
+    /**
+     * Create or update a report.
+     * If $report is null → create, else update.
+     */
+    protected function saveReport($stakeholder, ?StakeholderReport $report, array $validated)
+    {
         DB::beginTransaction();
 
         try {
-            $report->update([
-                'chapter_id' => $stakeholder->chapter_id,
-                'zone_id' => $stakeholder->zone_id ?? $chapter?->zone->id,
-                'field_id' => $stakeholder->field_id ?? $chapter?->field->id,
-                'stakeholder_id' => $stakeholder->id,
-                'session' => $validated['responses']['session'] ?? $report->session,
-                'year' => $validated['responses']['year'] ?? $report->year,
-                'month' => $validated['responses']['month'] ?? $report->month,
-            ]);
-
-            // Loop through each response and update or create answers
-            foreach ($validated['responses'] as $slug => $answer) {
-                $question = StakeholderReportQuestion::where('slug', $slug)->first();
-                if (!$question) continue;
-
-                $answerValue = is_array($answer) ? json_encode($answer) : $answer;
-
-                // Update existing answer or create new
-                StakeholderReportAnswer::updateOrCreate(
-                    [
-                        'report_id' => $report->id,
-                        'question_id' => $question->id,
-                    ],
-                    [
-                        'answer_value' => $answerValue,
-                    ]
-                );
+            $isNew = false;
+            if (!$report) {
+                $report = new StakeholderReport();
+                $isNew = true;
             }
 
-            ReportNotificationService::handleReportSubmissionSubmission($report, $stakeholder, 'update');
+            if (in_array($stakeholder->role_id, chapterStakeholders())) {
+                $chapter = Chapter::with('zone:id', 'field:id')
+                    ->where('id', $stakeholder->chapter_id)
+                    ->first();
 
+                if ($chapter && empty($chapter->year_established)) {
+                    $chapter->update([
+                        'year_established' => $validated['responses']['year_established'] ?? null
+                    ]);
+                }
+
+                $report->chapter_id = $stakeholder->chapter_id;
+                $report->zone_id = $stakeholder->zone_id ?? $chapter?->zone->id;
+                $report->field_id = $stakeholder->field_id ?? $chapter?->field->id;
+            }
+
+            $report->stakeholder_id = $stakeholder->id;
+            $report->session = $validated['responses']['session'] ?? $report->session;
+            $report->year = $validated['responses']['year'] ?? $report->year;
+            $report->month = $validated['responses']['month'] ?? $report->month;
+
+            $report->save();
+
+            $this->saveResponses($stakeholder, $report, $validated['responses']);
+
+            ReportNotificationService::handleReportSubmission($report, $stakeholder, $isNew ? 'store' : 'update');
+            
             DB::commit();
 
-            return redirect(route('stakeholders.reports.index'))->with('message', 'Report updated successfully');
+            $message = $isNew ? 'Report submitted successfully' : 'Report updated successfully';
+            return redirect(route('stakeholders.reports.index'))->with('message', $message);
         } catch (\Throwable $e) {
+            dd($e->getMessage().' File:'. $e->getFile().  'Line: '. $e->getLine());
             DB::rollBack();
-            // dd($e->getMessage());
-            return back()->withErrors(['error' => 'An error occurred while updating the report. ' . $e->getMessage()]);
+            return back()->with('error', 'An error occurred while saving the report. ' . $e->getMessage());
         }
     }
+
+    /**
+     * Save each response, enforcing question-level permissions.
+     */
+    protected function saveResponses($stakeholder, StakeholderReport $report, array $responses)
+    {
+        foreach ($responses as $slug => $answer) {
+            $question = StakeholderReportQuestion::where('slug', $slug)->first();
+            if (!$question) continue;
+
+            $access = app('App\Services\StakeholderRolePermissionService')
+                ->questionAccess($stakeholder, $question);
+
+            if (!$access['edit']) {
+                continue;
+            }
+
+            $answerValue = is_array($answer) ? json_encode($answer) : $answer;
+
+            StakeholderReportAnswer::updateOrCreate(
+                [
+                    'report_id' => $report->id,
+                    'question_id' => $question->id,
+                ],
+                [
+                    'answer_value' => $answerValue,
+                ]
+            );
+        }
+    }
+
 
 
     public function checks($stakeholder){
@@ -343,7 +475,17 @@ class StakeholderReportsController extends Controller
             }
         ])->orderBy('id')->get();
 
-        return view('stakeholder.show', compact('report','sections'));
+        $reportData = $report->answers->mapWithKeys(function ($answer) {
+            $decoded = json_decode($answer->answer_value, true);
+            return [$answer->question->label => $decoded ?? $answer->answer_value];
+        });
+
+        return view('reports.pdf_template', [
+            'report'     => $report,
+            'reportData' => $reportData,
+            'sections'   => $sections
+        ]);
+
     }
 
     /**
@@ -369,7 +511,7 @@ class StakeholderReportsController extends Controller
         $prefillData = [
             'chapter_name' => $chapter->name ?? '',
             'year_established' => $chapter->year_established ?? '',
-            'president_name' => optional($chapter->stakeholders->where('role', 'Chapter President')->first())->name ?? '',
+            'president_name' => '',
         ];
 
         // Prepare answers array keyed by question_slug for edit mode
@@ -383,109 +525,6 @@ class StakeholderReportsController extends Controller
         
         return view('stakeholder.create', compact('user','months', 'report', 'sections', 'prefillData', 'answersData'));
     }
-
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Reports  $reports
-     * @return \Illuminate\Http\Response
-     */
-    // public function update(Request $request, Reports $report)
-    // {
-    //     if(Auth::guard('stakeholder')->user()->role == 'President'){
-    //         $data = $this->validateRequestData($request);
-        
-    //         if(is_null(Auth::guard('stakeholder')->user()->signature) || is_null(Auth::guard('stakeholder')->user()->gen_sec_signature) || is_null(Auth::guard('stakeholder')->user()->fin_sec_signature) || is_null(Auth::guard('stakeholder')->user()->evang_sec_signature)){
-    //             return back()->with('message', 'Kindly Upload signatures first, you will only need to do this once');
-    //         }
-    
-    //         if(!is_null(Auth::guard('stakeholder')->user()->chapter_id)){
-    //             $data['chapter_id'] = Auth::guard('stakeholder')->user()->chapter_id;
-    //         }
-            
-    //         $data['zone_reject_comment'] = null;
-    //         $data['field_reject_comment' ] = null;
-    //         $data['status_complete_reject_comment' ] = null;
-
-    //         $report->update($data);
-            
-    //         //Send Email  
-    //         if($report->zone->stakeholder){
-    //             $data = [
-    //                 'type' => 'resend',
-    //                 'addressee' => $report->zone->stakeholder->name,
-    //                 'chapter' => $report->chapter->name,
-    //                 'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year,
-    //             ];
-    
-    //             Mail::to($report->zone->stakeholder->email)->send(new NotificationEmail($data));
-    //         }
-        
-    //     }
-
-    //     if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
-    //         $report->zonal_pastor_affirmation = Auth::guard('stakeholder')->user()->name;
-    //         $report->zone_status = 1;
-    //     }
-
-    //     if(Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
-    //         $report->field_pastor_approval = Auth::guard('stakeholder')->user()->name;
-    //         $report->field_status = 1;
-    //         $report->zone_status = 1;
-    //     }
-
-    //     if(Auth::guard('stakeholder')->user()->role == 'Secretariat'){
-    //         $report->field_pastor_approval = Auth::guard('stakeholder')->user()->name;
-    //         $report->ncp_comment = $request->ncp_comment;
-    //         $report->field_status = 1;
-    //         $report->zone_status = 1;
-    //         $report->status_complete = 1;
-    //     }
-
-    //     $report->save();
-
-    //     $report->update($this->validateRequestData($request));
-        
-    //     //Send mail notification
-    //     if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
-    //         //Get field pastor
-    //         $zonalPastor = $report->zone->stakeholder;
-
-    //         //send mail to Zonal Pastor
-    //         if($zonalPastor){
-    //             $data = [
-    //                 'type' => 'zone',
-    //                 'addressee' => $zonalPastor->name,
-    //                 'chapter' => $report->chapter->name,
-    //                 'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year
-    //             ];
-
-    //             Mail::to($zonalPastor->email)->send(new NotificationEmail($data));
-    //         }
-
-    //         //
-    //     }
-        
-    //     if(Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
-    //         //send mail to Secretary
-    //         $secretary = Stakeholder::whereRole('Secretariat')->wherePortfolio('Gen Sec')->first();
-    //         if($secretary){
-    //             $data = [
-    //                 'type' => 'zone',
-    //                 'addressee' => $secretary->name,
-    //                 'chapter' => $report->chapter->name,
-    //                 'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year
-    //             ];
-
-    //             Mail::to($secretary->email)->send(new NotificationEmail($data));
-    //         }
-            
-    //     }
-
-    //     return redirect(route('stakeholders.dashboard'))->with('message', 'operation successful!');
-    // }
 
     /**
      * Remove the specified resource from storage.

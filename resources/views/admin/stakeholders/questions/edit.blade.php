@@ -123,8 +123,7 @@
                                         <fieldset class="form-group">
                                             <label>Type</label>
                                             <select name="type" class="form-control" required>
-                                                <option value="" selected>Select...</option>
-                                                @foreach(['text','number','textarea','select','radio','checkbox','date','month','year','rating','dynamic_table'] as $type)
+                                                @foreach(['text','number','textarea','select','radio','checkbox','date','month','year','rating','dynamic_table','income_table'] as $type)
                                                     <option value="{{ $type }}"
                                                         {{ old('type', $question->type ?? '') === $type ? 'selected' : '' }}>
                                                         {{ ucfirst(str_replace('_', ' ', $type)) }}
@@ -151,32 +150,154 @@
                                         </fieldset>
                                     </div>
 
-                                    <div class="col-md-12">
-                                        <label>Options</label>
-                                        <div id="options-wrapper">
-                                            @php
-                                                $options = old('options', $question->options ?? []);
-                                            @endphp
+                                    @php
+                                        $questionType = old('type', $question->type ?? '');
+                                        $simpleTypes = ['select', 'radio', 'checkbox','rating'];
+                                        $isSimpleOptionType = in_array($questionType, $simpleTypes);
+                                    @endphp
 
-                                            @if(is_array($options) && count($options) > 0)
-                                                @foreach($options as $key => $value)
-                                                    <div class="option-row mb-2 d-flex gap-2">
-                                                        <input type="text" name="options_keys[]" class="form-control" placeholder="Option label" value="{{ $key }}">
-                                                        <input type="text" name="options_values[]" class="form-control" placeholder="Option value" value="{{ $value }}">
-                                                        <button type="button" class="btn btn-danger remove-option">Remove</button>
-                                                    </div>
+                                    <div class="col-md-12" id="simple-options" style="display:none">
+                                        <label>Options</label>
+
+                                        <div id="simple-options-wrapper">
+                                            @if(in_array($questionType, ['select','radio','checkbox','rating']))
+                                                @php $options = $question->options ?? []; @endphp
+                                                @foreach($options as $key => $opt)
+                                                    @if(is_array($opt) && isset($opt['label'], $opt['value']))
+                                                        <div class="option-row mb-2 d-flex gap-2">
+                                                            <input type="text" name="options[{{ $key }}][label]" class="form-control" placeholder="Label" value="{{ $opt['label'] }}">
+                                                            <input type="text" name="options[{{ $key }}][value]" class="form-control" placeholder="Value" value="{{ $opt['value'] }}">
+                                                            <button type="button" class="btn btn-danger remove-option">Remove</button>
+                                                        </div>
+                                                    @endif
                                                 @endforeach
-                                            @else
-                                                <div class="option-row mb-2 d-flex gap-2">
-                                                    <input type="text" name="options_keys[]" class="form-control" placeholder="Option label">
-                                                    <input type="text" name="options_values[]" class="form-control" placeholder="Option value">
-                                                    <button type="button" class="btn btn-danger remove-option">Remove</button>
-                                                </div>
                                             @endif
                                         </div>
 
-                                        <button type="button" id="add-option" class="btn btn-primary btn-sm">Add Option</button>
-                                        <small class="text-muted d-block mt-1">Used for select, radio, checkbox</small>
+                                        <button type="button" id="add-simple-option" class="btn btn-primary btn-sm">
+                                            Add Option
+                                        </button>
+                                    </div>
+
+                                    {{-- complex dynamic options --}}
+                                    <div class="col-md-12" id="complex-options" style="display:none">
+                                        <label>Options</label>
+                                        
+                                        <div id="complex-options-wrapper">
+                                            @if($questionType === 'dynamic_table')
+                                                @php $options = $question->options ?? []; @endphp
+                                                @foreach($options as $index => $option)
+                                                    @if(is_array($option))
+                                                        <div class="option-row border rounded p-1 mb-1">
+                                                            <div class="row g-2">
+                                                                <div class="col-md-3">
+                                                                    <input type="text"
+                                                                        name="options[{{ $index }}][label]"
+                                                                        class="form-control"
+                                                                        value="{{ $option['label'] ?? '' }}"
+                                                                        required>
+                                                                </div>
+
+                                                                <div class="col-md-2">
+                                                                    <select name="options[{{ $index }}][type]" class="form-control">
+                                                                        @foreach(['text','date','number','textarea'] as $t)
+                                                                            <option value="{{ $t }}" @selected(($option['type'] ?? '') === $t)>
+                                                                                {{ ucfirst($t) }}
+                                                                            </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </div>
+
+                                                                <div class="col-md-2">
+                                                                    <input type="checkbox"
+                                                                        name="options[{{ $index }}][required]"
+                                                                        value="1"
+                                                                        @checked($option['required'] ?? false)>
+                                                                    Required
+                                                                </div>
+
+                                                                <div class="col-md-3">
+                                                                    <input type="checkbox"
+                                                                        name="options[{{ $index }}][is_quantifiable]"
+                                                                        value="1"
+                                                                        @checked($option['is_quantifiable'] ?? false)>
+                                                                    Quantifiable
+                                                                </div>
+
+                                                                <div class="col-md-2 text-end">
+                                                                    <button type="button" class="btn btn-danger remove-option">Remove</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                @endforeach
+                                            @endif
+                                        </div>
+
+                                        <button type="button" id="add-complex-option" class="btn btn-primary btn-sm">
+                                            Add Field
+                                        </button>
+                                    </div>
+                                    
+                                    {{-- income table options --}}
+                                    <div class="col-md-12" id="income-options" style="display:none">
+                                        <label>Income Table Setup</label>
+
+                                        @php
+                                            $income = old('options', $question->options ?? ['columns'=>[], 'rows'=>[]]);
+                                        @endphp
+
+                                        <div class="row g-3">
+
+                                            {{-- COLUMNS --}}
+                                            <div class="col-md-6">
+                                                <h6>Columns</h6>
+                                                <div id="income-columns-wrapper">
+                                                    @if($questionType === 'income_table' && isset($question->options['columns']))
+                                                        @foreach($income['columns'] ?? [] as $col)
+                                                            <div class="d-flex gap-2 mb-2">
+                                                                <input type="text"
+                                                                    name="options[columns][]"
+                                                                    class="form-control"
+                                                                    value="{{ $col }}"
+                                                                    placeholder="Column name">
+                                                                <button type="button" class="btn btn-danger remove-option">Remove</button>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                </div>
+
+                                                <button type="button" id="add-income-column" class="btn btn-sm btn-primary">
+                                                    Add Column
+                                                </button>
+                                            </div>
+
+                                            {{-- ROWS --}}
+                                            <div class="col-md-6">
+                                                <h6>Rows</h6>
+                                                <div id="income-rows-wrapper">
+                                                    @foreach($income['rows'] ?? [] as $row)
+                                                        <div class="d-flex gap-2 mb-2">
+                                                            <input type="text"
+                                                                name="options[rows][]"
+                                                                class="form-control"
+                                                                value="{{ $row }}"
+                                                                placeholder="Row label (e.g Week 1)">
+                                                            <button type="button" class="btn btn-danger remove-option">Remove</button>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+
+                                                <button type="button" id="add-income-row" class="btn btn-sm btn-primary">
+                                                    Add Row
+                                                </button>
+                                            </div>
+
+                                        </div>
+
+                                        <small class="text-muted d-block mt-2">
+                                            Columns become table headers, rows become weeks
+                                        </small>
                                     </div>
 
                                     {{-- Permissions --}}
@@ -184,11 +305,7 @@
                                         <fieldset class="form-group">
                                             <label class="mb-1">Access Permissions</label>
                                             @php
-                                                $selectedPermissions = old(
-                                                    'access_permissions',
-                                                    $question->permissions->pluck('id')->toArray() ?? []
-                                                );
-                                                
+                                                $selectedPermissions = old('access_permissions', $question->permissions->pluck('id')->toArray() ?? []);
                                             @endphp
 
                                             <div class="row">
@@ -239,20 +356,113 @@
     </section>
 </div>
 <script>
-    $(document).ready(function() {
-        $('#add-option').click(function() {
-            $('#options-wrapper').append(`
+    $(function () {
+        const simpleTypes  = ['select','radio','checkbox','rating'];
+        const complexTypes = ['dynamic_table'];
+        const incomeType   = 'income_table';
+
+        function toggleOptionEditors(type) {
+            $('#simple-options').hide();
+            $('#complex-options').hide();
+            $('#income-options').hide();
+
+            if (simpleTypes.includes(type)) {
+                $('#simple-options').show();
+            } else if (complexTypes.includes(type)) {
+                $('#complex-options').show();
+            } else if (type === incomeType) {
+                $('#income-options').show();
+            }
+        }
+
+        // Init
+        toggleOptionEditors($('select[name="type"]').val());
+
+        // On change
+        $('select[name="type"]').on('change', function () {
+            toggleOptionEditors(this.value);
+        });
+
+        // REMOVE handler (single source)
+        $(document).on('click', '.remove-option', function () {
+            $(this).closest('.option-row, .d-flex').remove();
+        });
+
+        // SIMPLE OPTIONS (label + value)
+        let simpleIndex = {{ count($question->options ?? []) }};
+        function renderSimpleOption(label = '', value = '') {
+            return `
                 <div class="option-row mb-2 d-flex gap-2">
-                    <input type="text" name="options_keys[]" class="form-control" placeholder="Option label">
-                    <input type="text" name="options_values[]" class="form-control" placeholder="Option value">
+                    <input type="text" name="options[${simpleIndex}][label]" class="form-control" placeholder="Label" value="${label}" required>
+                    <input type="text" name="options[${simpleIndex}][value]" class="form-control" placeholder="Value" value="${value}" required>
+                    <button type="button" class="btn btn-danger remove-option">Remove</button>
+                </div>
+            `;
+        }
+
+        $('#add-simple-option').on('click', function () {
+            $('#simple-options-wrapper').append(renderSimpleOption());
+            simpleIndex++;
+        });
+
+        // COMPLEX OPTIONS
+        let complexIndex = {{ count($question->options ?? []) }};
+        $('#add-complex-option').on('click', function () {
+            $('#complex-options-wrapper').append(`
+                <div class="option-row border rounded p-1 mb-1">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <input type="text" name="options[${complexIndex}][label]" class="form-control" placeholder="Label" required>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="options[${complexIndex}][type]" class="form-control">
+                                <option value="text">Text</option>
+                                <option value="date">Date</option>
+                                <option value="number">Number</option>
+                                <option value="textarea">Textarea</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-center">
+                            <label class="me-2">Required</label>
+                            <input type="checkbox" name="options[${complexIndex}][required]" value="1">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-center">
+                            <label class="me-2">Quantifiable</label>
+                            <input type="checkbox" name="options[${complexIndex}][is_quantifiable]" value="1">
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button type="button" class="btn btn-danger remove-option">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            `);
+            complexIndex++;
+        });
+
+        // INCOME TABLE
+        $('#add-income-column').on('click', function () {
+            $('#income-columns-wrapper').append(`
+                <div class="d-flex gap-2 mb-2">
+                    <input type="text" name="options[columns][]" class="form-control">
                     <button type="button" class="btn btn-danger remove-option">Remove</button>
                 </div>
             `);
         });
 
-        $(document).on('click', '.remove-option', function() {
-            $(this).closest('.option-row').remove();
+        $('#add-income-row').on('click', function () {
+            $('#income-rows-wrapper').append(`
+                <div class="d-flex gap-2 mb-2">
+                    <input type="text" name="options[rows][]" class="form-control">
+                    <button type="button" class="btn btn-danger remove-option">Remove</button>
+                </div>
+            `);
+        });
+
+        $('form').on('submit', function () {
+            $('#simple-options:hidden input, #complex-options:hidden input, #income-options:hidden input').prop('required', false);
         });
     });
 </script>
+
+
 @endsection

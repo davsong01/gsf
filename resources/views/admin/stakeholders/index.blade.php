@@ -43,17 +43,15 @@
                                                 @if(in_array($stakeholder->role_id, chapterStakeholders()) && !is_null($stakeholder->chapter_id))
                                                     <span>{{$stakeholder->role->name}}, </span>
                                                     <a target="_blank" style="color:blue" href="{{ route('chapters.edit', $stakeholder->chapter->id) }}">{{ $stakeholder->chapter->name ?? 'N/A' }}</a>
-                                                @endif
-                                                @if(in_array($stakeholder->role_id, zoneStakeholders()) && !is_null($stakeholder->zone_id))
+                                                @elseif(in_array($stakeholder->role_id, zoneStakeholders()) && !is_null($stakeholder->zone_id))
                                                     <span style="color:blue">{{$stakeholder->role->name}}, </span>
                                                     {{ $stakeholder->zone->name ?? 'N/A' }}
-                                                @endif
-                                                @if(in_array($stakeholder->role_id, fieldStakeholders()) && !is_null($stakeholder->field_id)) 
+                                                @elseif(in_array($stakeholder->role_id, fieldStakeholders()) && !is_null($stakeholder->field_id)) 
                                                     <span style="color:blue">{{$stakeholder->role->name}}, </span>{{ $stakeholder->field->name ?? 'N/A' }}
-                                                @endif
-                                                
-                                                @if(in_array($stakeholder->role_id, fieldStakeholders()))
+                                                @elseif(in_array($stakeholder->role_id, fieldStakeholders()))
                                                     {{ $stakeholder->portfolio }} 
+                                                @else
+                                                    {{ $stakeholder->role->name }} 
                                                 @endif
                                             </td>
                                             <td style="padding-left: 5px;padding-right: 5px;">

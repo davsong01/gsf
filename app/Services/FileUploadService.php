@@ -10,10 +10,10 @@ use Illuminate\Support\Facades\Storage;
 
 class FileUploadService
 {
-    public static function secureUpload(UploadedFile $file, string $folder = 'signatures', string $oldFile = null): string
+    public static function secureUpload(UploadedFile $file, string $folder = 'signatures', string $oldFile = '', $filename=false): string
     {
         $disk = 'protected_uploads';
-        $filename = self::generateFilename($file);
+        $filename = $filename ?? self::generateFilename($file);
         $path = trim($folder, '/') . '/' . $filename;
 
         // Delete old file if exists
@@ -35,6 +35,28 @@ class FileUploadService
         // Return route to access the file
         return route('protected.download', ['file' => $encodedPath]);
     }
+
+    public static function publicUpload(UploadedFile $file, string $folder = 'uploads', string $oldFile = '', $filename = false): string
+    {
+        $folderPath = public_path(trim($folder, '/')); // e.g., public/uploads
+        $filename   = $filename ?? $file->getClientOriginalName();
+
+        // Ensure folder exists
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0755, true);
+        }
+
+        // Delete old file if exists
+        if ($oldFile && file_exists(public_path($oldFile))) {
+            unlink(public_path($oldFile));
+        }
+
+        // Move file to public folder
+        $file->move($folderPath, $filename);
+
+        return asset(trim($folder, '/') . '/' . $filename);
+    }
+
 
     /**
      * Generate a unique filename with timestamp and random string.
