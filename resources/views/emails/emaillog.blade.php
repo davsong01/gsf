@@ -18,8 +18,6 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Email Logs</h4>
-                        
-                        @include('includes.alerts')
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">

@@ -497,7 +497,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('/reports/print/{report}', 'download')->name('reports.print');
             Route::get('reports/download/{report}', 'download')->name('reports.download');
             Route::get('reports/nudge/{report}', 'delete')->name('reports.nudge');
-            Route::get('reports/reject/{report}', 'rejectReport')->name('reports.reject');
+            Route::post('reports/reject/{report}', 'rejectReport')->name('reports.reject');
             Route::get('reports/approve/{report}', 'approveReport')->name('reports.approve');
         });
 

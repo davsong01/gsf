@@ -10,7 +10,7 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
                     <div class="modal-body">
-                        <p>{!! $report->status_complete_reject_comment !!}</p>                    
+                        <p>{!! $report->national_comment !!}</p>                    
                     </div>
                 </div>
             </div>

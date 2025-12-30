@@ -21,10 +21,6 @@ class ReportNotificationService
             return;
         }
         
-        /**
-         * ROLE HIERARCHY (LOW → HIGH)
-         * Order here defines authority, NOT role_id values
-         */
         $roleHierarchy = [
             'chapter'     => chapterStakeholders(),
             'zone'        => zoneStakeholders(),
@@ -117,11 +113,8 @@ class ReportNotificationService
         return;
     }
 
-    public static function handleReportAction(StakeholderReport $report, string $action)
+    public static function handleReportAction(StakeholderReport $report,$stakeholder,  string $action)
     {
-        $user = Auth::guard('stakeholder')->user();
-        if (!$user || !in_array($action, ['approve', 'reject'], true)) return;
-
         /**
          * ROLE HIERARCHY (LOW → HIGH)
          */
@@ -138,7 +131,7 @@ class ReportNotificationService
         // Determine current stakeholder level
         $currentLevelIndex = null;
         foreach ($levels as $index => $level) {
-            if (in_array($user->role_id, $roleHierarchy[$level], true)) {
+            if (in_array($stakeholder->role_id, $roleHierarchy[$level], true)) {
                 $currentLevelIndex = $index;
                 break;
             }
@@ -150,18 +143,19 @@ class ReportNotificationService
          */
         $levelLabel = '';
         $comment = '';
-        switch ($user->role) {
-            case 'Zonal Pastor':
-                $levelLabel = 'Zone';
+        
+        switch ($stakeholder->role->slug) {
+            case 'zonal-pastor':
+                $levelLabel = 'Zonal Level';
                 $comment = $report->zone_comment;
                 break;
-            case 'Field Pastor':
-                $levelLabel = 'Field';
+            case 'field-pastor':
+                $levelLabel = 'Field Level';
                 $comment = $report->field_comment;
                 break;
-            case 'Secretariat':
-            case 'NCP':
-                $levelLabel = 'National';
+            case 'secretariat':
+            case 'ncp':
+                $levelLabel = 'National Level';
                 $comment = $report->national_comment;
                 break;
         }
@@ -170,7 +164,7 @@ class ReportNotificationService
          * Use existing PDF file
          */
         $pdfFilePath = $report->file_location;
-
+        
         /**
          * NOTIFY NEXT LEVEL (approval only)
          */
@@ -191,28 +185,29 @@ class ReportNotificationService
                 $nextLevelRecipients = $query->get()
                     ->filter(fn($s) => !empty($s->email))
                     ->unique('email')
-                    ->pluck('email')
                     ->values()
                     ->toArray();
 
-                if (!empty($nextLevelRecipients)) {
-                    $subject = "GSF Report Ready — {$levelLabel} Approved";
-                    $content = "<p>Dear Stakeholder,</p>
-                            <p>The report for <strong>{$report->chapter->name}</strong> has been <strong>approved</strong> at the <strong>{$levelLabel}</strong> level.</p>
-                            <p>It is now ready for your action at the <strong>{$nextLevel}</strong> level.</p>
-                            <p>For full details, please see the attached report.</p>";
-
-                    EmailService::logEmail([
-                        'type'        => 'report_email',
-                        'subject'     => $subject,
-                        'content'     => $content,
-                        'attachments' => [$pdfFilePath],
-                        'recipients'  => $nextLevelRecipients,
-                    ]);
+                if(!empty($nextLevelRecipients)){
+                    foreach($nextLevelRecipients as $recipient){
+                        $generatedEmail = self::generateReportEmailSummary($report, $stakeholder, $recipient, $action, $levelLabel);
+                        
+                        $allEmailData[] = [
+                            'recipient' => $recipient['email'],
+                            'type'      => 'report_email',
+                            'subject'   => $generatedEmail['subject'],
+                            'content'   => $generatedEmail['content'].  "<p>Kindly log in to review the report and perform the necessary actions.</p>",
+                            'attachments' => json_encode([
+                                $pdfFilePath
+                            ]),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
                 }
             }
         }
-
+        
         /**
          * NOTIFY ALL LOWER LEVELS
          */
@@ -220,11 +215,11 @@ class ReportNotificationService
             $recipientsBelow = collect();
             for ($i = 0; $i < $currentLevelIndex; $i++) {
                 $level = $levels[$i];
-
+                
                 $query = Stakeholder::select(['name', 'email', 'role_id'])
                     ->where('status', 'active')
                     ->whereIn('role_id', $roleHierarchy[$level]);
-
+                    
                 // Scope based on report location
                 if ($level === 'chapter') $query->where('chapter_id', $report->chapter_id);
                 if ($level === 'zone')    $query->where('zone_id', $report->zone_id);
@@ -236,50 +231,88 @@ class ReportNotificationService
             $recipientsBelow = $recipientsBelow
                 ->filter(fn($s) => !empty($s->email))
                 ->unique('email')
-                ->pluck('email')
                 ->values()
                 ->toArray();
-
+            
             if (!empty($recipientsBelow)) {
-                $actionLabel = ucfirst($action);
-                $subject = "GSF Report {$actionLabel} — {$levelLabel} Level";
-                $content = "<p>Dear Stakeholder,</p>
-                        <p>The report for <strong>{$report->chapter->name}</strong> has been <strong>{$actionLabel}d</strong> at the <strong>{$levelLabel}</strong> level.</p>";
-
-                if ($action === 'reject' && $comment) {
-                    $content .= "<p><strong>Reason:</strong> {$comment}</p>";
-                } elseif ($action === 'approve') {
-                    $content .= "<p>This indicates the report has successfully passed the <strong>{$levelLabel}</strong> level.</p>";
+                if ($levelLabel == 'Zonal Level') {
+                    $rejectionReason = $report->zone_comment;
+                } elseif ($levelLabel == 'Field Level') {
+                    $rejectionReason = $report->field_comment;
+                } elseif ($levelLabel == 'National Level') {
+                    $rejectionReason = $report->zone_comment;
                 }
 
-                $content .= "<p>For full details, please see the attached report.</p>";
+                $reason = '';
 
-                EmailService::logEmail([
-                    'type'        => 'report_email',
-                    'subject'     => $subject,
-                    'content'     => $content,
-                    'attachments' => [$pdfFilePath],
-                    'recipients'  => $recipientsBelow,
-                ]);
+                if (!empty($rejectionReason)) {
+                    $reason = "<h4>Rejection Reason</h4>" . $rejectionReason;
+                }
+                
+                foreach($recipientsBelow as $recipient){
+                    $generatedEmail = self::generateReportEmailSummary($report, $stakeholder, $recipient, $action, $levelLabel);
+    
+                    $allEmailData[] = [
+                        'recipient' => $recipient['email'],
+                        'type'      => 'report_email',
+                        'subject'   => $generatedEmail['subject'],
+                        'content'   => $generatedEmail['content']. $reason,
+                        'attachments' => json_encode([
+                            $pdfFilePath
+                        ]),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+
+                }
             }
         }
+
+        $emailData = [
+            'type'        => 'report_email',
+            'recipients' => $allEmailData,
+        ];
+
+        EmailService::logEmail($emailData);
     }
-    
-    public static function generateReportEmailSummary($report, $stakeholder, $recipient, $type = 'store'): array
+
+    public static function generateReportEmailSummary($report, $stakeholder, $recipient, $type = 'store', $currentLevel=null): array
     {
         $monthName = Carbon::create()
             ->month($report->month)
             ->format('F');
+        
+        $emailMap = [
+            'store' => [
+                'opening' => "GSF ({$monthName}, {$report->year}) Report submitted. Please find details below:",
+                'subject' => "GSF ({$monthName}, {$report->year}) Report Submitted",
+            ],
+            'update' => [
+                'opening' => "GSF ({$monthName}, {$report->year}) Report updated. Please find details below:",
+                'subject' => "GSF ({$monthName}, {$report->year}) Report Updated",
+            ],
+            'approve' => [
+                'opening' => "GSF ({$monthName}, {$report->year}) Report approved at {$currentLevel}. Please find details below:",
+                'subject' => "GSF ({$monthName}, {$report->year}) Report Approved at {$currentLevel}",
+            ],
+            'reject' => [
+                'opening' => "GSF ({$monthName}, {$report->year}) Report rejected at {$currentLevel}. Please find details below:",
+                'subject' => "GSF ({$monthName}, {$report->year}) Report Rejected at {$currentLevel}",
+            ],
+        ];
 
-        $opening = match ($type) {
-            'update' => "GSF ({$monthName}, {$report->year}) Report updated. Please find details below:",
-            default  => "GSF ({$monthName}, {$report->year}) Report submitted. Please find details below:",
+        $actorLabel = match ($type) {
+            'approve' => 'Approved by',
+            'reject'  => 'Rejected by',
+            default   => 'Submitted by',
         };
 
-        $subject = $type === 'store'
-            ? "GSF ({$monthName}, {$report->year}) Report Submitted"
-            : "GSF ({$monthName}, {$report->year}) Report Updated";
-
+        // Fallback safety
+        $config  = $emailMap[$type] ?? $emailMap['store'];
+        $opening = $config['opening'];
+        $subject = $config['subject'];
+        $extra = $config['extra'] ?? '';
+        
         $statuses = [
             'Zone'     => $report->zone_status,
             'Field'    => $report->field_status,
@@ -299,6 +332,8 @@ class ReportNotificationService
 
             $statusHtml .= "<p><strong>{$key}:</strong> {$label}</p>";
         }
+        
+
         $salutation = !empty($recipient['name']) ? 'Dear '. $recipient['name'] .',': '';
         
         $content = "
@@ -307,7 +342,7 @@ class ReportNotificationService
             <p>{$opening}</p>
 
             <p>Chapter: <strong>{$report->chapter->name}</strong></p>
-            <p>Submitted by: <strong>{$stakeholder->name}</strong></p>
+            <p>{$actorLabel}: <strong>{$stakeholder->name}</strong></p>
             <p>Zone: <strong>{$report->chapter->zone->name}</strong></p>
             <p>Field: <strong>{$report->chapter->field->name}</strong></p>
             <p>Submission Date: 
@@ -317,12 +352,12 @@ class ReportNotificationService
             <hr>
 
             <h4>Status Overview</h4>
-            {$statusHtml}
+            {$statusHtml}";
 
-            <p>
-                For full report details, please download the attached PDF.
-            </p>
-        ";
+            $content .= "<p>
+                    For full report details, please download the attached PDF.
+                </p>
+            ". $extra;
 
         return [
             'subject' => $subject,

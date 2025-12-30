@@ -245,13 +245,37 @@ class StakeholderReportsController extends Controller
             $report->year = $validated['responses']['year'] ?? $report->year;
             $report->month = $validated['responses']['month'] ?? $report->month;
 
+            // Clear higher-level rejections back to pending on chapter resubmission
+            if (
+                !$isNew &&
+                in_array($stakeholder->role_id, chapterStakeholders(), true)
+            ) {
+                $resetStatuses = [];
+
+                if ($report->zone_status === 2) {
+                    $resetStatuses['zone_status'] = 0;
+                }
+
+                if ($report->field_status === 2) {
+                    $resetStatuses['field_status'] = 0;
+                }
+
+                if ($report->national_status === 2) {
+                    $resetStatuses['national_status'] = 0;
+                }
+
+                if (!empty($resetStatuses)) {
+                    $report->update($resetStatuses);
+                }
+            }
+
+
             $report->save();
 
             $this->saveResponses($stakeholder, $report, $validated['responses']);
 
-            
             DB::commit();
-            
+
             if(in_array($stakeholder->role_id, chapterStakeholders())){
                 ReportNotificationService::handleReportSubmission($report->fresh(), $stakeholder, $isNew ? 'store' : 'update');
             }
@@ -390,19 +414,18 @@ class StakeholderReportsController extends Controller
     public function rejectReport(Request $request, StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
-        $report = StakeholderReport::findOrFail($request->report_id);
         $comment = $request->rejection_reason;
-        $role = $user->role;
-
+        $role = $user->role->slug;
+        
         switch ($role) {
-            case 'Zonal Pastor':
+            case 'zonal-pastor':
                 $report->zone_comment = $comment;
                 $report->zone_status = 2;
                 $report->zone_rejected_at = now();
                 // $report->zone_rejected_by = $user->id;
                 break;
 
-            case 'Field Pastor':
+            case 'field-pastor':
                 if ($report->zone_status !== 1) {
                     abort(403, 'Cannot reject before zone approval');
                 }
@@ -412,8 +435,8 @@ class StakeholderReportsController extends Controller
                 // $report->field_rejected_by = $user->id;
                 break;
 
-            case 'Secretariat':
-            case 'NCP':
+            case 'secretariat':
+            case 'ncp':
                 if ($report->zone_status !== 1 || $report->field_status !== 1) {
                     abort(403, 'Cannot reject before zone and field approval');
                 }
@@ -429,7 +452,7 @@ class StakeholderReportsController extends Controller
 
         $report->save();
 
-        ReportNotificationService::handleReportAction($report, 'reject');
+        ReportNotificationService::handleReportAction($report, $user, 'reject');
 
         return redirect()
             ->route('stakeholders.reports.index')
@@ -475,9 +498,9 @@ class StakeholderReportsController extends Controller
                 abort(403, 'Unauthorized action');
         }
 
-        // $report->save();
+        $report->save();
         
-        ReportNotificationService::handleReportAction($report, 'approve');
+        ReportNotificationService::handleReportAction($report, $user, 'approve');
 
         return redirect()
             ->route('stakeholders.reports.index')
