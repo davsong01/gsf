@@ -67,13 +67,60 @@
         overflow-x: auto;
         margin-bottom: 20px;
     }
+
+    /* Sticky bottom-right container */
+    .sticky-action-buttons {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 1000;
+    }
+
+    .btn-circle {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+        text-decoration: none;
+        color: #fff;
+    }
+
+    .btn-circle:hover {
+        transform: scale(1.1);
+    }
+
+    .btn-circle .btn-label {
+        position: absolute;
+        right: 70px; /* show label to the left of button */
+        white-space: nowrap;
+        background: rgba(0,0,0,0.75);
+        padding: 4px 8px;
+        border-radius: 4px;
+        opacity: 0;
+        color: #fff;
+        font-size: 12px;
+        pointer-events: none;
+        transition: opacity 0.2s;
+    }
+
+    .btn-circle:hover .btn-label {
+        opacity: 1;
+    }
 </style>
 @endsection
 
 @section('title', 'Add/Edit Report')
-
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('stakeholders.dashboard') }}">Report</a></li>
+<li class="breadcrumb-item"> <a href="{{ route('stakeholders.reports.index') }}">All Reports</a></li>
 @endsection
 
 @section('active')
@@ -88,186 +135,7 @@
             @if(isset($report))
                 @method('PUT')
             @endif
-            
-            {{-- @foreach($sections as $section)
-                @php $sectionAccess = app('App\Services\StakeholderRolePermissionService'::class)->sectionAccess($user, $section); @endphp
-                @if($sectionAccess['view'])
-                    <div class="section-card">
-                        <h3 class="header-section">{{ $section->name }}</h3>
 
-                        @foreach($section->subsections as $subsection)
-                            @php $subAccess =  app('App\Services\StakeholderRolePermissionService'::class)->sectionAccess($user, $section); @endphp
-                            @if($subAccess['view'])
-                                <div class="sub-section-card">
-                                    <h5 class="sub-section">{{ $subsection->name }}</h5>
-                                    <div class="row">
-                                        @foreach($subsection->questions as $question)
-                                            @php
-                                                $qAccess = app('App\Services\StakeholderRolePermissionService'::class)->questionAccess($user, $question);
-                                                
-                                                $value = old('responses.' . $question->slug);
-                                                if(isset($report) && $report->answers) {
-                                                    $answer = $report->answers->firstWhere('question_id', $question->id);
-                                                    if($answer) {
-                                                        $decoded = json_decode($answer->answer_value, true);
-                                                        $value = $decoded ?? $answer->answer_value;
-                                                    }
-                                                }
-                                                if(!$value && isset($prefillData[$question->slug])) {
-                                                    $value = $prefillData[$question->slug];
-                                                }
-
-                                                $disabled = !$qAccess['edit'] ? 'disabled' : '';
-                                            @endphp
-
-                                            <div class="{{ $question->width_class ?? 'col-md-6' }} mb-1">
-                                                <label for="{{ $question->slug }}">
-                                                    {{ $question->label }}
-                                                    @if($question->is_required && $qAccess['edit']) <span class="text-danger">*</span> @endif
-                                                </label>
-
-                                                @switch($question->type)
-                                                    @case('text')
-                                                    @case('year')
-                                                    @case('month')
-                                                    @case('number')
-                                                    @case('date')
-                                                        <input type="{{ $question->type }}"
-                                                            class="form-control"
-                                                            id="{{ $question->slug }}"
-                                                            name="responses[{{ $question->slug }}]"
-                                                            value="{{ $value }}"
-                                                            {{ $disabled }}
-                                                            @if($question->is_required && $qAccess['edit']) required @endif>
-                                                        @break
-
-                                                    @case('textarea')
-                                                        <textarea class="form-control"
-                                                                id="{{ $question->slug }}"
-                                                                name="responses[{{ $question->slug }}]"
-                                                                rows="3"
-                                                                {{ $disabled }}
-                                                                @if($question->is_required && $qAccess['edit']) required @endif>{{ $value }}</textarea>
-                                                        @break
-
-                                                    @case('select')
-                                                        @php
-                                                            if ($question->slug == 'session') {
-                                                                $options = app('App\Services\ReportService')->sessionRange();
-                                                            }else{
-                                                                $options = $question->options;
-                                                            }
-                                                        @endphp
-                                                        <select class="form-select"
-                                                                id="{{ $question->slug }}"
-                                                                name="responses[{{ $question->slug }}]"
-                                                                {{ $disabled }}
-                                                                @if($question->is_required && $qAccess['edit']) required @endif>
-                                                            <option value="">Select...</option>
-                                                            @foreach($question->options ?? [] as $opt)
-                                                                @if(isset($opt['label'], $opt['value']))
-                                                                    <option value="{{ $opt['value'] }}" {{ ($value ?? '') == $opt['value'] ? 'selected' : '' }}>
-                                                                        {{ $opt['label'] }}
-                                                                    </option>
-                                                                @endif
-                                                            @endforeach
-                                                        </select>
-
-                                                        @break
-
-                                                    @case('dynamic_table')
-                                                        <div class="table-responsive">
-                                                            <table class="table table-bordered dynamic-table" data-slug="{{ $question->slug }}">
-                                                                <thead>
-                                                                    <tr>
-                                                                        @foreach($question->options as $col)
-                                                                            <th>{{ $col['label'] ?? $col }}</th>
-                                                                        @endforeach
-                                                                        @if($qAccess['edit'])
-                                                                            <th>Action</th>
-                                                                        @endif
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    @php $rows = $value ?? [[]]; @endphp
-                                                                    @foreach($rows as $rowIndex => $row)
-                                                                        <tr>
-                                                                            @foreach($question->options as $col)
-                                                                                @php $colLabel = $col['label'] ?? $col; @endphp
-                                                                                <td>
-                                                                                    <input type="{{ $col['type'] ?? 'text' }}"
-                                                                                        name="responses[{{ $question->slug }}][{{ $rowIndex }}][{{ $colLabel }}]"
-                                                                                        class="form-control"
-                                                                                        value="{{ $row[$colLabel] ?? '' }}"
-                                                                                        {{ $disabled }}
-                                                                                        @if(!empty($col['required']) && $qAccess['edit']) required @endif>
-                                                                                </td>
-                                                                            @endforeach
-                                                                            @if($qAccess['edit'])
-                                                                                <td>
-                                                                                    <button type="button" class="btn btn-sm btn-success add-row">+</button>
-                                                                                    <button type="button" class="btn btn-sm btn-danger remove-row">-</button>
-                                                                                </td>
-                                                                            @endif
-                                                                        </tr>
-                                                                    @endforeach
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                        @break
-
-                                                    @case('income_table')
-                                                        <div class="table-responsive">
-                                                            <table class="table table-bordered income-table" data-slug="{{ $question->slug }}">
-                                                                <thead class="table-light">
-                                                                    <tr>
-                                                                        <th>Week</th>
-                                                                        @foreach($question->options['columns'] as $col)
-                                                                            <th>{{ $col }}</th>
-                                                                        @endforeach
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    @foreach($question->options['rows'] as $week)
-                                                                        <tr>
-                                                                            <td>{{ $week }}</td>
-                                                                            @foreach($question->options['columns'] as $col)
-                                                                                <td>
-                                                                                    <input type="{{ $col == 'Remarks' ? 'text' : 'number' }}"
-                                                                                        class="form-control numeric-input"
-                                                                                        name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
-                                                                                        value="{{ $value[$week][$col] ?? '' }}"
-                                                                                        {{ $disabled }}
-                                                                                        @if($qAccess['edit'] && $col != 'Remarks') required min="1" @endif>
-                                                                                </td>
-                                                                            @endforeach
-                                                                        </tr>
-                                                                    @endforeach
-                                                                </tbody>
-                                                                <tfoot>
-                                                                    <tr class="totals-row">
-                                                                        <td>Totals</td>
-                                                                        @foreach($question->options['columns'] as $col)
-                                                                            @if($col != 'Remarks')
-                                                                            <td class="total-cell" data-column="{{ $col }}">0</td>
-                                                                            @endif
-                                                                        @endforeach
-                                                                    </tr>
-                                                                </tfoot>
-                                                            </table>
-                                                        </div>
-                                                        @break
-                                                @endswitch
-                                            </div>
-                                            
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                @endif
-            @endforeach --}}
             @php $questionNumber = 1; @endphp
 
             @foreach($sections as $section)
@@ -297,7 +165,7 @@
                                                 if(!$value && isset($prefillData[$question->slug])) {
                                                     $value = $prefillData[$question->slug];
                                                 }
-
+                                                
                                                 $disabled = !$qAccess['edit'] ? 'disabled' : '';
                                             @endphp
 
@@ -468,16 +336,111 @@
         </form>
     </section>
 </div>
+
+@php
+    $userRole = Auth::guard('stakeholder')->user()->role_id;
+    $canAct = false;
+
+    // Zone approval
+    if(in_array($userRole, zoneStakeholders()) && in_array($report->zone_status, [0,2])) {
+        $canAct = true;
+        $approveRoute = route('stakeholders.reports.approve', $report->id);
+        $rejectRoute  = route('stakeholders.reports.reject', $report->id);
+        $tooltipApprove = 'Approve for Zone';
+        $tooltipReject = 'Reject for Zone';
+    }
+
+    // Field approval (only after zone approval)
+    elseif(in_array($userRole, fieldStakeholders()) && $report->zone_status == 1 && in_array($report->field_status, [0,2])) {
+        $canAct = true;
+        $approveRoute = route('stakeholders.reports.approve', $report->id);
+        $rejectRoute  = route('stakeholders.reports.reject', $report->id);
+        $tooltipApprove = 'Approve for Field';
+        $tooltipReject = 'Reject for Field';
+    }
+
+    // National/Secretariat/NCP approval (only after zone & field approval)
+    elseif(in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders())) 
+           && $report->zone_status == 1 
+           && $report->field_status == 1 
+           && in_array($report->status_complete, [0,2])) {
+        $canAct = true;
+        $approveRoute = route('stakeholders.reports.approve', $report->id);
+        $rejectRoute  = route('stakeholders.reports.reject', $report->id);
+        $tooltipApprove = 'Approve for National';
+        $tooltipReject = 'Reject for National';
+    }
+@endphp
+
+@if($canAct)
+    <div class="sticky-action-buttons">
+    <!-- Approve Button -->
+        <a href="{{ $approveRoute }}" 
+        class="btn btn-success btn-circle" 
+        title="{{ $tooltipApprove }}"
+        onclick="return confirm('Are you sure you want to approve this report?');">
+            <i class="fa fa-check"></i>
+            <span class="btn-label">{{ $tooltipApprove }}</span>
+        </a>
+
+    <!-- Reject Button triggers modal -->
+    <button type="button" class="btn btn-danger btn-circle" data-toggle="modal" data-target="#rejectModal">
+        <i class="fa fa-times"></i>
+        <span class="btn-label">{{ $tooltipReject }}</span>
+    </button>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ $rejectRoute }}" method="POST">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalLabel">Reject Report</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="rejection_reason" class="form-label">Reason for rejection</label>
+                        <textarea name="rejection_reason" id="rejection_reason" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject Report</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@endif
+
 @endsection
 
 @section('extra_scripts')
 <script>
     // Dynamic table row add/remove
+    function reindexRows(table) {
+        table.find('tbody tr').each(function(rowIndex) {
+            $(this).find('td').each(function(colIndex) {
+                let input = $(this).find('input');
+                if (input.length) {
+                    let colLabel = input.data('col') || input.attr('name').match(/\[([^\]]+)\]$/)[1];
+                    input.attr('name', `responses[${table.data('slug')}][${rowIndex}][${colLabel}]`);
+                }
+            });
+        });
+    }
+
     $(document).on('click', '.add-row', function(){
         let table = $(this).closest('table');
         let newRow = table.find('tbody tr:first').clone();
         newRow.find('input').val('');
         table.find('tbody').append(newRow);
+        reindexRows(table);
         recalcTotals(table);
     });
 
@@ -485,6 +448,7 @@
         let table = $(this).closest('table');
         if(table.find('tbody tr').length > 1){
             $(this).closest('tr').remove();
+            reindexRows(table);
             recalcTotals(table);
         }
     });

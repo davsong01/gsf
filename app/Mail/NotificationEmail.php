@@ -95,7 +95,7 @@ class NotificationEmail extends Mailable
         if(!isset($this->data['type']) && $this->data['type'] == 'Event'){
             return $this->markdown('emails.notification')
             ->subject($this->data['subject'])
-            ->attach($data['banners']);
+            ->attach($this->data['banners']);
         }
 
         if (!isset($this->data['type']) && $this->data['type'] == 0) {
@@ -117,13 +117,29 @@ class NotificationEmail extends Mailable
             return $this->markdown('emails.welcomeMail')
             ->subject('New Registration');
         }
-      
+        
         if (isset($this->data['type']) && $this->data['type'] == 'conference_registration_welcome_mail') {
             return $this->markdown('emails.welcomeMail')->subject('Thank you for registering');
         }
 
         if (isset($this->data['type']) && $this->data['type'] == 'conference_bulk_email') {
             return $this->markdown('emails.welcomeMail')->subject($this->data['subject']);
+        }
+
+        if (
+            isset($this->data['type']) &&
+            $this->data['type'] === 'report_email'
+        ) {
+            $mail = $this->markdown('emails.generic')
+                ->subject($this->data['subject']);
+
+            foreach ((array) ($this->data['attachments'] ?? []) as $file) {
+                if (is_string($file)) {
+                    $mail->attach($file);
+                }
+            }
+
+            return $mail;
         }
     }
 }

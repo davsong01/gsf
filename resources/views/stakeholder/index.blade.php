@@ -7,104 +7,136 @@
 @section('content')
 <div class="content-body">
     <section id="reports-dashboard">
-        <div class="row mb-3">
-            {{-- {{dd(Auth::guard('stakeholder')->user())}} --}}
-            <div class="col-12 d-flex justify-content-between align-items-center">
-                <h4 class="card-title">All Reports</h4>
-                @if(in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders()))
-                @if(canAddThisMonthReport(Auth::guard('stakeholder')->user()))
-                <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">Add This Month's Report</a>
-                @endif
-                @endif
+        @if(in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders()))
+            @if(canAddThisMonthReport(Auth::guard('stakeholder')->user()))
+            <div class="row mb-3">
+                {{-- {{dd(Auth::guard('stakeholder')->user())}} --}}
+                <div class="col-12 d-flex justify-content-between">
+                    <h4 class="card-title">All Reports</h4>
+                    <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">Add {{ now()->format('F') }}’s Report</a>
+                </div>
             </div>
-        </div>
-
+            @endif
+        @endif
         <!-- Filters -->
+        @php
+            $user = Auth::guard('stakeholder')->user();
+
+            $canViewChapter = in_array($user->role_id, array_merge(
+                fieldStakeholders(),
+                zoneStakeholders(),
+                secretariatStakeholders(),
+                ncpStakeholders()
+            ));
+
+            $canViewZone = in_array($user->role_id, array_merge(
+                fieldStakeholders(),
+                secretariatStakeholders(),
+                ncpStakeholders()
+            ));
+
+            $canViewField = in_array($user->role_id, array_merge(
+                secretariatStakeholders(),
+                ncpStakeholders()
+            ));
+
+            $hierarchyCount = collect([
+                $canViewField,
+                $canViewZone,
+                $canViewChapter
+            ])->filter()->count();
+
+            $hierarchyCol = $hierarchyCount > 1 ? intval(12 / $hierarchyCount) : 5;
+        @endphp
+
         <div class="row mb-3">
-            <div class="col-md-12">
-                <form method="GET" action="" class="row g-2 align-items-end">
-                    
-                    <div class="col-md-2">
-                        <label for="from_date" class="form-label">From</label>
-                        <input type="date" name="from_date" id="from_date" class="form-control"
+            <div class="col-12">
+                <form method="GET" class="row g-2 align-items-end">
+
+                    {{-- Date range --}}
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label">From</label>
+                        <input type="date" name="from_date" class="form-control"
                             value="{{ request('from_date') ?? now()->startOfMonth()->format('Y-m-d') }}">
                     </div>
 
-                    <div class="col-md-2">
-                        <label for="to_date" class="form-label">To</label>
-                        <input type="date" name="to_date" id="to_date" class="form-control"
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label">To</label>
+                        <input type="date" name="to_date" class="form-control"
                             value="{{ request('to_date') ?? now()->format('Y-m-d') }}">
                     </div>
-                    
-                    <!-- Chapter Filter (for non-Field Pastor) -->
-                    @if(in_array(Auth::guard('stakeholder')->user()->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
-                    <div class="col-md-3">
-                        <label for="chapter_filter" class="form-label">Chapter</label>
-                        <select name="chapter_filter" id="chapter_filter" class="form-control">
-                            <option value="">-- All Chapters --</option>
-                            @foreach($chapters as $chapter)
-                                <option value="{{ $chapter->id }}" 
-                                    {{ request('chapter_filter') == $chapter->id ? 'selected' : '' }}>
-                                    {{ $chapter->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @endif
-                    @if(in_array(Auth::guard('stakeholder')->user()->role_id, array_merge(fieldStakeholders(), secretariatStakeholders(), ncpStakeholders())))
-                    <div class="col-md-3">
-                        <label for="zone_filter" class="form-label">Zone</label>
-                        <select name="zone_filter" id="zone_filter" class="form-control">
-                            <option value="">-- All Zones --</option>
-                            @foreach($zones as $zone)
-                                <option value="{{ $zone->id }}" 
-                                    {{ request('zone_filter') == $zone->id ? 'selected' : '' }}>
-                                    {{ $zone->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @endif
-                    @if(in_array(Auth::guard('stakeholder')->user()->role_id, array_merge(secretariatStakeholders(), ncpStakeholders())))
-                    <div class="col-md-3">
-                        <label for="field_filter" class="form-label">Field</label>
-                        <select name="field_filter" id="field_filter" class="form-control">
-                            <option value="">-- All Fields --</option>
-                            @foreach($fields as $field)
-                                <option value="{{ $field->id }}" 
-                                    {{ request('field_filter') == $field->id ? 'selected' : '' }}>
-                                    {{ $field->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+
+                    {{-- Field (highest first) --}}
+                    @if($canViewField)
+                        <div class="col-md-{{ $hierarchyCol }} mb-2">
+                            <label class="form-label">Field</label>
+                            <select name="field_filter" class="form-control">
+                                <option value="">All Fields</option>
+                                @foreach($fields as $field)
+                                    <option value="{{ $field->id }}" @selected(request('field_filter') == $field->id)>
+                                        {{ $field->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     @endif
 
+                    {{-- Zone --}}
+                    @if($canViewZone)
+                        <div class="col-md-{{ $hierarchyCol }} mb-2">
+                            <label class="form-label">Zone</label>
+                            <select name="zone_filter" class="form-control">
+                                <option value="">All Zones</option>
+                                @foreach($zones as $zone)
+                                    <option value="{{ $zone->id }}" @selected(request('zone_filter') == $zone->id)>
+                                        {{ $zone->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
 
-                    <!-- Status Filter -->
-                    <div class="col-md-3">
-                        <label for="status_filter" class="form-label">Approval Status</label>
-                        <select name="status_filter" id="status_filter" class="form-control">
-                            <option value="">-- All Status --</option>
-                            <option value="zone_pending" {{ request('status_filter') == 'zone_pending' ? 'selected' : '' }}>Zone Pending</option>
-                            <option value="zone_approved" {{ request('status_filter') == 'zone_approved' ? 'selected' : '' }}>Zone Approved</option>
-                            <option value="zone_rejected" {{ request('status_filter') == 'zone_rejected' ? 'selected' : '' }}>Zone Rejected</option>
-                            <option value="field_pending" {{ request('status_filter') == 'field_pending' ? 'selected' : '' }}>Field Pending</option>
-                            <option value="field_approved" {{ request('status_filter') == 'field_approved' ? 'selected' : '' }}>Field Approved</option>
-                            <option value="field_rejected" {{ request('status_filter') == 'field_rejected' ? 'selected' : '' }}>Field Rejected</option>
-                            <option value="national_pending" {{ request('status_filter') == 'national_pending' ? 'selected' : '' }}>National Pending</option>
-                            <option value="national_approved" {{ request('status_filter') == 'national_approved' ? 'selected' : '' }}>National Approved</option>
-                            <option value="national_rejected" {{ request('status_filter') == 'national_rejected' ? 'selected' : '' }}>National Rejected</option>
+                    {{-- Chapter --}}
+                    @if($canViewChapter)
+                        <div class="col-md-{{ $hierarchyCol }} mb-2">
+                            <label class="form-label">Chapter</label>
+                            <select name="chapter_filter" class="form-control">
+                                <option value="">All Chapters</option>
+                                @foreach($chapters as $chapter)
+                                    <option value="{{ $chapter->id }}" @selected(request('chapter_filter') == $chapter->id)>
+                                        {{ $chapter->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+
+                    {{-- Status --}}
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Approval Status</label>
+                        <select name="status_filter" class="form-control">
+                            <option value="">All Status</option>
+                            <option value="zone_pending" @selected(request('status_filter')=='zone_pending')>Zone Pending</option>
+                            <option value="zone_approved" @selected(request('status_filter')=='zone_approved')>Zone Approved</option>
+                            <option value="zone_rejected" @selected(request('status_filter')=='zone_rejected')>Zone Rejected</option>
+                            <option value="field_pending" @selected(request('status_filter')=='field_pending')>Field Pending</option>
+                            <option value="field_approved" @selected(request('status_filter')=='field_approved')>Field Approved</option>
+                            <option value="field_rejected" @selected(request('status_filter')=='field_rejected')>Field Rejected</option>
+                            <option value="national_pending" @selected(request('status_filter')=='national_pending')>National Pending</option>
+                            <option value="national_approved" @selected(request('status_filter')=='national_approved')>National Approved</option>
+                            <option value="national_rejected" @selected(request('status_filter')=='national_rejected')>National Rejected</option>
                         </select>
                     </div>
 
-                    <!-- Filter Button -->
+                    {{-- Button --}}
                     <div class="col-md-2">
-                        <button class="btn btn-secondary w-100" type="submit">Filter</button>
+                        <button class="btn btn-secondary w-100">Filter</button>
                     </div>
+
                 </form>
             </div>
         </div>
+
 
         <!-- Reports Table -->
         <div class="row">
@@ -113,7 +145,7 @@
                     @include('includes.alerts')
                     <div class="card-body table-responsive">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle text-center">
+                            <table class="table table-hover">
                                 <thead >
                                     <tr>
                                         <th>S/N</th>
@@ -144,18 +176,18 @@
                                             @php
                                                 $fieldStatus = $report->field_status;
                                                 $zoneStatus = $report->zone_status;
-                                                $natStatus  = $report->status_complete;
+                                                $natStatus  = $report->national_status;
                                             @endphp
                                             {{-- Zone --}}
                                             <div class="d-flex align-items-center" style="margin-bottom:5px">
                                                 <small class="ms-1 text-muted">Zone &nbsp</small>
-                                                @if($report->zone_rejected_at)
+                                                @if($zoneStatus == 2)
                                                     <span class="badge bg-danger">Rejected</span>
                                                     <a href="#zoneRejection{{ $report->id }}" data-toggle="modal" title="View feedback" class="ms-1 text-danger">
                                                         <i class="bx bx-message-rounded-dots"></i>
                                                     </a>
                                                     @include('stakeholder.modals.zone_rejection_comment')
-                                                @elseif($report->zone_approved_at || $zoneStatus == 1)
+                                                @elseif($zoneStatus == 1)
                                                     <span class="badge bg-success">Approved</span>
                                                 @else
                                                     <span class="badge bg-warning text-dark">Pending</span>
@@ -164,13 +196,13 @@
                                             {{-- Field --}}
                                             <div class="d-flex align-items-center" style="margin-bottom:5px">
                                                 <small class="ms-1 text-muted">Field &nbsp</small>
-                                                @if($report->field_rejected_at)
+                                                @if($fieldStatus == 2)
                                                     <span class="badge bg-danger">Rejected</span>
                                                     <a href="#fieldRejection{{ $report->id }}" data-toggle="modal" title="View feedback" class="ms-1 text-danger">
                                                         <i class="bx bx-message-rounded-dots"></i>
                                                     </a>
                                                     @include('stakeholder.modals.field_rejection_comment')
-                                                @elseif($report->field_approved_at || $fieldStatus == 1)
+                                                @elseif($fieldStatus == 1)
                                                     <span class="badge bg-success">Approved</span>
                                                 @else
                                                     <span class="badge bg-warning text-dark">Pending</span>
@@ -180,13 +212,13 @@
                                             {{-- National --}}
                                             <div class="d-flex align-items-center">
                                                 <small class="ms-1 text-muted">National &nbsp</small>
-                                                @if($report->national_rejected_at || $report->status_complete_reject_comment)
+                                                @if($natStatus == 2)
                                                     <span class="badge bg-danger">Rejected</span>
                                                     <a href="#secretariatRejection{{ $report->id }}" data-toggle="modal" title="View feedback" class="ms-1 text-danger">
                                                         <i class="bx bx-message-rounded-dots"></i>
                                                     </a>
                                                     @include('stakeholder.modals.secretariat_rejection_comment')
-                                                @elseif($report->national_approved_at || $natStatus == 1)
+                                                @elseif($natStatus == 1)
                                                     <span class="badge bg-success">Approved</span>
                                                 @else
                                                     <span class="badge bg-warning text-dark">Pending</span>
@@ -204,21 +236,35 @@
                                             </a>
 
                                             {{-- Edit --}}
-                                            @if(
-                                                (in_array(Auth::guard('stakeholder')->user()->role_id, fieldStakeholders()) && $fieldStatus == 0) ||
-                                                (in_array(Auth::guard('stakeholder')->user()->role_id, zoneStakeholders()) && $zoneStatus == 0) ||
-                                                (in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders()) && $zoneStatus == 0) ||
-                                                in_array(Auth::guard('stakeholder')->user()->role_id, secretariatStakeholders())
-                                            )
+                                            @php
+                                                $userRole = Auth::guard('stakeholder')->user()->role_id;
+
+                                                // Determine if the report is fully approved
+                                                $allApproved = $zoneStatus == 1 && $fieldStatus == 1 && $report->status_complete == 1;
+
+                                                // Determine if edit is allowed
+                                                $canEdit = (
+                                                    (in_array($userRole, fieldStakeholders()) && $fieldStatus == 0) ||
+                                                    (in_array($userRole, zoneStakeholders()) && $zoneStatus == 0) ||
+                                                    (in_array($userRole, chapterStakeholders()) && $zoneStatus == 0) ||
+                                                    in_array($userRole, secretariatStakeholders())
+                                                );
+                                            @endphp
+
+                                            {{-- Edit --}}
+                                            @if($canEdit)
                                                 <a href="{{ route('stakeholders.reports.edit', $report->id) }}" class="text-warning mx-1" title="Edit Report" onclick="return confirm('Are you sure you want to edit this report?');">
                                                     <i class="fa fa-edit"></i>
                                                 </a>
                                             @endif
 
-                                            {{-- Print --}}
-                                            <a href="{{ route('stakeholders.reports.print', $report->id) }}" target="_blank" class="text-success mx-1" title="Print Report">
-                                                <i class="fa fa-print"></i>
-                                            </a>
+                                            {{-- Download --}}
+                                            @if($allApproved)
+                                                <a href="{{ route('stakeholders.reports.download', $report->id) }}" target="_blank" class="text-success mx-1" title="Download Report">
+                                                    <i class="fa fa-download"></i>
+                                                </a>
+                                            @endif
+
 
                                             {{-- Nudge --}}
                                             <a href="{{ route('stakeholders.reports.nudge', $report->id) }}" class="text-indigo-600 mx-1" title="Send Nudge">
@@ -226,8 +272,8 @@
                                             </a>
 
                                             {{-- Delete --}}
-                                            @if(Auth::guard('stakeholder')->user()->role == 'Secretariat')
-                                                <a href="{{ route('stakeholders.reports.delete', $report->id) }}" class="text-danger mx-1" title="Delete Report" onclick="return confirm('Are you sure you want to delete this report?');">
+                                            @if(in_array(Auth::guard('stakeholder')->user()->role_id, secretariatStakeholders()))
+                                                {{-- <a href="{{ route('stakeholders.reports.delete', $report->id) }}" class="text-danger mx-1" title="Delete Report" onclick="return confirm('Are you sure you want to delete this report?');">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                         <polyline points="3 6 5 6 21 6"/>
                                                         <path d="M19 6l-2 14H7L5 6"/>
@@ -235,7 +281,7 @@
                                                         <path d="M14 11v6"/>
                                                         <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                                                     </svg>
-                                                </a>
+                                                </a> --}}
                                             @endif
                                         </td>
                                     </tr>

@@ -150,14 +150,15 @@ class CriticalEmailController extends Controller
                 ", <br>For some reason, trying to add your details to the GSF Directory website failed<br><br>
                 If you think this is an error, kindly reach out to GSF IT support or reach us via email at: ".GeneralSetting::first()->value('official_email')." <br><br>Warm Regards.";
                 break;
-            
+            case 'report_email':
+                $content = $data['content'];
+                break;
             default:
                 # code...
                 break;
             }
             
             return $content;
-       
     }
     /**
      * Display a listing of the resource.
@@ -166,7 +167,7 @@ class CriticalEmailController extends Controller
      */
     public function index(Request $request)
     {
-        $emails = CriticalEmail::orderby('status','ASC')->get();
+        $emails = CriticalEmail::latest()->orderby('status','ASC')->get();
         $count = 1;
         return view('emails.emaillog', compact('emails','count'));
     }

@@ -138,10 +138,9 @@ class EmailService {
         $content = $data['content'] ?? $emailContent['content'];
         
         $insert = [];
-
-        if(in_array($data['type'], ['conference_bulk_email', 'report.update'])){
+        
+        if(in_array($data['type'], ['conference_bulk_email'])){
             $recipients = $data['recipients'] ?? null;
-            
             foreach($recipients as $recipient){
                 $insert[] = [
                     'recipient' => $recipient['email'] ?? $recipient,
@@ -154,6 +153,8 @@ class EmailService {
                     'updated_at' => now(),
                 ];
             }
+        } elseif (in_array($data['type'], ['report_email'])){
+            $insert = $data['recipients'];
         }else{
             $insert[] = [
                 'recipient' => in_array($type, ['new_registration']) ? $transaction->edition->official_email : $transaction->email,
@@ -167,8 +168,7 @@ class EmailService {
             ];
         }
         
-        CriticalEmail::insert($insert);
-        
+        CriticalEmail::insert($insert);        
     }
 
     /**
@@ -191,9 +191,12 @@ class EmailService {
     public static function sendEmail($data, $preview = false)
     {
         try {
-
             if ($preview) {
                 return (new NotificationEmail($data))->render();
+            }
+            
+            if(env('APP_ENV') == 'local'){
+                $data['recipient'] = 'davsong16@gmail.com';
             }
 
             Mail::to($data['recipient'])->send(new NotificationEmail($data));

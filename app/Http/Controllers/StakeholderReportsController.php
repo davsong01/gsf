@@ -19,6 +19,7 @@ use App\Models\StakeholderReportAnswer;
 use App\Models\StakeholderReportQuestion;
 use App\Models\StakeholderQuestionSection;
 use App\Services\ReportNotificationService;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class StakeholderReportsController extends Controller
 {
@@ -41,7 +42,7 @@ class StakeholderReportsController extends Controller
         $chapterIds = collect();
         $zoneIds = collect();
         $fieldIds = collect();
-
+        
         /** =====================
          * ROLE-BASED SCOPING
          * ===================== */
@@ -177,154 +178,7 @@ class StakeholderReportsController extends Controller
         return view('stakeholder.create', compact('months', 'sections', 'prefillData', 'user'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    // public function store(Request $request)
-    // {
-    //     $stakeholder = Auth::guard('stakeholder')->user();
-
-    //     // $checks = $this->checks($stakeholder);
-    //     // dd($checks);
-    //     // Validate the form data
-    //     $validated = $request->validate([
-    //         'responses' => 'required|array',
-    //         'responses.*' => 'nullable',
-    //         'confirm_information' => 'accepted',
-    //     ]);
-
-    //     $chapter = Chapter::with('zone:id','field:id')->where('id', $stakeholder->chapter_id)->first();
-
-    //     if (empty($chapter->year_established)) {
-    //         $chapter->update(['year_established' => $validated['responses']['year_established']]);
-    //     }
-
-    //     DB::beginTransaction();
-
-    //     try {
-    //         // Build report meta data
-    //         $reportData = [
-    //             'chapter_id' => $stakeholder->chapter_id,
-    //             'zone_id' => $stakeholder->zone_id ?? $chapter?->zone->id,
-    //             'field_id' => $stakeholder->field_id ?? $chapter?->field->id,
-    //             'stakeholder_id' => $stakeholder->id,
-    //             'session' => $validated['responses']['session'] ?? null,
-    //             'year' => $validated['responses']['year'] ?? null,
-    //             'month' => $validated['responses']['month'] ?? null,
-
-    //         ];
-
-    //         // Create the main report record
-    //         $report = StakeholderReport::create($reportData);
-
-    //         // Save each response to StakeholderReportAnswer
-    //         foreach ($validated['responses'] as $slug => $answer) {
-    //             $question = StakeholderReportQuestion::where('slug', $slug)->first();
-    //             if ($question) {
-    //                 StakeholderReportAnswer::create([
-    //                     'report_id' => $report->id,
-    //                     'question_id' => $question->id,
-    //                     'answer_value' => is_array($answer) ? json_encode($answer) : $answer,
-    //                 ]);
-    //             }
-    //         }
-
-    //         ReportNotificationService::handleReportSubmission($report, $stakeholder, 'submit');
-
-    //         DB::commit();
-
-    //         return redirect(route('stakeholders.reports.index'))->with('message', 'Report saved successfully');
-    //     } catch (\Throwable $e) {
-    //         DB::rollBack();
-
-    //         return back()->withErrors(['error' => 'An error occurred while saving the report. ' . $e->getMessage()]);
-    //     }
-    // }
-
-    // public function update(Request $request, StakeholderReport $report)
-    // {
-    //     $stakeholder = Auth::guard('stakeholder')->user();
-
-    //     // Validate the form data
-    //     $validated = $request->validate([
-    //         'responses' => 'required|array',
-    //         'responses.*' => 'nullable',
-    //         'confirm_information' => 'accepted',
-    //     ]);
-
-    //     if(in_array($stakeholder->role_id, chapterStakeholders())){
-    //         $chapter = Chapter::with('zone:id', 'field:id')
-    //             ->where('id', $stakeholder->chapter_id)
-    //             ->first();
-
-    //         if ($chapter && empty($chapter->year_established)) {
-    //             $chapter->update([
-    //                 'year_established' => $validated['responses']['year_established'] ?? null
-    //             ]);
-    //         }
-    //     }
-
-    //     DB::beginTransaction();
-
-    //     try {
-    //         if(in_array($stakeholder->role_id, chapterStakeholders())) {
-    //             $report->update([
-    //                 'chapter_id' => $stakeholder->chapter_id,
-    //                 'zone_id' => $stakeholder->zone_id ?? $chapter?->zone->id,
-    //                 'field_id' => $stakeholder->field_id ?? $chapter?->field->id,
-    //                 'stakeholder_id' => $stakeholder->id,
-    //                 'session' => $validated['responses']['session'] ?? $report->session,
-    //                 'year' => $validated['responses']['year'] ?? $report->year,
-    //                 'month' => $validated['responses']['month'] ?? $report->month,
-    //             ]);
-    //         }
-
-    //         // Loop through each response and enforce permission
-    //         foreach ($validated['responses'] as $slug => $answer) {
-    //             $question = StakeholderReportQuestion::where('slug', $slug)->first();
-    //             if (!$question) continue;
-
-    //             // Check if stakeholder can edit this question
-    //             $access = app('App\Services\StakeholderRolePermissionService')
-    //                 ->questionAccess($stakeholder, $question);
-
-    //             if (!$access['edit']) {
-    //                 // Skip saving this response
-    //                 continue;
-    //             }
-
-    //             $answerValue = is_array($answer) ? json_encode($answer) : $answer;
-
-    //             // Update existing answer or create new
-    //             StakeholderReportAnswer::updateOrCreate(
-    //                 [
-    //                     'report_id' => $report->id,
-    //                     'question_id' => $question->id,
-    //                 ],
-    //                 [
-    //                     'answer_value' => $answerValue,
-    //                 ]
-    //             );
-    //         }
-
-    //         ReportNotificationService::handleReportSubmission($report, $stakeholder, 'update');
-
-    //         DB::commit();
-    //         dd($validated['responses']);
-
-    //         return redirect(route('stakeholders.reports.index'))
-    //             ->with('message', 'Report updated successfully');
-    //     } catch (\Throwable $e) {
-    //         DD($e->getMessage());
-    //         DB::rollBack();
-    //         return back()->withErrors([
-    //             'error' => 'An error occurred while updating the report. ' . $e->getMessage()
-    //         ]);
-    //     }
-    // }
+    
     public function store(Request $request)
     {
         $stakeholder = Auth::guard('stakeholder')->user();
@@ -362,7 +216,7 @@ class StakeholderReportsController extends Controller
     protected function saveReport($stakeholder, ?StakeholderReport $report, array $validated)
     {
         DB::beginTransaction();
-
+        
         try {
             $isNew = false;
             if (!$report) {
@@ -395,14 +249,17 @@ class StakeholderReportsController extends Controller
 
             $this->saveResponses($stakeholder, $report, $validated['responses']);
 
-            ReportNotificationService::handleReportSubmission($report, $stakeholder, $isNew ? 'store' : 'update');
             
             DB::commit();
-
+            
+            if(in_array($stakeholder->role_id, chapterStakeholders())){
+                ReportNotificationService::handleReportSubmission($report->fresh(), $stakeholder, $isNew ? 'store' : 'update');
+            }
+            
             $message = $isNew ? 'Report submitted successfully' : 'Report updated successfully';
             return redirect(route('stakeholders.reports.index'))->with('message', $message);
         } catch (\Throwable $e) {
-            dd($e->getMessage().' File:'. $e->getFile().  'Line: '. $e->getLine());
+            // dd($e->getMessage().' File:'. $e->getFile().  'Line: '. $e->getLine());
             DB::rollBack();
             return back()->with('error', 'An error occurred while saving the report. ' . $e->getMessage());
         }
@@ -437,8 +294,6 @@ class StakeholderReportsController extends Controller
             );
         }
     }
-
-
 
     public function checks($stakeholder){
 
@@ -532,49 +387,104 @@ class StakeholderReportsController extends Controller
      * @param  \App\Reports  $reports
      * @return \Illuminate\Http\Response
      */
-    public function rejectReport(Request $request){
-        // dd(Auth::guard('stakeholder')->user()->role);
-        $report =  StakeholderReport::whereId($request->report_id)->first();
-        if(Auth::guard('stakeholder')->user()->role == 'Zonal Pastor'){
-            $type = 'zonalRejection';
-            $report->zone_reject_comment = $request->comment;
-            $report->zone_status = 0;
-            $report->save();
-        }
-        if(Auth::guard('stakeholder')->user()->role == 'Field Pastor'){
-            $type = 'fieldRejection';
-            $report->field_reject_comment = $request->comment;
-            $report->field_status = 0;
-            $report->zone_status = 0;
-            $report->save();
+    public function rejectReport(Request $request, StakeholderReport $report)
+    {
+        $user = Auth::guard('stakeholder')->user();
+        $report = StakeholderReport::findOrFail($request->report_id);
+        $comment = $request->rejection_reason;
+        $role = $user->role;
+
+        switch ($role) {
+            case 'Zonal Pastor':
+                $report->zone_comment = $comment;
+                $report->zone_status = 2;
+                $report->zone_rejected_at = now();
+                // $report->zone_rejected_by = $user->id;
+                break;
+
+            case 'Field Pastor':
+                if ($report->zone_status !== 1) {
+                    abort(403, 'Cannot reject before zone approval');
+                }
+                $report->field_comment = $comment;
+                $report->field_status = 2;
+                $report->field_rejected_at = now();
+                // $report->field_rejected_by = $user->id;
+                break;
+
+            case 'Secretariat':
+            case 'NCP':
+                if ($report->zone_status !== 1 || $report->field_status !== 1) {
+                    abort(403, 'Cannot reject before zone and field approval');
+                }
+                $report->national_comment = $comment;
+                $report->national_status = 2;
+                $report->national_rejected_at = now();
+                // $report->national_rejected_by = $user->id;
+                break;
+
+            default:
+                abort(403, 'Unauthorized action');
         }
 
-        if(Auth::guard('stakeholder')->user()->role == 'Secretariat'){
-            $type = 'nationalRejection';
-            $report->status_complete_reject_comment = $request->comment;
-            $report->status_complete = 0;
-            $report->field_status = 0;
-            $report->save();
-        }
-       
-        //Email President
-        $president = $report->chapter->stakeholder;
-            if($president){
-                $data = [
-                    'type' => $type,
-                    'comment' => $request->comment,
-                    'addressee' => $president->name,
-                    'chapter' => $report->chapter->name,
-                    'date' => date("F", mktime(0, 0, 0, $report->month, 10)) . ', ' . $report->year
-                ];
+        $report->save();
 
-                Mail::to($president->email)->send(new NotificationEmail($data));
-            }
-        
+        ReportNotificationService::handleReportAction($report, 'reject');
 
-        return redirect(route('stakeholders.dashboard'))->with('message', 'operation successful!');
+        return redirect()
+            ->route('stakeholders.reports.index')
+            ->with('message', 'Report rejection recorded successfully!');
     }
-    
+
+    public function approveReport(StakeholderReport $report)
+    {
+        $user = Auth::guard('stakeholder')->user();
+        // $comment = $request->rejection_reason ?? null;
+        $roleSlug = $user->role->slug;
+        
+        switch ($roleSlug) {
+            case 'zonal-pastor':
+                // $report->zone_comment = $comment;
+                $report->zone_status = 1; // Approved
+                $report->zone_approved_at = now();
+                // $report->zone_approved_by = $user->id;
+                break;
+
+            case 'field-pastor':
+                if ($report->zone_status !== 1) {
+                    abort(403, 'Cannot approve before zone approval');
+                }
+                // $report->field_comment = $comment;
+                $report->field_status = 1;
+                $report->field_approved_at = now();
+                // $report->field_approved_by = $user->id;
+                break;
+
+            case 'secretariat':
+            case 'ncp':
+                if ($report->zone_status !== 1 || $report->field_status !== 1) {
+                    abort(403, 'Cannot approve before zone and field approval');
+                }
+                // $report->national_comment = $comment;
+                $report->national_status = 1;
+                $report->national_approved_at = now();
+                // $report->national_approved_by = $user->id;
+                break;
+
+            default:
+                abort(403, 'Unauthorized action');
+        }
+
+        // $report->save();
+        
+        ReportNotificationService::handleReportAction($report, 'approve');
+
+        return redirect()
+            ->route('stakeholders.reports.index')
+            ->with('message', 'Report approved successfully!');
+    }
+
+
     public function destroy(Reports $reports)
     {
         //
@@ -594,7 +504,20 @@ class StakeholderReportsController extends Controller
         return back()->with('message', 'Report has been deleted forever!');
     }
 
-   
+    public function download(StakeholderReport $report): BinaryFileResponse
+    {
+        $path = $report->file_location;
+
+        abort_unless(file_exists($path), 404, 'Report file not found');
+
+        return response()->download(
+            $path,
+            basename($path), // filename
+            [
+                'Content-Type' => 'application/pdf',
+            ]
+        );
+    }
 
     // private function validateRequestData($request){
     //     $rules = [];
