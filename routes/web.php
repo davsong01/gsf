@@ -499,6 +499,8 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('reports/nudge/{report}', 'delete')->name('reports.nudge');
             Route::post('reports/reject/{report}', 'rejectReport')->name('reports.reject');
             Route::get('reports/approve/{report}', 'approveReport')->name('reports.approve');
+            Route::get('reports/analysis', 'reportAnalysis')->name('reports.analysis');
+            
         });
 
         // Payments
