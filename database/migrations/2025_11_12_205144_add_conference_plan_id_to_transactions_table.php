@@ -12,21 +12,34 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->integer('conference_plan_id')->after('conference_edition_id')->nullable();
-            $table->json('conference_speakers')->after('conference_edition_id')->nullable();
-            $table->json('conference_faqs')->after('conference_edition_id')->nullable();
+            if (!Schema::hasColumn('transactions', 'conference_plan_id')) {
+                $table->integer('conference_plan_id')->nullable()->after('conference_edition_id');
+            }
+
+            if (!Schema::hasColumn('transactions', 'conference_speakers')) {
+                $table->json('conference_speakers')->nullable()->after('conference_plan_id');
+            }
+
+            if (!Schema::hasColumn('transactions', 'conference_faqs')) {
+                $table->json('conference_faqs')->nullable()->after('conference_speakers');
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->dropColumn('conference_plan_id');
-            $table->dropColumn('conference_speakers');
-            $table->dropColumn('conference_faqs');
+            if (Schema::hasColumn('transactions', 'conference_faqs')) {
+                $table->dropColumn('conference_faqs');
+            }
+
+            if (Schema::hasColumn('transactions', 'conference_speakers')) {
+                $table->dropColumn('conference_speakers');
+            }
+
+            if (Schema::hasColumn('transactions', 'conference_plan_id')) {
+                $table->dropColumn('conference_plan_id');
+            }
         });
     }
 };

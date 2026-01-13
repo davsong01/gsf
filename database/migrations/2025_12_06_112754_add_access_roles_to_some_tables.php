@@ -14,9 +14,11 @@ return new class extends Migration
         ];
 
         foreach ($tables as $tableName) {
-            Schema::table($tableName, function (Blueprint $table) {
-                $table->json('access_roles')->nullable()->after('id'); // remove default
-            });
+            if (!Schema::hasColumn($tableName, 'access_roles')) {
+                Schema::table($tableName, function (Blueprint $table) {
+                    $table->json('access_roles')->nullable()->after('id');
+                });
+            }
         }
     }
 
@@ -28,9 +30,11 @@ return new class extends Migration
         ];
 
         foreach ($tables as $tableName) {
-            Schema::table($tableName, function (Blueprint $table) {
-                $table->dropColumn('access_roles');
-            });
+            if (Schema::hasColumn($tableName, 'access_roles')) {
+                Schema::table($tableName, function (Blueprint $table) {
+                    $table->dropColumn('access_roles');
+                });
+            }
         }
     }
 };

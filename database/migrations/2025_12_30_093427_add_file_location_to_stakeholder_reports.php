@@ -6,15 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        
-        Schema::table('stakeholder_reports', function (Blueprint $table) {
-            $table->string('file_location')->nullable();
-        });
+        if (!Schema::hasColumn('stakeholder_reports', 'file_location')) {
+            Schema::table('stakeholder_reports', function (Blueprint $table) {
+                $table->string('file_location')->nullable();
+            });
+        }
     }
 
     /**
@@ -22,8 +20,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('stakeholder_reports', function (Blueprint $table) {
-            $table->dropColumn('file_location');
-        });
+        if (Schema::hasColumn('stakeholder_reports', 'file_location')) {
+            Schema::table('stakeholder_reports', function (Blueprint $table) {
+                $table->dropColumn('file_location');
+            });
+        }
     }
 };
