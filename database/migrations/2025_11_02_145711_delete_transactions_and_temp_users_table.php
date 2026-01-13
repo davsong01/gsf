@@ -10,18 +10,18 @@ return new class extends Migration
     public function up(): void
     {
         // Drop old transactions table if it exists
-        if (Schema::hasTable('transactions')) {
-            Schema::dropIfExists('transactions');
-        }
+        // if (Schema::hasTable('transactions')) {
+        //     Schema::dropIfExists('transactions');
+        // }
 
-        if (Schema::hasTable('temp_users')) {
-            Schema::dropIfExists('temp_users');
-        }
+        // if (Schema::hasTable('temp_users')) {
+        //     Schema::dropIfExists('temp_users');
+        // }
 
-        // Rename payments table to transactions
-        if (Schema::hasTable('payments')) {
-            Schema::rename('payments', 'transactions');
-        }
+        // // Rename payments table to transactions
+        // if (Schema::hasTable('payments')) {
+        //     Schema::rename('payments', 'transactions');
+        // }
 
         // Add missing columns
         Schema::table('transactions', function (Blueprint $table) {
