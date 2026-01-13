@@ -12,12 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('conference_editions', function (Blueprint $table) {
-            $table->integer('payment_provider_id')->nullable()->after('id');
+            if (!Schema::hasColumn('conference_editions', 'payment_provider_id')) {
+                $table->integer('payment_provider_id')->nullable()->after('id');
+            }
         });
 
         Schema::table('payments', function (Blueprint $table) {
-            $table->integer('payment_provider_id')->nullable()->after('id');
-        });        
+            if (!Schema::hasColumn('payments', 'payment_provider_id')) {
+                $table->integer('payment_provider_id')->nullable()->after('id');
+            }
+        });      
     }
 
     /**
@@ -26,7 +30,15 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('conference_editions', function (Blueprint $table) {
-            //
+            if (Schema::hasColumn('conference_editions', 'payment_provider_id')) {
+                $table->dropColumn('payment_provider_id');
+            }
+        });
+
+        Schema::table('payments', function (Blueprint $table) {
+            if (Schema::hasColumn('payments', 'payment_provider_id')) {
+                $table->dropColumn('payment_provider_id');
+            }
         });
     }
 };
