@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conference_speakers', function (Blueprint $table) {
+        if (!Schema::hasTable('conference_speakers')) {
+            Schema::create('conference_speakers', function (Blueprint $table) {
             $table->id();
             $table->tinyInteger('status')->default(0);
             $table->string('name')->nullable();
@@ -19,7 +20,8 @@ return new class extends Migration
             $table->string('image')->nullable();
 
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('stakeholders', function (Blueprint $table) {
-            $table->string('status')->default('inactive')->after('id');
-        });
+        if (!Schema::hasColumn('stakeholders', 'status')) {
+            Schema::table('stakeholders', function (Blueprint $table) {
+                $table->string('status')->default('inactive')->after('id');
+            });
+        }
     }
 
     /**

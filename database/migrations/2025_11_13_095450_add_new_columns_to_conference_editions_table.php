@@ -11,12 +11,29 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('conference_editions', function (Blueprint $table) {
-            $table->json('faq_section_status')->default(0)->after('ministry_id');
-            $table->json('speaker_section_status')->default(0)->after('ministry_id');
-            $table->json('faq_ids')->nullable()->after('ministry_id');
-            $table->json('speaker_ids')->nullable()->after('ministry_id');
-        });
+        if (!Schema::hasColumn('conference_editions', 'faq_section_status')) {
+            Schema::table('conference_editions', function (Blueprint $table) {
+                $table->json('faq_section_status')->default(0)->after('ministry_id');
+            });
+        }
+
+        if (!Schema::hasColumn('conference_editions', 'speaker_section_status')) {
+            Schema::table('conference_editions', function (Blueprint $table) {
+                $table->json('speaker_section_status')->default(0)->after('ministry_id');
+            });
+        }
+
+        if (!Schema::hasColumn('conference_editions', 'faq_ids')) {
+            Schema::table('conference_editions', function (Blueprint $table) {
+                $table->json('faq_ids')->nullable()->after('ministry_id');
+            });
+        }
+
+        if (!Schema::hasColumn('conference_editions', 'speaker_ids')) {
+            Schema::table('conference_editions', function (Blueprint $table) {
+                $table->json('speaker_ids')->nullable()->after('ministry_id');
+            });
+        }
     }
 
     /**

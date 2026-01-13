@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('webhooks', function (Blueprint $table) {
+        if (!Schema::hasTable('webhooks')) {
+            Schema::create('webhooks', function (Blueprint $table) {
             $table->id();
             $table->string('provider');
             $table->string('event_type')->nullable();
@@ -21,7 +22,8 @@ return new class extends Migration
             $table->string('status')->default('pending');
             $table->timestamp('processed_at')->nullable();
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

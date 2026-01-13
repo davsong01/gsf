@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conference_schedules', function (Blueprint $table) {
+        if (!Schema::hasTable('conference_schedules')) {
+            Schema::create('conference_schedules', function (Blueprint $table) {
             $table->id();
             $table->tinyInteger('status')->default(0);
             $table->integer('conference_edition_id');
@@ -20,7 +21,8 @@ return new class extends Migration
             $table->json('sessions')->nullable();
             
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

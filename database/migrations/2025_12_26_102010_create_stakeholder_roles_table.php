@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('stakeholder_roles', function (Blueprint $table) {
+        if (!Schema::hasTable('stakeholder_roles')) {
+            Schema::create('stakeholder_roles', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique(); // Chapter President
             $table->string('slug')->unique(); // chapter-president
             $table->string('status')->default('inactive'); 
             $table->text('description')->nullable();
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

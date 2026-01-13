@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('stakeholder_rps', function (Blueprint $table) {
-            $table->foreignId('stakeholder_role_id')->nullable();
-            $table->foreignId('stakeholder_permission_id')->nullable();
-            $table->primary(['stakeholder_role_id', 'stakeholder_permission_id'], 'stakeholder_rps_pk');
-        });
+        if (!Schema::hasTable('stakeholder_rps')) {
+            Schema::create('stakeholder_rps', function (Blueprint $table) {
+                $table->foreignId('stakeholder_role_id')->nullable();
+                $table->foreignId('stakeholder_permission_id')->nullable();
+                $table->primary(['stakeholder_role_id', 'stakeholder_permission_id'], 'stakeholder_rps_pk');
+            });
+        }
     }
 
     /**

@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ministry_fields', function (Blueprint $table) {
+        if (!Schema::hasTable('ministry_fields')) {
+            Schema::create('ministry_fields', function (Blueprint $table) {
             $table->id();
             $table->foreignId('ministry_id');
             $table->enum('field_usage',['registration','allocation','both'])->default('both');
@@ -28,7 +29,8 @@ return new class extends Migration
             $table->string('onchange')->nullable();
             $table->json('depends_on')->nullable(); // conditional logic
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

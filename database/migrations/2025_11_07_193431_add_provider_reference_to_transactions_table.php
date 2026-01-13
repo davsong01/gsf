@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('transactions', function (Blueprint $table) {
-            $table->string('provider_reference')->nullable()->after('transid');
-        });
+        if (!Schema::hasColumn('transactions', 'provider_reference')) {
+            Schema::table('transactions', function (Blueprint $table) {
+                $table->string('provider_reference')->nullable()->after('transid');
+            });
+        }
     }
 
     /**

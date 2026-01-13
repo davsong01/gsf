@@ -11,18 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ministries', function (Blueprint $table) {
+        if (!Schema::hasTable('ministries')) {
+            Schema::create('ministries', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
             $table->text('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
-        });
+            });
+        }
 
-        Schema::table('conference_editions', function (Blueprint $table) {
-            $table->foreignId('ministry_id')->nullable()->after('id');
-        });
+        if (!Schema::hasColumn('conference_editions', 'ministry_id')) {
+            Schema::table('conference_editions', function (Blueprint $table) {
+                $table->foreignId('ministry_id')->nullable()->after('id');
+            });
+        }
     }
 
     /**

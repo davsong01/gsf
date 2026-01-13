@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('stakeholder_permissions', function (Blueprint $table) {
-            $table->id();
-            $table->string('name'); // Edit Report
-            $table->string('slug')->unique(); // report.edit
-            $table->string('type')->nullable(); // question,action
-            $table->string('description')->nullable(); // report, approval
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('stakeholder_permissions')) {
+            Schema::create('stakeholder_permissions', function (Blueprint $table) {
+                $table->id();
+                $table->string('name'); // Edit Report
+                $table->string('slug')->unique(); // report.edit
+                $table->string('type')->nullable(); // question,action
+                $table->string('description')->nullable(); // report, approval
+                $table->timestamps();
+            });
+        }
     }
 
     /**

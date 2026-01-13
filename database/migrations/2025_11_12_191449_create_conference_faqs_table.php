@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conference_faqs', function (Blueprint $table) {
+        if (!Schema::hasTable('conference_faqs')) {
+            Schema::create('conference_faqs', function (Blueprint $table) {
             $table->id();
             $table->integer('display_order')->nullable();
             $table->tinyInteger('status')->default(0);
             $table->string('question')->nullable();
             $table->string('answer')->nullable();
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

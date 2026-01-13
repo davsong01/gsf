@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::dropIfExists('stakeholder_report_questions');
 
-        Schema::create('stakeholder_report_questions', function (Blueprint $table) {
+        if (!Schema::hasTable('stakeholder_report_questions')) {
+            Schema::create('stakeholder_report_questions', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique(); // e.g. total_members, funds_collected
             $table->string('label'); // e.g. "Total Members"
@@ -28,7 +29,8 @@ return new class extends Migration
             $table->boolean('is_quantifiable')->default(false);
             
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

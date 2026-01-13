@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('temp_members', function (Blueprint $table) {
+        if (!Schema::hasTable('temp_members')) {
+            Schema::create('temp_members', function (Blueprint $table) {
             $table->id();
             $table->string("name")->nullable();
             $table->string("email")->nullable();
@@ -27,7 +28,8 @@ return new class extends Migration
             $table->string('graduation_year')->nullable();
             $table->string("open_to_work")->nullable();
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

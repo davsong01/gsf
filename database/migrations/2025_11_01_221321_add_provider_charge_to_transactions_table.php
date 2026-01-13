@@ -11,11 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('transactions', function (Blueprint $table) {
-            $table->integer('payment_provider_id')->nullable()->after('id');
-            $table->decimal('provider_charge', 10,2)->nullable()->after('amount');
-            $table->decimal('total_amount', 10, 2)->nullable()->after('provider_charge');
-        });
+        if (!Schema::hasColumn('transactions', 'payment_provider_id')) {
+            Schema::table('transactions', function (Blueprint $table) {
+                $table->integer('payment_provider_id')->nullable()->after('id');
+            });
+        }
+
+        if (!Schema::hasColumn('transactions', 'provider_charge')) {
+            Schema::table('transactions', function (Blueprint $table) {
+                $table->decimal('provider_charge', 10,2)->nullable()->after('amount');
+            });
+        }
+
+        if (!Schema::hasColumn('transactions', 'total_amount')) {
+            Schema::table('transactions', function (Blueprint $table) {
+                $table->decimal('total_amount', 10, 2)->nullable()->after('provider_charge');
+            });
+        }
     }
 
     /**

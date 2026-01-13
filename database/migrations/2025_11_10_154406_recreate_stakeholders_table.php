@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::dropIfExists('stakeholder_reports');
         
-        Schema::create('stakeholder_reports', function (Blueprint $table) {
+        if (!Schema::hasTable('stakeholder_reports')) {
+            Schema::create('stakeholder_reports', function (Blueprint $table) {
             $table->id();
             $table->integer('stakeholder_id');
             $table->integer('chapter_id')->nullable();
@@ -37,7 +38,8 @@ return new class extends Migration
             $table->string('national_comment')->nullable();
 
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

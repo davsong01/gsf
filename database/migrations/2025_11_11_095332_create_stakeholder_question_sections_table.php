@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('stakeholder_question_sections', function (Blueprint $table) {
+        if (!Schema::hasTable('stakeholder_question_sections')) {
+            Schema::create('stakeholder_question_sections', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->tinyInteger('status')->default(0);
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

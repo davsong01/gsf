@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transaction_allocation_fields', function (Blueprint $table) {
+        if (!Schema::hasTable('transaction_allocation_fields')) {
+            Schema::create('transaction_allocation_fields', function (Blueprint $table) {
             $table->id();
             $table->foreignId('transaction_id')->nullable();
 
@@ -21,7 +22,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['key', 'value']);
-        });
+            });
+        }
     }
 
     /**

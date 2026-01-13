@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('necs', function (Blueprint $table) {
+        if (!Schema::hasTable('necs')) {
+            Schema::create('necs', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email')->nullable();
@@ -23,7 +24,8 @@ return new class extends Migration
             $table->integer('order')->nullable();
             $table->string('gender')->nullable();
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

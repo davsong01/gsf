@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('new_listings', function (Blueprint $table) {
+            if (!Schema::hasTable('new_listings')) {
+                Schema::create('new_listings', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
             $table->string('phone')->nullable();
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->string('office')->nullable();
             $table->timestamps();
         });
+            }
     }
 
     /**
