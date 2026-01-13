@@ -166,6 +166,10 @@ class StakeholderReportsController extends Controller
             }
         ])->orderBy('id')->get();
 
+        if(!in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders())){
+            return back()->with('error', 'Unauthorized Access');
+        }
+        
         $prefillData = [
             'chapter_name' => $chapter->name ?? '',
             'month' => date('m'),

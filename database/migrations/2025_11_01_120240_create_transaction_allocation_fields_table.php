@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('transaction_allocation_fields', function (Blueprint $table) {
             $table->id();
             $table->foreignId('transaction_id')->nullable();
-            $table->string('key'); // e.g., chapter_id, assembly_id
-            $table->string('value'); // actual selected value
+
+            $table->string('key', 64);
+            $table->string('value', 191);
+
             $table->timestamps();
 
             $table->index(['key', 'value']);
