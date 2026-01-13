@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        
         Schema::table('stakeholder_reports', function (Blueprint $table) {
             $table->string('file_location')->nullable();
         });
