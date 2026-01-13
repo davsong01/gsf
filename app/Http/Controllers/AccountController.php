@@ -53,7 +53,7 @@ class AccountController extends Controller
 			
 			$president = $user->campus->stakeholder ?? null;
 			if($president){
-				$president = $president->where('role', 'President')->first();
+				$president = $president->whereIn('role_id', chapterStakeholders())->first();
 			}
 
 			$edition = activeConferenceEdition();
