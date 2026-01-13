@@ -12,18 +12,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payment_providers', function (Blueprint $table) {
-            $table->boolean('enable_sub_account')
-                ->default(false)
-                ->after('status');
+            if (!Schema::hasColumn('payment_providers', 'enable_sub_account')) {
+                $table->boolean('enable_sub_account')
+                    ->default(false)
+                    ->after('status');
+            }
 
-            $table->string('sub_account_code')
+            if (!Schema::hasColumn('payment_providers', 'sub_account_code')) {
+                $table->string('sub_account_code')
                 ->nullable()
                 ->after('enable_sub_account');
+            }
 
-            $table->decimal('sub_account_fee_percentage', 5, 2)
+            if (!Schema::hasColumn('payment_providers', 'sub_account_fee_percentage')) {
+                $table->decimal('sub_account_fee_percentage', 5, 2)
                 ->nullable()
                 ->after('sub_account_code')
                 ->comment('Percentage of total amount that goes to subaccount');
+            }
         });
     }
 

@@ -19,13 +19,13 @@ return new class extends Migration
 
         if (!Schema::hasColumn('transactions', 'provider_charge')) {
             Schema::table('transactions', function (Blueprint $table) {
-                $table->decimal('provider_charge', 10,2)->nullable()->after('amount');
+                $table->decimal('provider_charge', 10,2)->nullable()->after('id');
             });
         }
 
         if (!Schema::hasColumn('transactions', 'total_amount')) {
             Schema::table('transactions', function (Blueprint $table) {
-                $table->decimal('total_amount', 10, 2)->nullable()->after('provider_charge');
+                $table->decimal('total_amount', 10, 2)->nullable()->after('id');
             });
         }
     }
