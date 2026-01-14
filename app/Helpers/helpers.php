@@ -82,6 +82,15 @@ if (!function_exists('chapterStakeholders')) {
     }
 }
 
+if (!function_exists('portfolioStakeholders')) {
+    function portfolioStakeholders()
+    {
+        $roles = StakeholderRole::whereIn('slug', ['portfolio'])->pluck('id')->toArray();
+        return $roles;
+    }
+}
+
+
 if (!function_exists('zoneStakeholders')) {
     function zoneStakeholders()
     {

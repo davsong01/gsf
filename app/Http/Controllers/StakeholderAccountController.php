@@ -28,7 +28,7 @@ class StakeholderAccountController extends Controller
         // return redirect(route('stakeholder.login'));
         if (!auth::guard('stakeholder')->check()) return redirect(route('stakeholders.login'));
         $role = Auth::guard('stakeholder')->user()->role_id;
-
+        
         if (in_array($role, chapterStakeholders())) {
             $reports = StakeholderReport::whereChapterId(Auth::guard('stakeholder')->user()->chapter_id)->orderBy('created_at', 'desc')->get();
         } elseif (in_array($role, fieldStakeholders())) {

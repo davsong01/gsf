@@ -70,9 +70,9 @@ class HomeController extends Controller
                 ->with('plans', $plans)
                 ->with('speakers', $speakers);
         }else{
-            $used = ['Zonal Pastor', 'Field Pastor', 'Portfolio'];
+            $used = array_merge(zoneStakeholders(), fieldStakeholders(), portfolioStakeholders());
             $officials = Stakeholder::whereIn('role', $used)->get();
-
+            
             foreach($officials as $user){
                 if($user->role == 'Zonal Pastor' && !is_null($user->zone_id)){
                     $user->office = 'Zonal Pastor, ' .$user->zone->name ?? 'N/A' ;
