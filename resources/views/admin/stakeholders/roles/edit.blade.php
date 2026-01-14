@@ -56,7 +56,7 @@
                                 {{-- PERMISSIONS --}}
                                 <div class="row mb-3">
                                     <div class="col-md-12">
-                                        <label class="form-label">Assign Permissions</label>
+                                        <label class="form-label">Assign Report Permissions</label>
                                     </div>
 
                                     @foreach($permissions as $permission)
