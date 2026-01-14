@@ -71,22 +71,23 @@ class HomeController extends Controller
                 ->with('speakers', $speakers);
         }else{
             $used = array_merge(zoneStakeholders(), fieldStakeholders(), portfolioStakeholders());
-            $officials = Stakeholder::whereIn('role', $used)->get();
+            $officials = Stakeholder::whereIn('role_id', $used)->where('status', 'active')->get();
             
             foreach($officials as $user){
-                if($user->role == 'Zonal Pastor' && !is_null($user->zone_id)){
+                $role = $user->role_id;
+                if(in_array($role, zoneStakeholders()) && !is_null($user->zone_id)){
                     $user->office = 'Zonal Pastor, ' .$user->zone->name ?? 'N/A' ;
                 }
 
-                if($user->role == 'Field Pastor' && !is_null($user->field_id)){
+                if (in_array($role, fieldStakeholders()) &&  !is_null($user->field_id)){
                     $user->office = "Field Pastor, ". $user->field->name ?? 'N/A';
-                } 
-            
-                if($user->role == 'Portfolio'){
+                }
+
+                if (in_array($role, portfolioStakeholders())){
                     $user->office = "GSF National ".$user->portfolio;
                 } 
             }
-
+            
             return view('frontend.'. frontendTemplate().'.index', compact('events', 'national', 'officials'));
         }
     }
