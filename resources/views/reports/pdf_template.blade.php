@@ -213,7 +213,7 @@
                             @if($question->type === 'income_table')
                                 @php
                                     $value = $answer->answer_value ? json_decode($answer->answer_value, true) : [];
-                               
+
                                     $totals = [];
                                     foreach ($question->options['columns'] as $col) {
                                         if ($col !== 'Remarks') $totals[$col] = 0;
@@ -263,17 +263,19 @@
         @endforeach
 
         <!-- Signatures -->
-        <div class="section-title">SIGNATURES</div>
+        {{-- <div class="section-title">SIGNATURES</div>
         @foreach(['president','gen_sec','fin_sec','evang_sec'] as $role)
             <div class="signature-block">
+
                 @if(!empty($report->chapter->{$role.'_signature'}))
                     <strong>{{ strtoupper(str_replace('_',' ', $role)) }}</strong><br>
-                    <img src="{{ public_path('stakeholdersignature/'.$report->chapter->{$role.'_signature'}) }}">
+
+                    <img src="{{route('protected.download', ['file' => $report->chapter->{$role.'_signature'}]) }}">
                 @else
                     <em>No signature</em>
                 @endif
             </div>
-        @endforeach
+        @endforeach --}}
     </div>
 </body>
 </html>

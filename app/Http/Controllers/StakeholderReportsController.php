@@ -147,7 +147,7 @@ class StakeholderReportsController extends Controller
         if ($role === 'Financial Secretary') {
             return redirect(route('stakeholderpayment.index'));
         }
-
+        
         return view('stakeholder.index', compact('reports', 'chapters', 'fields', 'zones','user'));
     }
 

@@ -22,9 +22,9 @@
 
                     <div class="card-content">
                         <div class="card-body">
-                            <form 
-                                action="{{ isset($stakeholder) 
-                                    ? route('stakeholderpersonnel.update', $stakeholder->id) 
+                            <form
+                                action="{{ isset($stakeholder)
+                                    ? route('stakeholderpersonnel.update', $stakeholder->id)
                                     : route('stakeholderpersonnel.store') }}"
                                 method="POST"
                                 enctype="multipart/form-data"
@@ -113,7 +113,7 @@
                                                 placeholder="Enter year">
                                         </fieldset>
                                     </div>
-                                    
+
                                 </div>
 
                                 {{-- OFFICIAL DETAILS --}}
@@ -121,11 +121,11 @@
                                     <div class="col-md-12">
                                         <label class="sections">Official Details</label><br>
                                     </div>
-                                    
+
                                     <div class="col-md-6">
                                         <fieldset class="form-group">
                                             <label for="role_id">Role</label>
-                                           
+
                                             <select class="form-control" name="role_id" id="role_id" required>
                                                 <option value="">--Select--</option>
                                                 @foreach($roles as $role)
@@ -167,6 +167,18 @@
                                             </select>
                                         </fieldset>
 
+                                        <fieldset class="form-group selectportfolio" style="display:none;">
+                                            <label for="portfolio">Portfolio</label>
+                                            <select class="form-control" name="portfolio" id="portfolio">
+                                                <option value="">--Select--</option>
+                                                @foreach($portfolios as $portfolio)
+                                                    <option value="{{ $portfolio }}"
+                                                        {{ old('portfolio', $stakeholder->portfolio ?? '') == $portfolio ? 'selected' : '' }}>
+                                                        {{ $portfolio }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </fieldset>
                                         <fieldset class="form-group selectchapter" style="display:none;">
                                             <label for="chapter_id">Chapter</label>
                                             <select class="form-control" name="chapter_id" id="chapter_id">
@@ -204,15 +216,15 @@
                                         </fieldset>
                                     </div>
 
-                                    @if(isset($stakeholder))
+                                    {{-- @if(isset($stakeholder))
                                     <div class="col-md-4">
                                         <fieldset class="form-group">
                                             <label for="signature">Signature</label>
                                             <div class="d-flex align-items-center gap-3">
                                                 @if(!empty($stakeholder->signature))
                                                     <div class="border rounded bg-light">
-                                                        <img src="{{ $stakeholder->signature }}" 
-                                                            alt="Signature" 
+                                                        <img src="{{ $stakeholder->signature }}"
+                                                            alt="Signature"
                                                             style="width:auto; height:40px;">
                                                     </div>
                                                 @endif
@@ -224,13 +236,13 @@
                                     </div>
 
                                     @else
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <fieldset class="form-group">
                                             <label for="signature">Upload Signature</label>
                                             <input type="file" class="form-control" id="signature" name="signature" required>
                                         </fieldset>
                                     </div>
-                                    @endif
+                                    @endif --}}
                                 </div>
 
                                 {{-- SUBMIT --}}
