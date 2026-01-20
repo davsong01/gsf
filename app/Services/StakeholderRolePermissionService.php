@@ -24,8 +24,12 @@ class StakeholderRolePermissionService
         ];
     }
 
-    public function questionAccess($user, $question): array
+    public function questionAccess($user, $question, $isAdmin=false): array
     {
+        if($isAdmin){
+            return ['view' => true, 'edit' => true];
+        }
+        
         if ($question->permissions->isEmpty()) {
             return ['view' => true, 'edit' => true];
         }

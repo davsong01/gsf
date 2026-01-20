@@ -10,6 +10,7 @@ use App\Models\Setting;
 use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use App\Mail\NotificationEmail;
+use App\Services\ReportService;
 use App\Models\StakeholderReport;
 use Illuminate\Support\Facades\DB;
 use App\Services\FileUploadService;
@@ -32,124 +33,19 @@ class StakeholderReportsController extends Controller
     public function index(Request $request)
     {
         $user = Auth::guard('stakeholder')->user();
-        $role = $user->role_id;
 
-        // Base queries
-        $chapters = Chapter::query();
-        $zones = Zone::query();
-        $fields = Field::query();
-
-        // Scope variables for filtering reports
-        $chapterIds = collect();
-        $zoneIds = collect();
-        $fieldIds = collect();
-
-        /** =====================
-         * ROLE-BASED SCOPING
-         * ===================== */
-        if (in_array($role, chapterStakeholders())) {
-            $chapterIds = collect([$user->chapter_id]);
-            $zoneIds = collect([$user->zone_id]);
-            $fieldIds = collect([$user->field_id]);
-        } elseif (in_array($role, zoneStakeholders())) {
-            $zoneIds = collect([$user->zone_id]);
-
-            // All chapters under this zone
-            $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
-            // Fields that contain this zone
-            $fieldIds = Field::whereHas('zones', fn($q) => $q->where('id', $user->zone_id))
-                ->pluck('id');
-        } elseif (in_array($role, fieldStakeholders())) {
-            $fieldIds = collect([$user->field_id]);
-            // Zones under this field
-            $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
-            // Chapters under all zones in this field
-            $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
+        if ($user->role_id === 'Financial Secretary') {
+            return redirect()->route('stakeholderpayment.index');
         }
 
-        // Secretariat → full access (no scoping)
-        elseif (in_array($role, secretariatStakeholders())) {
-            $chapterIds = Chapter::pluck('id');
-            $zoneIds = Zone::pluck('id');
-            $fieldIds = Field::pluck('id');
-        }
+        $isAdmin = false;
 
-        /** =====================
-         * FILTER REPORTS BY SCOPED IDS
-         * ===================== */
-        $reports = StakeholderReport::query()
-            ->when($chapterIds->isNotEmpty(), fn($q) => $q->whereIn('chapter_id', $chapterIds))
-            ->when($zoneIds->isNotEmpty(), fn($q) => $q->whereIn('zone_id', $zoneIds))
-            ->when($fieldIds->isNotEmpty(), fn($q) => $q->whereIn('field_id', $fieldIds));
+        $data = app(ReportService::class)
+            ->index($request, $user, $isAdmin);
 
-        /** =====================
-         * DATE FILTERS
-         * ===================== */
-        if ($request->filled('from_date')) {
-            $reports->whereDate('created_at', '>=', $request->from_date);
-        }
-
-        if ($request->filled('to_date')) {
-            $reports->whereDate('created_at', '<=', $request->to_date);
-        }
-
-        /** =====================
-         * MANUAL FILTERS
-         * ===================== */
-        if ($request->filled('chapter_filter')) {
-            $reports->where('chapter_id', $request->chapter_filter);
-        }
-
-        if ($request->filled('zone_filter')) {
-            $reports->where('zone_id', $request->zone_filter);
-        }
-
-        if ($request->filled('field_filter')) {
-            $reports->where('field_id', $request->field_filter);
-        }
-
-        /** =====================
-         * STATUS FILTERS
-         * ===================== */
-        if ($request->filled('status_filter')) {
-            $statusMap = [
-                'field_pending' => ['field_status', 0],
-                'field_approved' => ['field_status', 1],
-                'field_rejected' => ['field_status', 2],
-                'zone_pending' => ['zone_status', 0],
-                'zone_approved' => ['zone_status', 1],
-                'zone_rejected' => ['zone_status', 2],
-                'national_pending' => ['national_status', 0],
-                'national_approved' => ['national_status', 1],
-                'national_rejected' => ['national_status', 2],
-            ];
-
-            if (isset($statusMap[$request->status_filter])) {
-                [$column, $value] = $statusMap[$request->status_filter];
-                $reports->where($column, $value);
-            }
-        }
-
-        /** =====================
-         * EXECUTE QUERIES
-         * ===================== */
-        $reports = $reports->with(['chapter', 'zone', 'field'])
-            ->orderByDesc('created_at')
-            ->paginate(20);
-
-        $chapters = $chapters->whereIn('id', $chapterIds)->orderBy('name')->get();
-        $zones = $zones->whereIn('id', $zoneIds)->orderBy('name')->get();
-        $fields = $fields->whereIn('id', $fieldIds)->orderBy('name')->get();
-
-        /** =====================
-         * REDIRECT FOR FINANCIAL SECRETARY
-         * ===================== */
-        if ($role === 'Financial Secretary') {
-            return redirect(route('stakeholderpayment.index'));
-        }
-        
-        return view('stakeholder.index', compact('reports', 'chapters', 'fields', 'zones','user'));
+        return view('stakeholder.index', array_merge($data, compact('user','isAdmin')));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -181,7 +77,8 @@ class StakeholderReportsController extends Controller
             'president_name' => '',
         ];
 
-        return view('stakeholder.create', compact('months', 'sections', 'prefillData', 'user'));
+        $isAdmin = false;
+        return view('stakeholder.create', compact('months', 'sections', 'prefillData', 'user','isAdmin'));
     }
 
 
@@ -198,188 +95,196 @@ class StakeholderReportsController extends Controller
     {
         $stakeholder = Auth::guard('stakeholder')->user();
 
-        $validated = $this->validateRequest($request);
+        $validated = app(ReportService::class)->validateRequest($request);
 
-        return $this->saveReport($stakeholder, $report, $validated);
+        $result = app(ReportService::class)
+            ->saveReport($stakeholder, $report, $validated);
+
+        return $result['status']
+            ? redirect()->route('stakeholders.reports.index')->with('message', $result['message'])
+            : back()->with('error', $result['message']);
     }
+
+
+    // public function update(Request $request, StakeholderReport $report)
+    // {
+    //     $stakeholder = Auth::guard('stakeholder')->user();
+
+    //     $validated = app(ReportService::class)->validateRequest($request);
+
+    //     return $this->saveReport($stakeholder, $report, $validated);
+    // }
 
     /**
      * Validate request data.
      */
-    protected function validateRequest(Request $request): array
-    {
-        return $request->validate([
-            'responses' => 'required|array',
-            'responses.*' => 'nullable',
-            'confirm_information' => 'accepted',
-        ]);
-    }
+
 
     /**
      * Create or update a report.
      * If $report is null → create, else update.
      */
-    protected function saveReport($stakeholder, ?StakeholderReport $report, array $validated)
-    {
+    // protected function saveReport($stakeholder, ?StakeholderReport $report, array $validated)
+    // {
 
-        DB::beginTransaction();
+    //     DB::beginTransaction();
 
-        try {
-            $isNew = false;
-            $editMode = request()->edit_mode;
+    //     try {
+    //         $isNew = false;
+    //         $editMode = request()->edit_mode;
 
-            if (!$report) {
-                $report = new StakeholderReport();
-                $isNew = true;
-            }
+    //         if (!$report) {
+    //             $report = new StakeholderReport();
+    //             $isNew = true;
+    //         }
 
-            if (in_array($stakeholder->role_id, chapterStakeholders())) {
-                $chapter = Chapter::with('zone:id', 'field:id')
-                    ->where('id', $stakeholder->chapter_id)
-                    ->first();
+    //         if (in_array($stakeholder->role_id, chapterStakeholders())) {
+    //             $chapter = Chapter::with('zone:id', 'field:id')
+    //                 ->where('id', $stakeholder->chapter_id)
+    //                 ->first();
 
-                if ($chapter && empty($chapter->year_established)) {
-                    $chapter->update([
-                        'year_established' => $validated['responses']['year_established'] ?? null
-                    ]);
-                }
+    //             if ($chapter && empty($chapter->year_established)) {
+    //                 $chapter->update([
+    //                     'year_established' => $validated['responses']['year_established'] ?? null
+    //                 ]);
+    //             }
 
-                $report->chapter_id = $stakeholder->chapter_id;
-                $report->zone_id = $stakeholder->zone_id ?? $chapter?->zone->id;
-                $report->field_id = $stakeholder->field_id ?? $chapter?->field->id;
-            }
+    //             $report->chapter_id = $stakeholder->chapter_id;
+    //             $report->zone_id = $stakeholder->zone_id ?? $chapter?->zone->id;
+    //             $report->field_id = $stakeholder->field_id ?? $chapter?->field->id;
+    //         }
 
-            $report->stakeholder_id = $stakeholder->id;
-            $report->session = $validated['responses']['session'] ?? $report->session;
-            $report->year = $validated['responses']['year'] ?? $report->year;
-            $report->month = $validated['responses']['month'] ?? $report->month;
+    //         $report->stakeholder_id = $stakeholder->id;
+    //         $report->session = $validated['responses']['session'] ?? $report->session;
+    //         $report->year = $validated['responses']['year'] ?? $report->year;
+    //         $report->month = $validated['responses']['month'] ?? $report->month;
 
-            // Clear higher-level rejections back to pending on chapter resubmission
-            if (
-                !$isNew &&
-                in_array($stakeholder->role_id, chapterStakeholders(), true)
-            ) {
-                $resetStatuses = [];
+    //         // Clear higher-level rejections back to pending on chapter resubmission
+    //         if (
+    //             !$isNew &&
+    //             in_array($stakeholder->role_id, chapterStakeholders(), true)
+    //         ) {
+    //             $resetStatuses = [];
 
-                if ($report->zone_status === 2) {
-                    $resetStatuses['zone_status'] = 0;
-                }
+    //             if ($report->zone_status === 2) {
+    //                 $resetStatuses['zone_status'] = 0;
+    //             }
 
-                if ($report->field_status === 2) {
-                    $resetStatuses['field_status'] = 0;
-                }
+    //             if ($report->field_status === 2) {
+    //                 $resetStatuses['field_status'] = 0;
+    //             }
 
-                if ($report->national_status === 2) {
-                    $resetStatuses['national_status'] = 0;
-                }
+    //             if ($report->national_status === 2) {
+    //                 $resetStatuses['national_status'] = 0;
+    //             }
 
-                if (!empty($resetStatuses)) {
-                    $report->update($resetStatuses);
-                }
-            }
+    //             if (!empty($resetStatuses)) {
+    //                 $report->update($resetStatuses);
+    //             }
+    //         }
 
 
-            $report->save();
+    //         $report->save();
 
-            $this->saveResponses($stakeholder, $report, $validated['responses']);
+    //         $this->saveResponses($stakeholder, $report, $validated['responses']);
 
-            DB::commit();
+    //         DB::commit();
 
-            if (!$editMode && in_array($stakeholder->role_id, chapterStakeholders())) {
-                ReportNotificationService::handleReportSubmission($report->fresh(), $stakeholder, $isNew ? 'store' : 'update');
-            }
+    //         if (!$editMode && in_array($stakeholder->role_id, chapterStakeholders())) {
+    //             ReportNotificationService::handleReportSubmission($report->fresh(), $stakeholder, $isNew ? 'store' : 'update');
+    //         }
 
-            $message = $isNew ? 'Report submitted successfully' : 'Report updated successfully';
-            return redirect(route('stakeholders.reports.index'))->with('message', $message);
-        } catch (\Throwable $e) {
-            // dd($e->getMessage().' File:'. $e->getFile().  'Line: '. $e->getLine());
-            DB::rollBack();
-            return back()->with('error', 'An error occurred while saving the report. ' . $e->getMessage());
-        }
-    }
+    //         $message = $isNew ? 'Report submitted successfully' : 'Report updated successfully';
+    //         return redirect(route('stakeholders.reports.index'))->with('message', $message);
+    //     } catch (\Throwable $e) {
+    //         // dd($e->getMessage().' File:'. $e->getFile().  'Line: '. $e->getLine());
+    //         DB::rollBack();
+    //         return back()->with('error', 'An error occurred while saving the report. ' . $e->getMessage());
+    //     }
+    // }
 
     /**
      * Save each response, enforcing question-level permissions.
      */
-    protected function saveResponses($stakeholder, StakeholderReport $report, array $responses)
-    {
-        foreach ($responses as $slug => $answer) {
-            $question = StakeholderReportQuestion::where('slug', $slug)->first();
-            if (!$question) continue;
+    // protected function saveResponses($stakeholder, StakeholderReport $report, array $responses)
+    // {
+    //     foreach ($responses as $slug => $answer) {
+    //         $question = StakeholderReportQuestion::where('slug', $slug)->first();
+    //         if (!$question) continue;
 
-            $access = app('App\Services\StakeholderRolePermissionService')
-                ->questionAccess($stakeholder, $question);
+    //         $access = app('App\Services\StakeholderRolePermissionService')
+    //             ->questionAccess($stakeholder, $question);
 
-            if (!$access['edit']) {
-                continue;
-            }
+    //         if (!$access['edit']) {
+    //             continue;
+    //         }
 
 
-            $answerValue = is_array($answer) ? json_encode($answer) : $answer;
-            $answerQuantity = null;
-            $questionLabel = null;
+    //         $answerValue = is_array($answer) ? json_encode($answer) : $answer;
+    //         $answerQuantity = null;
+    //         $questionLabel = null;
 
-            if($question->type == 'file' && request()->hasFile('responses.' . $question->slug)){
-                $answerValue = app(FileUploadService::class)->secureUpload(
-                request()->file('responses.' . $question->slug),
-                'report-pops'
-                );
-            }
+    //         if($question->type == 'file' && request()->hasFile('responses.' . $question->slug)){
+    //             $answerValue = app(FileUploadService::class)->secureUpload(
+    //             request()->file('responses.' . $question->slug),
+    //             'report-pops'
+    //             );
+    //         }
 
-            if (in_array($question->type, ['select']) && !empty($question->options) && $question->is_quantifiable) {
-                foreach ($question->options as $option) {
-                    if (($option['value'] === $answerValue || $option['label'] === $answerValue)) {
-                        $answerQuantity = $option['value'] ? (int) $option['value'] : null;
-                        $questionLabel = $option['label'];
-                        break;
-                    }
-                }
-            }
+    //         if (in_array($question->type, ['select']) && !empty($question->options) && $question->is_quantifiable) {
+    //             foreach ($question->options as $option) {
+    //                 if (($option['value'] === $answerValue || $option['label'] === $answerValue)) {
+    //                     $answerQuantity = $option['value'] ? (int) $option['value'] : null;
+    //                     $questionLabel = $option['label'];
+    //                     break;
+    //                 }
+    //             }
+    //         }
 
-            if (!empty($question->options) && !is_array($answer)) {
-                foreach ($question->options as $option) {
-                    if (($option['value'] === $answerValue || $option['label'] === $answerValue)) {
-                        $questionLabel = $option['label'];
-                        break;
-                    }
-                }
-            }
+    //         if (!empty($question->options) && !is_array($answer)) {
+    //             foreach ($question->options as $option) {
+    //                 if (($option['value'] === $answerValue || $option['label'] === $answerValue)) {
+    //                     $questionLabel = $option['label'];
+    //                     break;
+    //                 }
+    //             }
+    //         }
 
-            StakeholderReportAnswer::updateOrCreate(
-                [
-                    'report_id' => $report->id,
-                    'question_id' => $question->id,
-                ],
-                [
-                    'answer_value' => $answerValue,
-                    'answer_quantity' => $answerQuantity,
-                    'question_label' => $questionLabel,
-                ]
-            );
-        }
-    }
+    //         StakeholderReportAnswer::updateOrCreate(
+    //             [
+    //                 'report_id' => $report->id,
+    //                 'question_id' => $question->id,
+    //             ],
+    //             [
+    //                 'answer_value' => $answerValue,
+    //                 'answer_quantity' => $answerQuantity,
+    //                 'question_label' => $questionLabel,
+    //             ]
+    //         );
+    //     }
+    // }
 
-    public function checks($stakeholder){
+    // public function checks($stakeholder){
 
-        $data = [
-            'status' => true,
-            'message' => 'success'
-        ];
+    //     $data = [
+    //         'status' => true,
+    //         'message' => 'success'
+    //     ];
 
-        if (
-            is_null($stakeholder->signature) ||
-            is_null($stakeholder->gen_sec_signature) ||
-            is_null($stakeholder->fin_sec_signature) ||
-            is_null($stakeholder->evang_sec_signature)
-        ) {
-            $data = [
-                'status' => false,
-                'message' => 'Kindly upload signatures first, you will only need to do this once'
-            ];
-        }
+    //     if (
+    //         is_null($stakeholder->signature) ||
+    //         is_null($stakeholder->gen_sec_signature) ||
+    //         is_null($stakeholder->fin_sec_signature) ||
+    //         is_null($stakeholder->evang_sec_signature)
+    //     ) {
+    //         $data = [
+    //             'status' => false,
+    //             'message' => 'Kindly upload signatures first, you will only need to do this once'
+    //         ];
+    //     }
 
-        return $data;
-    }
+    //     return $data;
+    // }
     /**
      * Display the specified resource.
      *
@@ -416,50 +321,20 @@ class StakeholderReportsController extends Controller
      */
     public function edit(StakeholderReport $report)
     {
-        $report->load('answers'); // eager load answers
-        $months = $this->getMonths();
         $user = Auth::guard('stakeholder')->user();
-        $chapter = $user->chapter;
+        $canEdit = app(\App\Services\ReportService::class)->canEditReport($report, $user);
 
-        $sections = StakeholderQuestionSection::isActive()
-            ->with([
-                'subsections' => function ($subQuery) {
-                    $subQuery->isActive()->with([
-                        'questions' => function ($q) {
-                            $q->isActive()->orderBy('order');
-                        }
-                    ]);
-                }
-            ])
-            ->orderBy('id')
-            ->get();
-
-
-        // Only used for static/default fields in the form (chapter info, month/year/session)
-        $prefillData = [
-            'chapter_name' => $chapter->name ?? '',
-            'year_established' => $chapter->year_established ?? '',
-            'president_name' => '',
-        ];
-
-        // Prepare answers array keyed by question_slug for edit mode
-        $answersData = [];
-        if ($report->answers) {
-            foreach ($report->answers as $answer) {
-                $decoded = json_decode($answer->answer, true);
-                $answersData[$answer->question_slug] = $decoded ?? $answer->answer;
-            }
+        if(!$canEdit['canEdit']){
+            return back()->with('error', 'You are not authorized to edit this report');
         }
-
-        return view('stakeholder.create', compact('user','months', 'report', 'sections', 'prefillData', 'answersData'));
+        
+        return view(
+            'stakeholder.create',
+            app(ReportService::class)->prepareEditData($report, $user, false)
+            + compact('user')
+        );
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Reports  $reports
-     * @return \Illuminate\Http\Response
-     */
     public function rejectReport(Request $request, StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
@@ -591,32 +466,4 @@ class StakeholderReportsController extends Controller
         );
     }
 
-    // private function validateRequestData($request){
-    //     $rules = [];
-
-    //     foreach ($sections as $section) {
-    //         foreach ($section->subsections as $subsection) {
-    //             foreach ($subsection->questions as $question) {
-    //                 $field = 'responses.' . $question->slug;
-
-    //                 // Build rules dynamically
-    //                 $rules[$field] = $question->is_required ? 'required' : 'nullable';
-
-    //                 // Add type-based validation if quantifiable or specific
-    //                 if ($question->type === 'number' || $question->is_quantifiable) {
-    //                     $rules[$field] .= '|numeric';
-    //                 } elseif ($question->type === 'date') {
-    //                     $rules[$field] .= '|date';
-    //                 } elseif ($question->type === 'email') {
-    //                     $rules[$field] .= '|email';
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     // Now validate using dynamic rules
-    //     $data = $this->validate($request, $rules);
-
-    //     return $data;
-    // }
 }

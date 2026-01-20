@@ -209,7 +209,7 @@ class StakeholderReportQuestionController extends Controller
     {
         $validated = $this->validateQuestion($request, $question->id);
         $validated['slug'] = Str::slug($validated['label']);
-        
+
         $question->update($validated);
 
         $this->syncPermissions($question, $request->input('access_permissions', []));

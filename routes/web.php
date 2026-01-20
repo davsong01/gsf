@@ -188,6 +188,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('stakeholderreportsection', StakeholderReportSectionController::class);
     Route::resource('stakeholderreportsubsection', StakeholderReportSubSectionController::class);
     Route::resource('stakeholderreports', AdminReportsController::class);
+    Route::get('stakeholderreports/download', [AdminReportsController::class, 'download'])->name('stakeholderreports.download');
+    Route::get('stakeholderreports/budge', [AdminReportsController::class, 'nudge'])->name('stakeholderreports.nudge');
 
     Route::prefix('stakeholder')->as('stakeholder.')->group(function () {
         Route::resource('questions', StakeholderReportQuestionController::class);
@@ -239,7 +241,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::controller(ConferenceUtilityToolsController::class)->group(function () {
         Route::get('conferenceutilitytools', 'utilityIndex')->name('conference.utility.tools');
         Route::get('fix-attempted-registration', 'fixAttemptedRegistration')->name('edition.fix.attempted');
-
     });
 
     Route::resource('conferenceeditions', ConferenceEditionController::class);

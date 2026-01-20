@@ -127,7 +127,7 @@
                         $statuses = [
                             'Zone' => $report->zone_status,
                             'Field' => $report->field_status,
-                            'National' => $report->status_complete
+                            'National' => $report->national_status
                         ];
                     @endphp
                     <div class="status-info">

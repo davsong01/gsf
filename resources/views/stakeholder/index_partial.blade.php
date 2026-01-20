@@ -117,7 +117,7 @@
                     </div>
 
                     {{-- Button --}}
-                    <div class="col-md-2">
+                    <div class="col-md-2 mb-2">
                         <button class="btn btn-secondary w-100">Filter</button>
                     </div>
 
@@ -130,7 +130,6 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    @include('includes.alerts')
                     <div class="card-body table-responsive">
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -165,6 +164,7 @@
                                                 $fieldStatus = $report->field_status;
                                                 $zoneStatus = $report->zone_status;
                                                 $natStatus  = $report->national_status;
+                                                $canEdit = app(\App\Services\ReportService::class)->canEditReport($report, $user);
                                             @endphp
                                             {{-- Zone --}}
                                             <div class="d-flex align-items-center" style="margin-bottom:5px">
@@ -224,55 +224,57 @@
                                             </a>
 
                                             {{-- Edit --}}
-                                            @php
-                                                $userRole = $user->role_id;
-
-                                                // Determine if the report is fully approved
-                                                $allApproved = $zoneStatus == 1 && $fieldStatus == 1 && $report->status_complete == 1;
-
-                                                // Determine if edit is allowed
-                                                $canEdit = (
-                                                    (in_array($userRole, fieldStakeholders()) && $fieldStatus == 0) ||
-                                                    (in_array($userRole, zoneStakeholders()) && $zoneStatus == 0) ||
-                                                    (in_array($userRole, chapterStakeholders()) && $zoneStatus == 0) ||
-                                                    in_array($userRole, secretariatStakeholders()) ||
-                                                    in_array($userRole, ncpStakeholders()) ||
-                                                    in_array($userRole, [1])
-                                                );
-                                            @endphp
-
-                                            {{-- Edit --}}
-                                            @if($canEdit)
-                                                <a href="{{ route('stakeholders.reports.edit', $report->id) }}" class="text-warning mx-1" title="Edit Report" onclick="return confirm('Are you sure you want to edit this report?');">
+                                            @if($canEdit['canEdit'])
+                                                <a
+                                                    href="{{ route($isAdmin ? 'stakeholderreports.edit' : 'stakeholders.reports.edit', $report->id) }}"
+                                                    class="text-warning mx-1"
+                                                    title="Edit Report"
+                                                    onclick="return confirm('Are you sure you want to edit this report?');"
+                                                >
                                                     <i class="fa fa-edit"></i>
                                                 </a>
                                             @endif
 
                                             {{-- Download --}}
-                                            @if($allApproved)
-                                                <a href="{{ route('stakeholders.reports.download', $report->id) }}" target="_blank" class="text-success mx-1" title="Download Report">
+                                            @if($canEdit['allApproved'])
+                                                <a
+                                                    href="{{ route($isAdmin ? 'stakeholderreports.download' : 'stakeholders.reports.download', $report->id) }}"
+                                                    target="_blank"
+                                                    class="text-success mx-1"
+                                                    title="Download Report"
+                                                >
                                                     <i class="fa fa-download"></i>
                                                 </a>
                                             @endif
 
-
                                             {{-- Nudge --}}
-                                            <a href="{{ route('stakeholders.reports.nudge', $report->id) }}" class="text-indigo-600 mx-1" title="Send Nudge">
+                                            <a
+                                                href="{{ route($isAdmin ? 'stakeholderreports.nudge' : 'stakeholders.reports.nudge', $report->id) }}"
+                                                class="text-indigo-600 mx-1"
+                                                title="Send Nudge"
+                                            >
                                                 <i class="fa fa-bullhorn"></i>
                                             </a>
 
                                             {{-- Delete --}}
-                                            @if(in_array($user->role_id, secretariatStakeholders()))
-                                                {{-- <a href="{{ route('stakeholders.reports.delete', $report->id) }}" class="text-danger mx-1" title="Delete Report" onclick="return confirm('Are you sure you want to delete this report?');">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            @if($isAdmin && $zoneStatus == 0 && $fieldStatus == 0 && $report->national_status == 0)
+                                                <a
+                                                    href="{{ route('stakeholders.reports.delete', $report->id) }}"
+                                                    class="text-danger mx-1"
+                                                    title="Delete Report"
+                                                    onclick="return confirm('Are you sure you want to delete this report?');"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                         <polyline points="3 6 5 6 21 6"/>
                                                         <path d="M19 6l-2 14H7L5 6"/>
                                                         <path d="M10 11v6"/>
                                                         <path d="M14 11v6"/>
                                                         <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                                                     </svg>
-                                                </a> --}}
+                                                </a>
                                             @endif
+
                                         </td>
                                     </tr>
                                     @endforeach

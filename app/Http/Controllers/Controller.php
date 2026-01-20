@@ -32,32 +32,13 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     public $edition = null;
-    
+
     public function __construct(Request $request = null)
     {
         $this->edition = activeConferenceEdition();
-        
-    }
-    protected function getMonths()
-    {
-        $months = [
-            'January' => 1,
-            'February' => 2,
-            'March' => 3,
-            'April' => 4,
-            'May' => 5,
-            'June' => 6,
-            'July' => 7,
-            'August' => 8,
-            'September' => 9,
-            'October' => 10,
-            'November' => 11,
-            'December' => 12,
-        ];
 
-        return $months;
     }
-
+    
     protected function getPortfolios()
     {
         $portfolios = [
@@ -173,7 +154,7 @@ class Controller extends BaseController
         // $data['attachments'] = $email->attachments;
         try {
             Mail::to($data['recipient'])->send(new NotificationEmail($data));
-            
+
             return [
                 'message'=>'success'
             ];
@@ -221,15 +202,15 @@ class Controller extends BaseController
     protected function uploadImage($image, $location, $width = null, $height = null)
     {
         $imgName = time() . rand(11111111, 9999999) . '.' . $image->getClientOriginalExtension();
-        
+
         if ($width && $height) {
             $image = Image::make($image)->resize($width, $height);
         } else {
             $image = Image::make($image);
         }
-        
+
         $image->save($location . '/' . $imgName);
-        
+
         return $location . '/' . $imgName;
     }
 
@@ -256,7 +237,7 @@ class Controller extends BaseController
         return sprintf(
             '<form id="%s" action="%s" method="POST"> <input type="hidden" name="_token" value="%s">
                     <input type="hidden" name="_method" value="DELETE">
-                        <a class="actions" data-toggle="tooltip" title="Delete record" href="#" onClick="event.preventDefault(); if(confirm(\'Tis record will be trashed\')) document.getElementById(\'%s\').submit();" 
+                        <a class="actions" data-toggle="tooltip" title="Delete record" href="#" onClick="event.preventDefault(); if(confirm(\'Tis record will be trashed\')) document.getElementById(\'%s\').submit();"
                         >
                     <i class="bx bx-trash actions"></i></a>
                 </form>',
@@ -275,7 +256,7 @@ class Controller extends BaseController
         );
     }
 
-   
+
 
     // public function createUser($data)
     // {
@@ -293,7 +274,7 @@ class Controller extends BaseController
 
     //     return $user;
     // }
-   
+
 
 
     // public function createPayment($data, $user)

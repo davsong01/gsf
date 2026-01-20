@@ -9,6 +9,27 @@ use App\Models\StakeholderRole;
 use App\Models\ConferenceEdition;
 use App\Models\StakeholderReport;
 
+if (!function_exists('canAddNextMonthReport')) {
+    function getMonths()
+    {
+        $months = [
+            'January' => 1,
+            'February' => 2,
+            'March' => 3,
+            'April' => 4,
+            'May' => 5,
+            'June' => 6,
+            'July' => 7,
+            'August' => 8,
+            'September' => 9,
+            'October' => 10,
+            'November' => 11,
+            'December' => 12,
+        ];
+
+        return $months;
+    }
+}
 
 if (!function_exists('canAddNextMonthReport')) {
     /**
@@ -53,9 +74,6 @@ if (!function_exists('canAddNextMonthReport')) {
         return !$reportExists;
     }
 }
-
-
-
 
 if (!function_exists('generateSampleValue')) {
     function generateSampleValue($type, $name)

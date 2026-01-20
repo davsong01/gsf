@@ -4,7 +4,6 @@
 <li class="breadcrumb-item">Reports</li>
 @endsection
 
-
 @section('content')
 @include('stakeholder.index_partial')
 @endsection
