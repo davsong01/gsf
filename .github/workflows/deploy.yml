@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to GSF server
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v0.1.8
         with:
           host: 162.0.232.109
           username: shinliih
@@ -24,13 +24,17 @@ jobs:
           port: 21098
           script_stop: true
           script: |
+            echo "Deploying to GSF..."
             cd /home/shinliih/directory.gsfnational.org/MF
-            git pull origin development
+            git fetch --all
+            git reset --hard origin/development
             php artisan migrate --force
             php artisan cache:clear
             php artisan config:clear
             php artisan route:clear
             php artisan view:clear
+            echo "Deployment to GSF completed!"
+
   # deploy-gyf:
   #   name: Deploy to GYF
   #   runs-on: ubuntu-latest
@@ -40,7 +44,7 @@ jobs:
   #       uses: actions/checkout@v4
 
   #     - name: Deploy to GYF server
-  #       uses: appleboy/ssh-action@v1.0.3
+  #       uses: appleboy/ssh-action@v0.1.8
   #       with:
   #         host: 198.54.115.222
   #         username: gyfnbpbo
@@ -48,11 +52,13 @@ jobs:
   #         port: 21098
   #         script_stop: true
   #         script: |
+  #           echo "Deploying to GYF..."
   #           cd /home/gyfnbpbo/registration.gyfnational.org/apps
-  #           git pull origin development
+  #           git fetch --all
+  #           git reset --hard origin/development
   #           php artisan migrate --force
   #           php artisan cache:clear
   #           php artisan config:clear
   #           php artisan route:clear
   #           php artisan view:clear
-
+  #           echo "Deployment to GYF completed!"
