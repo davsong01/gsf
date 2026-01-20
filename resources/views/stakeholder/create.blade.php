@@ -153,7 +153,7 @@
                                         @foreach($subsection->questions as $question)
                                             @php
                                                 $qAccess = app('App\Services\StakeholderRolePermissionService'::class)->questionAccess($user, $question);
-                                                
+
                                                 $value = old('responses.' . $question->slug);
                                                 if(isset($report) && $report->answers) {
                                                     $answer = $report->answers->firstWhere('question_id', $question->id);
@@ -165,16 +165,26 @@
                                                 if(!$value && isset($prefillData[$question->slug])) {
                                                     $value = $prefillData[$question->slug];
                                                 }
-                                                
+
                                                 $disabled = !$qAccess['edit'] ? 'disabled' : '';
                                             @endphp
 
                                             <div class="{{ $question->width_class ?? 'col-md-6' }} mb-1">
-                                                <label for="{{ $question->slug }}">
-                                                    {{ $questionNumber }}. {{ $question->label }}
-                                                    @if($question->is_required && $qAccess['edit']) <span class="text-danger">*</span> @endif
-                                                </label>
+                                                <label for="{{ $question->slug }}" class="d-flex align-items-center gap-2">
+                                                    <span>
+                                                        {{ $questionNumber }}. {{ $question->label }}
+                                                        @if($question->is_required && $qAccess['edit'])
+                                                            <span class="text-danger">*</span>
+                                                        @endif
+                                                    </span>
 
+                                                    @if($question->type === 'file' && !empty($value))
+                                                        <a style="margin-left:10px" href="{{ route('protected.download', ['file' => $value]) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                            View
+                                                        </a>
+                                                    @endif
+
+                                                </label>
                                                 @switch($question->type)
                                                     @case('text')
                                                     @case('year')
@@ -212,6 +222,7 @@
                                                                 name="responses[{{ $question->slug }}]"
                                                                 {{ $disabled }}
                                                                 @if($question->is_required && $qAccess['edit']) required @endif>
+
                                                             <option value="">Select...</option>
                                                             @foreach($options ?? [] as $opt)
                                                                 @if(isset($opt['label'], $opt['value']))
@@ -248,7 +259,7 @@
                                                                                         class="form-control"
                                                                                         value="{{ $row[$colLabel] ?? '' }}"
                                                                                         {{ $disabled }}
-                                                                                        @if(!empty($col['required']) && $qAccess['edit']) required @endif>
+                                                                                        @if(!empty($col['required']) && $qAccess['edit'] && $question->is_required) required @endif>
                                                                                 </td>
                                                                             @endforeach
                                                                             @if($qAccess['edit'])
@@ -265,7 +276,7 @@
                                                         @break
 
                                                     @case('income_table')
-                                                        <strong style="color:red"><small>(Ensure each column has a minimum of 0)</small></strong>
+                                                        {{-- <strong style="color:red"><small>(Ensure each column has a minimum of 0)</small></strong> --}}
                                                         <div class="table-responsive">
                                                             <table class="table table-bordered income-table" data-slug="{{ $question->slug }}">
                                                                 <thead class="table-light">
@@ -287,7 +298,8 @@
                                                                                         name="responses[{{ $question->slug }}][{{ $week }}][{{ $col }}]"
                                                                                         value="{{ $value[$week][$col] ?? '' }}"
                                                                                         {{ $disabled }}
-                                                                                        @if($qAccess['edit'] && $col != 'Remarks') required min="0" @endif>
+                                                                                        {{-- @if($qAccess['edit'] && $col != 'Remarks') required min="0" @endif> --}}
+                                                                                        >
                                                                                 </td>
                                                                             @endforeach
                                                                         </tr>
@@ -305,7 +317,22 @@
                                                                 </tfoot>
                                                             </table>
                                                         </div>
-                                                        @break
+                                                    @break
+                                                    @case('file')
+                                                        <input
+                                                            type="file"
+                                                            class="form-control"
+                                                            id="{{ $question->slug }}"
+                                                            name="responses[{{ $question->slug }}]"
+                                                            {{ $disabled }}
+                                                            accept=".jpg,.jpeg,.png,.pdf"
+                                                            @if($question->is_required && $qAccess['edit']) required @endif
+                                                        >
+                                                        <small class="text-danger">
+                                                            Only JPG, JPEG, PNG, and PDF files are allowed.
+                                                        </small>
+                                                    @break
+
                                                 @endswitch
                                             </div>
 
@@ -330,8 +357,20 @@
                 </div>
             </div>
 
-            <div class="mt-4">
-                <button class="btn btn-primary w-100" type="submit">{{ isset($report) ? 'Update Report' : 'Submit' }}</button>
+            <style>
+                .button-gap > * + * {
+                    margin-left: 15px; /* adjust gap as needed */
+                }
+            </style>
+
+            <div class="mt-4 d-flex button-gap">
+                <button class="btn btn-warning flex-fill" name="edit_mode" value="1" type="submit">
+                    Save and Submit later
+                </button>
+                <button class="btn btn-success flex-fill" name="edit_mode" value="0" type="submit">
+                    {{ isset($report) ? 'Update and Final Submission' : 'Final Submission' }}
+                </button>
+
             </div>
         </form>
     </section>
@@ -360,9 +399,9 @@
     }
 
     // National/Secretariat/NCP approval (only after zone & field approval)
-    elseif(in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders())) 
-           && $report->zone_status == 1 
-           && $report->field_status == 1 
+    elseif(in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders()))
+           && $report->zone_status == 1
+           && $report->field_status == 1
            && in_array($report->status_complete, [0,2])) {
         $canAct = true;
         $approveRoute = route('stakeholders.reports.approve', $report->id);
@@ -375,8 +414,8 @@
 @if($canAct)
     <div class="sticky-action-buttons">
     <!-- Approve Button -->
-        <a href="{{ $approveRoute }}" 
-        class="btn btn-success btn-circle" 
+        <a href="{{ $approveRoute }}"
+        class="btn btn-success btn-circle"
         title="{{ $tooltipApprove }}"
         onclick="return confirm('Are you sure you want to approve this report?');">
             <i class="fa fa-check"></i>
@@ -415,9 +454,7 @@
         </form>
     </div>
 </div>
-
 @endif
-
 @endsection
 
 @section('extra_scripts')
@@ -476,6 +513,26 @@
     // Initialize totals on page load
     $('.income-table').each(function(){
         recalcTotals($(this));
+    });
+
+    $(function () {
+
+        const getVal = id => parseFloat($(id).val()) || 0;
+        const setVal = (id, value) => $(id).val(value.toFixed(2));
+
+        const recalculate = () => {
+            const cash = getVal('#total-tithe-received-by-cash');
+            const bank = getVal('#total-tithe-paid-to-bank');
+
+            const totalTithe = cash + bank;
+            const tenPercent = totalTithe * 0.1;
+
+            setVal('#total-tithe-for-the-month', totalTithe);
+            setVal('#10-of-total-tithe', tenPercent);
+        };
+
+        // Recalculate on any input change
+        $('#total-tithe-received-by-cash, #total-tithe-paid-to-bank').on('input keyup change', recalculate);
     });
 </script>
 @endsection

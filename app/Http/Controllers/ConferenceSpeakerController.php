@@ -40,7 +40,7 @@ class ConferenceSpeakerController extends Controller
         $imagePath = null;
 
         if ($request->hasFile('image')) {
-            $imagePath = FileUploadService::uploadImage($request->image, 'frontend/images/conferencespeakers');
+            $imagePath = app(FileUploadService::class)->uploadImage($request->image, 'frontend/images/conferencespeakers');
         }
 
         ConferenceSpeaker::create([
@@ -78,7 +78,7 @@ class ConferenceSpeakerController extends Controller
         $imagePath = $conferenceSpeaker->image;
 
         if ($request->hasFile('image')) {
-            $imagePath = FileUploadService::uploadImage($request->image, 'frontend/images/conferencespeakers');
+            $imagePath = app(FileUploadService::class)->uploadImage($request->image, 'frontend/images/conferencespeakers');
         }
 
         $conferenceSpeaker->update([

@@ -1,5 +1,9 @@
 @extends('layouts.stakeholderdashboard')
-
+<style>
+    .monitor-card{
+        margin-bottom:20px !important
+    }
+</style>
 @section('title', 'Reports Dashboard')
 
 @section('active')
@@ -22,7 +26,7 @@
     <div class="row g-3 mb-4">
 
         {{-- My Reports --}}
-        <div class="col-md-3 col-sm-6">
+        <div class="col-md-3 col-sm-6 monitor-card">
             <a href="{{ route('stakeholders.reports.index') }}" class="text-decoration-none">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
@@ -31,7 +35,7 @@
                                 <i class="fa fa-file-alt fa-2x"></i>
                             </div>
                             <div>
-                                <h6 class="mb-1">My Reports</h6>
+                                <h6 class="mb-1">All Reports</h6>
                                 <small class="text-muted">View submitted reports</small>
                             </div>
                         </div>
@@ -41,7 +45,8 @@
         </div>
 
         {{-- Submit Report --}}
-        <div class="col-md-3 col-sm-6">
+        @if(canAddNextMonthReport(Auth::guard('stakeholder')->user()))
+        <div class="col-md-3 col-sm-6 monitor-card">
             <a href="{{ route('stakeholders.reports.create') }}" class="text-decoration-none">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
@@ -58,9 +63,9 @@
                 </div>
             </a>
         </div>
-
+        @endif
         {{-- Pending Approvals --}}
-        <div class="col-md-3 col-sm-6">
+        <div class="col-md-3 col-sm-6 monitor-card">
             <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
@@ -69,8 +74,44 @@
                                 <i class="fa fa-clock fa-2x"></i>
                             </div>
                             <div>
-                                <h6 class="mb-1">Pending Reviews</h6>
-                                <small class="text-muted">Reports awaiting action</small>
+                                <h6 class="mb-1">Pending Zonal Reviews</h6>
+                                <small class="text-muted">Reports awaiting action from zonal Pastor</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3 col-sm-6 monitor-card">
+            <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3 text-warning">
+                                <i class="fa fa-clock fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Pending Field Reviews</h6>
+                                <small class="text-muted">Reports awaiting action from field pastor</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3 col-sm-6 monitor-card">
+            <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3 text-warning">
+                                <i class="fa fa-clock fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Pending National Reviews</h6>
+                                <small class="text-muted">Reports awaiting action from the national</small>
                             </div>
                         </div>
                     </div>
@@ -79,7 +120,7 @@
         </div>
 
         {{-- Approved Reports --}}
-        <div class="col-md-3 col-sm-6">
+        <div class="col-md-3 col-sm-6 monitor-card">
             <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'approved']) }}" class="text-decoration-none">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
@@ -96,7 +137,6 @@
                 </div>
             </a>
         </div>
-
     </div>
 
     {{-- Insights / Analytics --}}

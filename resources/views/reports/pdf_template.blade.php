@@ -156,22 +156,28 @@
                 <table>
                     <tbody>
                         @foreach($subsection->questions as $question)
-                            @php
+                           @php
                                 $answer = $report->answers->firstWhere('question_id', $question->id);
-                                $value = $answer ? json_decode($answer->answer_value, true) : null;
-                                $value = $value ?? ($answer->answer_value ?? '-');
+
+                                $value = $answer
+                                    ? (($answer->question_label ?? $answer->answer_value) ?? json_decode($answer->answer_value, true))
+                                    : '-';
                             @endphp
+
 
                             <!-- Simple Inputs -->
                             @if(in_array($question->type, ['text','number','date','year','month','textarea','select']))
                                 <tr>
-                                    <th width="60%">{{ $question->label }}</th>
+                                    <th width="60%">{{ $question->label ?? $question->label  }}</th>
                                     <td>{{ $value ?: '-' }}</td>
                                 </tr>
                             @endif
 
                             <!-- Dynamic Table -->
-                            @if($question->type === 'dynamic_table' && is_array($value))
+                            @if($question->type === 'dynamic_table')
+                                @php
+                                    $value = $answer->answer_value ? json_decode($answer->answer_value, true) : [];
+                                @endphp
                                 <tr>
                                     <td colspan="2">
                                         <table>
@@ -187,11 +193,15 @@
                                                     <tr>
                                                         @foreach($question->options as $col)
                                                             @php $key = $col['label'] ?? $col; @endphp
-                                                            <td>{{ $row[$key] ?? '-' }}</td>
+                                                            <td>
+                                                                {{ $row[$key] ?? '-' }}
+                                                            </td>
                                                         @endforeach
                                                     </tr>
                                                 @empty
-                                                    <tr><td colspan="{{ count($question->options) }}">No data</td></tr>
+                                                    <tr>
+                                                        <td colspan="{{ count($question->options) }}">No data</td>
+                                                    </tr>
                                                 @endforelse
                                             </tbody>
                                         </table>
@@ -202,6 +212,8 @@
                             <!-- Income Table -->
                             @if($question->type === 'income_table')
                                 @php
+                                    $value = $answer->answer_value ? json_decode($answer->answer_value, true) : [];
+                               
                                     $totals = [];
                                     foreach ($question->options['columns'] as $col) {
                                         if ($col !== 'Remarks') $totals[$col] = 0;

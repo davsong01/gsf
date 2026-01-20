@@ -2,6 +2,7 @@
 
 use App\Models\CriticalEmail;
 use App\Services\EmailService;
+use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NecController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\SwitchUserController;
 use App\Http\Controllers\UserEmailsController;
 use App\Http\Controllers\StakeholderController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\UtilityToolsController;
 use App\Http\Controllers\ConferenceFaqController;
 use App\Http\Controllers\CriticalEmailController;
@@ -124,12 +126,12 @@ Route::controller(HomeController::class)->group(function () {
     Route::any('people/singlecampus/{chapter?}', 'singleCampus')->name('campus.single');
     Route::get('campus-membersx/{id}', 'studentsByChapter')->name('members.campus');
     Route::get('campus-members/{id}', 'alumniByChapter')->name('alumni.campus');
-    
+
     Route::post('contactcampus', 'contactCampus')->name('campus.contact');
     // Alumni routes
     Route::get('all-alumni', 'alumni')->name('people.alumni');
     Route::get('all-nec', 'nec')->name('people.nec');
-    
+
     Route::get('all-members', 'students')->name('people.students');
     Route::get('people/{slug}', 'singleUser')->name('user.single');
     Route::get('people/{student}', 'singleStudent')->name('student.single');
@@ -145,7 +147,7 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('general-search', 'generalSearch')->name('general.search');
     Route::get('search-alumni', 'alumniSearch')->name('search.alumni');
     Route::get('member/search', 'memberSearch')->name('member.search');
-    
+
     Route::get('newalumni', 'newAlumni')->name('newalumni');
     Route::post('newalumni', 'saveNewAlumni')->name('newalumni.save');
     Route::get('conference-registration/{page?}', 'regPage')->name('conference.registration');
@@ -154,7 +156,7 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('newdonation', 'newDonation')->name('newdonation');
     Route::post('upload-alumni/{type}', [HomeController::class, 'uploadAlumni'])->name('upload-alumni');
     Route::get('upload-multiple', [HomeController::class, 'uploadMultiple'])->name('upload.multiple');
-    
+
     Route::get('sample-listing', [HomeCOntroller::class, 'getListingSample'])->name('sample-listing');
 });
 
@@ -185,21 +187,19 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('stakeholderpermissions', StakeholderPermissionController::class);
     Route::resource('stakeholderreportsection', StakeholderReportSectionController::class);
     Route::resource('stakeholderreportsubsection', StakeholderReportSubSectionController::class);
-    
-
-
+    Route::resource('stakeholderreports', AdminReportsController::class);
 
     Route::prefix('stakeholder')->as('stakeholder.')->group(function () {
         Route::resource('questions', StakeholderReportQuestionController::class);
-        
+        Route::get('clone-question/{question}', [StakeholderReportQuestionController::class, 'cloneQuestion'])->name('questions.clone');
     });
-    
+
     // Official
     Route::resource('nec', NecController::class);
-    
+
     Route::get('archived-nec', [NecController::class, 'archivedNec'])->name('archive.nec.index');
     Route::post('process-archive-nec', [NecController::class, 'archiveNec'])->name('nec.archive');
-    
+
     Route::get('nec-delete/{id}', [NecController::class, 'delete'])->name('nec.delete');
     Route::resource('users', UserController::class);
     Route::get('donations-all', [DonationController::class, 'allDonations'])->name('donations.all');
@@ -239,7 +239,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::controller(ConferenceUtilityToolsController::class)->group(function () {
         Route::get('conferenceutilitytools', 'utilityIndex')->name('conference.utility.tools');
         Route::get('fix-attempted-registration', 'fixAttemptedRegistration')->name('edition.fix.attempted');
-        
+
     });
 
     Route::resource('conferenceeditions', ConferenceEditionController::class);
@@ -247,7 +247,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     //Conference management
     Route::resource('conferencemanagement', ConferenceManagementController::class);
     Route::get('tempusers', [TransactionController::class, 'attemptedTransactions'])->name('tempusers.index');
-    
+
     Route::post('fetch-transaction', [PaymentController::class, 'paystackGetCustomerIdByEmail'])->name('admin.transactions.fetch');
 
     Route::controller(TransactionController::class)->group(function () {
@@ -293,7 +293,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
         Route::get('conferencecards/{id}', 'getCard')->name('participants.card');
         Route::get('user/meal/{id}', 'getMealTicket')->name('meal.ticket');
-        
+
     });
 
     Route::post('conference-query-payment', [PaymentController::class, 'requery'])->name('conference.queryPayment');
@@ -307,14 +307,14 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         // Route::get('moderator/import/index', 'usersImportIndex')->name('moderator.conference.import.index');
         // Route::get('participants/import/index', 'usersImportIndex')->name('conferenceusers.import.index');
     });
-   
+
     Route::resource('hostels', HostelController::class);
     Route::controller(HostelController::class)->group(function () {
         Route::get('hostels/delete/{id}', 'destroy')->name('hostels.delete');
         Route::get('hostel-export/{id}', 'participantExport')->name('hostelusers.export');
         Route::get('hostels-repair-allocation', 'repairHostelAllocation')->name('hostels.repair.allocation');
         Route::get('hostels-auto-allocate/{edition}', 'autoAllocateHostel')->name('hostels.auto.allocate');
-        
+
         Route::post('hostels-merger', 'hostelMerger')->name('hostels.merge');
         Route::post('get-available-hostels', 'getAvailableHostels')->name('get.available.hostels');
     });
@@ -343,7 +343,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     });
 
     Route::get('/reset', [ConferenceSettingController::class, 'resetData'])->name('database.clear');
-    
+
     Route::resource('foods', FoodController::class);
     Route::get('foods/delete/{id}', [FoodController::class, 'destroy'])->name('foods.delete');
 
@@ -351,22 +351,22 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('/nec/import/index', 'necsImportIndex')->name('necs.import.index');
         Route::get('/nec/export', 'necsExport')->name('necs.export');
         Route::post('/nec/import', 'import')->name('necs.import');
-    
+
         Route::get('/alumnis/import/index', 'alumnisImportIndex')->name('alumnis.import.index');
         Route::get('/alumnis/export', 'alumnisExport')->name('alumnis.export');
         Route::post('/alumnis/import', 'import')->name('alumnis.import');
-    
+
         Route::get('/moderators/import/index', 'moderatorsImportIndex')->name('moderators.import.index');
         Route::get('/moderators/export', 'moderatorsExport')->name('moderators.export');
         Route::post('/moderators/import', 'import')->name('moderators.import');
         Route::get('/medical/import/index', 'medicalImportIndex')->name('medical.import.index');
         Route::get('/medical/export', 'medicalExport')->name('medical.export');
         Route::post('/medical/import', 'import')->name('medical.import');
-    
+
         Route::get('/choir/import/index', 'choirImportIndex')->name('choir.import.index');
         Route::get('/choir/export', 'choirExport')->name('choir.export');
         Route::post('/choir/import', 'import')->name('choir.import');
-    
+
         Route::get('medical', 'getMedical')->name('user.medical');
         Route::get('choir', 'getChoir')->name('user.choir');
         Route::get('choir/{id}/edit', 'editChoir')->name('choir.edit');
@@ -378,7 +378,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
         Route::get('users-export/{type}', 'getAdminParticipantSample')->name('usersexport.sample');
     });
-    
+
     Route::resource('officials', OfficialController::class);
 
     Route::resource('chapters', ChapterController::class);
@@ -399,7 +399,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('zones', ZoneController::class);
     Route::get('zones/delete/{id}', [ZoneController::class, 'destroy'])->name('zones.delete');
-  
+
     Route::get('officials/delete/{official}', [OfficialController::class, 'delete'])->name('officials.delete');
     Route::resource('moderators', ModeratorController::class);
     Route::get('moderators/delete/{id}', [ModeratorController::class, 'destroy'])->name('moderators.delete');
@@ -500,7 +500,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::post('reports/reject/{report}', 'rejectReport')->name('reports.reject');
             Route::get('reports/approve/{report}', 'approveReport')->name('reports.approve');
             Route::get('reports/analysis', 'reportAnalysis')->name('reports.analysis');
-            
+
         });
 
         // Payments
@@ -515,18 +515,10 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
 
 
 //Get signature Image
-Route::get('/protected-files/{file}', function ($file) {
-    $disk = 'protected_uploads';
+Route::get('/protected-files/{file}', fn ($file) =>
+    app(FileUploadService::class)->serveProtectedFile($file)
+)->middleware('stakeholder')->name('protected.download');
 
-    // Decode the path
-    $file = base64_decode($file);
-
-    if (!Storage::disk($disk)->exists($file)) {
-        abort(404);
-    }
-
-    $realPath = Storage::disk($disk)->path($file);
-
-    // Return the file as response
-    return response()->file($realPath);
-})->name('protected.download')->middleware('auth');
+Route::get('/admin-protected-files/{file}', fn ($file) =>
+    app(FileUploadService::class)->serveProtectedFile($file)
+)->middleware('auth')->name('admin.protected.download');

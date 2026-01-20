@@ -8,9 +8,6 @@ use Illuminate\Support\Str;
 use App\Services\EmailService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\StakeholderReport;
-use Illuminate\Http\UploadedFile;
-use App\Services\FileUploadService;
-use Illuminate\Support\Facades\Auth;
 use App\Models\StakeholderQuestionSection;
 
 class ReportNotificationService
@@ -20,7 +17,7 @@ class ReportNotificationService
         if (!in_array($type, ['update', 'store'], true)) {
             return;
         }
-        
+
         $roleHierarchy = [
             'chapter'     => chapterStakeholders(),
             'zone'        => zoneStakeholders(),
@@ -35,7 +32,7 @@ class ReportNotificationService
          * Resolve current stakeholder hierarchy index
          */
         $currentLevelIndex = null;
-        
+
         foreach ($levels as $index => $level) {
             if (in_array($stakeholder->role_id, $roleHierarchy[$level], true)) {
                 $currentLevelIndex = $index;
@@ -45,7 +42,7 @@ class ReportNotificationService
         if ($currentLevelIndex === null) {
             return;
         }
-        
+
 
         /**
          * Collect recipients ABOVE current level
@@ -54,9 +51,9 @@ class ReportNotificationService
 
         for ($i = $currentLevelIndex + 1; $i < count($levels); $i++) {
             $level = $levels[$i];
-            
+
             $query = Stakeholder::select(['name', 'email','role_id'])->where('status', 'active')->whereIn('role_id', $roleHierarchy[$level]);
-            
+
             // Chapter-scoped hierarchy levels
             if (in_array($level, ['chapter'])) {
                 $query->where('chapter_id', $report->chapter_id);
@@ -69,7 +66,7 @@ class ReportNotificationService
             if (in_array($level, ['field'])) {
                 $query->where('field_id', $report->field_id);
             }
-            
+
             $recipients = $recipients->merge($query->get());
         }
 
@@ -78,7 +75,7 @@ class ReportNotificationService
             ->unique('email')
             ->values()
             ->toArray();
-        
+
         if (empty($recipients)) {
             return;
         }
@@ -102,12 +99,12 @@ class ReportNotificationService
                 'updated_at' => now(),
             ];
         }
-        
+
         $emailData = [
             'type'        => 'report_email',
             'recipients' => $allEmailData,
         ];
-        
+
         EmailService::logEmail($emailData);
 
         return;
@@ -143,7 +140,7 @@ class ReportNotificationService
          */
         $levelLabel = '';
         $comment = '';
-        
+
         switch ($stakeholder->role->slug) {
             case 'zonal-pastor':
                 $levelLabel = 'Zonal Level';
@@ -164,7 +161,7 @@ class ReportNotificationService
          * Use existing PDF file
          */
         $pdfFilePath = $report->file_location;
-        
+
         /**
          * NOTIFY NEXT LEVEL (approval only)
          */
@@ -191,7 +188,7 @@ class ReportNotificationService
                 if(!empty($nextLevelRecipients)){
                     foreach($nextLevelRecipients as $recipient){
                         $generatedEmail = self::generateReportEmailSummary($report, $stakeholder, $recipient, $action, $levelLabel);
-                        
+
                         $allEmailData[] = [
                             'recipient' => $recipient['email'],
                             'type'      => 'report_email',
@@ -207,7 +204,7 @@ class ReportNotificationService
                 }
             }
         }
-        
+
         /**
          * NOTIFY ALL LOWER LEVELS
          */
@@ -215,11 +212,11 @@ class ReportNotificationService
             $recipientsBelow = collect();
             for ($i = 0; $i < $currentLevelIndex; $i++) {
                 $level = $levels[$i];
-                
+
                 $query = Stakeholder::select(['name', 'email', 'role_id'])
                     ->where('status', 'active')
                     ->whereIn('role_id', $roleHierarchy[$level]);
-                    
+
                 // Scope based on report location
                 if ($level === 'chapter') $query->where('chapter_id', $report->chapter_id);
                 if ($level === 'zone')    $query->where('zone_id', $report->zone_id);
@@ -233,7 +230,7 @@ class ReportNotificationService
                 ->unique('email')
                 ->values()
                 ->toArray();
-            
+
             if (!empty($recipientsBelow)) {
                 if ($levelLabel == 'Zonal Level') {
                     $rejectionReason = $report->zone_comment;
@@ -248,10 +245,10 @@ class ReportNotificationService
                 if (!empty($rejectionReason)) {
                     $reason = "<h4>Rejection Reason</h4>" . $rejectionReason;
                 }
-                
+
                 foreach($recipientsBelow as $recipient){
                     $generatedEmail = self::generateReportEmailSummary($report, $stakeholder, $recipient, $action, $levelLabel);
-    
+
                     $allEmailData[] = [
                         'recipient' => $recipient['email'],
                         'type'      => 'report_email',
@@ -281,7 +278,7 @@ class ReportNotificationService
         $monthName = Carbon::create()
             ->month($report->month)
             ->format('F');
-        
+
         $emailMap = [
             'store' => [
                 'opening' => "GSF ({$monthName}, {$report->year}) Report submitted. Please find details below:",
@@ -312,7 +309,7 @@ class ReportNotificationService
         $opening = $config['opening'];
         $subject = $config['subject'];
         $extra = $config['extra'] ?? '';
-        
+
         $statuses = [
             'Zone'     => $report->zone_status,
             'Field'    => $report->field_status,
@@ -332,10 +329,10 @@ class ReportNotificationService
 
             $statusHtml .= "<p><strong>{$key}:</strong> {$label}</p>";
         }
-        
+
 
         $salutation = !empty($recipient['name']) ? 'Dear '. $recipient['name'] .',': '';
-        
+
         $content = "
             <h4>{$salutation}</h4>
 
@@ -345,7 +342,7 @@ class ReportNotificationService
             <p>{$actorLabel}: <strong>{$stakeholder->name}</strong></p>
             <p>Zone: <strong>{$report->chapter->zone->name}</strong></p>
             <p>Field: <strong>{$report->chapter->field->name}</strong></p>
-            <p>Submission Date: 
+            <p>Submission Date:
                 <strong>{$report->updated_at->format('d M Y H:i')}</strong>
             </p>
 

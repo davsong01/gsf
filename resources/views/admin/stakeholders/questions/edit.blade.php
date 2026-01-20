@@ -21,7 +21,7 @@
                     <div class="card-header">@include('includes.alerts')</div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ isset($question) ? route('stakeholder.questions.update', $question->id) : route('stakeholder.questions.store') }}" method="POST">
+                            <form action="{{ isset($question) ? route('stakeholder.questions.update', $question->id) : route('stakeholder.questions.store') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 @isset($question)
                                     @method('PATCH')
@@ -123,7 +123,7 @@
                                         <fieldset class="form-group">
                                             <label>Type</label>
                                             <select name="type" class="form-control" required>
-                                                @foreach(['text','number','textarea','select','radio','checkbox','date','month','year','rating','dynamic_table','income_table'] as $type)
+                                                @foreach(['text','number','textarea','select','radio','checkbox','date','month','year','rating','dynamic_table','income_table','file'] as $type)
                                                     <option value="{{ $type }}"
                                                         {{ old('type', $question->type ?? '') === $type ? 'selected' : '' }}>
                                                         {{ ucfirst(str_replace('_', ' ', $type)) }}
@@ -182,7 +182,7 @@
                                     {{-- complex dynamic options --}}
                                     <div class="col-md-12" id="complex-options" style="display:none">
                                         <label>Options</label>
-                                        
+
                                         <div id="complex-options-wrapper">
                                             @if($questionType === 'dynamic_table')
                                                 @php $options = $question->options ?? []; @endphp
@@ -238,7 +238,7 @@
                                             Add Field
                                         </button>
                                     </div>
-                                    
+
                                     {{-- income table options --}}
                                     <div class="col-md-12" id="income-options" style="display:none">
                                         <label>Income Table Setup</label>
@@ -305,8 +305,14 @@
                                         <fieldset class="form-group">
                                             <label class="mb-1">Access Permissions</label>
                                             @php
-                                                $selectedPermissions = old('access_permissions', $question->permissions->pluck('id')->toArray() ?? []);
+                                                $selectedPermissions = old(
+                                                    'access_permissions',
+                                                    isset($question) && $question->permissions
+                                                        ? $question->permissions->pluck('id')->toArray()
+                                                        : []
+                                                );
                                             @endphp
+
 
                                             <div class="row">
                                                 @forelse($permissions as $permission)

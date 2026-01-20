@@ -1,0 +1,38 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('stakeholder_reports', function (Blueprint $table) {
+            $table->boolean('edit_mode')->default(0)->after('id');
+        });
+
+        Schema::table('stakeholder_report_answers', function (Blueprint $table) {
+            $table->string('question_label')->after('question_id')->nullable();
+        });
+
+
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('stakeholder_reports', function (Blueprint $table) {
+            $table->dropColumn('edit_mode');
+        });
+
+        Schema::table('stakeholder_report_answers', function (Blueprint $table) {
+            $table->dropColumn('question_label');
+        });
+    }
+};

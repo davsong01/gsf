@@ -3,22 +3,27 @@
 namespace App\Services;
 
 use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image as Image;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
+use Intervention\Image\Facades\Image as Image;
 
 class FileUploadService
 {
-    public static function secureUpload(UploadedFile $file, string $folder = 'signatures', string $oldFile = '', $filename=false): string
-    {
+    public function secureUpload(
+        UploadedFile $file,
+        string $folder = 'signatures',
+        ?string $oldFile = null,
+        ?string $filename = null
+    ): string {
         $disk = 'protected_uploads';
-        $filename = $filename ?? self::generateFilename($file);
-        $path = trim($folder, '/') . '/' . $filename;
+        $filename = $filename ?: $this->generateFilename($file);
+        $folder = trim($folder, '/');
+        $path = "{$folder}/{$filename}";
 
-        // Delete old file if exists
-        if ($oldFile && Storage::disk($disk)->exists($oldFile)) {
-            Storage::disk($disk)->delete($oldFile);
+        // Delete old file if exists (expects relative path)
+        if ($oldFile && Storage::disk($disk)->exists(base64_decode($oldFile))) {
+            Storage::disk($disk)->delete(base64_decode($oldFile));
         }
 
         // Ensure folder exists
@@ -26,17 +31,13 @@ class FileUploadService
             Storage::disk($disk)->makeDirectory($folder);
         }
 
-        // Save file
         Storage::disk($disk)->putFileAs($folder, $file, $filename);
-        
-        // Encode relative path for secure URL
-        $encodedPath = base64_encode($path);
 
-        // Return route to access the file
-        return route('protected.download', ['file' => $encodedPath]);
+        return base64_encode($path);
     }
 
-    public static function publicUpload(UploadedFile $file, string $folder = 'uploads', string $oldFile = '', $filename = false): string
+
+    public function publicUpload(UploadedFile $file, string $folder = 'uploads', string $oldFile = '', $filename = false): string
     {
         $folderPath = public_path(trim($folder, '/')); // e.g., public/uploads
         $filename   = $filename ?? $file->getClientOriginalName();
@@ -57,17 +58,16 @@ class FileUploadService
         return asset(trim($folder, '/') . '/' . $filename);
     }
 
-
     /**
      * Generate a unique filename with timestamp and random string.
      */
-    protected static function generateFilename(UploadedFile $file): string
+    protected function generateFilename(UploadedFile $file): string
     {
         $extension = $file->getClientOriginalExtension();
         return Str::random(8) . '.' . $extension;
     }
 
-    public static function uploadImage($image, $location, $width = null, $height = null)
+    public function uploadImage($image, $location, $width = null, $height = null)
     {
         // Make sure the directory exists
         if (!file_exists($location)) {
@@ -87,4 +87,39 @@ class FileUploadService
 
         return $location . '/' . $imgName;
     }
+
+    public function serveProtectedFile(string $encodedPath)
+    {
+        $disk = 'protected_uploads';
+
+        // Decode base64 path
+        $decoded = base64_decode($encodedPath, true);
+
+        if ($decoded === false || str_contains($decoded, '..') || trim($decoded) === '') {
+            abort(403, 'Invalid file path.');
+        }
+
+        if (!Storage::disk($disk)->exists($decoded)) {
+            abort(404, 'File not found.');
+        }
+
+        $absolutePath = Storage::disk($disk)->path($decoded);
+        $mimeType = Storage::disk($disk)->mimeType($decoded) ?? 'application/octet-stream';
+        $fileName = basename($decoded);
+    
+        // Inline for images/PDF, download otherwise
+        $inlineTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+        $disposition = in_array($mimeType, $inlineTypes) ? 'inline' : 'attachment';
+
+        return response()->file($absolutePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => "{$disposition}; filename=\"{$fileName}\""
+        ]);
+    }
+
+    public static function secureFileUrl(string $relativePath): string
+    {
+        return route('protected.download', ['file' => base64_encode($relativePath)]);
+    }
+
 }

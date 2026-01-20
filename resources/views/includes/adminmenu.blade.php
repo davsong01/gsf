@@ -27,8 +27,9 @@
                     <i class="bx bx-file"></i>
                     <span class="menu-item">Reports</span>
                 </a>
+
                 <ul class="menu-content">
-                    <li><a href="{{ route('ministry.index') }}">All Reports</a></li>
+                    <li><a href="{{ route('stakeholderreports.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Monthly Reports</a></li>
                 </ul>
             </li>
 
@@ -39,9 +40,9 @@
                     <span class="menu-item">Report Structure</span>
                 </a>
                 <ul class="menu-content">
-                    <li><a href="{{ route('stakeholderreportsection.index') }}">Sections</a></li>
-                    <li><a href="{{ route('stakeholderreportsubsection.index') }}">Sub Sections</a></li>
-                    <li><a href="{{ route('stakeholder.questions.index') }}">Items</a></li>
+                    <li><a href="{{ route('stakeholderreportsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Sections</a></li>
+                    <li><a href="{{ route('stakeholderreportsubsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Sub Sections</a></li>
+                    <li><a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Items</a></li>
                 </ul>
             </li>
 
@@ -52,9 +53,9 @@
                     <span class="menu-item">Access Control</span>
                 </a>
                 <ul class="menu-content">
-                    <li><a href="{{ route('stakeholderroles.index') }}">Roles</a></li>
-                    <li><a href="{{ route('stakeholderpermissions.index') }}">Permissions</a></li>
-                    <li><a href="{{ route('stakeholderpersonnel.index') }}">Stakeholders</a></li>
+                    <li><a href="{{ route('stakeholderroles.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Roles</a></li>
+                    <li><a href="{{ route('stakeholderpermissions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Permissions</a></li>
+                    <li><a href="{{ route('stakeholderpersonnel.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Stakeholders</a></li>
                 </ul>
             </li>
         </ul>
@@ -66,8 +67,8 @@
     <li class=" nav-item {{ Request::is('users*') ? 'active' : '' }}"><a href="{{ route('users.index') }}"><i class="fa fa-user"></i><span class="menu-title">Users</span></a></li>
     <li class=" nav-item {{ Request::is('listing-pending*') ? 'active' : '' }}"><a href="{{ route('listing-pending') }}"><i class="fa fa-user"></i><span class="menu-title">Pending Listing</span></a></li>
     <li class="nav-item {{ Request::is('trashedusers') ? 'active' : '' }}"><a href="{{ route('users.trashed') }}"><i class="fa fa-trash-o"></i><span class="menu-title">Trashed Users</span></a></li>
-    <li class="nav-item {{ Request::is('events*') ? 'active' : '' }}"><a href="{{ route('events.index') }}"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title">Events</span></a></li> 
-    <li class="nav-item {{ Request::is('all-donations*') ? 'active' : '' }}"><a href="{{ route('donations.all') }}"><i class="fa fa-money" aria-hidden="true"></i><span class="menu-title">Donations</span></a></li> 
+    <li class="nav-item {{ Request::is('events*') ? 'active' : '' }}"><a href="{{ route('events.index') }}"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title">Events</span></a></li>
+    <li class="nav-item {{ Request::is('all-donations*') ? 'active' : '' }}"><a href="{{ route('donations.all') }}"><i class="fa fa-money" aria-hidden="true"></i><span class="menu-title">Donations</span></a></li>
     <li class="nav-item {{ Request::is('fields*') ? 'active' : '' }}"><a href="{{ route('fields.index') }}"><i class="fa fa-globe" aria-hidden="true"></i><span class="menu-title">Fields</span></a>
     </li>
     <li class="nav-item {{ Request::is('zones*') ? 'active' : '' }}"><a href="{{ route('zones.index') }}"><i class="fa fa-flag" aria-hidden="true"></i><span class="menu-title">Zones</span></a>
@@ -77,7 +78,7 @@
 
     <li class=" nav-item {{ Request::is('useremails') ? 'active' : '' }}"><a href="{{ route('useremails.index') }}"><i class="fa fa-envelope"></i><span class="menu-title">Emails</span></a>
     </li>
-    
+
     <li class="nav-item">
         <a class="nav-link {{ Request::is('criticalemails*') ? 'active' : '' }}" href="{{ route('criticalEmail.index') }}"><i class="fa fa-envelope"></i><span class="menu-title" >Logged Emails</a>
     </li>

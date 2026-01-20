@@ -12,7 +12,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All Report Items</h4>
-                        <a href="{{ route('stakeholder.questions.create') }}" class="btn btn-primary mt-1">Add New Item</a>                        
+                        <a href="{{ route('stakeholder.questions.create') }}" class="btn btn-primary mt-1">Add New Item</a>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -22,6 +22,7 @@
                                         <tr>
                                             <th>S/N</th>
                                             <th>Section</th>
+                                            <th>Status</th>
                                             <th>Order</th>
                                             <th>Label</th>
                                             <th>Type</th>
@@ -38,8 +39,12 @@
                                                 <strong>Section: </strong>{{ optional($question->section)->name ?? '-' }} <br>
                                                 <strong>Sub Section: </strong>{{ optional($question->subsection)->name ?? '-' }}
                                             </td>
+                                            <td>{{ $question->status == 1 ? 'Active' : 'Inactive' }}</td>
                                             <td>{{ $question->order }}</td>
-                                            <td>{{ $question->label }}</td>
+                                            <td>
+                                                {{ $question->label }} <br>
+                                                <small><strong>{{ $question->slug}}</strong></small>
+                                            </td>
                                             <td>{{ ucfirst($question->type) }}</td>
                                             <td>{{ $question->is_required ? 'Yes' : 'No' }}</td>
 
@@ -68,8 +73,13 @@
                                                     onsubmit="return confirm('Are you sure you want to delete this question?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                                    <button class="btn btn-sm btn-danger mb-1">Delete</button>
                                                 </form>
+
+                                                <a href="{{ route('stakeholder.questions.clone', $question->id) }}"
+                                                class="btn btn-sm btn-primary mb-1">
+                                                    Clone
+                                                </a>
                                             </td>
                                         </tr>
                                         @endforeach
@@ -82,6 +92,6 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 @endsection

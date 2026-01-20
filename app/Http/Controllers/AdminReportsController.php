@@ -22,7 +22,7 @@ use App\Models\StakeholderQuestionSection;
 use App\Services\ReportNotificationService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class StakeholderReportsController extends Controller
+class AdminReportsController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -31,60 +31,12 @@ class StakeholderReportsController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::guard('stakeholder')->user();
-        $role = $user->role_id;
+        $chapterIds = Chapter::all();;
+        $fieldIds = Field::all();;
+        $zoneIds = Zone::all();
 
-        // Base queries
-        $chapters = Chapter::query();
-        $zones = Zone::query();
-        $fields = Field::query();
+        $reports = StakeholderReport::query();
 
-        // Scope variables for filtering reports
-        $chapterIds = collect();
-        $zoneIds = collect();
-        $fieldIds = collect();
-
-        /** =====================
-         * ROLE-BASED SCOPING
-         * ===================== */
-        if (in_array($role, chapterStakeholders())) {
-            $chapterIds = collect([$user->chapter_id]);
-            $zoneIds = collect([$user->zone_id]);
-            $fieldIds = collect([$user->field_id]);
-        } elseif (in_array($role, zoneStakeholders())) {
-            $zoneIds = collect([$user->zone_id]);
-
-            // All chapters under this zone
-            $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
-            // Fields that contain this zone
-            $fieldIds = Field::whereHas('zones', fn($q) => $q->where('id', $user->zone_id))
-                ->pluck('id');
-        } elseif (in_array($role, fieldStakeholders())) {
-            $fieldIds = collect([$user->field_id]);
-            // Zones under this field
-            $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
-            // Chapters under all zones in this field
-            $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
-        }
-
-        // Secretariat → full access (no scoping)
-        elseif (in_array($role, secretariatStakeholders())) {
-            $chapterIds = Chapter::pluck('id');
-            $zoneIds = Zone::pluck('id');
-            $fieldIds = Field::pluck('id');
-        }
-
-        /** =====================
-         * FILTER REPORTS BY SCOPED IDS
-         * ===================== */
-        $reports = StakeholderReport::query()
-            ->when($chapterIds->isNotEmpty(), fn($q) => $q->whereIn('chapter_id', $chapterIds))
-            ->when($zoneIds->isNotEmpty(), fn($q) => $q->whereIn('zone_id', $zoneIds))
-            ->when($fieldIds->isNotEmpty(), fn($q) => $q->whereIn('field_id', $fieldIds));
-
-        /** =====================
-         * DATE FILTERS
-         * ===================== */
         if ($request->filled('from_date')) {
             $reports->whereDate('created_at', '>=', $request->from_date);
         }
@@ -93,9 +45,6 @@ class StakeholderReportsController extends Controller
             $reports->whereDate('created_at', '<=', $request->to_date);
         }
 
-        /** =====================
-         * MANUAL FILTERS
-         * ===================== */
         if ($request->filled('chapter_filter')) {
             $reports->where('chapter_id', $request->chapter_filter);
         }
@@ -108,9 +57,6 @@ class StakeholderReportsController extends Controller
             $reports->where('field_id', $request->field_filter);
         }
 
-        /** =====================
-         * STATUS FILTERS
-         * ===================== */
         if ($request->filled('status_filter')) {
             $statusMap = [
                 'field_pending' => ['field_status', 0],
@@ -130,25 +76,17 @@ class StakeholderReportsController extends Controller
             }
         }
 
-        /** =====================
-         * EXECUTE QUERIES
-         * ===================== */
         $reports = $reports->with(['chapter', 'zone', 'field'])
             ->orderByDesc('created_at')
             ->paginate(20);
 
-        $chapters = $chapters->whereIn('id', $chapterIds)->orderBy('name')->get();
-        $zones = $zones->whereIn('id', $zoneIds)->orderBy('name')->get();
-        $fields = $fields->whereIn('id', $fieldIds)->orderBy('name')->get();
+        $chapters = Chapter::orderBy('name')->get();
+        $zones = Zone::orderBy('name')->get();
+        $fields = Field::orderBy('name')->get();
+        $user = auth()->user();
+        $user->role_id = $user->role;
 
-        /** =====================
-         * REDIRECT FOR FINANCIAL SECRETARY
-         * ===================== */
-        if ($role === 'Financial Secretary') {
-            return redirect(route('stakeholderpayment.index'));
-        }
-
-        return view('stakeholder.index', compact('reports', 'chapters', 'fields', 'zones','user'));
+        return view('admin.reports.index', compact('reports', 'chapters', 'fields', 'zones','user'));
     }
 
     /**

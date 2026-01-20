@@ -9,26 +9,52 @@ use App\Models\StakeholderRole;
 use App\Models\ConferenceEdition;
 use App\Models\StakeholderReport;
 
-if (!function_exists('canAddThisMonthReport')) {
-    function canAddThisMonthReport($stakeholder)
+
+if (!function_exists('canAddNextMonthReport')) {
+    /**
+     * Check if a stakeholder can add a report for the upcoming month.
+     *
+     * @param  \App\Models\Stakeholder  $stakeholder
+     * @param  int $daysBeforeEnd Allow X days before current month ends
+     * @param  int $daysAfterStart Allow X days after next month starts
+     * @return bool
+     */
+    function canAddNextMonthReport($stakeholder, $daysBeforeEnd = 18, $daysAfterStart = 5)
     {
         if (!isset($stakeholder->chapter_id)) {
-            return false; 
+            return false;
         }
 
-        // Get current year and month
-        $currentYear = Carbon::now()->year;
-        $currentMonth = Carbon::now()->month;
+        if (!in_array($stakeholder->role_id, chapterStakeholders())) {
+            return false;
+        }
 
-        // Check if report exists for this stakeholder's chapter for current month
+        $today = Carbon::today();
+
+        // Determine target month (next month)
+        $targetMonthStart = Carbon::now()->addMonthNoOverflow()->startOfMonth();
+        $targetMonthEnd = Carbon::now()->addMonthNoOverflow()->endOfMonth();
+
+        // Open window: X days before this month ends
+        $windowStart = Carbon::now()->endOfMonth()->subDays($daysBeforeEnd - 1);
+        // Close window: X days after next month starts
+        $windowEnd = $targetMonthStart->copy()->addDays($daysAfterStart - 1);
+
+        if ($today->lt($windowStart) || $today->gt($windowEnd)) {
+            return false;
+        }
+
+        // Check if report already exists for this chapter for the target month
         $reportExists = StakeholderReport::where('chapter_id', $stakeholder->chapter_id)
-            ->whereYear('created_at', $currentYear)
-            ->whereMonth('created_at', $currentMonth)
+            ->whereYear('created_at', $targetMonthStart->year)
+            ->whereMonth('created_at', $targetMonthStart->month)
             ->exists();
 
         return !$reportExists;
     }
 }
+
+
 
 
 if (!function_exists('generateSampleValue')) {
@@ -133,7 +159,7 @@ if (!function_exists("hostelAssignmentTypes")) {
             'based_on_chapter' => 'Based On Chapter (Category Exclusive)',
             'based_on_field' => 'Based On Field (Category Exclusive)',
             'based_on_chapter_with_category' => 'Based On Chapter (Category Inclusive)',
-            'based_on_field_with_category' => 'Based On Field (Category Inclusive)' 
+            'based_on_field_with_category' => 'Based On Field (Category Inclusive)'
         ];
     }
 }
@@ -226,7 +252,7 @@ if (!function_exists("menu")) {
             //     'name' => 'Events'
             // ]
         ];
-                
+
         return $menu;
     }
 }

@@ -15,7 +15,7 @@ class StakeholderReportQuestionController extends Controller
     public function index()
     {
         $questions = StakeholderReportQuestion::with('permissions','section')->orderBy('section_id')->orderBy('sub_section_id')->get();
-        
+
         return view('admin.stakeholders.questions.index', compact('questions'));
     }
 
@@ -35,6 +35,22 @@ class StakeholderReportQuestionController extends Controller
         $permissions = StakeholderPermission::latest()->get();
 
         return view('admin.stakeholders.questions.edit', compact('question','sections', 'permissions', 'subsections'));
+    }
+
+    public function cloneQuestion(StakeholderReportQuestion $question)
+    {
+        $clone = $question->replicate();
+        $label = 'copy_'.$question->label;
+        $clone->label = $label;
+        $clone->order = $question->order;
+        $clone->section_id = $question->section_id;
+        $clone->sub_section_id = $question->sub_section_id;
+        $clone->slug = Str::slug($label);
+        $clone->status = 0;
+
+        $clone->save();
+
+        return back()->with('message', 'Question Cloned Successfully');
     }
 
 
@@ -73,7 +89,7 @@ class StakeholderReportQuestionController extends Controller
 
     //     $validated['options'] = $options;
     //     unset($validated['options_keys'], $validated['options_values'], $validated['access_permissions']);
-        
+
     //     $question = StakeholderReportQuestion::create($validated);
 
     //     // Sync access permissions
@@ -192,6 +208,7 @@ class StakeholderReportQuestionController extends Controller
     public function update(Request $request, StakeholderReportQuestion $question)
     {
         $validated = $this->validateQuestion($request, $question->id);
+        $validated['slug'] = Str::slug($validated['label']);
         
         $question->update($validated);
 
@@ -209,7 +226,7 @@ class StakeholderReportQuestionController extends Controller
         $rules = [
             'label' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:stakeholder_report_questions,slug,' . $questionId,
-            'type' => 'required|string|in:text,number,textarea,select,radio,checkbox,rating,dynamic_table,income_table,year,month,date',
+            'type' => 'required|string|in:text,number,textarea,select,radio,checkbox,rating,dynamic_table,income_table,year,month,date,file',
             'is_required' => 'boolean',
             'is_quantifiable' => 'boolean',
             'order' => 'nullable|integer',

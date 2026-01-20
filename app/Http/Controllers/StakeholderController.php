@@ -24,12 +24,12 @@ class StakeholderController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    { 
+    {
         $count = 1;
         if (auth()->user()->role == 1) {
 			$stakeholders = Stakeholder::with('role')->orderBy('created_at', 'desc')->get();
 			return view('admin.stakeholders.index', compact('stakeholders', 'count'));
-			
+
 		}else{
             return abort(404);
         }
@@ -129,7 +129,7 @@ class StakeholderController extends Controller
 
         // Signature handling
         if ($request->hasFile('signature')) {
-            $stakeholder->signature = FileUploadService::secureUpload(
+            $stakeholder->signature = app(FileUploadService::class)->secureUpload(
                 $request->file('signature'),
                 'signatures'
             );
@@ -211,7 +211,7 @@ class StakeholderController extends Controller
         ]);
 
         $role = StakeholderRole::find($request->input('role_id'));
-        
+
         // Role-based assignments
         switch (true) {
             case in_array($role->slug, ['chapter-representative']):
@@ -263,13 +263,13 @@ class StakeholderController extends Controller
 
         // Signature handling
         if ($request->hasFile('signature')) {
-            $stakeholder->signature = FileUploadService::secureUpload(
+            $stakeholder->signature = app(FileUploadService::class)->secureUpload(
                 $request->file('signature'),
                 'signatures',
                 $stakeholder->signature
             );
         }
-        
+
         // Update general info
         $stakeholder->fill([
             'name'  => $request->name,

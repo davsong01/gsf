@@ -17,11 +17,11 @@
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('stakeholder.saveprofile') }}"
+                            <form action="{{ route('stakeholders.saveprofile') }}"
                                 onsubmit="return confirm('You are about to update your profile');"
                                 method="POST" enctype="multipart/form-data">
                                 @csrf
-                                
+
                                 <div class="row">
                                     <div class="col-md-6 col-sm-12">
                                         <fieldset class="form-group">
@@ -41,7 +41,7 @@
                                             <input type="text" class="form-control" id="email" name="email" value="{{ old('email') ?? Auth::guard('stakeholder')->user()->email }}" placeholder="Enter email address" required>
                                         </fieldset>
                                     </div>
-                                    
+
                                     <div class="col-md-12 col-sm-12">
                                         <label>Birthday Details</label> <br>
                                     </div>
@@ -71,7 +71,7 @@
                                                 <input type="file" value="{{ old('signature') }}" class="form-control" name="signature">
                                         </fieldset>
                                     </div>
-                                    
+
                                     <div class="col-md-6 col-sm-12">
                                         <fieldset class="form-group">
                                             <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->gen_sec_signature }}" style="width:60px" alt=""> <br>
@@ -103,10 +103,10 @@
                                             <input type="text" class="form-control" id="password" name="password" value="{{ old('password') }}" placeholder="Enter password or leave blank to use default">
                                         </fieldset>
                                     </div>
-                                    
+
                                 </div>
                             </div>
-                                                   
+
                             <div class="row">
                                 <div class="col-md-12 col-sm-12">
                                     <button class="btn btn-primary" style="width:100%" type="submit">Save</button>
@@ -123,7 +123,7 @@
 </section>
 <!-- Basic Inputs end -->
 </div>
-<script> 
+<script>
 $(document).ready(function(){
     var value = $('#communion').find(':selected');
     console.log(value);
@@ -135,16 +135,16 @@ $(document).ready(function(){
     $('#communion').on('change', function(){
         alert('as');
         console.log($('#communion').val());
-           
+
             if($('#communion').val()=='Yes'){
                 $('.communion-details').css('display','block');
-               
+
             }else if($('#communion').val()=='No'){
                 $('.communion-details').css('display','none');
-               
+
             }
-    }); 
-    
+    });
+
 
 </script>
 

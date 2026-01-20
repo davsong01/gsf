@@ -32,6 +32,11 @@ class StakeholderReportQuestion extends Model
         return $this->belongsTo(StakeholderQuestionSubSection::class, 'sub_section_id');
     }
 
+    public function scopeIsActive($query)
+    {
+        return $query->where('status', 1);
+    }
+    
     public function permissions()
     {
         return $this->belongsToMany(
