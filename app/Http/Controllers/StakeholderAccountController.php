@@ -37,6 +37,8 @@ class StakeholderAccountController extends Controller
             $reports = StakeholderReport::whereZoneId(Auth::guard('stakeholder')->user()->zone_id)->orderBy('created_at', 'desc')->get();
         } elseif (in_array($role, array_merge(secretariatStakeholders(), ncpStakeholders()))) {
             $reports = StakeholderReport::orderBy('created_at', 'desc')->get();
+        } elseif (in_array($role, [6])) {
+            $reports = StakeholderReport::orderBy('created_at', 'desc')->get();
         }
 
         return view('stakeholder.dashboard', compact('reports', 'count'));

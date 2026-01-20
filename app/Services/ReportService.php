@@ -8,6 +8,7 @@ use App\Models\Field;
 use App\Models\Chapter;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use App\Services\ExcelService;
 use App\Models\ConferenceEdition;
 use App\Models\StakeholderReport;
 use Illuminate\Support\Collection;
@@ -36,7 +37,7 @@ class ReportService
         return $sessions;
     }
 
-    public function index(Request $request, $user, bool $isAdmin = false): array
+    public function index(Request $request, $user, bool $isAdmin = false)
     {
         $role = $user->role_id ?? $user->role;
 
@@ -54,7 +55,7 @@ class ReportService
         /** =====================
          * ROLE-BASED SCOPING
          * ===================== */
-        if ($isAdmin) {
+        if ($isAdmin || in_array($role, finStakeholders())) {
             // Admin → full access
             $chapterIds = Chapter::pluck('id');
             $zoneIds    = Zone::pluck('id');
@@ -91,14 +92,23 @@ class ReportService
         /** =====================
          * REPORT QUERY
          * ===================== */
-        $reports = StakeholderReport::query()
-            ->when($chapterIds->isNotEmpty(), fn ($q) => $q->whereIn('chapter_id', $chapterIds))
-            ->when($zoneIds->isNotEmpty(), fn ($q) => $q->whereIn('zone_id', $zoneIds))
-            ->when($fieldIds->isNotEmpty(), fn ($q) => $q->whereIn('field_id', $fieldIds));
 
-        /** =====================
-         * DATE FILTERS
-         * ===================== */
+        if(in_array($role, finStakeholders())) {
+            $finIds = finSubSectionIds();
+            $reports = StakeholderReport::whereHas('answers', function ($query) use ($finIds) {
+                $query->whereHas('question', function ($q) use ($finIds) {
+                    $q->whereHas('subsection', function ($q) use ($finIds) {
+                        $q->whereIn('id', $finIds);
+                        });
+                });
+            });
+        }else{
+            $reports = StakeholderReport::query()
+                ->when($chapterIds->isNotEmpty(), fn ($q) => $q->whereIn('chapter_id', $chapterIds))
+                ->when($zoneIds->isNotEmpty(), fn ($q) => $q->whereIn('zone_id', $zoneIds))
+                ->when($fieldIds->isNotEmpty(), fn ($q) => $q->whereIn('field_id', $fieldIds));
+        }
+
         if ($request->filled('from_date')) {
             $reports->whereDate('created_at', '>=', $request->from_date);
         }
@@ -138,9 +148,12 @@ class ReportService
             }
         }
 
-        /** =====================
-         * EXECUTE
-         * ===================== */
+        if ($request->action === 'download') {
+            $reportsCollection = $reports->get();
+
+            return $this->downloadFinancialReport($reportsCollection);
+        }
+
         return [
             'reports'  => $reports->with(['chapter', 'zone', 'field'])
                                   ->orderByDesc('created_at')
@@ -410,6 +423,8 @@ class ReportService
                     'answer_value' => $answerValue,
                     'answer_quantity' => $answerQuantity,
                     'question_label' => $questionLabel,
+                    'question_sub_section_id' => (int) $question->sub_section_id,
+                    'question_section_id' => (int) $question->section_id,
                 ]
             );
         }
@@ -508,6 +523,130 @@ class ReportService
             'answersData',
             'isAdmin'
         );
+    }
+
+    public function deleteReport(StakeholderReport $report)
+    {
+        DB::beginTransaction();
+
+        try {
+            // Delete associated answers
+            StakeholderReportAnswer::where('report_id', $report->id)->delete();
+
+            // Delete the report itself
+            $report->delete();
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e; // Re-throw the exception after rolling back
+        }
+    }
+
+    public function downloadFinancialReport($reports, ?array $headers = [])
+    {
+        $fileName = 'financial-report-'.now().'.xlsx';
+        $isAdmin = false;
+
+        /**
+         * Weekly JSON columns to sum
+         * Excel Header => JSON Key
+         */
+        $sumColumns = [
+            'Tithe Received (Bank)' => 'Tithe received(Bank)',
+            'Tithe Received (Cash)' => 'Tithe received(Cash)',
+            'Bible Study Offering'  => 'Bible Study Offering',
+        ];
+
+        /** -------------------------
+         * QUESTIONS (ID → LABEL MAP)
+         * ------------------------- */
+        $questions = StakeholderReportQuestion::whereHas('subsection', function ($q) {
+                $q->whereIn('id', finSubSectionIds());
+            })
+            ->select('id', 'label')
+            ->get()
+            ->reject(fn ($q) => in_array($q->label, ['Income Records', 'Expenditure Records']));
+
+        $questionMap = $questions->pluck('label', 'id')->toArray();
+
+        /** -------------------------
+         * HEADERS
+         * ------------------------- */
+        if (empty($headers)) {
+            $headers = array_merge(
+                ['Chapter Name', 'Date Updated'],
+                array_keys($sumColumns),
+                array_values($questionMap)
+            );
+        }
+
+        $rows = [];
+        if(empty($reports)){
+            return null;
+        }
+
+        foreach ($reports as $report) {
+            // Initialize row with nulls
+            $row = array_fill_keys($headers, null);
+
+            /** -------------------------
+             * STATIC COLUMNS
+             * ------------------------- */
+            $row['Chapter Name'] = $report->chapter?->name;
+            $row['Date Updated'] = optional($report->updated_at)->format('Y-m-d');
+
+            /** -------------------------
+             * INIT SUM COLUMNS
+             * ------------------------- */
+            foreach (array_keys($sumColumns) as $header) {
+                $row[$header] = 0;
+            }
+
+            /** -------------------------
+             * ANSWERS
+             * ------------------------- */
+            foreach ($report->answers as $answer) {
+                $decoded = json_decode($answer->answer_value, true);
+
+                // CASE 1: Weekly JSON
+                if (is_array($decoded)) {
+                    foreach ($decoded as $weekData) {
+                        if (!is_array($weekData)) continue;
+
+                        foreach ($sumColumns as $header => $jsonKey) {
+                            if (isset($weekData[$jsonKey])) {
+                                $row[$header] += (float) $weekData[$jsonKey];
+                            }
+                        }
+                    }
+                    continue;
+                }
+
+                // CASE 2: Scalar value mapped by question_id
+                if (!isset($questionMap[$answer->question_id])) continue;
+
+                $column = $questionMap[$answer->question_id];
+
+                // CASE 3: File type → generate protected download link
+                if ($answer->question?->type === 'file' && !empty($answer->answer_value)) {
+                    $row[$column] = route(
+                        $isAdmin ? 'admin.protected.download' : 'protected.download',
+                        ['file' => $answer->answer_value]
+                    );
+                    continue;
+                }
+
+                // CASE 4: Normal scalar
+                $row[$column] = is_numeric($answer->answer_value)
+                    ? (float) $answer->answer_value
+                    : $answer->answer_value;
+            }
+
+            $rows[] = $row;
+        }
+
+        return ExcelService::download($rows, $headers, $fileName);
     }
 
 }

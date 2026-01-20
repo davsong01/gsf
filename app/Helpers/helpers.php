@@ -79,6 +79,14 @@ if (!function_exists('getCommunityPortfolios')) {
     }
 }
 
+if (!function_exists('finIds')) {
+    function finSubSectionIds()
+    {
+        $finIds = [13, 14]  ;
+        return $finIds;
+    }
+}
+
 if (!function_exists('canAddNextMonthReport')) {
     function canAddReport($stakeholder, $daysBeforeEnd = 5, $daysAfterStart = 5): ?string
     {
@@ -91,7 +99,7 @@ if (!function_exists('canAddNextMonthReport')) {
         }
 
         $today = Carbon::today();
-        
+
         $monthStart = $today->copy()->startOfMonth();
         $monthEnd = $today->copy()->endOfMonth();
 
@@ -179,6 +187,13 @@ if (!function_exists('portfolioStakeholders')) {
     }
 }
 
+if (!function_exists('finStakeholders')) {
+    function finStakeholders()
+    {
+        $roles = [6];
+        return $roles;
+    }
+}
 
 if (!function_exists('zoneStakeholders')) {
     function zoneStakeholders()

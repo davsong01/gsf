@@ -493,6 +493,9 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
         });
 
         Route::resource('reports', StakeholderReportsController::class);
+        Route::get('financial-reports', [StakeholderReportsController::class, 'financialReports'])->name('financial.report');
+        Route::get('download-financial-reports/{report}', [StakeholderReportsController::class, 'financialReportsDownload'])->name('financial.reports.download');
+
         Route::controller(StakeholderReportsController::class)->group(function () {
             Route::get('/reports/delete/{report}', 'delete')->name('reports.delete');
             Route::get('/reports/print/{report}', 'download')->name('reports.print');

@@ -54,8 +54,12 @@ class StakeholderReportsController extends Controller
      */
     public function create()
     {
-        $months = getMonths();
         $user = Auth::guard('stakeholder')->user();
+        $eligibleMonth = canAddReport($user);
+
+        if(empty($eligibleMonth)) return back()->with('error', 'You cannot submit report for requested month.');
+
+        $months = getMonths();
         $chapter = $user->chapter;
 
         $sections = StakeholderQuestionSection::isActive()->with([
@@ -116,7 +120,7 @@ class StakeholderReportsController extends Controller
         ]);
 
     }
-    
+
     public function edit(StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
@@ -264,4 +268,27 @@ class StakeholderReportsController extends Controller
         );
     }
 
+    public function financialReports(Request $request)
+{
+    $user = Auth::guard('stakeholder')->user();
+    $isAdmin = false;
+
+    $result = app(ReportService::class)
+        ->index($request, $user, $isAdmin);
+
+    // If it's a download, the service will return a BinaryFileResponse
+    if ($result instanceof \Symfony\Component\HttpFoundation\BinaryFileResponse) {
+        return $result;
+    }
+
+    // Otherwise, it's an array for the view
+    return view('stakeholder.finance.index', array_merge($result, compact('user','isAdmin')));
+}
+
+
+    public function financialReportsDownload(StakeholderReport $report){
+        if($report){
+            return app(ReportService::class)->downloadFinancialReport([$report]);
+        }
+    }
 }

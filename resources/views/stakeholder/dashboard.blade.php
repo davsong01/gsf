@@ -45,7 +45,7 @@
         </div>
 
         {{-- Submit Report --}}
-        @if(canAddNextMonthReport(Auth::guard('stakeholder')->user()))
+        @if(canAddReport(Auth::guard('stakeholder')->user()))
         <div class="col-md-3 col-sm-6 monitor-card">
             <a href="{{ route('stakeholders.reports.create') }}" class="text-decoration-none">
                 <div class="card shadow-sm h-100">

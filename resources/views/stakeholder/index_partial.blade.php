@@ -166,59 +166,51 @@
                                         <td>{{ date('F', mktime(0, 0, 0, $report->month, 10)) }}, {{ $report->year }}</td>
 
                                         <td class="text-start">
-                                            {{-- FIELD --}}
                                             @php
-                                                $fieldStatus = $report->field_status;
-                                                $zoneStatus = $report->zone_status;
-                                                $natStatus  = $report->national_status;
-                                                $canEdit = app(\App\Services\ReportService::class)->canEditReport($report, $user);
-                                            @endphp
-                                            {{-- Zone --}}
-                                            <div class="d-flex align-items-center" style="margin-bottom:5px">
-                                                <small class="ms-1 text-muted">Zone &nbsp</small>
-                                                @if($zoneStatus == 2)
-                                                    <span class="badge bg-danger">Rejected</span>
-                                                    <a href="#zoneRejection{{ $report->id }}" data-toggle="modal" title="View feedback" class="ms-1 text-danger">
-                                                        <i class="bx bx-message-rounded-dots"></i>
-                                                    </a>
-                                                    @include('stakeholder.modals.zone_rejection_comment')
-                                                @elseif($zoneStatus == 1)
-                                                    <span class="badge bg-success">Approved</span>
-                                                @else
-                                                    <span class="badge bg-warning text-dark">Pending</span>
-                                                @endif
-                                            </div>
-                                            {{-- Field --}}
-                                            <div class="d-flex align-items-center" style="margin-bottom:5px">
-                                                <small class="ms-1 text-muted">Field &nbsp</small>
-                                                @if($fieldStatus == 2)
-                                                    <span class="badge bg-danger">Rejected</span>
-                                                    <a href="#fieldRejection{{ $report->id }}" data-toggle="modal" title="View feedback" class="ms-1 text-danger">
-                                                        <i class="bx bx-message-rounded-dots"></i>
-                                                    </a>
-                                                    @include('stakeholder.modals.field_rejection_comment')
-                                                @elseif($fieldStatus == 1)
-                                                    <span class="badge bg-success">Approved</span>
-                                                @else
-                                                    <span class="badge bg-warning text-dark">Pending</span>
-                                                @endif
-                                            </div>
+                                                $canEdit     = app(\App\Services\ReportService::class)->canEditReport($report, $user);
 
-                                            {{-- National --}}
-                                            <div class="d-flex align-items-center">
-                                                <small class="ms-1 text-muted">National &nbsp</small>
-                                                @if($natStatus == 2)
-                                                    <span class="badge bg-danger">Rejected</span>
-                                                    <a href="#secretariatRejection{{ $report->id }}" data-toggle="modal" title="View feedback" class="ms-1 text-danger">
-                                                        <i class="bx bx-message-rounded-dots"></i>
-                                                    </a>
-                                                    @include('stakeholder.modals.secretariat_rejection_comment')
-                                                @elseif($natStatus == 1)
-                                                    <span class="badge bg-success">Approved</span>
-                                                @else
-                                                    <span class="badge bg-warning text-dark">Pending</span>
-                                                @endif
-                                            </div>
+                                                $statuses = [
+                                                    'Zone' => [
+                                                        'value' => $report->zone_status,
+                                                        'modal' => 'zoneRejection',
+                                                        'view'  => 'stakeholder.modals.zone_rejection_comment',
+                                                    ],
+                                                    'Field' => [
+                                                        'value' => $report->field_status,
+                                                        'modal' => 'fieldRejection',
+                                                        'view'  => 'stakeholder.modals.field_rejection_comment',
+                                                    ],
+                                                    'National' => [
+                                                        'value' => $report->national_status,
+                                                        'modal' => 'secretariatRejection',
+                                                        'view'  => 'stakeholder.modals.secretariat_rejection_comment',
+                                                    ],
+                                                ];
+                                            @endphp
+
+                                            @foreach($statuses as $label => $data)
+                                                <div class="d-flex align-items-center gap-2 mb-1">
+                                                    <small class="text-muted fw-medium pr-1">{{ $label }}</small>
+
+                                                    @if($data['value'] === 2)
+                                                        <span class="badge bg-danger">Rejected</span>
+
+                                                        <a href="#{{ $data['modal'] }}{{ $report->id }}"
+                                                        data-toggle="modal"
+                                                        class="text-danger"
+                                                        title="View feedback">
+                                                            <i class="bx bx-message-rounded-dots"></i>
+                                                        </a>
+
+                                                        @include($data['view'])
+
+                                                    @elseif($data['value'] === 1)
+                                                        <span class="badge bg-success">Approved</span>
+                                                    @else
+                                                        <span class="badge bg-warning text-dark">Pending</span>
+                                                    @endif
+                                                </div>
+                                            @endforeach
                                         </td>
 
                                         <td>{{ $report->session }}</td>
@@ -264,12 +256,22 @@
                                             </a>
 
                                             {{-- Delete --}}
-                                            @if($isAdmin && $zoneStatus == 0 && $fieldStatus == 0 && $report->national_status == 0)
+                                            @if(
+                                                $isAdmin &&
+                                                $statuses['Zone']['value'] == 0 &&
+                                                $statuses['Field']['value'] == 0 &&
+                                                $statuses['National']['value'] == 0
+                                            )
                                                 <a
-                                                    href="{{ route('stakeholders.reports.delete', $report->id) }}"
+                                                    href="#"
                                                     class="text-danger mx-1"
                                                     title="Delete Report"
-                                                    onclick="return confirm('Are you sure you want to delete this report?');"
+                                                    onclick="
+                                                        event.preventDefault();
+                                                        if (confirm('Are you sure you want to delete this report?')) {
+                                                            document.getElementById('delete-report-{{ $report->id }}').submit();
+                                                        }
+                                                    "
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
                                                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -280,7 +282,19 @@
                                                         <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                                                     </svg>
                                                 </a>
+
+                                                {{-- Hidden destroy form --}}
+                                                <form
+                                                    id="delete-report-{{ $report->id }}"
+                                                    action="{{ route('stakeholderreports.destroy', $report->id) }}"
+                                                    method="POST"
+                                                    class="d-none"
+                                                >
+                                                    @csrf
+                                                    @method('DELETE')
+                                                </form>
                                             @endif
+
 
                                         </td>
                                     </tr>

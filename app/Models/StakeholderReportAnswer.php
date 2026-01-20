@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StakeholderReportAnswer extends Model
 {
-    protected $fillable = ['report_id', 'question_id', 'answer_value','answer_quantity','question_label'];
+    protected $fillable = ['report_id', 'question_id', 'answer_value','answer_quantity','question_label','question_sub_section_id','question_section_id'];
 
     public function report()
     {

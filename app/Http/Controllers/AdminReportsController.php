@@ -90,8 +90,11 @@ class AdminReportsController extends Controller
     }
 
 
-    public function destroy(StakeholderReport $reports)
+    public function destroy(StakeholderReport $stakeholderreport)
     {
-        //
+        app(ReportService::class)->deleteReport($stakeholderreport);
+
+        return redirect()->route('stakeholderreports.index')
+            ->with('message', 'Report deleted successfully');
     }
 }

@@ -15,17 +15,21 @@
                 <li class=" nav-item {{ Request::is('reports*') ? 'active' : '' }}"><a href="{{ route('stakeholders.dashboard') }}"><i class="fa fa-desktop" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Dashboard</span></a>
                 </li>
 
+
+
+                @if(auth()->guard('stakeholder')->user()->role_id == 6)
+                <li class=" nav-item {{ Request::is('stakeholders.reports*') ? 'active' : '' }}"><a href="{{ route('stakeholders.financial.report') }}"><i class="fa fa-file" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Financial Reports</span></a>
+                </li>
+                @else
                 <li class=" nav-item {{ Request::is('stakeholders.reports*') ? 'active' : '' }}"><a href="{{ route('stakeholders.reports.index') }}"><i class="fa fa-file" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Monthly Reports</span></a>
                 </li>
+                @endif
 
                 {{-- <li class=" nav-item {{ Request::is('stakeholders.reports.analytics*') ? 'active' : '' }}"><a href="{{ route('stakeholders.reports.index') }}"><i class="fa fa-bar-chart" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Report Analytics</span></a>
                 </li> --}}
 
                 {{-- <li class=" nav-item {{ Request::is('stakeholders/payment*') ? 'active' : '' }}"><a href=""><i class="fa fa-money"></i>Proof of Payment</span></a></li> --}}
-                @if(Auth::guard('stakeholder')->user()->role == 'President')
-                <li class="nav-item"><a href="{{ route('stakeholders.profile') }}"><i class="fa fa-signature" aria-hidden="true"><img style="width:20px" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNTEyIDUxMjsiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPGc+DQoJPGc+DQoJCTxwYXRoIGQ9Ik0yNTYuMDUyLDYxLjc3M0wxNDUuOTU5LDE2LjE2OWMtMy42NzUtMS41MjEtNy44MDUtMS41MjEtMTEuNDgsMGMtMy42NzUsMS41MjItNi41OTYsNC40NDItOC4xMTgsOC4xMThMODEuNjI3LDEzMi4yODUNCgkJCUwzLjQ1NCwyMjYuNTM5Yy0zLjE1NSwzLjgwNS00LjIzMyw4LjkxOS0yLjg4NCwxMy42NzNsNDIuNDM2LDE0OS40NTdjMS4yNTIsNC40MTEsNC40NTMsOC4wMDcsOC42ODksOS43NjINCgkJCWMxLjg0MywwLjc2NCwzLjc5NCwxLjE0Miw1Ljc0LDEuMTQyYzIuNTI2LDAsNS4wNDQtMC42MzgsNy4zMDctMS44OTlMMjAwLjQzLDMyM2M0LjMxNi0yLjQwNyw3LjE3LTYuNzg2LDcuNjI5LTExLjcwNw0KCQkJbDExLjM3Ni0xMjEuOTI2TDI2NC4xNyw4MS4zNzJDMjY3LjM0LDczLjcxOSwyNjMuNzA2LDY0Ljk0NCwyNTYuMDUyLDYxLjc3M3ogTTE3OC45MjEsMzAwLjY0NGwtOTEuMTIsNTAuODE3bDM4LjgyOC05My43NA0KCQkJYzMuMTctNy42NTMtMC40NjQtMTYuNDI5LTguMTE4LTE5LjU5OWMtNy42NTMtMy4xNy0xNi40MjksMC40NjQtMTkuNTk5LDguMTE4bC0zOC44MjksOTMuNzQyTDMxLjU4NiwyMzkuNjEzTDk5LjEsMTU4LjIxMg0KCQkJbDQ0LjgyMywxOC41NjVsNDQuODIzLDE4LjU2NkwxNzguOTIxLDMwMC42NDR6IE0xOTYuNTkxLDE2Ni4xMmwtNTguNjI2LTI0LjI4MmwtMjMuNzUtOS44MzdsMzQuMTIxLTgyLjM3NWw4Mi4zNzYsMzQuMTIyDQoJCQlMMTk2LjU5MSwxNjYuMTJ6Ii8+DQoJPC9nPg0KPC9nPg0KPGc+DQoJPGc+DQoJCTxwYXRoIGQ9Ik00OTcsMjc0LjE3MkgzMzYuMzM0Yy0zNC44NDksMC02My4yMDEsMjguMzUyLTYzLjIwMSw2My4yMDFjMCwzNC44NDgsMjguMzUyLDYzLjE5OSw2My4yMDEsNjMuMTk5DQoJCQljMTguMzA2LDAsMzMuMTk5LDE0Ljg5MywzMy4xOTksMzMuMTk5YzAsMTguMzA4LTE0Ljg5MywzMy4yMDEtMzMuMTk5LDMzLjIwMUgxNWMtOC4yODQsMC0xNSw2LjcxNi0xNSwxNXM2LjcxNiwxNSwxNSwxNWgzMjEuMzM0DQoJCQljMzQuODQ4LDAsNjMuMTk5LTI4LjM1Miw2My4xOTktNjMuMjAxYzAtMzQuODQ4LTI4LjM1MS02My4xOTktNjMuMTk5LTYzLjE5OWMtMTguMzA3LDAtMzMuMjAxLTE0Ljg5NC0zMy4yMDEtMzMuMTk5DQoJCQljMC0xOC4zMDgsMTQuODk0LTMzLjIwMSwzMy4yMDEtMzMuMjAxSDQ5N2M4LjI4NCwwLDE1LTYuNzE2LDE1LTE1UzUwNS4yODQsMjc0LjE3Miw0OTcsMjc0LjE3MnoiLz4NCgk8L2c+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8L3N2Zz4NCg==" /><span class="menu-title" data-i18n="User">&nbsp &nbsp &nbsp</i><span class="menu-title" data-i18n="User">Upload Signatures</span></a>
-                </li>
-                @endif
+
                 <li class=" nav-item {{ Request::is('stakeholders/profile*') ? 'active' : '' }}"><a href="{{ route('stakeholders.profile') }}"><i class="fa fa-user o" aria-hidden="true"></i><span class="menu-title" data-i18n="User">My Profile</span></a>
                 </li>
             </ul>
