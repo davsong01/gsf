@@ -7,52 +7,52 @@ on:
     branches: ["development"]
 
 jobs:
-  # deploy-gsf:
-  #   name: Deploy to GSF
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
-
-  #     - name: Deploy to GSF server
-  #       uses: appleboy/ssh-action@v1.0.3
-  #       with:
-  #         host: 162.0.232.109
-  #         username: thewybsr
-  #         key: ${{ secrets.DEPLOY_KEY_GSF }}
-  #         port: 21098
-  #         script_stop: true
-  #         script: |
-  #           cd /home/thewybsr/portal.employme.ng/Files
-  #           git pull origin development
-  #           php artisan migrate --force
-  #           php artisan cache:clear
-  #           php artisan config:clear
-  #           php artisan route:clear
-  #           php artisan view:clear
-  deploy-gyf:
-    name: Deploy to GYF
+  deploy-gsf:
+    name: Deploy to GSF
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy to GYF server
+      - name: Deploy to GSF server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 198.54.115.222
-          username: gyfnbpbo
-          key: ${{ secrets.DEPLOY_KEY_GYF }}
+          host: 162.0.232.109
+          username: shinliih
+          key: ${{ secrets.DEPLOY_KEY_GSF }}
           port: 21098
           script_stop: true
           script: |
-            cd /home/gyfnbpbo/registration.gyfnational.org/apps
+            cd /home/shinliih/directory.gsfnational.org/MF
             git pull origin development
             php artisan migrate --force
             php artisan cache:clear
             php artisan config:clear
             php artisan route:clear
             php artisan view:clear
+  # deploy-gyf:
+  #   name: Deploy to GYF
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Deploy to GYF server
+  #       uses: appleboy/ssh-action@v1.0.3
+  #       with:
+  #         host: 198.54.115.222
+  #         username: gyfnbpbo
+  #         key: ${{ secrets.DEPLOY_KEY_GYF }}
+  #         port: 21098
+  #         script_stop: true
+  #         script: |
+  #           cd /home/gyfnbpbo/registration.gyfnational.org/apps
+  #           git pull origin development
+  #           php artisan migrate --force
+  #           php artisan cache:clear
+  #           php artisan config:clear
+  #           php artisan route:clear
+  #           php artisan view:clear
 
