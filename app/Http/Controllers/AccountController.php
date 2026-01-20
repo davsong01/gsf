@@ -32,14 +32,14 @@ class AccountController extends Controller
 			$alumnis = User::where('chapter_id', auth()->user()->chapter_id)
 				->where('id', '<>', auth()->user()->id)
 				->where('status', 1);
-			
+
 			return view('admin.index', compact('users', 'alumnis'));
-			
+
 		}elseif(auth()->user()->isAdmin()){
 			$allusers = User::all();
 			$users = $allusers->where('status', 0);
 			$alumnis = $allusers->where('status', 1);
-			
+
 			$fields = Field::all();
 			$zones = Zone::all();
 			$chapters = Chapter::get();
@@ -48,16 +48,16 @@ class AccountController extends Controller
 		}else{
 			$user = auth()->user();
 			$chapters = Chapter::all();
-			$portfolios = $this->getCommunityPortfolios();
+			$portfolios = getCommunityPortfolios();
 			$sessions = range(date('1982'), date('Y'));
-			
+
 			$president = $user->campus->stakeholder ?? null;
 			if($president){
 				$president = $president->where('role', 'President')->first();
 			}
 
 			$edition = activeConferenceEdition();
-			
+
 			return view('admin.users.profile', compact('chapters', 'user', 'president', 'portfolios', 'sessions','edition'));
 		}
 

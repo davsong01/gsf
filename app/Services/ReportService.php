@@ -462,4 +462,52 @@ class ReportService
         ];
     }
 
+    public function prepareViewData(StakeholderReport $report, bool $isAdmin = false
+    ): array
+    {
+
+        // $sections = StakeholderQuestionSection::isActive()->with([
+        //     'subsections.questions' => function ($query) {
+        //         $query->orderBy('order');
+        //     }
+        // ])->orderBy('id')->get();
+
+        // $reportData = $report->answers->mapWithKeys(function ($answer) {
+        //     $decoded = json_decode($answer->answer_value, true);
+        //     return [$answer->question->label => $decoded ?? $answer->answer_value];
+        // });
+
+        $report->load('answers');
+
+        $sections = StakeholderQuestionSection::isActive()
+            ->with([
+                'subsections' => function ($subQuery) {
+                    $subQuery->isActive()->with([
+                        'questions' => function ($q) {
+                            $q->isActive()->orderBy('order');
+                        }
+                    ]);
+                }
+            ])
+            ->orderBy('id')
+            ->get();
+
+        $answersData = [];
+
+        foreach ($report->answers ?? [] as $answer) {
+            $decoded = json_decode($answer->answer_value, true);
+            $answersData[$answer->question->label] =
+                json_last_error() === JSON_ERROR_NONE
+                    ? $decoded
+                    : $answer->answer_value;
+        }
+
+        return compact(
+            'report',
+            'sections',
+            'answersData',
+            'isAdmin'
+        );
+    }
+
 }

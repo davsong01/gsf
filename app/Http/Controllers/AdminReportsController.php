@@ -67,26 +67,15 @@ class AdminReportsController extends Controller
             ->with('message', $result['message']);
     }
 
-    public function show(StakeholderReport $report)
+    public function show(StakeholderReport $stakeholderreport)
     {
-        $sections = StakeholderQuestionSection::isActive()->with([
-            'subsections.questions' => function ($query) {
-                $query->orderBy('order');
-            }
-        ])->orderBy('id')->get();
-
-        $reportData = $report->answers->mapWithKeys(function ($answer) {
-            $decoded = json_decode($answer->answer_value, true);
-            return [$answer->question->label => $decoded ?? $answer->answer_value];
-        });
-
+        $data = app(ReportService::class)->prepareViewData($stakeholderreport, true);
 
         return view('reports.pdf_template', [
-            'report'     => $report,
-            // 'reportData' => $reportData,
-            'sections'   => $sections
+            'isAdmin'     => true,
+            'report'     => $stakeholderreport,
+            'sections'   => $data['sections']
         ]);
-
     }
 
    public function edit(StakeholderReport $stakeholderreport)

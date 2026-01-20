@@ -54,18 +54,20 @@
             text-align: inherit;
         }
         .section-title {
-            background: #eee;
+            background: #193085;
             font-weight: bold;
             padding: 6px;
             border: 1px solid #000;
             margin-top: 25px;
+            color:white
         }
         .subsection-title {
-            background: #f7f7f7;
+            background: #0281cc;
             font-weight: bold;
-            padding: 5px;
+            padding: 3px 6px;
+            margin-top: 8px;
             border: 1px solid #ccc;
-            margin-top: 10px;
+            color:white
         }
         .signatures {
             width: 100px;

@@ -45,9 +45,9 @@ class StakeholderController extends Controller
         $fields = Field::all();
         $zones = Zone::all();
         $chapters = Chapter::all();
-        $months = $this->getMonths();
+        $months = getMonths();
         $roles = StakeholderRole::where('status', 'active')->get();
-        $portfolios = $this->getCommunityPortfolios();
+        $portfolios = getCommunityPortfolios();
 
         return view('admin.stakeholders.edit', compact('zones', 'fields', 'chapters', 'months', 'roles','portfolios'));
     }
@@ -176,9 +176,9 @@ class StakeholderController extends Controller
         $fields = Field::all();
         $zones = Zone::all();
         $chapters = Chapter::all();
-        $months = $this->getMonths();
+        $months = getMonths();
         $roles = StakeholderRole::where('status', 'active')->get();
-        $portfolios = $this->getCommunityPortfolios();
+        $portfolios = getCommunityPortfolios();
 
         return view('admin.stakeholders.edit', compact('stakeholder', 'fields', 'zones', 'chapters', 'months', 'roles','portfolios'));
     }

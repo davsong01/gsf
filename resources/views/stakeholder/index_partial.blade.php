@@ -1,10 +1,17 @@
 <div class="content-body">
     <section id="reports-dashboard">
         <h4 class="card-title">All Reports</h4>
-        @if(canAddNextMonthReport($user))
+        {{-- {{dd(canAddNextMonthReport($user))}} --}}
+        @php
+            $eligibleMonth = canAddReport($user);
+        @endphp
+
+        @if($eligibleMonth)
         <div class="row mb-3">
             <div class="col-12 d-flex justify-content-between">
-                <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">Add {{ now()->format('F') }}’s Report</a>
+                <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">
+                    Add {{ $eligibleMonth }}’s Report
+                </a>
             </div>
         </div>
         @endif
@@ -219,7 +226,7 @@
 
                                         <td class="text-center">
                                             {{-- View --}}
-                                            <a href="{{ route('stakeholders.reports.show', $report->id) }}" class="text-primary mx-1" title="View Report">
+                                            <a href="{{ route($isAdmin ? 'stakeholderreports.show' : 'stakeholders.reports.show', $report->id) }}" class="text-primary mx-1" title="View Report">
                                                 <i class="fa fa-eye"></i>
                                             </a>
 

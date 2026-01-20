@@ -65,18 +65,20 @@
         .pending  { background-color: #ffc107; color: #000; }
         /* Sections */
         .section-title {
-            background: #eee;
+            background: #193085;
             font-weight: bold;
             padding: 5px 8px;
             margin-top: 15px;
             border: 1px solid #000;
+            color:white
         }
         .subsection-title {
-            background: #f7f7f7;
+            background: #0281cc;
             font-weight: bold;
             padding: 3px 6px;
             margin-top: 8px;
             border: 1px solid #ccc;
+            color:white
         }
         table {
             width: 100%;
@@ -103,6 +105,11 @@
             height: auto;
             margin-top: 3px;
         }
+
+        .uploaded-file {
+            width: 50px;
+            height: 50px;
+        }
     </style>
 </head>
 <body>
@@ -113,7 +120,8 @@
         <table class="header-table">
             <tr>
                 <td style="width: 90px;">
-                    <img src="{{ public_path('frontend/img/logo.png') }}" alt="Logo">
+                    {{-- <img src="{{ base_path('frontend/img/logo.png') }}" alt="Logo"> --}}
+                    <img src="{{ url('frontend/img/logo.png')}}" alt="Logo">
                 </td>
                 <td class="header-details" style="padding-left: 10px;">
                     <h1>GOFAMINT STUDENTS’ FELLOWSHIP</h1>
@@ -170,6 +178,13 @@
                                 <tr>
                                     <th width="60%">{{ $question->label ?? $question->label  }}</th>
                                     <td>{{ $value ?: '-' }}</td>
+                                </tr>
+                            @endif
+
+                            @if(in_array($question->type, ['file']))
+                                <tr>
+                                    <th width="60%">{{ $question->label ?? $question->label  }}</th>
+                                    <td>@if($value)<img class="uploaded-file" src="{{ route(($isAdmin ? 'admin.protected.download' : 'protected.download'), ['file' => $value]) }}" alt="{{ $value ?: '-' }}">@else {{'-'}} @endif</td>
                                 </tr>
                             @endif
 

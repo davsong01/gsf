@@ -379,9 +379,12 @@ class ReportNotificationService
         /**
          * PREVIEW MODE → Render HTML in browser
          */
+        $isAdmin = false;
+
         if ($preview) {
             return view('reports.pdf_template', compact(
                 'report',
+                'isAdmin',
                 'reportData',
                 'sections'
             ));
@@ -392,6 +395,7 @@ class ReportNotificationService
          */
         $pdf = Pdf::loadView('reports.pdf_template', compact(
             'report',
+            'isAdmin',
             'reportData',
             'sections'
         ))->setPaper('a4', 'portrait');

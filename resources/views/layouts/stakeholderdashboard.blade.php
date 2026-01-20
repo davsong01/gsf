@@ -39,13 +39,13 @@
                 </div>
             </div>
         </div>
-        
+        @include('includes.alerts')
         @yield('content')
     </div>
 </div>
     <!-- END: Content-->
 
-   
+
     <div class="sidenav-overlay"></div>
     <div class="drag-target"></div>
 

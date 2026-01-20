@@ -120,7 +120,6 @@
 @section('content')
 <div class="content-body">
     <section id="basic-input">
-
         <form action="{{ isset($report) ? route(($isAdmin ? 'stakeholderreports.update' : 'stakeholders.reports.update'), $report->id) : route('stakeholders.reports.store') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('You are about to submit this report, action is irreversible');">
             @csrf
             @if(isset($report))
@@ -316,11 +315,11 @@
                                                             id="{{ $question->slug }}"
                                                             name="responses[{{ $question->slug }}]"
                                                             {{ $disabled }}
-                                                            accept=".jpg,.jpeg,.png,.pdf"
+                                                            accept=".jpg,.jpeg,.png"
                                                             @if($question->is_required && $qAccess['edit'] && !$isAdmin) required @endif
                                                         >
                                                         <small class="text-danger">
-                                                            Only JPG, JPEG, PNG, and PDF files are allowed.
+                                                            Only JPG, JPEG, and PNG files are allowed.
                                                         </small>
                                                     @break
 

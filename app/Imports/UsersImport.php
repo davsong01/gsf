@@ -64,7 +64,7 @@ class UsersImport extends Controller implements ToModel, WithHeadingRow
 				'program.required' => 'One or more rows do not have a program, please check the program field and try again',
 			]
 		)->validate();
-			
+
 		$upload = [
 			'slug' => Str::slug(trim($row['name'])),
 			'name' => trim($row['name']),
@@ -85,7 +85,7 @@ class UsersImport extends Controller implements ToModel, WithHeadingRow
 			'twitter'	=> trim($row['twitter']),
 			'password' => Hash::make(trim($row['phone'])),
 		];
-		
+
 		$user = User::create($upload);
 		$this->createFamilyId($user);
 
@@ -94,7 +94,7 @@ class UsersImport extends Controller implements ToModel, WithHeadingRow
 	}
 
 	private function getRole($role){
-		$portfolios = $this->getCommunityPortfolios();
+		$portfolios = getCommunityPortfolios();
 		return array_search($role, $portfolios);
 	}
 

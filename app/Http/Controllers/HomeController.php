@@ -29,7 +29,7 @@ class HomeController extends Controller
     {
         $this->conference = activeConferenceEdition();
         $this->frontend = frontendTemplate();
-        
+
         if (!isset($this->conference) && empty($this->conference)) {
             return true;
         }else{
@@ -40,11 +40,11 @@ class HomeController extends Controller
     public function index() {
         $events = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', '<>', 0)->limit(6)->get();
         $national = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', 0)->limit(3)->get();
-        
+
         if($this->conference || env('MINISTRY') == 'gyf'){
             $chapters = Chapter::orderBy('name')->get();
             $setting = $this->conference;
-            
+
             $conference_year = Carbon::parse($setting->start_date)->year;
             $alumnis_amount = [
                 'alumni_registration_fee' => $setting->alumni_registration_fee,
@@ -56,7 +56,7 @@ class HomeController extends Controller
             $schedule = ConferenceSchedule::where('status', 1)->where('conference_edition_id', $setting->id)->get();
             $plans = ConferencePlan::where('status', 1)->where('conference_edition_id', $setting->id)->get();
             // conferencePlans($setting);
-            
+
             return view('frontend.conference.template'. $this->conference->template_id.'.welcome')
                 ->with('events',$events)
                 ->with('setting',$setting)
@@ -72,7 +72,7 @@ class HomeController extends Controller
         }else{
             $used = array_merge(zoneStakeholders(), fieldStakeholders(), portfolioStakeholders());
             $officials = Stakeholder::whereIn('role_id', $used)->where('status', 'active')->get();
-            
+
             foreach($officials as $user){
                 $role = $user->role_id;
                 if(in_array($role, zoneStakeholders()) && !is_null($user->zone_id)){
@@ -85,9 +85,9 @@ class HomeController extends Controller
 
                 if (in_array($role, portfolioStakeholders())){
                     $user->office = "GSF National ".$user->portfolio;
-                } 
+                }
             }
-            
+
             return view('frontend.'. frontendTemplate().'.index', compact('events', 'national', 'officials'));
         }
     }
@@ -148,7 +148,7 @@ class HomeController extends Controller
             $title = $plan->title;
             $fields = $plan->fields()->sortBy('display_order');
             $registrationFields = reformatRegistrationFields($fields);
-                
+
             return view('frontend.conference.template' . $this->conference->template_id . '.registration', compact('title', 'chapters', 'setting', 'conference_year', 'type', 'fields', 'registrationFields','plan'));
         } else {
             return abort(404);
@@ -172,13 +172,13 @@ class HomeController extends Controller
     }
 
     public function programs() {
-        $programs = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->get(); 
+        $programs = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->get();
         return view('frontend.main.program', compact('programs'));
     }
 
     public function chapters() {
         $chapters = Chapter::withCount('users')->where('id','<>',86)->get();
-        
+
         return view('frontend.' . frontendTemplate() . '.campuses', compact('chapters'));
         // return view('frontend.main.chapters', compact('chapters'));
     }
@@ -196,7 +196,7 @@ class HomeController extends Controller
 
     private function getSidebar() {
         $chapters = Chapter::all();
-        $portfolios = $this->getCommunityPortfolios();
+        $portfolios = getCommunityPortfolios();
 
         return ['chapters' => $chapters, 'portfolios' => $portfolios];
     }
@@ -221,14 +221,14 @@ class HomeController extends Controller
         $alumni = $results = User::with('campus')
         ->where('status', 1)
         ->where('role', '<>', 1)->orderBy('created_at','desc');
-        
+
         if(!empty($request->name)){
             $alumni = $alumni->where("name", "LIKE", "%{$request->name}%");
         }
-        
+
         if ($request->school) {
             $campus = Chapter::where("name", "LIKE", "%{$request->school}%")->pluck('id');
-            $alumni = $alumni->whereIn('users.chapter_id', $campus);            
+            $alumni = $alumni->whereIn('users.chapter_id', $campus);
         }
 
         $searchMember = $alumni->get();
@@ -241,7 +241,7 @@ class HomeController extends Controller
         $results = User::with('campus')
         ->where('status', 0)
         ->where('role', '<>', 1)->orderBy('created_at', 'desc');
-        
+
         if (!empty($request->name)) {
             $results = $results->where("name", "LIKE", "%{$request->name}%");
         }
@@ -253,7 +253,7 @@ class HomeController extends Controller
 
         $searchMember = $results->get();
         $count = $searchMember->count();
-        
+
         return view('frontend.' . frontendTemplate() . '.general_search_results', compact('count','searchMember', ));
     }
 
@@ -264,7 +264,7 @@ class HomeController extends Controller
             $data = Chapter::select("name", "id")
                 ->where("name","LIKE","%{$data}%")
                 ->take(3)->get();
-          
+
             $output = '<ul class="dropdown-menu" style="display:block; position:relative;width: 100%;">';
             foreach ($data as $row) {
                 $output .= "
@@ -283,7 +283,7 @@ class HomeController extends Controller
             $data = Chapter::select("name", "id")
                 ->where("name","LIKE","%{$data}%")
                 ->take(10)->get();
-          
+
             $output = '<ul class="dropdown-menu" style="display:block; position:relative">';
             foreach ($data as $row) {
                 $output .= "
@@ -356,7 +356,7 @@ class HomeController extends Controller
 
         $token = false;
         $realToken = '';
-        
+
         if (request()->token) {
             if ($chapter->token != request()->token) {
                 return back()->with('error', 'Invalid Token for GSF Chapter, Kindly contact the National Publicity Office');
@@ -370,7 +370,7 @@ class HomeController extends Controller
 
         $nationalevents = Event::where('chapter_id', 0)->get();
         $related = Chapter::where('zone_id', $chapter->zone_id)->orWhere('field_id', $chapter->field->id)->get();
-        
+
         return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents','chapter','related'));
         // return view('frontend.main.single-chapter', compact('chapter', 'nationalevents'));
     }
@@ -384,7 +384,7 @@ class HomeController extends Controller
         ]);
 
         $chapter = Chapter::findorfail($request->chapter_id);
-        
+
         if($chapter && !is_null($chapter->email)){
             $type = 'contactCampus';
             $name = 'Publicity Secretary';
@@ -403,7 +403,7 @@ class HomeController extends Controller
             } catch (\Throwable $th) {
                 //throw $th;
             }
-                   
+
         }
         return back()->with('message', 'Message sent successfully!');
     }
@@ -411,15 +411,15 @@ class HomeController extends Controller
         $this->validate($request, ['name' => 'required|min:4']);
         $name = $request->name;
         $results =  User::wherehas('campus')->where("name","LIKE","%{$request->name}%")->where('status', 0)->where('role', '<>', 1)->get();
-        
+
         if(!is_null($request->chapter) && !is_null($request->chapter_id)){
-       
+
             $results = $results->where('chapter_id', $request->chapter_id);
-            
+
         }
-       
+
         return view('frontend.main.student-search', compact('results', 'name'));
-        
+
     }
 
     public function singleAlumni($slug){
@@ -430,7 +430,7 @@ class HomeController extends Controller
     public function singleUser($slug){
         $alumni = User::whereSlug($slug)->first();
         $related = User::where('chapter_id', $alumni->chapter_id)->where('role', '<>', 1)->get();
-        
+
         // Check if this is an alumni
         return view('frontend.' . frontendTemplate() . '.single-alumni', compact('alumni', 'related'));
     }
@@ -441,7 +441,7 @@ class HomeController extends Controller
         return view('frontend.' . frontendTemplate() . '.single-alumni', compact('alumni'));
 
         // return view('frontend.main.single-alumni', compact('alumni'));
-        
+
     }
 
     public function userContact(Request $request) {
@@ -477,18 +477,18 @@ class HomeController extends Controller
 
             $this->logEmail($email);
             // $mailresponse = $this->sendEmail($alumni->email, $type, $subject, $name, $content, 1);
-           
+
             //Send toastr
             return back()->with('message', 'Message sent!');
 
         }else {
             return back()->with('error', 'Email not found, please try again later');
-        }           
+        }
     }
 
     public function newAlumni(){
         $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
-		$portfolios = $this->getCommunityPortfolios();
+		$portfolios = getCommunityPortfolios();
 		$sessions = range(date('Y'), date('1982'));
 
         return view('frontend.' . frontendTemplate() . '.newalumni', compact('chapters', 'portfolios', 'sessions'));
@@ -497,7 +497,7 @@ class HomeController extends Controller
     public function newDonation()
     {
         $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
-        $portfolios = $this->getCommunityPortfolios();
+        $portfolios = getCommunityPortfolios();
         $sessions = range(date('Y'), date('1982'));
 
         return view('frontend.' . frontendTemplate() . '.newdonation', compact('chapters', 'portfolios', 'sessions'));
@@ -518,11 +518,11 @@ class HomeController extends Controller
             'recipient' => $setting->official_email,
             'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
         ];
-        
+
         $this->logEmail($email);
 
         return back()->with('message', 'Submission Added successfully');
-        
+
 	}
 
     public function uploadAlumni(Request $request, $type){
@@ -531,8 +531,8 @@ class HomeController extends Controller
         if($type == 'single'){
             if ($request->has('image')) {
                 $request['passport'] = $this->uploadImage($request->image, 'frontend/passports', 500, 500);
-            } 
-    
+            }
+
             TempMember::updateOrCreate($request->except(['_token','image']));
             $request['type'] = 'alumni-upload';
             $request['chapter'] = Chapter::find($request->chapter)->name;
@@ -562,7 +562,7 @@ class HomeController extends Controller
         }else{
             $data = $request->all();
             $data['chapter'] = Chapter::where('id', $request->chapter)->first();
-            
+
             try {
                 Excel::import(new GeneralUsersImport($data), request()->file('file'));
             } catch (\Illuminate\Database\QueryException $ex) {
@@ -595,14 +595,14 @@ class HomeController extends Controller
             $this->logEmail($email2);
 
         }
-                
+
         return back()->with('message', 'Submission Added successfully, we have sent you an email with the next steps');
 
     }
 
     public function uploadMultiple(){
         $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
-        $portfolios = $this->getCommunityPortfolios();
+        $portfolios = getCommunityPortfolios();
         $sessions = range(date('Y'), date('1982'));
 
         return view('frontend.' . frontendTemplate() . '.newmultiple', compact('chapters', 'portfolios', 'sessions'));
@@ -612,7 +612,7 @@ class HomeController extends Controller
     {
         dd($request->all());
         $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
-        $portfolios = $this->getCommunityPortfolios();
+        $portfolios = getCommunityPortfolios();
         $sessions = range(date('Y'), date('1982'));
 
         return view('frontend.' . frontendTemplate() . '.newmultiple', compact('chapters', 'portfolios', 'sessions'));
@@ -621,7 +621,7 @@ class HomeController extends Controller
     public function getListingSample(Request $request)
     {
         $path = public_path() . '/frontend/exportsamples/generalimport.xlsx';
-       
+
         return response()->download($path);
 
     }

@@ -31,47 +31,92 @@ if (!function_exists('canAddNextMonthReport')) {
     }
 }
 
+if (!function_exists('getCommunityPortfolios')) {
+    function getCommunityPortfolios()
+    {
+        $portfolios = [
+            1 => 'Admin',
+            2 => 'Member',
+            3 => 'President',
+            4 => 'Publicity Secretary',
+            5 => 'Media Coordinator',
+            6 => 'Assistant Publicity Secretary',
+            7 => 'General Secretary',
+            8 => 'Assistant General Secretary',
+            9 => 'Assistant Music Director 1',
+            10 => 'Assistant Music Director 2',
+            11 => 'Evangelism Secretary 1',
+            12 => 'Vice President',
+            13 => 'Assistant Bible Studies Secretary',
+            14 => 'Special Duty',
+            15 => 'Head of Musicians',
+            16 => 'Sister Cordinator',
+            17 => 'Assistant Sister Cordinator 1',
+            18 => 'Assistant Sister Cordinator 2',
+            19 => 'Organizing Secretary 1',
+            20 => 'Organizing Secretary 2',
+            21 => 'Editor In Chief',
+            22 => 'Technical Director 1',
+            23 => 'Technical Director 2',
+            24 => 'Music Director',
+            25 => 'Financial Secretary',
+            27 => 'Technical Director 2',
+            28 => 'Bible Study Secretary',
+            29 => 'Treasurer',
+            31 => 'Assistant Sis Cord 1',
+            32 => 'Assistant Sis Cord 2',
+            33 => 'Prayer Secretary',
+            34 => 'Assistant Prayer Secretary',
+            35 => 'Health Officer',
+            36 => 'Drama Secretary',
+            37 => 'Alumni Liaison Officer',
+            38 => 'Transport Secretary',
+            39 => 'Special Duty',
+            40 => 'Worker'
+        ];
+
+        return $portfolios;
+    }
+}
+
 if (!function_exists('canAddNextMonthReport')) {
-    /**
-     * Check if a stakeholder can add a report for the upcoming month.
-     *
-     * @param  \App\Models\Stakeholder  $stakeholder
-     * @param  int $daysBeforeEnd Allow X days before current month ends
-     * @param  int $daysAfterStart Allow X days after next month starts
-     * @return bool
-     */
-    function canAddNextMonthReport($stakeholder, $daysBeforeEnd = 18, $daysAfterStart = 5)
+    function canAddReport($stakeholder, $daysBeforeEnd = 5, $daysAfterStart = 5): ?string
     {
         if (!isset($stakeholder->chapter_id)) {
-            return false;
+            return null;
         }
 
         if (!in_array($stakeholder->role_id, chapterStakeholders())) {
-            return false;
+            return null;
         }
 
         $today = Carbon::today();
+        
+        $monthStart = $today->copy()->startOfMonth();
+        $monthEnd = $today->copy()->endOfMonth();
 
-        // Determine target month (next month)
-        $targetMonthStart = Carbon::now()->addMonthNoOverflow()->startOfMonth();
-        $targetMonthEnd = Carbon::now()->addMonthNoOverflow()->endOfMonth();
+        // Window: previous month end → days before current month starts
+        $windowOpen = $monthStart->copy()->subDays($daysBeforeEnd); // e.g., Dec 26
+        // Window: X days into current month
+        $windowClose = $monthStart->copy()->addDays($daysAfterStart - 1); // e.g., Jan 5
 
-        // Open window: X days before this month ends
-        $windowStart = Carbon::now()->endOfMonth()->subDays($daysBeforeEnd - 1);
-        // Close window: X days after next month starts
-        $windowEnd = $targetMonthStart->copy()->addDays($daysAfterStart - 1);
-
-        if ($today->lt($windowStart) || $today->gt($windowEnd)) {
-            return false;
+        // Check if today is within the report window
+        if (! $today->between($windowOpen, $windowClose)) {
+            return null;
         }
 
-        // Check if report already exists for this chapter for the target month
+        // Check if report already exists for this chapter & current month
         $reportExists = StakeholderReport::where('chapter_id', $stakeholder->chapter_id)
-            ->whereYear('created_at', $targetMonthStart->year)
-            ->whereMonth('created_at', $targetMonthStart->month)
+            ->whereYear('created_at', $today->year)
+            ->whereMonth('created_at', $today->month)
             ->exists();
 
-        return !$reportExists;
+        if ($reportExists) {
+            return null;
+        }
+
+        // Eligible: return the month name
+        return $today->format('F');
     }
 }
 
