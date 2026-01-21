@@ -18,6 +18,7 @@ use Rap2hpoutre\FastExcel\FastExcel;
 use App\Models\StakeholderReportAnswer;
 use App\Models\StakeholderReportQuestion;
 use App\Models\StakeholderQuestionSection;
+use App\Services\ReportNotificationService;
 
 class ReportService
 {
@@ -553,9 +554,12 @@ class ReportService
          * Excel Header => JSON Key
          */
         $sumColumns = [
-            'Tithe Received (Bank)' => 'Tithe received(Bank)',
-            'Tithe Received (Cash)' => 'Tithe received(Cash)',
-            'Bible Study Offering'  => 'Bible Study Offering',
+            'Total Sunday Worship Offering' => 'Sunday Worship Offering',
+            'Total Weekly Tithe Received (Bank)' => 'Tithe received(Bank)',
+            'Total Weekly Tithe Received (Cash)' => 'Tithe received(Cash)',
+            'Total Weekly Bible Study Offering'  => 'Bible Study Offering',
+            'Total Weekly Prayer Meeting Offering' => 'Prayer Meeting Offering',
+            'Total Weekly Other Offering'        => 'Other Offering',
         ];
 
         /** -------------------------
@@ -649,4 +653,92 @@ class ReportService
         return ExcelService::download($rows, $headers, $fileName);
     }
 
+
+    public function approve($user, $report){
+        $roleSlug = $user->role->slug;
+
+        switch ($roleSlug) {
+            case 'zonal-pastor':
+                // $report->zone_comment = $comment;
+                $report->zone_status = 1; // Approved
+                $report->zone_approved_at = now();
+                // $report->zone_approved_by = $user->id;
+                break;
+
+            case 'field-pastor':
+                if ($report->zone_status !== 1) {
+                    abort(403, 'Cannot approve before zone approval');
+                }
+                // $report->field_comment = $comment;
+                $report->field_status = 1;
+                $report->field_approved_at = now();
+                // $report->field_approved_by = $user->id;
+                break;
+
+            case 'secretariat':
+            case 'ncp':
+                if ($report->zone_status !== 1 || $report->field_status !== 1) {
+                    abort(403, 'Cannot approve before zone and field approval');
+                }
+                // $report->national_comment = $comment;
+                $report->national_status = 1;
+                $report->national_approved_at = now();
+                // $report->national_approved_by = $user->id;
+                break;
+
+            default:
+                abort(403, 'Unauthorized action');
+        }
+
+        $report->save();
+
+        ReportNotificationService::handleReportAction($report, $user, 'approve');
+
+        return;
+    }
+
+    public function rejectReport($user, $report){
+        $comment = request()->rejection_reason;
+                
+        $role = $user->role->slug;
+
+        switch ($role) {
+            case 'zonal-pastor':
+                $report->zone_comment = $comment;
+                $report->zone_status = 2;
+                $report->zone_rejected_at = now();
+                // $report->zone_rejected_by = $user->id;
+                break;
+
+            case 'field-pastor':
+                if ($report->zone_status !== 1) {
+                    abort(403, 'Cannot reject before zone approval');
+                }
+                $report->field_comment = $comment;
+                $report->field_status = 2;
+                $report->field_rejected_at = now();
+                // $report->field_rejected_by = $user->id;
+                break;
+
+            case 'secretariat':
+            case 'ncp':
+                if ($report->zone_status !== 1 || $report->field_status !== 1) {
+                    abort(403, 'Cannot reject before zone and field approval');
+                }
+                $report->national_comment = $comment;
+                $report->national_status = 2;
+                $report->national_rejected_at = now();
+                // $report->national_rejected_by = $user->id;
+                break;
+
+            default:
+                abort(403, 'Unauthorized action');
+        }
+
+        $report->save();
+
+        ReportNotificationService::handleReportAction($report, $user, 'reject');
+
+        return;
+    }
 }

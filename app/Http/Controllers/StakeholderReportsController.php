@@ -2,25 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Zone;
-use App\Models\Field;
-use App\Models\Chapter;
-use App\Models\Reports;
-use App\Models\Setting;
-use App\Models\Stakeholder;
 use Illuminate\Http\Request;
-use App\Mail\NotificationEmail;
 use App\Services\ReportService;
 use App\Models\StakeholderReport;
-use Illuminate\Support\Facades\DB;
-use App\Services\FileUploadService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use App\Models\StakeholderReportAnswer;
-use App\Models\StakeholderReportQuestion;
 use App\Models\StakeholderQuestionSection;
-use App\Services\ReportNotificationService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class StakeholderReportsController extends Controller
@@ -140,45 +127,7 @@ class StakeholderReportsController extends Controller
     public function rejectReport(Request $request, StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
-        $comment = $request->rejection_reason;
-        $role = $user->role->slug;
-
-        switch ($role) {
-            case 'zonal-pastor':
-                $report->zone_comment = $comment;
-                $report->zone_status = 2;
-                $report->zone_rejected_at = now();
-                // $report->zone_rejected_by = $user->id;
-                break;
-
-            case 'field-pastor':
-                if ($report->zone_status !== 1) {
-                    abort(403, 'Cannot reject before zone approval');
-                }
-                $report->field_comment = $comment;
-                $report->field_status = 2;
-                $report->field_rejected_at = now();
-                // $report->field_rejected_by = $user->id;
-                break;
-
-            case 'secretariat':
-            case 'ncp':
-                if ($report->zone_status !== 1 || $report->field_status !== 1) {
-                    abort(403, 'Cannot reject before zone and field approval');
-                }
-                $report->national_comment = $comment;
-                $report->national_status = 2;
-                $report->national_rejected_at = now();
-                // $report->national_rejected_by = $user->id;
-                break;
-
-            default:
-                abort(403, 'Unauthorized action');
-        }
-
-        $report->save();
-
-        ReportNotificationService::handleReportAction($report, $user, 'reject');
+        app(ReportService::class)->rejectReport($user, $report);
 
         return redirect()
             ->route('stakeholders.reports.index')
@@ -188,45 +137,8 @@ class StakeholderReportsController extends Controller
     public function approveReport(StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
-        // $comment = $request->rejection_reason ?? null;
-        $roleSlug = $user->role->slug;
 
-        switch ($roleSlug) {
-            case 'zonal-pastor':
-                // $report->zone_comment = $comment;
-                $report->zone_status = 1; // Approved
-                $report->zone_approved_at = now();
-                // $report->zone_approved_by = $user->id;
-                break;
-
-            case 'field-pastor':
-                if ($report->zone_status !== 1) {
-                    abort(403, 'Cannot approve before zone approval');
-                }
-                // $report->field_comment = $comment;
-                $report->field_status = 1;
-                $report->field_approved_at = now();
-                // $report->field_approved_by = $user->id;
-                break;
-
-            case 'secretariat':
-            case 'ncp':
-                if ($report->zone_status !== 1 || $report->field_status !== 1) {
-                    abort(403, 'Cannot approve before zone and field approval');
-                }
-                // $report->national_comment = $comment;
-                $report->national_status = 1;
-                $report->national_approved_at = now();
-                // $report->national_approved_by = $user->id;
-                break;
-
-            default:
-                abort(403, 'Unauthorized action');
-        }
-
-        $report->save();
-
-        ReportNotificationService::handleReportAction($report, $user, 'approve');
+        app(ReportService::class)->approveReport($user,$report);
 
         return redirect()
             ->route('stakeholders.reports.index')
@@ -239,19 +151,19 @@ class StakeholderReportsController extends Controller
         //
     }
 
-    public function delete($id){
-        if(Auth::guard('stakeholder')->user()->role != 'Secretariat') return abort(404);
-        $report =  StakeholderReport::find($id);
-        if($report->stakeholderpayment){
-            if (file_exists(base_path() . '/uploads/paymentproof' . '/' . $report->stakeholderpayment->image ))
-                unlink( base_path() . '/uploads/paymentproof' . '/' . $report->stakeholderpayment->image );
+    // public function delete($id){
+    //     if(Auth::guard('stakeholder')->user()->role != 'Secretariat') return abort(404);
+    //     $report =  StakeholderReport::find($id);
+    //     if($report->stakeholderpayment){
+    //         if (file_exists(base_path() . '/uploads/paymentproof' . '/' . $report->stakeholderpayment->image ))
+    //             unlink( base_path() . '/uploads/paymentproof' . '/' . $report->stakeholderpayment->image );
 
-                $report->stakeholderpayment->delete();
-        }
-        $report->delete();
+    //             $report->stakeholderpayment->delete();
+    //     }
+    //     $report->delete();
 
-        return back()->with('message', 'Report has been deleted forever!');
-    }
+    //     return back()->with('message', 'Report has been deleted forever!');
+    // }
 
     public function download(StakeholderReport $report): BinaryFileResponse
     {
@@ -269,21 +181,21 @@ class StakeholderReportsController extends Controller
     }
 
     public function financialReports(Request $request)
-{
-    $user = Auth::guard('stakeholder')->user();
-    $isAdmin = false;
+    {
+        $user = Auth::guard('stakeholder')->user();
+        $isAdmin = false;
 
-    $result = app(ReportService::class)
-        ->index($request, $user, $isAdmin);
+        $result = app(ReportService::class)
+            ->index($request, $user, $isAdmin);
 
-    // If it's a download, the service will return a BinaryFileResponse
-    if ($result instanceof \Symfony\Component\HttpFoundation\BinaryFileResponse) {
-        return $result;
+        // If it's a download, the service will return a BinaryFileResponse
+        if ($result instanceof \Symfony\Component\HttpFoundation\BinaryFileResponse) {
+            return $result;
+        }
+
+        // Otherwise, it's an array for the view
+        return view('stakeholder.finance.index', array_merge($result, compact('user','isAdmin')));
     }
-
-    // Otherwise, it's an array for the view
-    return view('stakeholder.finance.index', array_merge($result, compact('user','isAdmin')));
-}
 
 
     public function financialReportsDownload(StakeholderReport $report){
