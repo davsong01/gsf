@@ -15,7 +15,7 @@
                         <a href="{{ route('chapters.create') }}" class="btn btn-primary mt-1">Add new chapter</a>
                         <a href="{{ route('chapters.export') }}" class="btn btn-primary mt-1">Export</a>
                         @include('includes.alerts')
-                        
+
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -25,7 +25,7 @@
                                         <tr>
                                             <th>S/N</th>
                                             <th>Name</th>
-                                            <th>President</th>
+                                            <th>Chapter Rep</th>
                                             <th>Details</th>
                                             <th>Email</th>
                                             <th>Phone</th>
@@ -41,7 +41,13 @@
                                                <small style="color:red">Token: {{ $chapter->token }}</small> <br>
                                                 <small><a target="_blank" href="{{ route('campus.single', $chapter->id) }}"><i class="fa fa-eye"></i> View on website</a></small>
                                             </td>
-                                            <td>{{ $chapter->stakeholder->name ?? 'N/A' }}</td>
+                                            <td>
+                                                @if ($chapter->stakeholder)
+                                                    <a href="{{route('stakeholderpersonnel.edit', $chapter->stakeholder->id)}}">{{ $chapter->stakeholder->name }}</a>
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </td>
                                             <td>
                                                 <small>
                                                     Field: {{ $chapter->field->name ?? 'N/A' }} <br>
@@ -53,8 +59,8 @@
                                             <td>
                                                 <small>
                                                     Students: {{ $chapter->users->where('status', 0)->count() }} <br>
-                                                    Alumni: {{ $chapter->users->where('status', 1)->count() }} 
-                                                    Stakeholders: {{ $chapter->stakeholders->where('status', 1)->count() }} 
+                                                    Alumni: {{ $chapter->users->where('status', 1)->count() }}
+                                                    Stakeholders: {{ $chapter->stakeholders->where('status', 1)->count() }}
                                                 </small>
                                             </td>
                                             <td style="padding-left: 5px;padding-right: 5px;">
@@ -62,13 +68,13 @@
                                             </a>
                                             <a class="actions" data-toggle="tooltip" title="Generate new token" href="{{ route('chapter.newtoken', $chapter->id) }}"> <i class="fa fa-refresh actions"></i>
                                             </a>
-                                            
+
                                             <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete chapter" href="{{ route('chapters.delete', $chapter->id) }}"> <i class="fa fa-trash actions"></i></
                                             </a>
                                         </tr>
                                         @endforeach
                                     </tbody>
-                                    
+
                                 </table>
                             </div>
                         </div>
@@ -77,6 +83,6 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 @endsection

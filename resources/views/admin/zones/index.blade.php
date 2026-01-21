@@ -35,7 +35,13 @@
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $zone->name }}</td>
-                                            <td>{{ !is_null($zone->stakeholder) ? $zone->stakeholder->name : 'N/A' }}</td>
+                                            <td>
+                                                @if ($zone->stakeholder)
+                                                    <a href="{{route('stakeholderpersonnel.edit', $zone->stakeholder->id)}}">{{ $zone->stakeholder->name }}</a>
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </td>
                                             <td>{{ !is_null($zone->field) ? $zone->field->name : 'N/A'}}</td>
                                             <td>{{ $zone->chapters->count() }}</td>
 
