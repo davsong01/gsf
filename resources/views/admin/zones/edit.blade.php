@@ -1,58 +1,116 @@
 @extends('layouts.dashboard')
-@section('title', 'Edit zone')
+
+@php
+    $isEdit = isset($zone);
+@endphp
+
+@section('title', $isEdit ? 'Edit Zone' : 'Create Zone')
+
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('zones.index') }}">Zones</a></li>
+<li class="breadcrumb-item">
+    <a href="{{ route('zones.index') }}">Zones</a>
+</li>
 @endsection
+
 @section('active')
-<li class="breadcrumb-item">Update zone</li>
+<li class="breadcrumb-item">
+    {{ $isEdit ? 'Update Zone' : 'Create Zone' }}
+</li>
 @endsection
+
 @section('content')
 <div class="content-body">
-    <!-- Basic Inputs start -->
     <section id="basic-input">
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
+
                     <div class="card-header">
-                     
                         @include('includes.alerts')
                     </div>
+
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('zones.update', $zone->id) }}" method="POST">
-                            @csrf
-                            @method('PATCH')
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="name">Name</label>
-                                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name') ?? $zone->name }}" placeholder="Enter name" required>
-                                    </fieldset>
-                                    
-                                </div>
-                                <div class="col-md-12 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="field_id">Parent Field</label>
-                                        <select class="form-control" name="field_id" id="field_id" required>
-                                            @foreach($fields as $field)
-                                            <option value="{{ $field->id }}" {{ $zone->field_id == $field->id ? 'selected' : ''}}>{{ $field->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </fieldset>
+
+                            <form
+                                action="{{ $isEdit ? route('zones.update', $zone->id) : route('zones.store') }}"
+                                method="POST"
+                            >
+                                @csrf
+                                @if($isEdit)
+                                    @method('PATCH')
+                                @endif
+
+                                <div class="row">
+
+                                    {{-- Zone Name --}}
+                                    <div class="col-md-12 col-sm-12">
+                                        <fieldset class="form-group">
+                                            <label for="name">Name</label>
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                id="name"
+                                                name="name"
+                                                value="{{ old('name', $zone->name ?? '') }}"
+                                                placeholder="Enter name"
+                                                required
+                                            >
+                                        </fieldset>
                                     </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <button class="btn btn-primary" style="width:100%" type="submit">Save</button>
-                                    </form>
+
+                                    {{-- Parent Field --}}
+                                    <div class="col-md-12 col-sm-12">
+                                        <fieldset class="form-group">
+                                            <label for="field_id">Parent Field</label>
+                                            <select class="form-control" name="field_id" id="field_id" required>
+                                                <option value="">-- Select Field --</option>
+                                                @foreach($fields as $field)
+                                                    <option
+                                                        value="{{ $field->id }}"
+                                                        {{ (int) old('field_id', $zone->field_id ?? null) === (int) $field->id ? 'selected' : '' }}
+                                                    >
+                                                        {{ $field->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </fieldset>
+                                    </div>
+
+                                    {{-- Zonal Pastor --}}
+                                    <div class="col-md-12 col-sm-12">
+                                        <fieldset class="form-group">
+                                            <label for="stakeholder_id">Zonal Pastor</label>
+                                            <select class="form-control" name="stakeholder_id" id="stakeholder_id" required>
+                                                <option value="">-- Select Zonal Pastor --</option>
+                                                @foreach ($pastors as $pastor)
+                                                    <option
+                                                        value="{{ $pastor->id }}"
+                                                        {{ (int) old('stakeholder_id', $zone->zonalCord->id ?? null) === (int) $pastor->id ? 'selected' : '' }}
+                                                    >
+                                                        {{ $pastor->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </fieldset>
+                                    </div>
+
+                                    {{-- Submit --}}
+                                    <div class="col-md-12 col-sm-12">
+                                        <button class="btn btn-primary w-100" type="submit">
+                                            {{ $isEdit ? 'Update Zone' : 'Create Zone' }}
+                                        </button>
+                                    </div>
+
                                 </div>
-                            </div>
+                            </form>
+
+                        </div>
                     </div>
-                   
+
                 </div>
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->          
 </div>
 @endsection

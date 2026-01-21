@@ -95,10 +95,10 @@ Route::get('/clear', function () {
 
 Route:: get('cron/birthday-notification', [CronController::class, 'cron']);
 Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
+Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
 
 Route::get('send-stakeholder-credentials', [CronController::class, 'sendStakeholderCredentials']);
 
-Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
 Route::get('/preview-email/{id}', function ($id) {
     $email = CriticalEmail::with('settings')->findOrFail($id);
 

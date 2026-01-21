@@ -277,7 +277,7 @@ class StakeholderController extends Controller
             'name'  => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,
-            'role'  => $role,
+            // 'role'  => $role,
             'day'   => $request->day,
             'month' => $request->month,
             'year'  => $request->year,
