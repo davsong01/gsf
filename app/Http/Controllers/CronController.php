@@ -166,10 +166,10 @@ class CronController extends Controller
 
             // Generate welcome email
             $loginLink = "<a href='" . url('/stakeholders/login') . "'>Login</a>";
-            $subject = "Welcome to GSF Reporting";
+            $subject = "Welcome to GSF Digital Portal";
             $content = "
                 <h4>Dear Representative of {$stakeholder->name},</h4>
-                <p>Calvary gretings to you and welcome to the GOFAMINT STUDENTS' FELLOWSHIP (GSF) Digital reporting portal. Your fellowship representative account has been created. Please find details below.</p>
+                <p>Calvary gretings to you and welcome to the GOFAMINT STUDENTS' FELLOWSHIP (GSF) Digital portal. Your fellowship representative account has been created. Please find details below.</p>
                 <p><strong>Email:</strong> {$stakeholder->email}<br>
                 <strong>Password:</strong> {$passwordPlain}</p>
                 <p>{$loginLink} to access your account and start submitting reports.</p>
