@@ -80,7 +80,7 @@ if (!function_exists('getCommunityPortfolios')) {
 }
 
 if (!function_exists('finIds')) {
-    function finSubSectionIds()
+    function finIds()
     {
         $finIds = [13, 14]  ;
         return $finIds;

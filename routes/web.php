@@ -55,6 +55,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\DynamicImageGeneratorController;
 use App\Http\Controllers\StakeholderPermissionController;
 use App\Http\Controllers\ConferenceUtilityToolsController;
+use App\Http\Controllers\StakeholderDesignationController;
 use App\Http\Controllers\StakeholderReportSectionController;
 use App\Http\Controllers\StakeholderReportQuestionController;
 use App\Http\Controllers\StakeholderReportSubSectionController;
@@ -98,6 +99,7 @@ Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayRem
 Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
 
 Route::get('send-stakeholder-credentials', [CronController::class, 'sendStakeholderCredentials']);
+Route::get('utility-populate-designation', [StakeholderDesignationController::class, 'populate']);
 
 Route::get('/preview-email/{id}', function ($id) {
     $email = CriticalEmail::with('settings')->findOrFail($id);
@@ -182,6 +184,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', [AccountController::class, 'index'])->name('account');
     Route::get('/home', [AccountController::class, 'index'])->name('home');
     Route::resource('stakeholderpersonnel', StakeholderController::class);
+    Route::resource('designation', StakeholderDesignationController::class);
+
     Route::get('stakeholderpersonnel/delete/{id}', [StakeholderController::class, 'destroy'])->name('stakeholderpersonnel.delete');
     Route::resource('email', EmailController::class);
     Route::resource('paymentproviders', PaymentProviderController::class);
@@ -402,6 +406,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('zones', ZoneController::class);
     Route::get('ajax/field/{fieldId}/zones', [ZoneController::class, 'getZonesByField'])->name('zones.getbyfield');
+    Route::get('ajax/role/{roleSlug}/designations', [StakeholderDesignationController::class, 'getDesignationsByRole'])->name('designations.getbyrole');
+
     Route::get('zones/delete/{id}', [ZoneController::class, 'destroy'])->name('zones.delete');
 
     Route::get('officials/delete/{official}', [OfficialController::class, 'delete'])->name('officials.delete');

@@ -77,7 +77,7 @@
                                     <div class="col-md-4">
                                         <fieldset class="form-group">
                                             <label for="day">Day</label>
-                                            <select class="form-control" name="day" id="day" required>
+                                            <select class="form-control" name="day" id="day">
                                                 <option value="">--Select--</option>
                                                 @foreach(range(1, 31) as $day)
                                                     <option value="{{ $day }}"
@@ -92,7 +92,7 @@
                                     <div class="col-md-4">
                                         <fieldset class="form-group">
                                             <label for="month">Month</label>
-                                            <select class="form-control" name="month" id="month" required>
+                                            <select class="form-control" name="month" id="month">
                                                 <option value="">--Select--</option>
                                                 @foreach($months as $month => $value)
                                                     <option value="{{ $value }}"
@@ -119,7 +119,7 @@
                                 {{-- OFFICIAL DETAILS --}}
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <label class="sections">Official Details</label><br>
+                                        <label class="sections">Digital Portal Details</label><br>
                                     </div>
 
                                     <div class="col-md-6">
@@ -138,9 +138,9 @@
                                         </fieldset>
                                     </div>
 
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 selectfield" style="display:none;">
                                         {{-- Field Pastor --}}
-                                        <fieldset class="form-group selectfield" style="display:none;">
+                                        <fieldset class="form-group">
                                             <label for="field_id">Field</label>
                                             <select class="form-control" name="field_id" id="field_id">
                                                 <option value="">--Select--</option>
@@ -152,9 +152,10 @@
                                                 @endforeach
                                             </select>
                                         </fieldset>
-
-                                        {{-- Zonal Pastor --}}
-                                        <fieldset class="form-group selectzone" style="display:none;">
+                                    </div>
+                                    {{-- Zonal Pastor --}}
+                                    <div class="col-md-6 selectzone" style="display:none;">
+                                        <fieldset class="form-group" >
                                             <label for="zone_id">Zone</label>
                                             <select class="form-control" name="zone_id" id="zone_id">
                                                 <option value="">--Select--</option>
@@ -166,9 +167,10 @@
                                                 @endforeach
                                             </select>
                                         </fieldset>
-
-                                        <fieldset class="form-group selectportfolio" style="display:none;">
-                                            <label for="portfolio">Portfolio</label>
+                                    </div>
+                                    <div class="col-md-6 selectportfolio" style="display:none;">
+                                        <fieldset class="form-group">
+                                            <label for="portfolio">Office</label>
                                             <select class="form-control" name="portfolio" id="portfolio">
                                                 <option value="">--Select--</option>
                                                 @foreach($portfolios as $portfolio)
@@ -179,7 +181,9 @@
                                                 @endforeach
                                             </select>
                                         </fieldset>
-                                        <fieldset class="form-group selectchapter" style="display:none;">
+                                    </div>
+                                    <div class="col-md-6 selectchapter" style="display:none;">
+                                        <fieldset class="form-group">
                                             <label for="chapter_id">Chapter</label>
                                             <select class="form-control" name="chapter_id" id="chapter_id">
                                                 <option value="">--Select--</option>
@@ -192,11 +196,20 @@
                                             </select>
                                         </fieldset>
                                     </div>
+                                    <div class="col-md-6 selectdesignation" style="display:none;">
+                                        <fieldset class="form-group">
+                                            <label for="designation_id">Designation</label>
+                                            <select class="form-control" name="designation_id" id="designation_id"
+                                                data-current="{{ $stakeholder->designation_id ?? '' }}">
+                                                <option value="">--Select--</option>
+                                            </select>
+                                        </fieldset>
+                                    </div>
                                 </div>
 
                                 {{-- PASSWORD & SIGNATURE --}}
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <fieldset class="form-group">
                                             <label for="chapter_id">Status</label>
                                             <select class="form-control" name="status" id="status">
@@ -206,7 +219,7 @@
                                             </select>
                                         </fieldset>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <fieldset class="form-group">
                                             <label for="password">
                                                 {{ isset($stakeholder) ? 'Change Password' : 'Password (Default: 12345@GSF0101)' }}
@@ -215,34 +228,6 @@
 
                                         </fieldset>
                                     </div>
-
-                                    {{-- @if(isset($stakeholder))
-                                    <div class="col-md-4">
-                                        <fieldset class="form-group">
-                                            <label for="signature">Signature</label>
-                                            <div class="d-flex align-items-center gap-3">
-                                                @if(!empty($stakeholder->signature))
-                                                    <div class="border rounded bg-light">
-                                                        <img src="{{ $stakeholder->signature }}"
-                                                            alt="Signature"
-                                                            style="width:auto; height:40px;">
-                                                    </div>
-                                                @endif
-                                                <div class="flex-grow-1">
-                                                    <input type="file" class="form-control" id="signature" name="signature">
-                                                </div>
-                                            </div>
-                                        </fieldset>
-                                    </div>
-
-                                    @else
-                                    <div class="col-md-4">
-                                        <fieldset class="form-group">
-                                            <label for="signature">Upload Signature</label>
-                                            <input type="file" class="form-control" id="signature" name="signature" required>
-                                        </fieldset>
-                                    </div>
-                                    @endif --}}
                                 </div>
 
                                 {{-- SUBMIT --}}
@@ -271,88 +256,93 @@ $(document).ready(function () {
     const domain = window.location.hostname;
     const $name = $('#name');
     const $email = $('#email');
+    const $role = $('#role_id');
+    const $designation = $('#designation_id');
 
-    // Autofill email
+    // -------------------------------
+    // Email autofill
+    // -------------------------------
     $name.on('input', function () {
         if ($email.data('manual')) return;
-        const name = $(this).val().trim().toLowerCase().replace(/[^a-z\s]/g, '');
-        if (!name) return $email.val('');
-        const parts = name.split(/\s+/).filter(Boolean);
+
+        const rawName = $(this).val().trim();
+        if (!rawName) {
+            $email.val('');
+            return;
+        }
+
+        const parts = rawName
+            .toLowerCase()
+            .replace(/[^a-z\s]/g, '')
+            .split(/\s+/)
+            .filter(Boolean);
+
         const first = parts[0] || '';
         const last = parts.length > 1 ? parts[parts.length - 1] : '';
-        $email.val(`${[first, last].filter(Boolean).join('_')}@${domain}`);
+        $email.val([first, last].filter(Boolean).join('_') + '@' + domain);
     });
 
-    $email.on('input', () => $email.data('manual', true));
-
-    // Role logic
-    // $('#role').on('change', function () {
-    //     const role = $(this).val();
-    //     $('.selectfield, .selectzone, .selectportfolio, .selectchapter').hide();
-    //     if(in_array(role, ['secretariat']))
-    //     if (role === 'Chapter President' || role === 'Chapter Secretary' || role === 'Chapter Financial Secretary') $('.selectchapter').show();
-    //     if (role === 'Zonal Pastor') $('.selectzone').show();
-    //     if (role === 'Field Pastor') $('.selectfield').show();
-    //     if (role === 'Portfolio') $('.selectportfolio').show();
-    // }).trigger('change'); // initialize
-    $('#role_id').on('change', function () {
-        const roleSlug = $(this).find('option:selected').data('slug');
-
-        // Hide all conditional fields first
-        $('.selectfield, .selectzone, .selectportfolio, .selectchapter').hide();
-
-        // Show fields based on slug
-        if (['chapter-representative'].includes(roleSlug)) {
-            $('.selectchapter').show();
-        }
-        if (roleSlug === 'zonal-pastor') {
-            $('.selectzone').show();
-        }
-        if (roleSlug === 'field-pastor') {
-            $('.selectfield').show();
-        }
-        if (roleSlug === 'portfolio') {
-            $('.selectportfolio').show();
-        }
-    }).trigger('change');
-
-});
-
-$(document).ready(function () {
-    const domain = window.location.hostname; // example: mychurch.org
-    const $name = $('#name');
-    const $email = $('#email');
-
-    $name.on('input', function () {
-        const rawName = $(this).val().trim();
-
-        // Stop auto-filling if user has manually edited email
-        if ($email.data('manual')) return;
-
-        if (rawName.length > 0) {
-            const parts = rawName
-                .toLowerCase()
-                .replace(/[^a-z\s]/g, '') // remove special characters
-                .split(/\s+/)             // split by spaces
-                .filter(Boolean);
-
-            let firstName = parts[0] || '';
-            let lastName = parts.length > 1 ? parts[parts.length - 1] : '';
-
-            // If middle names exist, ignore them for email
-            const emailPrefix = [firstName, lastName].filter(Boolean).join('_');
-            const email = `${emailPrefix}@${domain}`;
-
-            $email.val(email);
-        } else {
-            $email.val('');
-        }
-    });
-
-    // Detect manual change of email input
     $email.on('input', function () {
         $email.data('manual', true);
     });
+
+    // -------------------------------
+    // Load designations via AJAX
+    // -------------------------------
+    function loadDesignations(roleSlug, selectedId = null) {
+        if (!roleSlug) return;
+
+        $designation.closest('.selectdesignation').hide();
+        $designation.html('<option value="">--Loading--</option>');
+
+        $.ajax({
+            url: `/ajax/role/${roleSlug}/designations`,
+            method: 'GET',
+            success: function (data) {
+                $designation.empty().append('<option value="">--Select--</option>');
+
+                data.forEach(d => {
+                    const selected = selectedId && selectedId == d.id ? 'selected' : '';
+                    $designation.append(`<option value="${d.id}" ${selected}>${d.name}</option>`);
+                });
+
+                $designation.closest('.selectdesignation').show();
+            },
+            error: function () {
+                $designation.html('<option value="">--Error loading--</option>');
+            }
+        });
+    }
+
+    // -------------------------------
+    // Show/hide conditional fields
+    // -------------------------------
+    function updateVisibility(roleSlug) {
+        $('.selectfield, .selectzone, .selectportfolio, .selectchapter, .selectdesignation').hide();
+
+        if (['chapter-representative'].includes(roleSlug)) $('.selectchapter').show();
+        if (roleSlug === 'zonal-pastor') $('.selectzone').show();
+        if (roleSlug === 'field-pastor') $('.selectfield').show();
+        if (roleSlug === 'portfolio') $('.selectportfolio').show();
+
+        // New list of roles that need designation loaded via AJAX
+        const rolesWithDesignation = ['portfolio', 'chapter-representative', 'field-pastor', 'nec', 'zonal-pastor', 'secretariat','ncp'];
+        if (rolesWithDesignation.includes(roleSlug)) {
+            const currentDesignation = $designation.data('current');
+            loadDesignations(roleSlug, currentDesignation);
+        }
+    }
+
+    // On role change
+    $role.on('change', function () {
+        const roleSlug = $(this).find('option:selected').data('slug');
+        updateVisibility(roleSlug);
+    });
+
+    // Initial load for edit mode
+    const initialRoleSlug = $role.find('option:selected').data('slug');
+    if (initialRoleSlug) updateVisibility(initialRoleSlug);
 });
 </script>
+
 @endsection

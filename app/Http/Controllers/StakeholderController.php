@@ -48,7 +48,7 @@ class StakeholderController extends Controller
         $months = getMonths();
         $roles = StakeholderRole::where('status', 'active')->get();
         $portfolios = getCommunityPortfolios();
-
+        
         return view('admin.stakeholders.edit', compact('zones', 'fields', 'chapters', 'months', 'roles','portfolios'));
     }
 
