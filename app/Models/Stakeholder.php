@@ -25,14 +25,14 @@ class Stakeholder extends Authenticatable
         'zone_id',
         'chapter_id',
         'role_id',
+        'designation_id',
         'password',
         'day',
         'month',
         'year',
-        'portfolio',
         'status'
     ];
-    
+
     protected $hidden = [
         'password',
     ];

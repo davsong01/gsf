@@ -186,44 +186,111 @@ class StakeholderDesignationController extends Controller
             ]);
         }
 
+        $chapterOffices = [
+            'President',
+            'Sister Cordinator',
+            'Vice President',
+            'General Secretary',
+            'Bible Study Secretary',
+            'Financial Secretary',
+            'Treasurer',
+            'Prayer Secretary',
+            'Evangelism Secretary 1',
+            'Publicity Secretary',
+            'Media Coordinator',
+            'Organizing Secretary',
+            'Editor In Chief',
+            'Technical Director',
+            'Music Director',
+            'Drama Cordinator',
+
+            'Assistant General Secretary',
+            'Assistant Sister Cordinator',
+            'Assistant Publicity Cordinator',
+            'Assistant Music Director',
+            'Assistant Bible Study Cordinator',
+            'Assistant Prayer Cordinator',
+
+            'Alumni Liaison Officer',
+            'Transport Cordinator',
+        ];
+
+        foreach ($chapterOffices as $office) {
+            StakeholderDesignation::create([
+                'name'   => $office,
+                'type'   => 'chapter_executive',
+                'status' => 'active',
+            ]);
+        }
+
         return "Designations populated successfully.";
     }
 
-   public function getDesignationsByRole($roleSlug)
+    public function getOfficesByRole(string $role)
     {
-        $designations = collect(); // default empty collection
+        $type = match ($role) {
+            'nec-member', 'nec', 'portfolio' => 'nec',
+            default => null,
+        };
 
-        if ($roleSlug === 'zonal-pastor') {
-            $designations = StakeholderDesignation::where('type', 'nec')
-                ->where('status', 'active')
-                ->whereNotNull('zone_id')
-                ->orderBy('order')
-                ->get();
-        } elseif ($roleSlug === 'field-pastor') {
-            $designations = StakeholderDesignation::where('type', 'nec')
-                ->where('status', 'active')
-                ->whereNotNull('field_id')
-                ->orderBy('order')
-                ->get();
-        } elseif ($roleSlug === 'chapter-representative') {
-            $designations = StakeholderDesignation::where('type', 'chapter_executive')
-                ->where('status', 'active')
-                ->orderBy('order')
-                ->get();
-        } elseif ($roleSlug === 'ncp') {
-            $designations = StakeholderDesignation::where('type', 'nec')
-                ->where('status', 'active')
-                ->where('name', 'National Campus Pastor')
-                ->orderBy('order')
-                ->get();
-        } elseif (in_array($roleSlug, ['secretariat', 'portfolio', 'nec'])) {
-            $designations = StakeholderDesignation::where('type', 'nec')
-                ->where('status', 'active')
-                ->orderBy('order')
-                ->get();
+        if (!$type) {
+            return response()->json([]);
         }
 
-        return response()->json($designations);
+        $offices = StakeholderDesignation::query()
+            ->where('status', 'active')
+            ->where('type', $type)
+            ->whereNull('field_id')
+            ->whereNull('zone_id')
+            ->orderBy('order')
+            ->get(['id', 'name']);
+
+        return response()->json($offices);
     }
+
+    public function getDesignationsByRole(Request $request)
+    {
+        $roleSlug = $request->role;
+
+        $query = StakeholderDesignation::query()
+            ->where('status', 'active')
+            ->orderBy('order');
+
+        if ($roleSlug === 'zonal-pastor') {
+            $query->where('type', 'nec')
+                ->whereNotNull('zone_id')
+                ->when($request->zone_id, fn ($q) =>
+                    $q->where('zone_id', $request->zone_id)
+                );
+
+        } elseif ($roleSlug === 'field-pastor') {
+
+            $query->where('type', 'nec')
+                ->whereNotNull('field_id')
+                ->when($request->field_id, fn ($q) =>
+                    $q->where('field_id', $request->field_id)
+                );
+
+        } elseif ($roleSlug === 'chapter-representative') {
+
+            $query->where('type', 'chapter_executive');
+
+        } elseif ($roleSlug === 'ncp') {
+
+            $query->where('type', 'nec')
+                ->where('name', 'National Campus Pastor');
+
+        } elseif (in_array($roleSlug, ['secretariat', 'portfolio', 'nec', 'nec-member'])) {
+
+            $query->where('type', 'nec');
+
+        } else {
+            // Unknown role → return empty result
+            return response()->json(collect());
+        }
+
+        return response()->json($query->get());
+    }
+
 
 }

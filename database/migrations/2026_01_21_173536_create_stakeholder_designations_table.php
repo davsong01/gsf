@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->integer('field_id')->nullable();
             $table->integer('zone_id')->nullable();
+            $table->integer('chapter_id')->nullable();
             $table->integer('order')->default(0)->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->enum('type', ['nec', 'chapter_executive'])->default('nec');
@@ -28,7 +29,7 @@ return new class extends Migration
             // Add tenure and gender
             $table->string('tenure')->nullable()->after('role_id');
             $table->enum('gender', ['Male', 'Female'])->nullable()->after('tenure');
-
+            $table->integer('designation_id')->nullable()->after('tenure');
             // Rename portfolio to office
             $table->renameColumn('portfolio', 'office');
         });
@@ -45,7 +46,7 @@ return new class extends Migration
         // Revert stakeholders table changes
         Schema::table('stakeholders', function (Blueprint $table) {
             // Drop added columns
-            $table->dropColumn(['tenure', 'gender']);
+            $table->dropColumn(['tenure', 'gender','designation_id']);
 
             // Rename office back to portfolio
             $table->renameColumn('office', 'portfolio');

@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        'generate-template-preview/*'
+        'generate-template-preview/*',
+        'ajax/designations-by-role'
     ];
 }

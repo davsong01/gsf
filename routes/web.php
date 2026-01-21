@@ -406,7 +406,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('zones', ZoneController::class);
     Route::get('ajax/field/{fieldId}/zones', [ZoneController::class, 'getZonesByField'])->name('zones.getbyfield');
-    Route::get('ajax/role/{roleSlug}/designations', [StakeholderDesignationController::class, 'getDesignationsByRole'])->name('designations.getbyrole');
+    Route::post('ajax/designations-by-role', [StakeholderDesignationController::class, 'getDesignationsByRole'])->name('designations.getbyrole');
+    Route::get('/ajax/offices/{role}', [StakeholderDesignationController::class, 'getOfficesByRole'])->name('designations.getofficesbyrole');
 
     Route::get('zones/delete/{id}', [ZoneController::class, 'destroy'])->name('zones.delete');
 

@@ -48,7 +48,7 @@ class StakeholderController extends Controller
         $months = getMonths();
         $roles = StakeholderRole::where('status', 'active')->get();
         $portfolios = getCommunityPortfolios();
-        
+
         return view('admin.stakeholders.edit', compact('zones', 'fields', 'chapters', 'months', 'roles','portfolios'));
     }
 
@@ -72,6 +72,7 @@ class StakeholderController extends Controller
             'chapter_id' => ['nullable', 'integer', 'exists:chapters,id'],
             'zone_id'    => ['nullable', 'integer', 'exists:zones,id'],
             'field_id'   => ['nullable', 'integer', 'exists:fields,id'],
+            'designation_id'   => ['nullable', 'integer', 'exists:fields,id'],
             'portfolio'  => ['nullable', 'string', 'max:255'],
             'signature'  => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
             'status' => ['required', 'in:active,inactive'],
@@ -146,6 +147,7 @@ class StakeholderController extends Controller
             'day'   => $request->day,
             'month' => $request->month,
             'year'  => $request->year,
+            'designation_id'  => $request->designation_id,
         ])->save();
 
         return redirect()
@@ -200,10 +202,10 @@ class StakeholderController extends Controller
             'email'      => ['required', 'email', 'max:255', 'unique:stakeholders,email,' . $stakeholder->id],
             'phone'      => ['nullable', 'string', 'max:20'],
             'password'   => ['nullable', 'string', 'min:8'],
-            'day'        => ['required', 'integer', 'between:1,31'],
-            'month'      => ['required', 'integer', 'between:1,12'],
+            'day'        => ['nullable', 'integer', 'between:1,31'],
+            'month'      => ['nullable', 'integer', 'between:1,12'],
             'year'       => ['nullable', 'digits:4'],
-            'role_id'    => ['required', 'integer'],
+            'role_id'    => ['nullable', 'integer'],
             'chapter_id' => ['nullable', 'integer', 'exists:chapters,id'],
             'zone_id'    => ['nullable', 'integer', 'exists:zones,id'],
             'field_id'   => ['nullable', 'integer', 'exists:fields,id'],
@@ -283,6 +285,7 @@ class StakeholderController extends Controller
             'year'  => $request->year,
             'status'  => $request->status,
             'role_id'  => $request->role_id,
+            'designation_id'  => $request->designation_id,
         ])->save();
 
         return redirect()

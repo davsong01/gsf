@@ -171,17 +171,13 @@
                                     <div class="col-md-6 selectportfolio" style="display:none;">
                                         <fieldset class="form-group">
                                             <label for="portfolio">Office</label>
-                                            <select class="form-control" name="portfolio" id="portfolio">
+                                            <select class="form-control" name="portfolio" id="portfolio"
+                                                data-current="{{ $stakeholder->portfolio_id ?? '' }}">
                                                 <option value="">--Select--</option>
-                                                @foreach($portfolios as $portfolio)
-                                                    <option value="{{ $portfolio }}"
-                                                        {{ old('portfolio', $stakeholder->portfolio ?? '') == $portfolio ? 'selected' : '' }}>
-                                                        {{ $portfolio }}
-                                                    </option>
-                                                @endforeach
                                             </select>
                                         </fieldset>
                                     </div>
+
                                     <div class="col-md-6 selectchapter" style="display:none;">
                                         <fieldset class="form-group">
                                             <label for="chapter_id">Chapter</label>
@@ -254,95 +250,188 @@
 <script>
 $(document).ready(function () {
     const domain = window.location.hostname;
-    const $name = $('#name');
-    const $email = $('#email');
-    const $role = $('#role_id');
-    const $designation = $('#designation_id');
 
-    // -------------------------------
-    // Email autofill
-    // -------------------------------
+    const $name        = $('#name');
+    const $email       = $('#email');
+    const $role        = $('#role_id');
+    const $designation = $('#designation_id');
+    const $portfolio   = $('#portfolio');
+    const $zone        = $('#zone_id');
+    const $field       = $('#field_id');
+
+    /* -------------------------------
+     * Email autofill
+     * ----------------------------- */
     $name.on('input', function () {
         if ($email.data('manual')) return;
 
         const rawName = $(this).val().trim();
-        if (!rawName) {
-            $email.val('');
-            return;
-        }
+        if (!rawName) return $email.val('');
 
-        const parts = rawName
-            .toLowerCase()
+        const parts = rawName.toLowerCase()
             .replace(/[^a-z\s]/g, '')
             .split(/\s+/)
             .filter(Boolean);
 
         const first = parts[0] || '';
-        const last = parts.length > 1 ? parts[parts.length - 1] : '';
+        const last  = parts.length > 1 ? parts.at(-1) : '';
+
         $email.val([first, last].filter(Boolean).join('_') + '@' + domain);
     });
 
-    $email.on('input', function () {
-        $email.data('manual', true);
-    });
+    $email.on('input', () => $email.data('manual', true));
 
-    // -------------------------------
-    // Load designations via AJAX
-    // -------------------------------
-    function loadDesignations(roleSlug, selectedId = null) {
+    /* -------------------------------
+     * Load designations (POST)
+     * ----------------------------- */
+   function loadDesignations(roleSlug, selectedId = null) {
         if (!roleSlug) return;
+
+        const payload = {
+            role: roleSlug,
+            zone_id: $zone.val() || null,
+            field_id: $field.val() || null,
+            _token: $('meta[name="csrf-token"]').attr('content')
+        };
 
         $designation.closest('.selectdesignation').hide();
         $designation.html('<option value="">--Loading--</option>');
 
-        $.ajax({
-            url: `/ajax/role/${roleSlug}/designations`,
-            method: 'GET',
-            success: function (data) {
-                $designation.empty().append('<option value="">--Select--</option>');
+        $.post('/ajax/designations-by-role', payload)
+            .done(function (data) {
+                $designation.empty();
 
-                data.forEach(d => {
-                    const selected = selectedId && selectedId == d.id ? 'selected' : '';
-                    $designation.append(`<option value="${d.id}" ${selected}>${d.name}</option>`);
+                if (!Array.isArray(data) || !data.length) return;
+
+                let hasSelected = false;
+
+                data.forEach((d, index) => {
+                    let selected = '';
+
+                    // 1️⃣ Edit mode: honor existing selection
+                    if (selectedId && selectedId == d.id) {
+                        selected = 'selected';
+                        hasSelected = true;
+                    }
+
+                    // 2️⃣ Create mode OR fallback → select first
+                    if (!selectedId && index === 0) {
+                        selected = 'selected';
+                    }
+
+                    $designation.append(
+                        `<option value="${d.id}" ${selected}>${d.name}</option>`
+                    );
                 });
 
+                // 3️⃣ If edit mode ID not found, fallback to first
+                if (selectedId && !hasSelected) {
+                    $designation.find('option:first').prop('selected', true);
+                }
+
                 $designation.closest('.selectdesignation').show();
-            },
-            error: function () {
+            })
+            .fail(() => {
                 $designation.html('<option value="">--Error loading--</option>');
+            });
+    }
+
+
+    /* -------------------------------
+     * Load offices (portfolio / nec)
+     * ----------------------------- */
+    function loadOffices(roleSlug, selectedOffice = null) {
+        console.log('loadOffices firing for:', roleSlug);
+
+        if (!['portfolio', 'nec', 'nec-member'].includes(roleSlug)) {
+            console.warn('Role not allowed for offices:', roleSlug);
+            return;
+        }
+
+        const url = `/ajax/offices/${roleSlug}`;
+        console.log('Request URL:', url);
+
+        $portfolio.closest('.selectportfolio').hide();
+        $portfolio.html('<option value="">--Loading--</option>');
+
+        $.ajax({
+            url,
+            method: 'GET',
+            dataType: 'json'
+        })
+        .done(function (data) {
+            console.log('Offices response:', data);
+
+            $portfolio.empty();
+
+            if (!data.length) {
+                $portfolio.append('<option value="">No offices found</option>');
+            } else {
+                data.forEach(o => {
+                    const selected =
+                        selectedOffice && selectedOffice == o.id ? 'selected' : '';
+                    $portfolio.append(
+                        `<option value="${o.id}" ${selected}>${o.name}</option>`
+                    );
+                });
             }
+
+            $portfolio.closest('.selectportfolio').show();
+        })
+        .fail(function (xhr, status, error) {
+            console.error('Office AJAX failed:', status, error);
+            console.error('Response:', xhr.responseText);
+
+            $portfolio.html('<option value="">--Error loading offices--</option>');
+        })
+        .always(function () {
+            console.log('Office AJAX completed');
         });
     }
 
-    // -------------------------------
-    // Show/hide conditional fields
-    // -------------------------------
+
+    /* -------------------------------
+     * Visibility logic
+     * ----------------------------- */
     function updateVisibility(roleSlug) {
         $('.selectfield, .selectzone, .selectportfolio, .selectchapter, .selectdesignation').hide();
 
-        if (['chapter-representative'].includes(roleSlug)) $('.selectchapter').show();
-        if (roleSlug === 'zonal-pastor') $('.selectzone').show();
         if (roleSlug === 'field-pastor') $('.selectfield').show();
-        if (roleSlug === 'portfolio') $('.selectportfolio').show();
+        if (roleSlug === 'zonal-pastor') $('.selectzone').show();
+        if (roleSlug === 'chapter-representative') $('.selectchapter').show();
+        if (['portfolio', 'nec', 'nec-member'].includes(roleSlug)) $('.selectportfolio').show();
 
-        // New list of roles that need designation loaded via AJAX
-        const rolesWithDesignation = ['portfolio', 'chapter-representative', 'field-pastor', 'nec', 'zonal-pastor', 'secretariat','ncp'];
+        const rolesWithDesignation = [
+            'portfolio', 'chapter-representative', 'field-pastor',
+            'nec', 'nec-member', 'zonal-pastor', 'secretariat', 'ncp'
+        ];
+
         if (rolesWithDesignation.includes(roleSlug)) {
-            const currentDesignation = $designation.data('current');
-            loadDesignations(roleSlug, currentDesignation);
+            loadDesignations(roleSlug, $designation.data('current'));
+        }
+
+        if (['portfolio', 'nec', 'nec-member'].includes(roleSlug)) {
+            loadOffices(roleSlug, $portfolio.data('current'));
         }
     }
 
-    // On role change
+    /* -------------------------------
+     * Triggers
+     * ----------------------------- */
     $role.on('change', function () {
-        const roleSlug = $(this).find('option:selected').data('slug');
-        updateVisibility(roleSlug);
+        updateVisibility($(this).find(':selected').data('slug'));
     });
 
-    // Initial load for edit mode
-    const initialRoleSlug = $role.find('option:selected').data('slug');
-    if (initialRoleSlug) updateVisibility(initialRoleSlug);
+    // Only reload designations when zone / field changes
+    $zone.add($field).on('change', function () {
+        const roleSlug = $role.find(':selected').data('slug');
+        if (roleSlug) loadDesignations(roleSlug, $designation.data('current'));
+    });
+
+    // Initial edit load
+    const initialRole = $role.find(':selected').data('slug');
+    if (initialRole) updateVisibility(initialRole);
 });
 </script>
-
 @endsection
+
