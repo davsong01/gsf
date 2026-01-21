@@ -16,9 +16,9 @@ use Maatwebsite\Excel\Concerns\Exportable;
 class ChapterController extends Controller
 {
     use Exportable;
-    
+
     public function chaptersExport()
-	{		
+	{
 		return Excel::download(new ExportChapters(), 'chapters_exported.xlsx');
 	}
 
@@ -37,7 +37,7 @@ class ChapterController extends Controller
     public function campusUpdate()
     {
         $chapters = Chapter::where('id','<>',86)->get();
-        
+
         return view('frontend.' . frontendTemplate() . '.campusUpdate', compact('chapters'));
         // return view('frontend.conference.campusUpdate', compact('chapters'));
     }
@@ -46,21 +46,21 @@ class ChapterController extends Controller
         if(auth()->user()->level != 'Admin' ){
             return abort(404);
         }
-        
+
         $chapter = Chapter::whereId($id)->first();
         $chapter->update([
             'token' => substr(number_format(time() * rand(),0,'',''),0,6),
         ]);
 
         return back()->with('message', 'Operation successfull');
-        
+
     }
     public function campusView(Request $request)
     {
         $chapter = Chapter::findorfail($request->chapter);
         $token = false;
         $realToken = '';
-        
+
         if($request->token){
             if($chapter->token != $request->token){
                 return back()->with('error', 'Invalid Token for GSF Chapter, Kindly contact the National Publicity Office');
@@ -70,10 +70,10 @@ class ChapterController extends Controller
             $realToken = $chapter->token;
 
         }
-        
+
         return view('frontend.conference.campusView', compact('chapter', 'token', 'realToken'));
     }
-    
+
     public function campusSave(Request $request)
     {
         $data = $this->validate($request, [
@@ -86,9 +86,9 @@ class ChapterController extends Controller
             'email' => 'nullable',
             'address' => 'required',
         ]);
-        
+
         $chapter = Chapter::find($request->chapter);
-    
+
         //check if token matches campus
         if(  $data['token'] == 'SuperToken12345654321' || $data['realToken'] == $chapter->token){
             $chapter->update([
@@ -102,15 +102,14 @@ class ChapterController extends Controller
         }else{
             return back()->with('warning', 'Invalid Token for details Update');
         }
-      
+
     }
 
     public function index()
     {
         $count = 1;
-        if(auth()->user()->isSubAdmin() && auth()->user()->isMember() ){ 
+        if(auth()->user()->isSubAdmin() && auth()->user()->isMember() ){
             $chapter = Chapter::with('users')->whereId(auth()->user()->chapter_id)->first();
-            $zones = Zone::all();
             return view('admin.chapters.edit', compact('chapter', 'zones'));
         }
 
@@ -118,7 +117,7 @@ class ChapterController extends Controller
             $chapters = Chapter::with('users')->get();
             return view('admin.chapters.index', compact('chapters', 'count'));
         }
-        
+
     }
 
     public function create()
@@ -126,13 +125,12 @@ class ChapterController extends Controller
         $zones = Zone::all();
         $fields = Field::all();
         $chapters = Chapter::all();
-        return view('admin.chapters.create', compact('zones', 'fields','chapters'));
+        return view('admin.chapters.edit', compact('zones', 'fields','chapters'));
     }
 
 
     public function store(Request $request)
     {
-    
         $data = $this->validate($request, [
             'name' => 'required|unique:chapters,name',
             'address' => 'nullable',
@@ -156,7 +154,7 @@ class ChapterController extends Controller
             'field_id' => $field,
         ]);
 
-       
+
         return redirect(route('chapters.index'))->with('message', 'Chapter succesfully created');
     }
 
@@ -181,21 +179,21 @@ class ChapterController extends Controller
      */
     public function update(Request $request, Chapter $chapter)
     {
-   
+
         if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
             if(!auth()->user()->isAdmin()){
-                $request['zone_id'] = auth()->user()->campus->zone->id ?? null;   
-                        
+                $request['zone_id'] = auth()->user()->campus->zone->id ?? null;
+
             }else $request['zone_id'] = $request->zone_id;
 		}
-        
+
         $request['field_id'] = $chapter->zone->field->id ?? null;
-    
+
         if($request->has('chapter_banner')){
             $request['banner'] = $this->uploadImage($request->chapter_banner, 'main/images/chapters');
         }
         $chapter->update($request->except('chapter_banner'));
-       
+
         return redirect(route('chapters.index'))->with('message', 'Update successful');
     }
 
@@ -207,16 +205,16 @@ class ChapterController extends Controller
      */
     public function destroy(Chapter $chapter)
     {
-        
+
         if(auth()->user()->level == 'Admin'){
             if($chapter->users->count() > 0){
                 return back()->with('error', 'Sorry, this chapter has participants. You cannot deleete it');
             }
 
-            $chapter->delete();          
-             
+            $chapter->delete();
+
             return back()->with('message',' Delete succesful!');
- 
+
          }return abort(404);
     }
 }

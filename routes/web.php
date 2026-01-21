@@ -401,6 +401,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     });
 
     Route::resource('zones', ZoneController::class);
+    Route::get('ajax/field/{fieldId}/zones', [ZoneController::class, 'getZonesByField'])->name('zones.getbyfield');
     Route::get('zones/delete/{id}', [ZoneController::class, 'destroy'])->name('zones.delete');
 
     Route::get('officials/delete/{official}', [OfficialController::class, 'delete'])->name('officials.delete');

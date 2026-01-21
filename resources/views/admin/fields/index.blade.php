@@ -14,7 +14,7 @@
                         <h4 class="card-title">All fields</h4>
                         <a href="{{ route('fields.create') }}" class="btn btn-primary mt-1">Add new field</a>
                         @include('includes.alerts')
-                        
+
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -33,23 +33,23 @@
                                     <tbody>
                                         @foreach($fields as $field)
                                         <tr>
-                                            <td>{{ $count++ }}</td>
+                                            <td>{{ $loop->iteration }}</td>
                                             <td>{{ $field->name }}</td>
                                             <td>{{ $field->stakeholder->name ?? 'N/A'}}</td>
                                             <td>{{ $field->zones->count() }}</td>
                                             <td>{{ $field->chapters->count() }}</td>
-                                          
+
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Update field details" href="{{ route('fields.edit', $field->id) }}"> <i class="bx bxs-edit actions"></i>
                                             </a>
-                                           
+
                                             <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete field" href="{{ route('fields.delete', $field->id) }}"> <i class="fa fa-trash"></i></
                                             </a>
                                         </tr>
-                                      
+
                                         @endforeach
                                     </tbody>
-                                    
+
                                 </table>
                             </div>
                         </div>
@@ -58,6 +58,6 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 @endsection

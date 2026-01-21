@@ -34,6 +34,12 @@ class ZoneController extends Controller
         return view('admin.zones.edit', compact('zone', 'fields','pastors'));
     }
 
+    public function getZonesByField($fieldId)
+    {
+        $zones = Zone::where('field_id', $fieldId)->get();
+        return response()->json($zones);
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -79,7 +85,7 @@ class ZoneController extends Controller
             Stakeholder::where('zone_id', $zone->id)
                 ->where('role_id', 4)
                 ->update([
-                    'status'    => 'active',
+                    'status'    => 'inactive',
                     'zone_id'    => null,
                     'field_id'   => null,
                     'chapter_id' => null,
@@ -88,6 +94,7 @@ class ZoneController extends Controller
 
             Stakeholder::where('id', $request->stakeholder_id)
                 ->update([
+                    'status'    => 'active',
                     'zone_id'    => $zone->id,
                     'field_id'   => $zone->field_id,
                     'chapter_id' => null,
@@ -101,17 +108,27 @@ class ZoneController extends Controller
             ->with('message', 'Update successful!');
     }
 
-
     public function destroy($id)
     {
         $zone = Zone::findOrFail($id);
-        if($zone->chapters->count() > 1){
+
+        if ($zone->chapters->count() > 1) {
             return back()->with('error', 'You cannot delete this zone because it has campuses');
         }
 
+        Stakeholder::where('zone_id', $zone->id)
+            ->where('role_id', 4) // Zonal Pastor role ID
+            ->update([
+                'status'     => 'inactive',
+                'zone_id'    => null,
+                'field_id'   => null,
+                'chapter_id' => null,
+                'portfolio'  => null,
+            ]);
+
+        // Delete the zone
         $zone->delete();
-        return redirect()->back()->with('message', 'delete successful!');
+
+        return redirect()->back()->with('message', 'Zone deleted and pastor unlinked successfully!');
     }
-
-
 }
