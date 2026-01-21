@@ -333,6 +333,8 @@ class ReportNotificationService
         ];
 
         EmailService::logEmail($emailData);
+
+        return 'All sent';
     }
 
     public static function generateReportEmailSummary($report, $stakeholder, $recipient, $type = 'store', $currentLevel=null): array
