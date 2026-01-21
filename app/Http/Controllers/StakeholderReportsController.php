@@ -82,6 +82,18 @@ class StakeholderReportsController extends Controller
         return $this->saveReport($stakeholder, null, $validated);
     }
 
+    public function nudge(StakeholderReport $report)
+    {
+        $stakeholder = Auth::guard('stakeholder')->user();
+
+        app(ReportService::class)->nudgeReportActors($stakeholder, $report);
+
+        return redirect()
+            ->route('stakeholders.reports.index')
+            ->with('message', 'Report actors have been nudged successfully!');
+    }
+
+
     public function update(Request $request, StakeholderReport $report)
     {
         $stakeholder = Auth::guard('stakeholder')->user();
@@ -127,7 +139,7 @@ class StakeholderReportsController extends Controller
     public function rejectReport(Request $request, StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
-        app(ReportService::class)->rejectReport($user, $report);
+        app(ReportService::class)->reject($user, $report);
 
         return redirect()
             ->route('stakeholders.reports.index')
@@ -138,7 +150,7 @@ class StakeholderReportsController extends Controller
     {
         $user = Auth::guard('stakeholder')->user();
 
-        app(ReportService::class)->approveReport($user,$report);
+        app(ReportService::class)->approve($user,$report);
 
         return redirect()
             ->route('stakeholders.reports.index')

@@ -188,8 +188,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('stakeholderreportsection', StakeholderReportSectionController::class);
     Route::resource('stakeholderreportsubsection', StakeholderReportSubSectionController::class);
     Route::resource('stakeholderreports', AdminReportsController::class);
-    Route::get('stakeholderreports/download', [AdminReportsController::class, 'download'])->name('stakeholderreports.download');
-    Route::get('stakeholderreports/budge', [AdminReportsController::class, 'nudge'])->name('stakeholderreports.nudge');
+    Route::get('stakeholderreports/download/{report}', [StakeholderReportsController::class, 'download'])->name('stakeholderreports.download');
+    Route::get('stakeholderreports-nudge/{report}', [AdminReportsController::class, 'nudge'])->name('stakeholderreports.nudge');
 
     Route::prefix('stakeholder')->as('stakeholder.')->group(function () {
         Route::resource('questions', StakeholderReportQuestionController::class);
@@ -500,7 +500,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('/reports/delete/{report}', 'delete')->name('reports.delete');
             Route::get('/reports/print/{report}', 'download')->name('reports.print');
             Route::get('reports/download/{report}', 'download')->name('reports.download');
-            Route::get('reports/nudge/{report}', 'delete')->name('reports.nudge');
+            Route::get('reports/nudge/{report}', 'nudge')->name('reports.nudge');
             Route::post('reports/reject/{report}', 'rejectReport')->name('reports.reject');
             Route::get('reports/approve/{report}', 'approveReport')->name('reports.approve');
             Route::get('reports/analysis', 'reportAnalysis')->name('reports.analysis');

@@ -97,4 +97,13 @@ class AdminReportsController extends Controller
         return redirect()->route('stakeholderreports.index')
             ->with('message', 'Report deleted successfully');
     }
+
+    public function nudge(StakeholderReport $report)
+    {
+        $stakeholder = Auth::user();
+
+        app(ReportService::class)->nudgeReportActors($stakeholder, $report);
+
+        return back()->with('message', 'Report actors have been nudged successfully!');
+    }
 }

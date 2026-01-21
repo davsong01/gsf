@@ -431,52 +431,6 @@ class ReportService
         }
     }
 
-    public function checks($stakeholder){
-
-        $data = [
-            'status' => true,
-            'message' => 'success'
-        ];
-
-        if (
-            is_null($stakeholder->signature) ||
-            is_null($stakeholder->gen_sec_signature) ||
-            is_null($stakeholder->fin_sec_signature) ||
-            is_null($stakeholder->evang_sec_signature)
-        ) {
-            $data = [
-                'status' => false,
-                'message' => 'Kindly upload signatures first, you will only need to do this once'
-            ];
-        }
-
-        return $data;
-    }
-
-    // public function canEditReport($report, $user){
-    //     $fieldStatus = $report->field_status;
-    //     $zoneStatus = $report->zone_status;
-    //     $natStatus  = $report->national_status;
-
-    //     $userRole = $user->role_id;
-    //     // Determine if the report is fully approved
-    //     $allApproved = $zoneStatus == 1 && $fieldStatus == 1 && $natStatus == 1;
-
-    //     // Determine if edit is allowed
-    //     $canEdit = (
-    //         (in_array($userRole, fieldStakeholders()) && $fieldStatus == 0) ||
-    //         (in_array($userRole, zoneStakeholders()) && $zoneStatus == 0) ||
-    //         (in_array($userRole, chapterStakeholders()) && $zoneStatus == 0) ||
-    //         in_array($userRole, secretariatStakeholders()) ||
-    //         in_array($userRole, ncpStakeholders()) ||
-    //         in_array($userRole, [1])
-    //     );
-
-    //     return [
-    //         'allApproved' => $allApproved,
-    //         'canEdit'      => $canEdit
-    //     ];
-    // }
     public function canEditReport($report, $user)
     {
         $role = $user->role_id;
@@ -549,18 +503,6 @@ class ReportService
     public function prepareViewData(StakeholderReport $report, bool $isAdmin = false
     ): array
     {
-
-        // $sections = StakeholderQuestionSection::isActive()->with([
-        //     'subsections.questions' => function ($query) {
-        //         $query->orderBy('order');
-        //     }
-        // ])->orderBy('id')->get();
-
-        // $reportData = $report->answers->mapWithKeys(function ($answer) {
-        //     $decoded = json_decode($answer->answer_value, true);
-        //     return [$answer->question->label => $decoded ?? $answer->answer_value];
-        // });
-
         $report->load('answers');
 
         $sections = StakeholderQuestionSection::isActive()
@@ -765,7 +707,7 @@ class ReportService
         return;
     }
 
-    public function rejectReport($user, $report){
+    public function reject($user, $report){
         $comment = request()->rejection_reason;
 
         $role = $user->role->slug;
@@ -810,6 +752,16 @@ class ReportService
         $report->save();
 
         ReportNotificationService::handleReportAction($report, $user, 'reject');
+
+        return;
+    }
+
+    public function nudgeReportActors($stakeholder, $report){
+        ReportNotificationService::handleReportAction(
+            $report,
+            $stakeholder,
+            'nudge'
+        );
 
         return;
     }

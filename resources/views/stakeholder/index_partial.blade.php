@@ -247,6 +247,7 @@
                                             @endif
 
                                             {{-- Nudge --}}
+                                            @if(!$canEdit['allApproved'])
                                             <a
                                                 href="{{ route($isAdmin ? 'stakeholderreports.nudge' : 'stakeholders.reports.nudge', $report->id) }}"
                                                 class="text-indigo-600 mx-1"
@@ -254,14 +255,10 @@
                                             >
                                                 <i class="fa fa-bullhorn"></i>
                                             </a>
+                                            @endif
 
                                             {{-- Delete --}}
-                                            @if(
-                                                $isAdmin &&
-                                                $statuses['Zone']['value'] == 0 &&
-                                                $statuses['Field']['value'] == 0 &&
-                                                $statuses['National']['value'] == 0
-                                            )
+                                            @if($isAdmin && !$canEdit['allApproved'])
                                                 <a
                                                     href="#"
                                                     class="text-danger mx-1"
