@@ -453,30 +453,98 @@ class ReportService
         return $data;
     }
 
-    public function canEditReport($report, $user){
+    // public function canEditReport($report, $user){
+    //     $fieldStatus = $report->field_status;
+    //     $zoneStatus = $report->zone_status;
+    //     $natStatus  = $report->national_status;
+
+    //     $userRole = $user->role_id;
+    //     // Determine if the report is fully approved
+    //     $allApproved = $zoneStatus == 1 && $fieldStatus == 1 && $natStatus == 1;
+
+    //     // Determine if edit is allowed
+    //     $canEdit = (
+    //         (in_array($userRole, fieldStakeholders()) && $fieldStatus == 0) ||
+    //         (in_array($userRole, zoneStakeholders()) && $zoneStatus == 0) ||
+    //         (in_array($userRole, chapterStakeholders()) && $zoneStatus == 0) ||
+    //         in_array($userRole, secretariatStakeholders()) ||
+    //         in_array($userRole, ncpStakeholders()) ||
+    //         in_array($userRole, [1])
+    //     );
+
+    //     return [
+    //         'allApproved' => $allApproved,
+    //         'canEdit'      => $canEdit
+    //     ];
+    // }
+    public function canEditReport($report, $user)
+    {
+        $role = $user->role_id;
+
         $fieldStatus = $report->field_status;
-        $zoneStatus = $report->zone_status;
-        $natStatus  = $report->national_status;
+        $zoneStatus  = $report->zone_status;
+        $natStatus   = $report->national_status;
 
-        $userRole = $user->role_id;
-        // Determine if the report is fully approved
-        $allApproved = $zoneStatus == 1 && $fieldStatus == 1 && $natStatus == 1;
+        // Fully approved
+        $allApproved = $fieldStatus === 1 && $zoneStatus === 1 && $natStatus === 1;
 
-        // Determine if edit is allowed
-        $canEdit = (
-            (in_array($userRole, fieldStakeholders()) && $fieldStatus == 0) ||
-            (in_array($userRole, zoneStakeholders()) && $zoneStatus == 0) ||
-            (in_array($userRole, chapterStakeholders()) && $zoneStatus == 0) ||
-            in_array($userRole, secretariatStakeholders()) ||
-            in_array($userRole, ncpStakeholders()) ||
-            in_array($userRole, [1])
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | NATIONAL APPROVAL
+        |--------------------------------------------------------------------------
+        | Locks everyone except Super Admin
+        */
+        if ($natStatus === 1) {
+            return [
+                'allApproved' => true,
+                'canEdit' => $role === 1, // Super Admin only
+            ];
+        }
 
+        /*
+        |--------------------------------------------------------------------------
+        | FIELD APPROVAL
+        |--------------------------------------------------------------------------
+        | Locks Field, Zone, Chapter
+        */
+        if ($fieldStatus === 1) {
+            return [
+                'allApproved' => false,
+                'canEdit' => (
+                    in_array($role, secretariatStakeholders(), true) ||
+                    in_array($role, ncpStakeholders(), true) ||
+                    $role === 1
+                ),
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ZONE APPROVAL
+        |--------------------------------------------------------------------------
+        | Locks Zone & Chapter
+        */
+        if ($zoneStatus === 1) {
+            return [
+                'allApproved' => false,
+                'canEdit' => !(
+                    in_array($role, zoneStakeholders(), true) ||
+                    in_array($role, chapterStakeholders(), true)
+                ),
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | NO LOCKS
+        |--------------------------------------------------------------------------
+        */
         return [
-            'allApproved' => $allApproved,
-            'canEdit'      => $canEdit
+            'allApproved' => false,
+            'canEdit' => true,
         ];
     }
+
 
     public function prepareViewData(StakeholderReport $report, bool $isAdmin = false
     ): array
@@ -699,7 +767,7 @@ class ReportService
 
     public function rejectReport($user, $report){
         $comment = request()->rejection_reason;
-                
+
         $role = $user->role->slug;
 
         switch ($role) {
@@ -718,6 +786,7 @@ class ReportService
                 $report->field_status = 2;
                 $report->field_rejected_at = now();
                 // $report->field_rejected_by = $user->id;
+                $report->zone_status = 0;
                 break;
 
             case 'secretariat':
@@ -729,6 +798,9 @@ class ReportService
                 $report->national_status = 2;
                 $report->national_rejected_at = now();
                 // $report->national_rejected_by = $user->id;
+                $report->zone_status = 0;
+                $report->field_status = 0;
+
                 break;
 
             default:
