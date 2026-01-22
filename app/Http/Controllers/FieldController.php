@@ -7,6 +7,7 @@ use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\StakeholderDesignation;
 
 class FieldController extends Controller
 {
@@ -46,6 +47,13 @@ class FieldController extends Controller
             ]);
 
             if (!empty($data['stakeholder_id'])) {
+                $designation_id = null;
+
+                $designation = StakeholderDesignation::where('type', 'nec')->where('field_id', $field->id)->first();
+                if($designation){
+                    $designation_id = $designation->id;
+                }
+
                 Stakeholder::where('id', $data['stakeholder_id'])
                     ->update([
                         'field_id' => $field->id,
@@ -53,6 +61,7 @@ class FieldController extends Controller
                         'chapter_id'  => null,
                         'status'    => 'active',
                         'role_id'    => 5,
+                        'designation_id' => $designation_id
                     ]);
             }
 
@@ -89,16 +98,23 @@ class FieldController extends Controller
         if ($request->filled('stakeholder_id')) {
 
             // Deactivate former field pastor
-            // Stakeholder::where('field_id', $field->id)
-            //     ->where('role_id', 3) // <-- FIELD PASTOR ROLE ID
-            //     ->update([
-            //         'status'     => 'inactive',
-            //         'field_id'   => null,
-            //         'zone_id'    => null,
-            //         'chapter_id' => null,
-            //         'portfolio'  => null,
-            //     ]);
+            Stakeholder::where('field_id', $field->id)
+                ->where('role_id', 3) // <-- FIELD PASTOR ROLE ID
+                ->update([
+                    'status'     => 'inactive',
+                    'field_id'   => null,
+                    'zone_id'    => null,
+                    'chapter_id' => null,
+                    
+                    'designation_id'  => null,
+                ]);
 
+            $designation_id = null;
+
+            $designation = StakeholderDesignation::where('type', 'nec')->where('field_id', $field->id)->first();
+            if($designation){
+                $designation_id = $designation->id;
+            }
             // Assign & activate new field pastor
             Stakeholder::where('id', $request->stakeholder_id)
                 ->update([
@@ -107,6 +123,7 @@ class FieldController extends Controller
                     'zone_id'    => null,
                     'chapter_id' => null,
                     'role_id'    => 3, // FIELD PASTOR
+                    'designation_id'  => $designation_id,
                 ]);
         }
 

@@ -8,6 +8,7 @@ use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\StakeholderDesignation;
 
 class ZoneController extends Controller
 {
@@ -63,18 +64,25 @@ class ZoneController extends Controller
                     ->map(fn($id) => (int) $id)
                     ->toArray();
 
+                $designation_id = null;
+
+                $designation = StakeholderDesignation::where('type', 'nec')->where('zone_id', $zone->id)->first();
+                if($designation){
+                    $designation_id = $designation->id;
+                }
+
                 Stakeholder::whereIn('id', $stakeholderIds)
                     ->update([
                         'status'     => 'active',
                         'zone_id'    => $zone->id,
                         'field_id'   => $zone->field_id,
                         'chapter_id' => null,
-                        'portfolio'  => null,
                         'role_id'    => 4, // Zonal Pastor
+                        'designation_id' => $designation_id
                     ]);
             }
         });
-        
+
         return redirect()
             ->route('zones.index')
             ->with('message', 'Zone successfully created');
@@ -100,6 +108,14 @@ class ZoneController extends Controller
             ]);
 
         if (!empty($selectedStakeholders)) {
+            $designation_id = null;
+
+            $designation = StakeholderDesignation::where('type', 'nec')->where('zone_id', $zone->id)->first();
+
+            if($designation){
+                $designation_id = $designation->id;
+            }
+
             Stakeholder::whereIn('id', $selectedStakeholders)
                 ->update([
                     'status'     => 'active',
@@ -107,6 +123,7 @@ class ZoneController extends Controller
                     'field_id'   => $zone->field_id,
                     'chapter_id' => null,
                     'role_id'    => 4,
+                    'designation_id' => $designation_id
                 ]);
         }
 
