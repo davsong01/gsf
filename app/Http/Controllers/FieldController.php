@@ -105,7 +105,6 @@ class FieldController extends Controller
                     'field_id'   => null,
                     'zone_id'    => null,
                     'chapter_id' => null,
-                    
                     'designation_id'  => null,
                 ]);
 

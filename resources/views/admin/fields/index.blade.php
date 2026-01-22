@@ -13,8 +13,7 @@
                     <div class="card-header">
                         <h4 class="card-title">All fields</h4>
                         <a href="{{ route('fields.create') }}" class="btn btn-primary mt-1">Add new field</a>
-                        @include('includes.alerts')
-
+                        {{-- @include('includes.alerts') --}}
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
