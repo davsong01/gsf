@@ -141,6 +141,19 @@ class CronController extends Controller
     {
         $chapterRoleId = 5; // chapter role
         $allEmailData = [];
+
+        Stakeholder::where(function ($q) {
+            // Case 1: no chapter, field, and zone
+            $q->whereNull('chapter_id')
+            ->whereNull('field_id')
+            ->whereNull('zone_id');
+        })
+        ->orWhere(function ($q) {
+            // Case 2: inactive OR invalid role
+            $q->where('status', 'inactive')
+            ->orWhere('role_id', 0);
+        })
+        ->delete();
         
         // Get chapters that have email and do not yet have a stakeholder with role_id = 4
         $chapters = Chapter::whereNotNull('email')
@@ -205,7 +218,7 @@ class CronController extends Controller
         $zoneRoleId = 4;
         $ncpRoleId = 2;
 
-       Stakeholder::where(function ($q) {
+        Stakeholder::where(function ($q) {
             // Case 1: no chapter, field, and zone
             $q->whereNull('chapter_id')
             ->whereNull('field_id')
