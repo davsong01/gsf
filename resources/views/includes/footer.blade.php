@@ -48,16 +48,16 @@
 $(document).ready(function() {
 
 	$('select').select2({
-	width: '100%' // need to override the changed default
+	    width: '100%' // need to override the changed default
 	});
 
 	$("#role").change(function(){
 		if(this.value == 1 || this.value == 2){
-			$("#session").hide();	
+			$("#session").hide();
 		}else{
 			$("#session").show();
 		}
-		
+
 	});
 
 });

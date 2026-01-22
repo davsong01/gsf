@@ -45,8 +45,22 @@
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" title="View/Update designation details" href="{{ route('designation.edit', $designation->id) }}"> <i class="bx bxs-edit actions"></i>
                                             </a>
-                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete designation" href="{{ route('designation.destroy', $designation->id) }}"> <i class="fa fa-trash"></i></
-                                            </a>
+                                            <form action="{{ route('designation.destroy', $designation->id) }}"
+                                                method="POST"
+                                                style="display:inline"
+                                                onsubmit="return confirm('Are you really sure?');">
+
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button type="submit"
+                                                        class="actions btn btn-link p-0"
+                                                        data-toggle="tooltip"
+                                                        title="Delete designation">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </form>
+
                                         </tr>
                                         @endforeach
                                     </tbody>
