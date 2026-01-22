@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class Zone extends Model
 {
     protected $guarded = [];
-    
+
     public function chapters(){
         return $this->hasMany(Chapter::class);
     }
@@ -24,7 +24,11 @@ class Zone extends Model
     }
 
     public function zonalCord(){
-        return $this->hasOne(Stakeholder::class, 'zone_id');
+        return $this->hasOne(Stakeholder::class, 'zone_id')->where('role_id', 4);
+    }
+
+    public function zonalCords(){
+        return $this->hasMany(Stakeholder::class, 'zone_id')->where('role_id', 4);
     }
 
 }

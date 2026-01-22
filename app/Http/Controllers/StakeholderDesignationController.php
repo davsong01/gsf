@@ -14,7 +14,12 @@ class StakeholderDesignationController extends Controller
      */
     public function index()
     {
-        $designations = StakeholderDesignation::orderBy('order')->get();
+        $designations = StakeholderDesignation::orderByRaw(
+        "FIELD(type, 'nec', 'chapter_executive')"
+        )
+        ->orderBy('order')
+        ->get();
+
         return view('admin.designations.index', compact('designations'));
     }
 

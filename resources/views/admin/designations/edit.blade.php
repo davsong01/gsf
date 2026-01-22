@@ -84,7 +84,7 @@
                                     <div class="col-md-12 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="zone_id">Zone</label>
-                                            <select class="form-control" name="zone_id" id="zone_id" required>
+                                            <select class="form-control" name="zone_id" id="zone_id">
                                                 <option value="">-- Select Zone --</option>
                                                 @foreach ($zones as $zone)
                                                     <option value="{{ $zone->id }}" {{ old('zone_id', $designation->zone_id ?? '') == $zone->id ? 'selected' : '' }}>{{ $zone->name }}</option>
@@ -96,7 +96,7 @@
                                     <div class="col-md-12 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="field_id">Field</label>
-                                            <select class="form-control" name="field_id" id="field_id" required>
+                                            <select class="form-control" name="field_id" id="field_id">
                                                 <option value="">-- Select Field --</option>
                                                 @foreach ($fields as $field)
                                                     <option value="{{ $field->id }}" {{ old('field_id', $designation->field_id ?? '') == $field->id ? 'selected' : '' }}>{{ $field->name }}</option>
@@ -108,7 +108,7 @@
                                     <div class="col-md-12 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="status">Status</label>
-                                            <select class="form-control" name="status" id="status" required>
+                                            <select class="form-control" name="status" id="status">
                                                 <option value="">-- Select Status --</option>
                                                 <option value="active" {{ old('status', $designation->status ?? '') === 'active' ? 'selected' : '' }}>Active</option>
                                                 <option value="inactive" {{ old('status', $designation->status ?? '') === 'inactive' ? 'selected' : '' }}>Inactive</option>

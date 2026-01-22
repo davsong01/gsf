@@ -13,8 +13,6 @@
                     <div class="card-header">
                         <h4 class="card-title">All Zones</h4>
                         <a href="{{ route('zones.create') }}" class="btn btn-primary mt-1">Add new zone</a>
-                        @include('includes.alerts')
-
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -24,7 +22,7 @@
                                         <tr>
                                             <th>S/N</th>
                                             <th>Name</th>
-                                            <th>Pastor</th>
+                                            <th>Pastor(s)</th>
                                             <th>Field</th>
                                             <th>Chapter Count</th>
                                             <th>Actions</th>
@@ -35,13 +33,38 @@
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $zone->name }}</td>
+                                            @php
+                                                $badgeClasses = [
+                                                    'badge-primary',
+                                                    'badge-secondary',
+                                                    'badge-success',
+                                                    'badge-danger',
+                                                    'badge-warning',
+                                                    'badge-info',
+                                                    'badge-dark',
+                                                ];
+                                            @endphp
+
                                             <td>
-                                                @if ($zone->stakeholder)
-                                                    <a href="{{route('stakeholderpersonnel.edit', $zone->stakeholder->id)}}">{{ $zone->stakeholder->name }}</a>
+                                                @if ($zone->zonalCords && $zone->zonalCords->count())
+                                                    @foreach ($zone->zonalCords as $zonalCord)
+                                                        @php
+                                                            $badgeClass = $badgeClasses[array_rand($badgeClasses)];
+                                                        @endphp
+
+                                                        <a
+                                                            href="{{ route('stakeholderpersonnel.edit', $zonalCord->id) }}"
+                                                            class="badge {{ $badgeClass }} mr-1" style="margin-bottom:5px"
+                                                            style="display:inline-block;"
+                                                        >
+                                                            {{ $zonalCord->name }}
+                                                        </a>
+                                                    @endforeach
                                                 @else
-                                                    N/A
+                                                    <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
+
                                             <td>{{ !is_null($zone->field) ? $zone->field->name : 'N/A'}}</td>
                                             <td>{{ $zone->chapters->count() }}</td>
 

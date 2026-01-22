@@ -14,7 +14,7 @@ class Field extends Model
     public function zones(){
         return $this->hasMany(Zone::class);
     }
-    
+
     public function chapters(){
         return $this->hasManyThrough(Chapter::class, Zone::class);
     }
@@ -24,6 +24,6 @@ class Field extends Model
     }
 
     public function fieldCord(){
-        return $this->hasOne(Stakeholder::class, 'field_id');
+        return $this->hasOne(Stakeholder::class, 'field_id')->where('role_id', 3);
     }
 }

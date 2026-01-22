@@ -80,13 +80,30 @@
                                     {{-- Zonal Pastor --}}
                                     <div class="col-md-12 col-sm-12">
                                         <fieldset class="form-group">
-                                            <label for="stakeholder_id">Zonal Pastor</label>
-                                            <select class="form-control" name="stakeholder_id" id="stakeholder_id" required>
-                                                <option value="">-- Select Zonal Pastor --</option>
+                                            <label for="stakeholder_id">Zonal Pastor(s)</label>
+
+                                            @php
+                                                $selectedStakeholders = collect(
+                                                    old(
+                                                        'stakeholder_id',
+                                                        isset($zone) && $zone->zonalCords
+                                                            ? $zone->zonalCords->pluck('id')->toArray()
+                                                            : []
+                                                    )
+                                                )->map(fn ($id) => (int) $id)->toArray();
+                                            @endphp
+
+                                            <select
+                                                class="form-control"
+                                                name="stakeholder_id[]"
+                                                id="stakeholder_id"
+                                                multiple
+                                                required
+                                            >
                                                 @foreach ($pastors as $pastor)
                                                     <option
                                                         value="{{ $pastor->id }}"
-                                                        {{ (int) old('stakeholder_id', $zone->zonalCord->id ?? null) === (int) $pastor->id ? 'selected' : '' }}
+                                                        {{ in_array((int) $pastor->id, $selectedStakeholders, true) ? 'selected' : '' }}
                                                     >
                                                         {{ $pastor->name }}
                                                     </option>
@@ -94,6 +111,8 @@
                                             </select>
                                         </fieldset>
                                     </div>
+
+
 
                                     {{-- Submit --}}
                                     <div class="col-md-12 col-sm-12">

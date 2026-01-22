@@ -48,10 +48,8 @@
                                             <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete designation" href="{{ route('designation.destroy', $designation->id) }}"> <i class="fa fa-trash"></i></
                                             </a>
                                         </tr>
-
                                         @endforeach
                                     </tbody>
-
                                 </table>
                             </div>
                         </div>
