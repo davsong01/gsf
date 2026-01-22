@@ -168,7 +168,7 @@ class CronController extends Controller
                 if ($stakeholder->credentials_sent) {
                     continue;
                 }
-                
+
                 $passwordPlain = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
                 $stakeholder->update([
                     'password' => bcrypt($passwordPlain),
@@ -266,6 +266,98 @@ class CronController extends Controller
                 'role_id'  => $fieldRoleId,
                 'email'    => 'olayemi_olanegan@ondofield.com',
             ],
+            [
+                'name'     => 'Pastor David Ajayi',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'david_ajayi@lagosfield.com',
+            ],
+            [
+                'name'     => 'Pastor Olabode Oyela',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'olabode_oyela@abeokutafield.com',
+            ],
+            [
+                'name'     => 'Pastor Oyewole Saseun',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'oyewole_saseun@ijeburemo.com',
+            ],
+            [
+                'name'     => 'Pastor Dapo Sowumi',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'dapo_sowumi@ibadanfield.com',
+            ],
+            [
+                'name'     => 'Pastor Oluwasina Luyi',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'oluwasina_luyi@oyofield.com',
+            ],
+            [
+                'name'     => 'Pastor Dr. Olayemi Olanegan',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'olayemi_olanegan@ondofield.com',
+            ],
+            [
+                'name'     => 'Pastor Tolulope Oluwasanmi',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'tolulope_oluwasanmi@ekitifield.com',
+            ],
+            [
+                'name'     => 'To Be Decided',
+                'tenure'   => $tenure,
+                'gender'   => null,
+                'role_id'  => $fieldRoleId,
+                'email'    => null,
+            ],
+            [
+                'name'     => 'Pastor Olanrewaju Olawale',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'olanrewaju_olawale@kwarafield.com',
+            ],
+            [
+                'name'     => 'Pastor (Bar.) Monday Omorogiuwa',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'monday_omorogiuwa@southsouthfield.com',
+            ],
+            [
+                'name'     => 'Pastor Moses Akinjobi',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'moses_akinjobi@kogifield.com',
+            ],
+            [
+                'name'     => 'Pastor Joseph Gbesoevi',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'joseph_gbesoevi@abujafield.com',
+            ],
+            [
+                'name'     => 'Pastor Samuel Adebayo',
+                'tenure'   => $tenure,
+                'gender'   => 'Male',
+                'role_id'  => $fieldRoleId,
+                'email'    => 'samuel_adebayo@field.com',
+            ],
+
             [
                 'name'     => 'Pastor Dare Fayemi',
                 'tenure'   => $tenure,
