@@ -1,5 +1,6 @@
 @extends('frontend.spaces.layouts.app')
 @section('title', 'NEC')
+@section('ogtitle', 'GSF National Executive Committee Members')
 
 @section('css')
 <style>

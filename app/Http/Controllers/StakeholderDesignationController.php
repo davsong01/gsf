@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Zone;
 use App\Models\Field;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\StakeholderDesignation;
 
 class StakeholderDesignationController extends Controller
@@ -108,47 +109,70 @@ class StakeholderDesignationController extends Controller
 
     public function populate()
     {
-        $zones = Zone::all();
+        // Prevent re-population
+        if (StakeholderDesignation::count() > 0) {
+            DB::table('stakeholder_designations')->truncate();
+        }
+
+        $zones  = Zone::all();
         $fields = Field::all();
 
-        $order = 2; // start order for everything except NCP
-        if(StakeholderDesignation::count() > 0) return;
-        // First, create the National Campus Pastor (order = 1)
+        /**
+         * ORDERING STRATEGY
+         * -----------------
+         * 1   => National Campus Pastor
+         * 5   => First Field Pastor
+         * 10  => Next Field Pastor
+         * etc...
+         */
+        $orderStep = 5;
+        $order     = 1;
+
+        // National Campus Pastor (fixed)
         StakeholderDesignation::create([
             'name'   => 'National Campus Pastor',
-            'order'  => 1,
+            'order'  => $order,
             'type'   => 'nec',
             'status' => 'active',
         ]);
+
+        // Move to next slot
+        $order += $orderStep;
 
         // Field Pastors
         foreach ($fields as $field) {
             StakeholderDesignation::create([
                 'name'     => 'Field Pastor - ' . $field->name,
-                'order'    => $order++,
+                'order'    => $order,
                 'type'     => 'nec',
                 'status'   => 'active',
                 'field_id' => $field->id,
             ]);
+
+            $order += $orderStep;
         }
 
         // Zonal Pastors and Assistants
         foreach ($zones as $zone) {
             StakeholderDesignation::create([
                 'name'    => 'Zonal Pastor - ' . $zone->name,
-                'order'   => $order++,
+                'order'   => $order,
                 'type'    => 'nec',
                 'status'  => 'active',
                 'zone_id' => $zone->id,
             ]);
 
+            $order += $orderStep;
+
             StakeholderDesignation::create([
                 'name'    => 'Assistant Zonal Pastor - ' . $zone->name,
-                'order'   => $order++,
+                'order'   => $order,
                 'type'    => 'nec',
                 'status'  => 'active',
                 'zone_id' => $zone->id,
             ]);
+
+            $order += $orderStep;
         }
 
         // Other NEC designations
@@ -189,12 +213,15 @@ class StakeholderDesignationController extends Controller
         foreach ($otherNec as $designationName) {
             StakeholderDesignation::create([
                 'name'   => $designationName,
-                'order'  => $order++,
+                'order'  => $order,
                 'type'   => 'nec',
                 'status' => 'active',
             ]);
+
+            $order += $orderStep;
         }
 
+        // Chapter Executives (NO order for now – flexible)
         $chapterOffices = [
             'President',
             'Sister Cordinator',
@@ -212,14 +239,12 @@ class StakeholderDesignationController extends Controller
             'Technical Director',
             'Music Director',
             'Drama Cordinator',
-
             'Assistant General Secretary',
             'Assistant Sister Cordinator',
             'Assistant Publicity Cordinator',
             'Assistant Music Director',
             'Assistant Bible Study Cordinator',
             'Assistant Prayer Cordinator',
-
             'Alumni Liaison Officer',
             'Transport Cordinator',
         ];
@@ -227,9 +252,12 @@ class StakeholderDesignationController extends Controller
         foreach ($chapterOffices as $office) {
             StakeholderDesignation::create([
                 'name'   => $office,
+                'order'  => $order,
                 'type'   => 'chapter_executive',
                 'status' => 'active',
             ]);
+
+            $order += $orderStep;
         }
 
         return "Designations populated successfully.";
