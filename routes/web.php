@@ -99,7 +99,7 @@ Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayRem
 Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
 
 Route::get('send-stakeholder-credentials', [CronController::class, 'sendStakeholderCredentials']);
-Route::get('create-zonal-pastor-credentials', [CronController::class, 'sendStakeholderCredentials']);
+Route::get('create-zonal-pastor-credentials', [CronController::class, 'sendZonalPastorCredentials']);
 
 Route::get('utility-populate-designation', [StakeholderDesignationController::class, 'populate']);
 
