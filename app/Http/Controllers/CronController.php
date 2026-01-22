@@ -139,9 +139,8 @@ class CronController extends Controller
 
     public function sendStakeholderCredentials()
     {
-        $chapterRoleId = 5; // chapter role
+        $chapterRoleId = 5; // Chapter Representative role
         $allEmailData = [];
-
         Stakeholder::where(function ($q) {
             // Case 1: no chapter, field, and zone
             $q->whereNull('chapter_id')
@@ -154,36 +153,49 @@ class CronController extends Controller
             ->orWhere('role_id', 0);
         })
         ->delete();
-        
-        // Get chapters that have email and do not yet have a stakeholder with role_id = 4
-        $chapters = Chapter::whereNotNull('email')
-            ->whereDoesntHave('stakeholders', function ($q) use ($chapterRoleId) {
-                $q->where('role_id', $chapterRoleId);
-            })
-            ->get();
+        // 1. Get chapters that have email
+        $chapters = Chapter::whereNotNull('email')->get();
 
         foreach ($chapters as $chapter) {
-            // Generate random 8-character password
-            $passwordPlain = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
-            $check = Stakeholder::where('chapter_id', $chapter->id)->where('role_id', $chapterRoleId)->where('email', $chapter->email)->exists();
-            if($check) continue;
-            // Create stakeholder
-            $stakeholder = Stakeholder::create([
-                'role_id'    => $chapterRoleId,
-                'chapter_id' => $chapter->id,
-                'name'       => $chapter->name.' Representative',
-                'email'      => $chapter->email,
-                'phone'      => $chapter->phone,
-                'status'     => 'active',
-                'password'   => bcrypt($passwordPlain), // store hashed password
-            ]);
 
-            // Generate welcome email
+            // 2. Check if a stakeholder exists for this chapter and role
+            $stakeholder = Stakeholder::where('chapter_id', $chapter->id)
+                ->where('role_id', $chapterRoleId)
+                ->first();
+
+            if ($stakeholder) {
+                // Skip if credentials already sent
+                if ($stakeholder->credentials_sent) {
+                    continue;
+                }
+                
+                $passwordPlain = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+                $stakeholder->update([
+                    'password' => bcrypt($passwordPlain),
+                    'credentials_sent' => 1,
+                ]);
+            } else {
+                // No stakeholder exists yet — create one
+                $passwordPlain = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+
+                $stakeholder = Stakeholder::create([
+                    'role_id'         => $chapterRoleId,
+                    'chapter_id'      => $chapter->id,
+                    'name'            => $chapter->name . ' Representative',
+                    'email'           => $chapter->email,
+                    'phone'           => $chapter->phone,
+                    'status'          => 'active',
+                    'password'        => bcrypt($passwordPlain),
+                    'credentials_sent'=> 1,
+                ]);
+            }
+
+            // 3. Generate welcome email content
             $loginLink = "<a href='" . url('/stakeholders/login') . "'>Login</a>";
             $subject = "Welcome to GSF Digital Portal";
             $content = "
-                <h4>Dear Representative of {$stakeholder->name},</h4>
-                <p>Calvary gretings to you and welcome to the GOFAMINT STUDENTS' FELLOWSHIP (GSF) Digital portal. Your fellowship representative account has been created. Please find details below.</p>
+                <h4>Dear Representative of {$chapter->name},</h4>
+                <p>Calvary greetings to you and welcome to the GOFAMINT STUDENTS' FELLOWSHIP (GSF) Digital portal. Your fellowship representative account has been created or updated. Please find details below.</p>
                 <p><strong>Email:</strong> {$stakeholder->email}<br>
                 <strong>Password:</strong> {$passwordPlain}</p>
                 <p>{$loginLink} to access your account and start submitting reports.</p>
@@ -192,21 +204,22 @@ class CronController extends Controller
             ";
 
             $allEmailData[] = [
-                'recipient'   => $chapter->email,
-                'type'        => 'report_email',
-                'subject'     => $subject,
-                'content'     => $content,
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'recipient'  => $chapter->email,
+                'type'       => 'report_email',
+                'subject'    => $subject,
+                'content'    => $content,
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
         }
 
-        $emailData = [
-            'type'        => 'report_email',
-            'recipients' => $allEmailData,
-        ];
-
-        EmailService::logEmail($emailData);
+        // 4. Log emails for sending
+        if (!empty($allEmailData)) {
+            EmailService::logEmail([
+                'type'       => 'report_email',
+                'recipients' => $allEmailData,
+            ]);
+        }
 
         return 'Stakeholder credentials emails queued for sending.';
     }
