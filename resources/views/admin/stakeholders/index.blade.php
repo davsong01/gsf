@@ -12,7 +12,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">All stakeholders</h4>
-                        <a href="{{ route('stakeholderpersonnel.create') }}" class="btn btn-primary mt-1">Add new stakeholder</a>                        
+                        <a href="{{ route('stakeholderpersonnel.create') }}" class="btn btn-primary mt-1">Add new stakeholder</a>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -24,7 +24,7 @@
                                             <th>Name</th>
                                             <th>Phone</th>
                                             <th>Email</th>
-                                            <th>Role</th>
+                                            <th>Role/Designation</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -38,7 +38,7 @@
                                             </td>
                                             <td>{{ $stakeholder->phone }}</td>
                                             <td>{{ $stakeholder->email }}</td>
-                                            
+
                                             <td>
                                                 @if(in_array($stakeholder->role_id, chapterStakeholders()) && !is_null($stakeholder->chapter_id))
                                                     <span>{{$stakeholder->role->name}}, </span>
@@ -46,24 +46,26 @@
                                                 @elseif(in_array($stakeholder->role_id, zoneStakeholders()) && !is_null($stakeholder->zone_id))
                                                     <span style="color:blue">{{$stakeholder->role->name}}, </span>
                                                     {{ $stakeholder->zone->name ?? 'N/A' }}
-                                                @elseif(in_array($stakeholder->role_id, fieldStakeholders()) && !is_null($stakeholder->field_id)) 
+                                                @elseif(in_array($stakeholder->role_id, fieldStakeholders()) && !is_null($stakeholder->field_id))
                                                     <span style="color:blue">{{$stakeholder->role->name}}, </span>{{ $stakeholder->field->name ?? 'N/A' }}
                                                 @elseif(in_array($stakeholder->role_id, fieldStakeholders()))
-                                                    {{ $stakeholder->portfolio }} 
+                                                    {{ $stakeholder->portfolio }}
                                                 @else
-                                                    {{ $stakeholder->role->name }} 
+                                                    {{ $stakeholder->role->name }}
                                                 @endif
+                                                <br>
+                                                <strong><i>{{$stakeholder?->designation?->name}}</i></strong>
                                             </td>
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Update stakeholder details" href="{{ route('stakeholderpersonnel.edit', $stakeholder->id) }}"> <i class="bx bxs-edit actions"></i>
                                             </a>
-                                            
+
                                             <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete stakeholder" href="{{ route('stakeholderpersonnel.delete', $stakeholder->id) }}"> <i class="fa fa-trash actions"></i></a>
                                         </tr>
-                                        
+
                                         @endforeach
                                     </tbody>
-                                    
+
                                 </table>
                             </div>
                         </div>
@@ -72,6 +74,6 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 @endsection

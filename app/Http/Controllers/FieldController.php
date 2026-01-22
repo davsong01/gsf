@@ -89,15 +89,15 @@ class FieldController extends Controller
         if ($request->filled('stakeholder_id')) {
 
             // Deactivate former field pastor
-            Stakeholder::where('field_id', $field->id)
-                ->where('role_id', 3) // <-- FIELD PASTOR ROLE ID
-                ->update([
-                    'status'     => 'inactive',
-                    'field_id'   => null,
-                    'zone_id'    => null,
-                    'chapter_id' => null,
-                    'portfolio'  => null,
-                ]);
+            // Stakeholder::where('field_id', $field->id)
+            //     ->where('role_id', 3) // <-- FIELD PASTOR ROLE ID
+            //     ->update([
+            //         'status'     => 'inactive',
+            //         'field_id'   => null,
+            //         'zone_id'    => null,
+            //         'chapter_id' => null,
+            //         'portfolio'  => null,
+            //     ]);
 
             // Assign & activate new field pastor
             Stakeholder::where('id', $request->stakeholder_id)
@@ -106,7 +106,6 @@ class FieldController extends Controller
                     'field_id'   => $field->id,
                     'zone_id'    => null,
                     'chapter_id' => null,
-                    'portfolio'  => null,
                     'role_id'    => 3, // FIELD PASTOR
                 ]);
         }
@@ -127,7 +126,6 @@ class FieldController extends Controller
                 'field_id'   => null,
                 'zone_id'    => null,
                 'chapter_id' => null,
-                'portfolio'  => null,
             ]);
 
         // Delete the field

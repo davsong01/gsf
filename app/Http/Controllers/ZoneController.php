@@ -82,15 +82,14 @@ class ZoneController extends Controller
 
         if ($request->filled('stakeholder_id')) {
 
-            Stakeholder::where('zone_id', $zone->id)
-                ->where('role_id', 4)
-                ->update([
-                    'status'    => 'inactive',
-                    'zone_id'    => null,
-                    'field_id'   => null,
-                    'chapter_id' => null,
-                    'portfolio'  => null,
-                ]);
+            // Stakeholder::where('zone_id', $zone->id)
+            //     ->where('role_id', 4)
+            //     ->update([
+            //         'status'    => 'inactive',
+            //         'zone_id'    => null,
+            //         'field_id'   => null,
+            //         'chapter_id' => null,
+            //     ]);
 
             Stakeholder::where('id', $request->stakeholder_id)
                 ->update([
@@ -98,7 +97,6 @@ class ZoneController extends Controller
                     'zone_id'    => $zone->id,
                     'field_id'   => $zone->field_id,
                     'chapter_id' => null,
-                    'portfolio'  => null,
                     'role_id'    => 4,
                 ]);
         }
@@ -123,7 +121,6 @@ class ZoneController extends Controller
                 'zone_id'    => null,
                 'field_id'   => null,
                 'chapter_id' => null,
-                'portfolio'  => null,
             ]);
 
         // Delete the zone

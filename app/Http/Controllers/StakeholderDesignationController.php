@@ -23,7 +23,9 @@ class StakeholderDesignationController extends Controller
      */
     public function create()
     {
-        return view('admin.designations.edit'); // Using the same blade as edit
+        $zones = Zone::all();
+        $fields = Field::all();
+        return view('admin.designations.edit', compact('zones','fields')); // Using the same blade as edit
     }
 
     /**
@@ -61,7 +63,9 @@ class StakeholderDesignationController extends Controller
      */
     public function edit(StakeholderDesignation $designation)
     {
-        return view('admin.designations.edit', compact('designation'));
+        $zones = Zone::all();
+        $fields = Field::all();
+        return view('admin.designations.edit', compact('designation','zones','fields'));
     }
 
     /**
@@ -103,7 +107,7 @@ class StakeholderDesignationController extends Controller
         $fields = Field::all();
 
         $order = 2; // start order for everything except NCP
-
+        if(StakeholderDesignation::count() > 0) return;
         // First, create the National Campus Pastor (order = 1)
         StakeholderDesignation::create([
             'name'   => 'National Campus Pastor',
@@ -264,7 +268,6 @@ class StakeholderDesignationController extends Controller
                 );
 
         } elseif ($roleSlug === 'field-pastor') {
-
             $query->where('type', 'nec')
                 ->whereNotNull('field_id')
                 ->when($request->field_id, fn ($q) =>
@@ -272,9 +275,7 @@ class StakeholderDesignationController extends Controller
                 );
 
         } elseif ($roleSlug === 'chapter-representative') {
-
             $query->where('type', 'chapter_executive');
-
         } elseif ($roleSlug === 'ncp') {
 
             $query->where('type', 'nec')

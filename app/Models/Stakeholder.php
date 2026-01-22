@@ -54,6 +54,11 @@ class Stakeholder extends Authenticatable
         return $this->belongsTo(User::class, 'email','email');
     }
 
+    public function designation()
+    {
+        return $this->belongsTo(StakeholderDesignation::class, 'designation_id');
+    }
+
     // public function roles()
     // {
     //     return $this->belongsToMany(
