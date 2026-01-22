@@ -3,180 +3,203 @@
 
 @section('css')
 <style>
-  @media (max-width: 400px) {
-       .our-team {
-            width: 50%;
-            margin: auto;
-        }
+    .our-team {
+        text-align: center;
+        margin-bottom: 25px;
     }
-  .our-team{
-      text-align: center;
-    }
-    .our-team .pic{
+
+    .our-team .pic {
         position: relative;
-    }
-    .our-team .pic img{
-        width: 100%;
-        height: auto;
+        width: 100px;      /* match avatar */
+        height: 100px;     /* match avatar */
+        margin: 0 auto;
         border-radius: 50%;
+        overflow: hidden;
     }
-    .social_media_team{
-        background: rgba(59, 61, 66, 0.6);
-        border-radius: 50%;
-        transform: scale(0);
-        transition: all 0.35s ease-in-out 0s;
-        visibility: hidden;
-        position: absolute;
-        top:0;
-        left:0;
+
+    /* Avatar image fills the container */
+    .our-team .pic img {
         width: 100%;
         height: 100%;
-        text-align: center;
+        object-fit: cover;
+        border-radius: 50%;
     }
-    .our-team:hover .social_media_team{
-        transform: scale(1);
-        visibility: visible;
+
+    /* Overlay */
+    .social_media_team {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(59, 61, 66, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
     }
-    .team_social{
+
+    /* Show overlay on hover */
+    .our-team:hover .social_media_team {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Social icons */
+    .team_social {
         padding: 0;
+        margin: 0;
         list-style: none;
-        margin-bottom: 0;
-        position: relative;
-        top:43%;
-        left:0;
+        display: flex;
+        gap: 6px;
     }
-    .team_social > li{
-        display: inline-block;
-    }
-    .team_social > li > a{
+
+    .team_social > li > a {
         width: 35px;
         height: 35px;
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background: #5d5d5d;
-        line-height: 35px;
-        color:#fff;
-        transition: all 0.35s ease-in-out 0s;
-        border-radius: 3px;
-        font-size: 15px;
+        color: #fff;
+        border-radius: 50%;
+        font-size: 14px;
+        transition: all 0.25s ease;
     }
-    .team_social > li > a:hover{
+
+    .team_social > li > a:hover {
         background: #125;
+        transform: scale(1.1);
     }
-    .post-title > a{
-        color:#fff;
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 700;
-        line-height: 18px;
-        text-transform: capitalize;
+
+    /* Team info */
+    .team-prof {
+        margin-top: 10px;
+        line-height: 1.0;
     }
-    .post-title > a:after{
-        content:"|";
-        color: #31aab5;
-        display: inline-block;
-        padding: 0 5px 0 10px;
+
+    .team-prof h6 {
+        margin-bottom: 3px;
+        font-size: 14px;
+        font-weight: 600;
     }
-    .post-title small{
-        color:#999;
-        font-size: 12px;
+
+    .team-prof small {
+        display: block;
+        font-size: 11px;
+        font-weight: 200;
+        line-height: 1.2;
     }
-    .description{
-        color:#fff;
+
+    .team-prof small.office {
+        color: #c33c54;
     }
-    .read{
-        font-size: 13px;
-        font-style: italic;
-        font-weight: 400;
-        color:#31aab5;
+
+    .team-prof small.tenure {
+        color: #0a0a0a;
     }
-    .read:hover{
-        color:#fff;
-    }
-    @media screen and (max-width: 990px){
-        .our-team{
-            margin-bottom: 30px;
-        }
-    }
+
 </style>
 @endsection
-@section('content')
-  <div class="section section-header section-image bg-tertiary overlay-primary text-white overflow-hidden pb-6"
-    data-background="../assets/img/new-york-hero.jpg">
-    <div class="container z-2">
-      <div class="row justify-content-center pt-3">
-        <div class="col-12 text-center">
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-transparent justify-content-center mb-4">
-              <li class="breadcrumb-item text-secondary"><a href="/">Home</a>
-              </li>
-              <li class="breadcrumb-item text-muted active" aria-current="page">NEC</li>
-            </ol>
-          </nav>
-          <h1 class="mb-5">GSF National Executive Council<span class="font-weight-bolder"></span></h1>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="container" style="margin-top:20px">
-    <div class="row">
-      @foreach($nec as $n)
-        <div class="col-md-2 col-sm-6" style="margin-bottom: 25px;">
-            <div class="our-team">
-                <div class="pic">
-                    <img style="box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;" src="{{ !is_null($n->passport) ? asset($n->passport) : asset('frontend/passports/avatar.jpg') }}" alt="">
-                    <div class="social_media_team">
-                        <ul class="team_social">
-                            @if(!empty($n->email))
-                            <li><a target="_blank" href="mailto:{{$n->email}}"><i class="fa fa-envelope"></i></a></li>
-                            @endif
-                            {{-- <li><a href="#"><i class="fab fa-google-plus"></i></a></li>
-                            <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-                            <li><a href="#"><i class="fab fa-facebook"></i></a></li> --}}
-                        </ul>
+@section('content')
+<div class="section section-header section-image bg-tertiary overlay-primary text-white overflow-hidden pb-6"
+     data-background="../assets/img/new-york-hero.jpg">
+  <div class="container z-2">
+      <div class="row justify-content-center pt-3">
+          <div class="col-12 text-center">
+              <nav aria-label="breadcrumb">
+                  <ol class="breadcrumb breadcrumb-transparent justify-content-center mb-4">
+                      <li class="breadcrumb-item text-secondary"><a href="/">Home</a></li>
+                      <li class="breadcrumb-item text-muted active" aria-current="page">NEC</li>
+                  </ol>
+              </nav>
+              <h1 class="mb-5">GSF National Executive Council</h1>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="container mt-4">
+    <!-- Search Bar -->
+    <div class="row mb-5">
+        <div class="col-md-4 offset-md-4">
+            <input type="text" id="nec-search" class="form-control" placeholder="Search by Name or Office">
+        </div>
+    </div>
+
+    <div class="row" id="nec-cards">
+        @foreach($nec as $n)
+            @php
+                $stakeholder = $n->stakeholder;
+                $avatar = $stakeholder?->avatar ?? 'frontend/passports/avatar.jpg';
+                $email  = $stakeholder?->email;
+                $displayName = $stakeholder?->name ?? 'N/A';
+                $office = $n->name ?? 'N/A';
+                $tenure = $n->tenure ?? '';
+            @endphp
+
+            <div class="col-md-2 col-sm-6 nec-card">
+                <div class="our-team">
+                    <div class="pic">
+                        <img
+                            src="{{ asset($avatar) }}"
+                            alt="{{ $displayName }}"
+                            style="
+                                width: 100px;
+                                height: 100px;
+                                border-radius: 50%;
+                                object-fit: cover;
+                                box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px,
+                                            rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+                            ">
+                        <div class="social_media_team">
+                            <ul class="team_social">
+                                @if($email)
+                                    <li>
+                                        <a target="_blank" href="mailto:{{ $email }}">
+                                            <i class="fa fa-envelope"></i>
+                                        </a>
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="team-prof" style="line-height: 1.0 !important;margin-top: 10px;">
+                        <h6 class="card-title mb-1">{{ $displayName }}</h6>
+                        <small style="color: #c33c54;font-size: 11px;font-weight: 200;">{{ $office }}</small><br>
+                        <small style="color: #0a0a0a;font-size: 11px;font-weight: 200;">{{ $tenure }}</small>
                     </div>
                 </div>
-                <div class="team-prof" style="line-height: 1.0 !important;margin-top: 10px;">
-                    <h6 class="card-title mb-2">{{ $n->name }}</h3>
-                     <small style="color: #c33c54;font-size: 11px;font-weight: 200;line-height: 1.0">{{ $n->office }}</small>
-                </div>
             </div>
-        </div>
-      @endforeach
+        @endforeach
     </div>
-</div>
-  <div class="section section-lg pt-6">
-    <div id="spaces-container" class="container">
-      
-{{--       
-        {{ $nec->links()}} --}}
-      </div>
-    </div>
-  </div>
-@endsection
-@section('js')
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.1/bootstrap3-typeahead.min.js"></script>
-  <script type="text/javascript">
-    var path = "{{ route('alumni.suggestions') }}";
-    $('#name').typeahead({
-        source: function (query, process) {
-            return $.get(path, {
-                query: query
-            }, function (data) {
-                return process(data);
-            });
-        }
-    });
 
-    var path2 = "{{ route('campus.suggestions') }}";
-    $('#school').typeahead({
-        source: function (query, process) {
-            return $.get(path2, {
-                query: query
-            }, function (data) {
-                return process(data);
-            });
-        }
+</div>
+@endsection
+
+@section('js')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('nec-search');
+    const cards = document.querySelectorAll('.nec-card');
+
+    searchInput.addEventListener('input', function () {
+        const term = this.value.toLowerCase();
+
+        cards.forEach(card => {
+            const name = card.querySelector('h6')?.textContent.toLowerCase() ?? '';
+            const office = card.querySelector('small')?.textContent.toLowerCase() ?? '';
+            if (name.includes(term) || office.includes(term)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
     });
+});
 </script>
 @endsection

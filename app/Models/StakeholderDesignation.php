@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Stakeholder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class StakeholderDesignation extends Model
 {
@@ -16,4 +17,8 @@ class StakeholderDesignation extends Model
         'zone_id',
         'field_id',
     ];
+
+    public function stakeholder(){
+        return $this->hasOne(Stakeholder::class, 'designation_id');
+    }
 }

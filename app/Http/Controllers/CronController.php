@@ -217,7 +217,7 @@ class CronController extends Controller
             ->orWhere('role_id', 0);
         })
         ->delete();
-        
+
         $newStakeholders = [
             [
                 'name'     => 'Pastor Taiwo Adebayo',
@@ -948,7 +948,7 @@ class CronController extends Controller
                 'gender'        => $stakeholder['gender'],
                 'email'         => $stakeholder['email'],
                 'status'        => 'active',
-                'password'      => $passwordPlain
+                'password'      => bcrypt($passwordPlain)
             ]);
             # code...
         }

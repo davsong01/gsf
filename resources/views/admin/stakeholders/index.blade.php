@@ -31,11 +31,20 @@
                                     <tbody>
                                         @foreach($stakeholders as $stakeholder)
                                         <tr>
-                                            <td>{{ $count++ }}</td>
-                                            <td>
-                                                {{ $stakeholder->name }} <br>
-                                                <small><strong>Status: </strong>{{ ucfirst($stakeholder->status) }}</small>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td style="display: flex; align-items: center;">
+                                                @if($stakeholder?->avatar)
+                                                    <img
+                                                        src="{{ asset($stakeholder->avatar) }}"
+                                                        alt="{{ $stakeholder->name }}"
+                                                        style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                                                @endif
+                                                <div>
+                                                    {{ $stakeholder->name }} <br>
+                                                    <small><strong>Status: </strong>{{ ucfirst($stakeholder->status) }}</small>
+                                                </div>
                                             </td>
+
                                             <td>{{ $stakeholder->phone }}</td>
                                             <td>{{ $stakeholder->email }}</td>
 

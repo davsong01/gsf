@@ -6,120 +6,79 @@ use App\Models\Food;
 use App\Models\User;
 use App\Models\Hostel;
 use App\Models\Chapter;
-use App\Models\Payment;
-use App\Models\Setting;
-use App\Mail\WelcomeMail;
 use App\Models\TempMember;
-use Illuminate\Support\Str;
 use App\Exports\UserExport;
+use Illuminate\Support\Str;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use App\Services\UserService;
 use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
-use Intervention\Image\Facades\Image;
-use Illuminate\Support\Facades\Schema;
+use App\Models\StakeholderDesignation;
 use App\Traits\UserDatatableFeaturesTrait;
-use Illuminate\Database\Eloquent\Collection;
-
 
 class UserController extends Controller
 {
 	use UserDatatableFeaturesTrait;
 
-	public function index()
-	{
-		if(auth()->user()->isSubAdmin() && auth()->user()->isMember() || auth()->user()->isAdmin() ){ // Only sub admins who are members
-			return view('admin.users.index');
+    protected $userService;
 
-		}else abort(404);
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
 
-	}
+    public function index()
+    {
+        $this->userService->authorizeUserAction(auth()->user());
+
+        return view('admin.users.index', [
+            'routes' => [
+                'create' => route('users.create'),
+                'import' => route('users.import.index'),
+                'export' => route('users.export'),
+                'all'    => route('users.all'),
+            ],
+            'isAdmin' => auth()->user()->isAdmin(),
+        ]);
+    }
+
+    public function allUsers(Request $request)
+    {
+        $user = auth()->user();
+
+        $canEdit   = $user->isAdmin() || ($user->isSubAdmin() && $user->isMember());
+
+        if($user->isAdmin()){
+            $request['chapter_id'] = null;
+        }
+
+        if(($user->isSubAdmin() && $user->isMember())){
+            $request['chapter_id'] = $user->chapter_id;
+        }
+
+        $request['canDelete'] = $canEdit;
+        $request['canSwitch'] = $user->isAdmin();
+
+        $json_data = $this->userService->getAllUsers( $request->all());
+
+        return response()->json($json_data);
+    }
+
 
 	public function pendingListing()
 	{
 		if (auth()->user()->isAdmin()) {
 			$pending = TempMember::with('campus')->orderBy('created_at','DESC')->get();
 			$chapters = Chapter::where('id', '!=', 86)->get();
-			$portfolios = app('App\Http\Controllers\Controller')->getCommunityPortfolios();
+			$portfolios = getCommunityPortfolios();
 
 			$counter = 1;
 			return view('admin.listings.index', compact('pending','counter','chapters', 'portfolios'));
 		} else abort(404);
 	}
-
-
-	public function allUsers(Request $request){
-		// The Traits are used in this function
-		$count = 1;
-		$totalData = $this->totalData(auth()->user())->count();
-		$totalFiltered = $totalData;
-
-		$limit = $request->input('length');
-		$start = $request->input('start');
-
-		if(empty($request->input('search.value')))
-		{
-			$users = $this->emptySearch(auth()->user(), $start, $limit);
-		}
-		else {
-			$search = $request->input('search.value');
-
-			$users = $this->results(auth()->user(), $search, $start, $limit)['users'];
-			$totalFiltered = $this->results(auth()->user(), $search,$start, $limit)['totalFiltered'];
-		}
-
-		$data = array();
-		if(!empty($users)){
-			foreach ($users as $user){
-				$avatar = $user->passport ?? "frontend/passports/avatar.jpg";
-				$campus = $user->campus ? $user->campus->name : '';
-				$nestedData['S/N'] = $count ++;
-				$nestedData['email'] = $user->email;
-				$nestedData['family_id'] = $user->family_id;
-				$nestedData['details'] = '<strong> '.$user->name.'</strong>
-					<br><i class="fa fa-envelope"></i> '.$user->email. '
-					<br><i class="fa fa-phone"></i> '.$user->phone.'
-					<br><i class="fa fa-university"></i> GSF, '.$campus;
-				$nestedData['avatar'] = '<img class="mr-1" style="border-radius:50%" src="'.$avatar.'" alt="avatar" height="40" width="40">';
-				$nestedData['status'] = $user->status == 0 ? 'Student' : 'Alumni';
-				$nestedData['role'] = $user->rolename
-					. '<br><em>'
-					. (($user->rolename <> 'Admin' && $user->rolename <> 'Member') ? $user->portfolio_session : '')
-					. '<em>';
-
-				if(auth()->user()->isSubAdmin() && auth()->user()->isMember()){
-					$nestedData['actions'] = $this->getEditLink('users.edit', $user->id)
-					. $this->getDeleteLink('users.destroy', $user->id);
-				}
-
-				if(auth()->user()->isAdmin()){
-					$nestedData['actions'] = $this->getEditLink('users.edit', $user->id)
-					. sprintf(
-						'<a class="actions" data-toggle="tooltip" data-placement="top" title="Switch To" href="%s"><i class="fa fa-unlock actions"></i></a>', route('switchuser', $user->id))
-						. $this->getDeleteLink('users.destroy', $user->id);
-				}
-
-
-				$data[] = $nestedData;
-
-			}
-		}
-
-		$json_data = array(
-			"draw"            => intval($request->input('draw')),
-			"recordsTotal"    => intval($totalData),
-			"recordsFiltered" => intval($totalFiltered),
-			"data"            => $data
-			);
-
-		echo json_encode($json_data);
-	}
-
 
 	public function trashedUsers()
 	{
@@ -146,18 +105,16 @@ class UserController extends Controller
 	{
 		$chapters = Chapter::all();
 		$portfolios = getCommunityPortfolios();
+        $campusDesignations = StakeholderDesignation::select('id','name')->where('type', 'chapter_executive')->orderBy('order')->get();
 		$sessions = range(date('1982'), date('Y'));
+        $isAdmin = true;
+		$president = $user->campus->chapterPresident ?? null;
 
-		$president = $user->campus->stakeholder ?? null;
-		if($president){
-			$president = $president->where('role', 'President')->first();
-		}
-
-		if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
-			if(auth()->user()->isSubAdmin() && auth()->user()->isMember() && auth()->user()->chapter_id <> $user->chapter_id){
+        if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
+            if(auth()->user()->isSubAdmin() && auth()->user()->isMember() && auth()->user()->chapter_id <> $user->chapter_id){
 				return abort(404);
 			}
-			return view('admin.users.edit', compact('user', 'chapters', 'portfolios', 'sessions', 'president'));
+			return view('admin.users.edit', compact('user', 'chapters', 'portfolios', 'sessions', 'president','campusDesignations', 'isAdmin'));
 		}
 
 	}
@@ -178,86 +135,88 @@ class UserController extends Controller
 		else return back(404);
 	}
 
-	public function store(Request $request) {
-		if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
-			if(auth()->user()->isAdmin()){
-				$request['chapter_id'] = $request->chapter_id;
-			}else $request['chapter_id'] = auth()->user()->chapter_id;
-		}
-		$this->validate($request, [
-			'email' => 'unique:users,email,',
-		]);
-		$data = $this->validateUser($request);
+	// public function store(Request $request) {
+	// 	if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
+	// 		if(auth()->user()->isAdmin()){
+	// 			$request['chapter_id'] = $request->chapter_id;
+	// 		}else $request['chapter_id'] = auth()->user()->chapter_id;
+	// 	}
+	// 	$this->validate($request, [
+	// 		'email' => 'unique:users,email,',
+	// 	]);
+	// 	$data = $this->validateUser($request);
 
-		//Handle password
-		if ($request['password']) {
-			$data['password'] = Hash::make($request['password']);
-		} else {
-			$data['password'] = Hash::make($request['phone']);
-		}
+	// 	//Handle password
+	// 	if ($request['password']) {
+	// 		$data['password'] = Hash::make($request['password']);
+	// 	} else {
+	// 		$data['password'] = Hash::make($request['phone']);
+	// 	}
 
-		//Handle Passport Upload
-		if ($request['passport']) {
-			$passport = $this->uploadImage($request->passport, 'frontend/passports', 500, 500);
+	// 	//Handle Passport Upload
+	// 	if ($request['passport']) {
+	// 		$passport = $this->uploadImage($request->passport, 'frontend/passports', 500, 500);
 
-			$data['passport'] = $passport;
-		}
+	// 		$data['passport'] = $passport;
+	// 	}
 
-		// Handle name change
-		$data['slug'] = Str::slug($request->name);
+	// 	// Handle name change
+	// 	$data['slug'] = Str::slug($request->name);
 
-		try {
-			$user = User::create($data);
-		} catch (\Exception $e) {
-			return back()->with('error', $e->getMessage());
-		}
+	// 	try {
+	// 		$user = User::create($data);
+	// 	} catch (\Exception $e) {
+	// 		return back()->with('error', $e->getMessage());
+	// 	}
 
-		$this->createFamilyId($user);
+	// 	$this->createFamilyId($user);
 
-		return redirect(route('users.index'))->with('message', 'Operation Successful');
-	}
+	// 	return redirect(route('users.index'))->with('message', 'Operation Successful');
+	// }
+    public function store(Request $request)
+    {
+        $this->userService->authorizeUserAction(auth()->user());
+
+        $request['chapter_id'] = auth()->user()->isAdmin() ? $request->chapter_id : auth()->user()->chapter_id;
+
+        $request->validate([
+            'email' => 'unique:users,email',
+        ]);
+
+        $data = $this->userService->prepareUserData($request);
+
+        try {
+            $this->userService->createUser($data);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('users.index')->with('message', 'User created successfully.');
+    }
 
 	public function update(Request $request, User $user)
-	{
-		if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
-			if(auth()->user()->isSubAdmin() && auth()->user()->isMember() && auth()->user()->chapter_id <> $user->chapter_id){
-				return abort(404);
-			}
-			if(auth()->user()->isAdmin()){
-				$request['chapter_id'] = $request->chapter_id;
-			}else $request['chapter_id'] = $user->chapter_id;
-		}
-		$this->validate($request, [
-			"email" => "unique:users,email," . $user->id,
-		]);
+    {
+        $this->userService->authorizeUserAction($user);
+        // check permissions like in store
+        // Ensure chapter_id is set correctly based on user role
+        $request['chapter_id'] = auth()->user()->isAdmin() ? $request->chapter_id : $user->chapter_id;
 
-		$data = $this->validateUser($request);
+        // Validate email uniqueness
+        $request->validate([
+            'email' => 'unique:users,email,' . $user->id,
+        ]);
 
-		//Handle password
-		if ($request['password']) {
-			$data['password'] = Hash::make($request['password']);
-		} else {
-			$data['password'] = Hash::make($request['phone']);
-		}
+        // Prepare data using the service
+        $data = $this->userService->prepareUserData($request, $user);
 
-		//Handle Passport Upload
-		if ($request['passport']) {
-			$passport = $this->uploadImage($request->passport, 'frontend/passports', 500, 500);
+        try {
+            $this->userService->updateUser($user, $data);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
-			$data['passport'] = $passport;
-		}
-
-		// Handle name change
-		$data['slug'] = Str::slug($request->name);
-
-		try {
-			$user->update($data);
-		} catch (\Exception $e) {
-			return back()->with('error', $e->getMessage());
-		}
-
-		return back()->with('message', 'Operation Successful');
-	}
+        return redirect()->route('users.index')->with('message', 'User updated successfully.');
+    }
 
 	public function saveProfile(Request $request, User $user){
 

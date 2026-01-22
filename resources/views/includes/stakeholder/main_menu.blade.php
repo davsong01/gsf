@@ -1,37 +1,71 @@
- <div class="main-menu menu-fixed menu-light menu-accordion menu-shadow" data-scroll-to-active="true">
-        <div class="navbar-header">
-            <ul class="nav navbar-nav flex-row">
-                <li class="nav-item mr-auto"><a class="navbar-brand" href="/">
-                        <div class="brand-logo"></div>
-                    </a></li>
-                <li class="nav-item nav-toggle"><a class="nav-link modern-nav-toggle pr-0" data-toggle="collapse"><i class="bx bx-x d-block d-xl-none font-medium-4 primary"></i><i class="toggle-icon bx bx-disc font-medium-4 d-none d-xl-block primary" data-ticon="bx-disc"></i></a></li>
-            </ul>
-        </div>
-        <div class="shadow-bottom"></div>
-        <div><a class="navbar-brand" href="/"><img style="text-align: center; width:30%; display: block; margin-left: 80px;margin-right: auto;" class="logo" src="{{ asset('frontend/img/logo.png') }}"></a></div>
-        <br><br>
-        <div class="main-menu-content">
-            <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation" data-icon-style="lines">
-                <li class=" nav-item {{ Request::is('reports*') ? 'active' : '' }}"><a href="{{ route('stakeholders.dashboard') }}"><i class="fa fa-desktop" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Dashboard</span></a>
-                </li>
+@php
+    $currentRoute = Route::currentRouteName();
+@endphp
 
-
-
-                @if(auth()->guard('stakeholder')->user()->role_id == 6)
-                <li class=" nav-item {{ Request::is('stakeholders.reports*') ? 'active' : '' }}"><a href="{{ route('stakeholders.financial.report') }}"><i class="fa fa-file" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Financial Reports</span></a>
-                </li>
-                @else
-                <li class=" nav-item {{ Request::is('stakeholders.reports*') ? 'active' : '' }}"><a href="{{ route('stakeholders.reports.index') }}"><i class="fa fa-file" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Monthly Reports</span></a>
-                </li>
-                @endif
-
-                {{-- <li class=" nav-item {{ Request::is('stakeholders.reports.analytics*') ? 'active' : '' }}"><a href="{{ route('stakeholders.reports.index') }}"><i class="fa fa-bar-chart" aria-hidden="true"></i><span class="menu-title" data-i18n="User">Report Analytics</span></a>
-                </li> --}}
-
-                {{-- <li class=" nav-item {{ Request::is('stakeholders/payment*') ? 'active' : '' }}"><a href=""><i class="fa fa-money"></i>Proof of Payment</span></a></li> --}}
-
-                <li class=" nav-item {{ Request::is('stakeholders/profile*') ? 'active' : '' }}"><a href="{{ route('stakeholders.profile') }}"><i class="fa fa-user o" aria-hidden="true"></i><span class="menu-title" data-i18n="User">My Profile</span></a>
-                </li>
-            </ul>
-        </div>
+<div class="main-menu menu-fixed menu-light menu-accordion menu-shadow" data-scroll-to-active="true">
+    <div class="navbar-header">
+        <ul class="nav navbar-nav flex-row">
+            <li class="nav-item mr-auto">
+                <a class="navbar-brand" href="/">
+                    <div class="brand-logo"></div>
+                </a>
+            </li>
+            <li class="nav-item nav-toggle">
+                <a class="nav-link modern-nav-toggle pr-0" data-toggle="collapse">
+                    <i class="bx bx-x d-block d-xl-none font-medium-4 primary"></i>
+                    <i class="toggle-icon bx bx-disc font-medium-4 d-none d-xl-block primary" data-ticon="bx-disc"></i>
+                </a>
+            </li>
+        </ul>
     </div>
+
+    <div class="shadow-bottom"></div>
+
+    <div>
+        <a class="navbar-brand" href="/">
+            <img style="text-align: center; width:30%; display: block; margin-left: 80px; margin-right: auto;" class="logo" src="{{ asset('frontend/img/logo.png') }}">
+        </a>
+    </div>
+    <br><br>
+
+    <div class="main-menu-content">
+        <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation" data-icon-style="lines">
+
+            <li class="nav-item {{ $currentRoute === 'stakeholders.dashboard' ? 'active' : '' }}">
+                <a href="{{ route('stakeholders.dashboard') }}">
+                    <i class="fa fa-desktop" aria-hidden="true"></i>
+                    <span class="menu-title" data-i18n="User">Dashboard</span>
+                </a>
+            </li>
+
+            @if(auth()->guard('stakeholder')->user()->role_id == 6)
+                <li class="nav-item {{ $currentRoute === 'stakeholders.financial.report' ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.financial.report') }}">
+                        <i class="fa fa-file" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Financial Reports</span>
+                    </a>
+                </li>
+            @else
+                <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.reports') ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.reports.index') }}">
+                        <i class="fa fa-file" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Monthly Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.users') ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.users.index') }}">
+                        <i class="fa fa-users" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Chapter Members</span>
+                    </a>
+                </li>
+            @endif
+
+            <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.profile') ? 'active' : '' }}">
+                <a href="{{ route('stakeholders.profile') }}">
+                    <i class="fa fa-user-o" aria-hidden="true"></i>
+                    <span class="menu-title" data-i18n="User">My Profile</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

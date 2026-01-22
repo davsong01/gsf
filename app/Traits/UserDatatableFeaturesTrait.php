@@ -9,9 +9,9 @@ trait UserDatatableFeaturesTrait {
 			$users = User::Wherehas('campus')
                 ->where('chapter_id', auth()->user()->chapter_id)
                 ->where('role','<>', 1)
-                ->where('id', '<>', auth()->user()->id);	
+                ->where('id', '<>', auth()->user()->id);
 		}
-        
+
         if($user->isAdmin()){
             $users = User::Wherehas('campus')
                 ->where('role','<>', 1)
@@ -19,11 +19,11 @@ trait UserDatatableFeaturesTrait {
         }
 
         return $users;
-        
+
     }
-    
-    public function emptySearch($user, $start,$limit) { 
-        if($user->isSubAdmin() && $user->isMember()){        
+
+    public function emptySearch($user, $start,$limit) {
+        if($user->isSubAdmin() && $user->isMember()){
             $users = User::Wherehas('campus')
                 ->where('role','<>', 1)
                 ->where('chapter_id', auth()->user()->chapter_id)
@@ -48,7 +48,7 @@ trait UserDatatableFeaturesTrait {
     }
 
     public function results($user, $search, $start, $limit){
-        if($user->isSubAdmin() && $user->isMember()){   
+        if($user->isSubAdmin() && $user->isMember()){
 
             $q = User::with('campus')->where('role','<>', 1)->where('chapter_id', $user->chapter_id)->where(function($query)use ($search) {
                 $query->where('name','LIKE',"%{$search}%")
@@ -90,16 +90,16 @@ trait UserDatatableFeaturesTrait {
         ];
         
         return $results;
-      
+
     }
 
-    
 
-   
 
-    public function users($user) { 
+
+
+    public function users($user) {
         dd('users');
     }
 
-   
+
 }

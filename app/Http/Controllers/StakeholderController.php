@@ -76,6 +76,8 @@ class StakeholderController extends Controller
             'portfolio'  => ['nullable', 'string', 'max:255'],
             'signature'  => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
             'status' => ['required', 'in:active,inactive'],
+            'gender' => ['nullable'],
+
         ]);
 
         $role = $request->input('role');
@@ -148,6 +150,7 @@ class StakeholderController extends Controller
             'month' => $request->month,
             'year'  => $request->year,
             'designation_id'  => $request->designation_id,
+            'gender' => $request->gender,
         ])->save();
 
         return redirect()
@@ -197,7 +200,7 @@ class StakeholderController extends Controller
         $stakeholder = $stakeholderpersonnel;
 
         // Validate input
-        $validated = $request->validate([
+        $request->validate([
             'name'       => ['required', 'string', 'max:255'],
             'email'      => ['required', 'email', 'max:255', 'unique:stakeholders,email,' . $stakeholder->id],
             'phone'      => ['nullable', 'string', 'max:20'],
@@ -210,8 +213,9 @@ class StakeholderController extends Controller
             'zone_id'    => ['nullable', 'integer', 'exists:zones,id'],
             'field_id'   => ['nullable', 'integer', 'exists:fields,id'],
             'portfolio'  => ['nullable', 'string', 'max:255'],
+            'gender'     => ['nullable'],
             'signature'  => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
-            'status' => ['required', 'in:active,inactive'],
+            'status'     => ['required', 'in:active,inactive'],
         ]);
 
         $role = StakeholderRole::find($request->input('role_id'));
@@ -274,11 +278,21 @@ class StakeholderController extends Controller
             );
         }
 
+        if ($request->hasFile('avatar')) {
+            $stakeholder->avatar = app(FileUploadService::class)->uploadImage(
+                $request->file('avatar'),
+                'avatars',
+                $stakeholder->avatar
+            );
+
+        }
+
         // Update general info
         $stakeholder->fill([
             'name'  => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,
+            'gender' => $request->gender,
             // 'role'  => $role,
             'day'   => $request->day,
             'month' => $request->month,

@@ -14,7 +14,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Update: {{ $user->name }} 
+                        <h4 class="card-title">Update: {{ $user->name }}
                             @if($user->status == 0)
                             <span class="btn btn-primary btn-sm">Student</span>
                             <span class="btn btn-info btn-sm">{{ $user->rolename }}</span>
@@ -23,7 +23,7 @@
                             <span class="btn btn-dark btn-sm">{{ $user->rolename }}</span>
                             @endif
                         </h4>
-                        {{-- @include('includes.alerts') --}}
+                        @include('includes.alerts')
                     </div>
                     <div class="card-content">
                         <div class="card-body">
@@ -32,7 +32,7 @@
                             @method('PATCH')
                          <div class="row">
                              <div class="col-md-3">
-                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="{{ asset($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
+                                <div class="media-left pr-0"><img style="width: 150px !important;height: 150px !important; border-radius: 50%;" class="mr-1" src="{{ asset($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
                                 </div>
                             </div>
                             <div class="col-md-9">
@@ -42,7 +42,7 @@
                                 @if($user->status == 0)
                                 @if(!is_null($president))
                                 <span><em><b>President:</b></em> {{ $president->name }}</span><br>
-                               
+
                                 <span><em><b>President's Phone:</b></em> {{  $president->phone }}</span><br>
                                 @endif
                                 @endif
@@ -78,13 +78,13 @@
                                         <option value="Female" {{ $user->gender == 'Female' ? 'selected' : ''}}>Female</option>
                                     </select>
                                 </fieldset>
-                            
+
                                 <fieldset class="form-group">
                                     <label for="status">Status</label>
                                     <select class="form-control" name="status" id="status" required>
                                         <option value="">--Select Status--</option>
                                         <option value="0" {{ $user->status == 0 ? 'selected' : ''}}>Student</option>
-                                        <option value="1" {{ $user->status == 1 ? 'selected' : ''}}>Alumni</option>                                    
+                                        <option value="1" {{ $user->status == 1 ? 'selected' : ''}}>Alumni</option>
                                     </select>
                                 </fieldset>
                                 <fieldset class="form-group">
@@ -98,18 +98,18 @@
                                     <label for="dob">Date of birth</label>
                                     <input type="date" id="dob" name="dob" class="form-control" value="{{ old('dob') ?? $user->dob }}">
                                 </fieldset>
-                            
+
                             <fieldset class="form-group @error('passport')is-invalid @enderror">
                                 <label for="passport">Change Passport</label>
-                                <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">	
-                            </fieldset>           
+                                <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">
+                            </fieldset>
                             <fieldset class="form-group">
                                 <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank to use this user's phone number as password</i></small>
                                 <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
-                            </fieldset> 
+                            </fieldset>
                         </div>
-                        <div class="col-md-6 col-sm-12">    
-                                @if(auth()->user()->isAdmin())                           
+                        <div class="col-md-6 col-sm-12">
+                                @if(auth()->user()->isAdmin())
                                 <fieldset class="form-group">
                                     <label for="chapter_id">Campus</label>
                                     <select class="form-control" name="chapter_id" id="chapter_id" required>
@@ -122,29 +122,38 @@
                                 </fieldset>
                                 @endif
                                 <fieldset class="form-group">
-                                    <label for="portfolio">Portfolio</label>
+                                    <label for="role">Directory Role</label>
                                     <select class="form-control" name="role" id="role" required>
-                                        <option value="">--Select Portfolio--</option>
+                                        <option value="">--Select Directory Role--</option>
                                         @foreach($portfolios as $portfolio=>$value)
-                                            @if(auth()->user()->isSubAdmin() && $portfolio <> 1)  
+                                            @if(auth()->user()->isSubAdmin() && $portfolio <> 1)
                                                 <option value="{{ $portfolio }}" {{ $user->role == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
                                             @endif
-                                            @if(auth()->user()->isAdmin())  
+                                            @if(auth()->user()->isAdmin())
                                                 <option value="{{ $portfolio }}" {{ $user->role == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
                                             @endif
-                                        @endforeach                               
+                                        @endforeach
                                     </select>
                                 </fieldset>
-                                
+                                <fieldset class="form-group">
+                                    <label for="designation_id">Campus Designation</label>
+                                    <select class="form-control" name="designation_id" id="designation_id" required>
+                                        <option value="">--Select Portfolio--</option>
+                                        @foreach($campusDesignations as $designation)
+                                            <option value="{{ $designation->id }}" {{ $user->designation_id == $designation->id ? 'selected' : '' }}>{{ $designation->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </fieldset>
+
                                 <fieldset class="form-group" id="session" style="display: {{ ($user->role == 1 || $user->role == 2) ? 'none' : '' }}">
                                     <label for="portfolio">Portfolio session</label>
                                     <select class="form-control" name="portfolio_session" id="portfolio_session">
                                         @foreach($sessions as $session=>$value)
                                             <option value="{{ $value . '/' . ($value + 1) }}" {{ $user->portfolio_session == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                                        @endforeach                               
+                                        @endforeach
                                     </select>
                                 </fieldset>
-                                
+
                                 <fieldset class="form-group">
                                     <label for="program">Program</label>
                                     <select class="form-control" name="program" required>
@@ -160,7 +169,7 @@
                                 </fieldset>
                                 <fieldset class="form-group">
                                     <label for="course">Course of study</label>
-                                    <input type="text" id="course" name="course" class="form-control" value="{{ old('course') ?? $user->course }}" required>
+                                    <input type="text" id="course" name="course" class="form-control" value="{{ old('course') ?? $user->course }}">
                                 </fieldset>
                                 <fieldset class="form-group">
                                     <label for="skills">Skills</label>
@@ -174,8 +183,8 @@
                                     <label for="matric_year">Year of Matriculation</label>
                                     <select class="form-control" name="matric_year" id="matric_year">
                                         @foreach($sessions as $session=>$value)
-                                        <option value="{{ $value . '/' . ($value + 1) }}" {{ $user->matric_year == $value . '/' . ($value + 1) ? 'selected' : '' }} required>{{ $value . '/' . ($value + 1) }}</option>
-                                    @endforeach                                
+                                        <option value="{{ $value . '/' . ($value + 1) }}" {{ $user->matric_year == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
+                                    @endforeach
                                     </select>
                                 </fieldset>
                                 <fieldset class="form-group">
@@ -184,10 +193,10 @@
                                         <option value="">Select...</option>
                                         @foreach($sessions as $session=>$value)
                                         <option value="{{ $value . '/' . ($value + 1) }}" {{ $user->graduation_year == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                                    @endforeach                                
+                                    @endforeach
                                     </select>
                                 </fieldset>
-                                
+
                                 <fieldset class="form-group">
                                     <label for="facebook">Facebook Profile</label>
                                     <input type="link" id="facebook" name="facebook" class="form-control" value="{{ old('facebook') ?? $user->facebook }}">
@@ -209,8 +218,8 @@
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->   
-         
+    <!-- Basic Inputs end -->
+
 </div>
 
 @endsection

@@ -16,8 +16,8 @@ class StakeholderRole extends Model
     {
         return $this->belongsToMany(
             StakeholderPermission::class,
-            'stakeholder_rps',     
-            'stakeholder_role_id', 
+            'stakeholder_rps',
+            'stakeholder_role_id',
             'stakeholder_permission_id'
         );
     }
@@ -28,5 +28,10 @@ class StakeholderRole extends Model
             Stakeholder::class,
             'stakeholder_has_roles'
         );
+    }
+
+    public function scopeIsNec()
+    {
+        return $this->whereIn('role_id', [1,2,3,4,6,7]);
     }
 }

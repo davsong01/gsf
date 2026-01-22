@@ -66,6 +66,38 @@
                                                 placeholder="Enter email" required>
                                         </fieldset>
                                     </div>
+                                   <div class="col-md-4">
+                                        <fieldset class="form-group">
+                                            <label for="gender">Gender</label>
+                                            <select class="form-control" name="gender" id="gender">
+                                                <option value="">--Select--</option>
+                                                <option value="Male" {{ old('gender', $stakeholder->gender ?? '') === 'Male' ? 'selected' : '' }}>Male</option>
+                                                <option value="Female" {{ old('gender', $stakeholder->gender ?? '') === 'Female' ? 'selected' : '' }}>Female</option>
+                                            </select>
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="col-md-4 col-sm-12">
+                                        <fieldset class="form-group">
+                                            <label for="avatar">Avatar</label>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                @if(!empty($stakeholder?->avatar))
+                                                    <img
+                                                        src="{{ asset($stakeholder->avatar) }}"
+                                                        alt="Current Avatar"
+                                                        style="height: 55px; width: 55px; border-radius: 50%; object-fit: cover;">
+                                                @endif
+                                                <input
+                                                    type="file"
+                                                    class="form-control"
+                                                    id="avatar"
+                                                    name="avatar"
+                                                    placeholder="Upload avatar"
+                                                    style="flex: 1;">
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
                                 </div>
 
                                 {{-- BIRTHDAY DETAILS --}}

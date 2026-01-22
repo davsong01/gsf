@@ -20,6 +20,7 @@ use App\Models\ConferenceSchedule;
 use App\Imports\GeneralUsersImport;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\StakeholderDesignation;
 
 class HomeController extends Controller
 {
@@ -162,7 +163,14 @@ class HomeController extends Controller
 
     public function nec()
     {
-        $nec = Nec::orderBy('order', 'ASC')->get();
+        $nec = StakeholderDesignation::with(['stakeholder' => function($q) {
+            $q->where('status', 'active')
+            ->whereIn('role_id', [1,2,3,4,6,7]);
+        }])
+        ->where('status', 'active')
+        ->where('type', 'nec')
+        ->orderBy('order')->get();
+
         return view('frontend.' . frontendTemplate() . '.nec', compact('nec'));
     }
 

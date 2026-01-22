@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Nec;
 use App\Models\ArchivedNec;
+use App\Models\Stakeholder;
 use Illuminate\Http\Request;
+use App\Models\StakeholderDesignation;
 
 class NecController extends Controller
 {
@@ -13,9 +15,16 @@ class NecController extends Controller
      */
     public function index()
     {
-        $nec = Nec::orderBy('order', 'ASC')->get();
-        $count = 1;
-        return view('admin.nec.index')->with('nec', $nec)->with('count', $count);
+        $nec = StakeholderDesignation::with(['stakeholder' => function($q) {
+            $q->where('status', 'active')
+            ->whereIn('role_id', [1,2,3,4,6,7]);
+        }])
+        ->where('type', 'nec')
+        ->orderBy('order')
+
+        ->get();
+
+        return view('admin.nec.index')->with('nec', $nec);
     }
 
     public function archivedNec()
@@ -25,12 +34,12 @@ class NecController extends Controller
         return view('admin.nec.archived_nec_index')->with('nec', $nec)->with('count', $count);
     }
 
-    
+
 
     public function archiveNec(Request $request){
         $from = $request->from;
         $to = $request->to;
-       
+
         // if($from < $to){
         //     return back()->with('error', 'From cannot be lesser');
         // }
@@ -47,7 +56,7 @@ class NecController extends Controller
                 unset($data['id']);
                 unset($data['created_at']);
                 unset($data['updated_at']);
-                
+
                 if(!empty($data['name'])){
                     ArchivedNec::create($data);
                 }
@@ -98,7 +107,7 @@ class NecController extends Controller
      */
     public function show(Nec $nec)
     {
-       
+
     }
 
     /**
@@ -107,7 +116,7 @@ class NecController extends Controller
     public function edit(Nec $nec)
     {
         return view('admin.nec.edit')->with('nec',$nec);
-        
+
     }
 
     /**
@@ -136,7 +145,7 @@ class NecController extends Controller
      */
     public function destroy(Nec $nec)
     {
-        
+
     }
 
     public function delete($id){

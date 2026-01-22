@@ -153,12 +153,12 @@ class StakeholderDesignationController extends Controller
 
         // Other NEC designations
         $otherNec = [
-            'President',
-            'Vice President West',
-            'Vice President South & East',
-            'Vice President North',
-            'General Secretary',
-            'Assistant General Secretary',
+            'National President',
+            'National Vice President West',
+            'National Vice President South & East',
+            'National Vice President North',
+            'National General Secretary',
+            'National Assistant General Secretary',
             'National Sister Coordinator',
             'National Assistant Sister Coordinator 1',
             'National Assistant Sister Coordinator 2',

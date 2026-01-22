@@ -5,6 +5,9 @@
 <li class="breadcrumb-item">Profile</li>
 @endsection
 @section('content')
+@php
+    $user = Auth()->guard('stakeholder')->user();
+@endphp
 <div class="content-body">
     <!-- Basic Inputs start -->
     <section id="basic-input">
@@ -26,84 +29,80 @@
                                     <div class="col-md-6 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="name">Name</label>
-                                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') ?? Auth::guard('stakeholder')->user()->name }}" placeholder="Enter name" required>
+                                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') ?? $user->name }}" placeholder="Enter name" required>
                                         </fieldset>
                                     </div>
                                     <div class="col-md-6 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="phone">Phone</label>
-                                            <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone') ?? Auth::guard('stakeholder')->user()->phone }}" placeholder="Enter phone" required>
+                                            <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone') ?? $user->phone }}" placeholder="Enter phone" required>
                                         </fieldset>
                                     </div>
                                     <div class="col-md-6 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="email">Email</label>
-                                            <input type="text" class="form-control" id="email" name="email" value="{{ old('email') ?? Auth::guard('stakeholder')->user()->email }}" placeholder="Enter email address" required>
+                                            <input type="text" class="form-control" id="email" name="email" value="{{ old('email') ?? $user->email }}" placeholder="Enter email address" required>
                                         </fieldset>
                                     </div>
-
+                                    <div class="col-md-6 col-sm-12">
+                                        <fieldset class="form-group">
+                                            <label for="gender">Gender</label>
+                                            <select class="form-control" name="gender" id="gender">
+                                                <option value="">--Select--</option>
+                                                <option value="Male" {{ old('gender', $user->gender ?? '') === 'Male' ? 'selected' : '' }}>Male</option>
+                                                <option value="Female" {{ old('gender', $user->gender ?? '') === 'Female' ? 'selected' : '' }}>Female</option>
+                                            </select>
+                                        </fieldset>
+                                    </div>
                                     <div class="col-md-12 col-sm-12">
                                         <label>Birthday Details</label> <br>
                                     </div>
                                     <div class="col-md-4 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="day">Day</label>
-                                            <input type="number" min="1" max="31" class="form-control" id="day" name="day" value="{{ old('day') ?? Auth::guard('stakeholder')->user()->day }}" placeholder="Enter day" required>
+                                            <input type="number" min="1" max="31" class="form-control" id="day" name="day" value="{{ old('day') ?? $user->day }}" placeholder="Enter day" required>
                                         </fieldset>
                                     </div>
                                     <div class="col-md-4 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="month">Month</label>
-                                            <input type="number" min="1" max="12" class="form-control" id="month" name="month" value="{{ old('month') ?? Auth::guard('stakeholder')->user()->month }}" placeholder="Enter month" required>
+                                            <input type="number" min="1" max="12" class="form-control" id="month" name="month" value="{{ old('month') ?? $user->month }}" placeholder="Enter month" required>
                                         </fieldset>
                                     </div>
                                     <div class="col-md-4 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="year">Year (Optional), e.g. {{ date('Y') }}</label>
-                                            <input type="text" class="form-control" id="year" pattern="^\d{4}$" name="year" value="{{ old('year') ?? Auth::guard('stakeholder')->user()->year}}" placeholder="Enter year">
-                                        </fieldset>
-                                    </div>
-                                    @if(Auth::guard('stakeholder')->user()->role == 'President')
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->signature }}" style="width:60px" alt=""><br>
-                                                <label for="signature">Replace President Signature</label>
-                                                <input type="file" value="{{ old('signature') }}" class="form-control" name="signature">
+                                            <input type="text" class="form-control" id="year" pattern="^\d{4}$" name="year" value="{{ old('year') ?? $user->year}}" placeholder="Enter year">
                                         </fieldset>
                                     </div>
 
                                     <div class="col-md-6 col-sm-12">
                                         <fieldset class="form-group">
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->gen_sec_signature }}" style="width:60px" alt=""> <br>
-                                                <label for="signature">Replace Gen Sec's Signature</label>
-                                                <input type="file" value="{{ old('gen_sec_signature') }}" class="form-control" name="gen_sec_signature"
-                                                id="gen_sec_signature">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->fin_sec_signature }}" style="width:60px" alt=""> <br>
-                                                <label for="signature">Replace Fin Sec's Signature</label>
-                                                <input type="file" value="{{ old('fin_sec_signature') }}" class="form-control" name="fin_sec_signature"
-                                                id="fin_sec_signature">
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <img src="/stakeholdersignature/{{ Auth::guard('stakeholder')->user()->evang_sec_signature }}" style="width:60px" alt=""> <br>
-                                                <label for="signature">Replace evang Sec's Signature</label>
-                                                <input type="file" value="{{ old('evang_sec_signature') }}" class="form-control" name="evang_sec_signature"
-                                                id="evang_sec_signature">
-                                        </fieldset>
-                                    </div>
-                                    @endif
-                                    <div class="col-md-6 col-sm-12">
-                                        <fieldset class="form-group">
-                                            <label for="password">Change Password(Default: 12345@GSF2021)</label>
-                                            <input type="text" class="form-control" id="password" name="password" value="{{ old('password') }}" placeholder="Enter password or leave blank to use default">
+                                            <label for="password">Change Password</label>
+                                            <input type="text" class="form-control" id="password" name="password" value="{{ old('password') }}" placeholder="Enter a new password or leave blank to use current">
                                         </fieldset>
                                     </div>
 
+                                    <div class="col-md-4 col-sm-12">
+                                        <fieldset class="form-group">
+                                            <label for="avatar">Avatar</label>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                @if(!empty($user?->avatar))
+                                                    <img
+                                                        src="{{ asset($user->avatar) }}"
+                                                        alt="Current Avatar"
+                                                        style="height: 55px; width: 55px; border-radius: 50%; object-fit: cover;">
+                                                @endif
+                                                <input
+                                                    type="file"
+                                                    class="form-control"
+                                                    id="avatar"
+                                                    name="avatar"
+                                                    placeholder="Upload avatar"
+                                                    style="flex: 1;">
+                                            </div>
+                                        </fieldset>
+                                    </div>
                                 </div>
                             </div>
 

@@ -12,6 +12,7 @@ use App\Models\Transaction;
 use App\Models\Notification;
 use Laravel\Sanctum\HasApiTokens;
 use App\Http\Controllers\Controller;
+use App\Models\StakeholderDesignation;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Notifications\Notifiable;
@@ -27,12 +28,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	protected $guarded = [];
 
-	/**
-	 * The attributes that should be hidden for arrays
-	 * @var array
-	 */
-    protected $guaraded = [];
-
 	public function isSubAdmin() {
 		$subAdmins = [3,4,5,6];
         if(in_array($this->role, $subAdmins) && $this->status == 0){
@@ -40,20 +35,20 @@ class User extends Authenticatable implements MustVerifyEmail
         }else return false;
 	}
 
-	public function isAdmin(){
+	public function scopeIsAdmin(){
 		$admins = [1];
 		if(in_array($this->role, $admins)){
 			return true;
 		}else return false;
 	}
-	
-	public function isMember(){
+
+	public function scopeIsMember(){
 		if($this->status == '0'){
 			return true;
 		}else return false;
 	}
 
-	public function isParticipant($edition)
+	public function scopeIsParticipant($edition)
 	{
 		$check = Transaction::where(['level'=>'Participant', 'conference_edition_id'=>$edition->id,'user_id'=>$this->id])->first();
 		if (isset($check) && !empty($check)) {
@@ -61,7 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail
 		} else return false;
 	}
 
-	public function isAlumni($edition)
+	public function scopeIsAlumni($edition)
 	{
 		$check = Transaction::where(['level' => 'Alumni', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
 
@@ -70,7 +65,7 @@ class User extends Authenticatable implements MustVerifyEmail
 		} else return false;
 	}
 
-	public function isNec($edition)
+	public function scopeIsNec($edition)
 	{
 		$check = Transaction::where(['level' => 'Nec', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
 
@@ -79,7 +74,7 @@ class User extends Authenticatable implements MustVerifyEmail
 		} else return false;
 	}
 
-	public function isModerator($edition)
+	public function scopeIsModerator($edition)
 	{
 		$check = Transaction::where(['level' => 'Moderator', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
 		if (isset($check) && !empty($check)) {
@@ -87,7 +82,7 @@ class User extends Authenticatable implements MustVerifyEmail
 		} else return false;
 	}
 
-	public function isChoir($edition)
+	public function scopeIsChoir($edition)
 	{
 		$check = Transaction::where(['level' => 'Choir', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
 
@@ -109,7 +104,7 @@ class User extends Authenticatable implements MustVerifyEmail
 	public function completeReg($edition)
 	{
 		$check = Transaction::where(['registration_status' => 'Complete', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
-		
+
 		if (isset($check) && !empty($check)) {
 			return true;
 		} else return false;
@@ -122,7 +117,7 @@ class User extends Authenticatable implements MustVerifyEmail
 	public function transactions(){
         return $this->hasMany(Transaction::class)->orderBy('created_at','DESC');
     }
-	
+
     public function payouts(){
         return $this->hasMany(Payout::class);
     }
@@ -140,12 +135,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isSwitchingUser()
     {
         return Session::has('switchuser');
-    }  
+    }
 
 	public function getRolenameAttribute(){
-		$attributes = new Controller();
-		$attributes = $attributes->getCommunityPortfolios();
-		
+		$attributes = getCommunityPortfolios();
 		return $attributes[$this->role];
 	}
 
@@ -158,8 +151,11 @@ class User extends Authenticatable implements MustVerifyEmail
 		// } else return false;
 	}
 
-
 	public function stakeholder(){
 		return $this->hasOne(Stakeholder::class, 'email', 'email');
+	}
+
+    public function designation(){
+		return $this->belongsTo(StakeholderDesignation::class, 'designation_id');
 	}
 }

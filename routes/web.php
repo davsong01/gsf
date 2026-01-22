@@ -210,6 +210,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::get('nec-delete/{id}', [NecController::class, 'delete'])->name('nec.delete');
     Route::resource('users', UserController::class);
+    Route::get('export-users', [UserController::class, 'exportUsers'])->name('users.export');
+
     Route::get('donations-all', [DonationController::class, 'allDonations'])->name('donations.all');
     Route::get('listing-pending', [UserController::class, 'pendingListing'])->name('listing-pending');
     // Route::get('trashedusers', 'trashedUsers')->name('users.trashed');
@@ -300,7 +302,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
         Route::get('conferencecards/{id}', 'getCard')->name('participants.card');
         Route::get('user/meal/{id}', 'getMealTicket')->name('meal.ticket');
-
     });
 
     Route::post('conference-query-payment', [PaymentController::class, 'requery'])->name('conference.queryPayment');
@@ -514,7 +515,6 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::post('reports/reject/{report}', 'rejectReport')->name('reports.reject');
             Route::get('reports/approve/{report}', 'approveReport')->name('reports.approve');
             Route::get('reports/analysis', 'reportAnalysis')->name('reports.analysis');
-
         });
 
         // Payments
@@ -524,6 +524,39 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('/payments/download-pop/{id}', 'downloadPop')->name('pop.download');
             Route::post('/payments/export-pop', 'exportPop')->name('pop.export');
         });
+
+        // Member Management
+        Route::controller(StakeholderAccountController::class)->group(function () {
+
+            // Member management
+            Route::get('users', 'memberIndex')->name('users.index');
+            Route::post('all', 'allMemberUsers' )->name('all');
+            Route::post('users', 'memberCreate')->name('users.create');
+            Route::get('users/{user}', 'show')->name('users.show');
+            Route::get('users/{user}/edit', 'edit')->name('users.edit');
+            Route::put('users/{user}', 'update')->name('users.update');
+            Route::patch('users/{user}', 'update');
+
+            Route::delete('users/{user}', 'destroy')->name('users.destroy');
+
+            // Profile
+            Route::patch('users/profile/{user}', 'saveProfile')
+                ->name('users.profile.save');
+
+            // Export / Import
+            Route::get('export-users', 'exportUsers')->name('export');
+
+            Route::get('users/import/index', 'usersImportIndex')
+                ->name('import.index');
+
+            Route::post('users/import/index', 'import')
+                ->name('import');
+
+            // Legacy delete (if still needed)
+            Route::get('deleteusers/{id}', 'delete')
+                ->name('users.delete');
+        });
+
     });
 });
 

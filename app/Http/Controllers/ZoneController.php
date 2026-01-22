@@ -74,7 +74,7 @@ class ZoneController extends Controller
                     ]);
             }
         });
-
+        
         return redirect()
             ->route('zones.index')
             ->with('message', 'Zone successfully created');

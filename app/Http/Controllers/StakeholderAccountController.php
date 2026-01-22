@@ -2,20 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Zone;
-use App\Models\Field;
-use App\Models\Chapter;
-use App\Models\Reports;
-use Illuminate\Http\File;
 use Illuminate\Http\Request;
+use App\Services\UserService;
 use App\Models\StakeholderReport;
+use App\Services\FileUploadService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
+use App\Traits\UserDatatableFeaturesTrait;
 
 class StakeholderAccountController extends Controller
 {
+	use UserDatatableFeaturesTrait;
+    protected $userService;
+    protected $user;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+        $this->user = auth()->guard('stakeholder')->user();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -57,73 +64,58 @@ class StakeholderAccountController extends Controller
 		} else {
 			$password = Hash::make($request['12345@GSF2021']);
 		}
+        $user = Auth::guard('stakeholder')->user();
 
-        //Handle all signatures
-        if($request->has('signature')){
-            if (file_exists(base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->signature))
-            unlink( base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->signature);
-            $signaturefilename = date('d-M-Y-s') . '-' . pathinfo($request->signature->getClientOriginalName(), PATHINFO_FILENAME);
-            $signatureextension = $request->signature->getClientOriginalExtension();
-            Storage::disk('uploads')->putFileAs('signatures', new File($request->signature->path()), $signaturefilename.'.'.$signatureextension);
-
-            $signature = $signaturefilename . '.' . $signatureextension;
-        }else{
-            $signature = Auth::guard('stakeholder')->user()->signature;
+        if ($request->hasFile('avatar')) {
+            $user->avatar = app(FileUploadService::class)->uploadImage(
+                $request->file('avatar'),
+                'avatars',
+                $user->avatar
+            );
         }
 
-        if($request->has('gen_sec_signature')){
-            if (!is_null(Auth::guard('stakeholder')->user()->gen_sec_signature) && file_exists(base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->gen_sec_signature))
-            unlink( base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->gen_sec_signature);
-            $gen_sec_signaturefilename = date('d-M-Y-s') . '-' . pathinfo($request->gen_sec_signature->getClientOriginalName(), PATHINFO_FILENAME);
-            $gen_sec_signatureextension = $request->gen_sec_signature->getClientOriginalExtension();
-            Storage::disk('uploads')->putFileAs('signatures', new File($request->gen_sec_signature->path()), $gen_sec_signaturefilename.'.'.$gen_sec_signatureextension);
+        $user->name = $request->name;
+        $user->gender = $request->gender;
+        $user->password = $password;
+        $user->phone = $request->phone;
+        $user->email = $request->email;
+        $user->day = $request->day;
+        $user->month = $request->month;
+        $user->year = $request->year;
 
-            $gen_sec_signature = $gen_sec_signaturefilename . '.' . $gen_sec_signatureextension;
-        }else{
-            $gen_sec_signature = Auth::guard('stakeholder')->user()->gen_sec_signature;
-        }
-
-        if($request->has('fin_sec_signature')){
-            if (!is_null(Auth::guard('stakeholder')->user()->fin_sec_signature) && file_exists(base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->fin_sec_signature))
-            unlink( base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->fin_sec_signature);
-            $fin_sec_signaturefilename = date('d-M-Y-s') . '-' . pathinfo($request->fin_sec_signature->getClientOriginalName(), PATHINFO_FILENAME);
-            $fin_sec_signatureextension = $request->fin_sec_signature->getClientOriginalExtension();
-            Storage::disk('uploads')->putFileAs('signatures', new File($request->fin_sec_signature->path()), $fin_sec_signaturefilename.'.'.$fin_sec_signatureextension);
-
-            $fin_sec_signature = $fin_sec_signaturefilename . '.' . $fin_sec_signatureextension;
-        }else{
-            $fin_sec_signature = Auth::guard('stakeholder')->user()->fin_sec_signature;
-        }
-
-        if($request->has('evang_sec_signature')){
-            if (!is_null(Auth::guard('stakeholder')->user()->evang_sec_signature) && file_exists(base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->evang_sec_signature))
-            unlink( base_path() . '/uploads/signatures' . '/' . Auth::guard('stakeholder')->user()->evang_sec_signature);
-
-            $evang_sec_signaturefilename = date('d-M-Y-s') . '-' . pathinfo($request->evang_sec_signature->getClientOriginalName(), PATHINFO_FILENAME);
-            $evang_sec_signatureextension = $request->evang_sec_signature->getClientOriginalExtension();
-            Storage::disk('uploads')->putFileAs('signatures', new File($request->evang_sec_signature->path()), $evang_sec_signaturefilename.'.'.$evang_sec_signatureextension);
-
-            $evang_sec_signature = $evang_sec_signaturefilename . '.' . $evang_sec_signatureextension;
-
-        }else{
-            $evang_sec_signature = Auth::guard('stakeholder')->user()->evang_sec_signature;
-        }
-        Auth::guard('stakeholder')->user()->name = $request->name;
-        Auth::guard('stakeholder')->user()->gen_sec_signature = $gen_sec_signature;
-        Auth::guard('stakeholder')->user()->password = $password;
-        Auth::guard('stakeholder')->user()->signature = $signature;
-        Auth::guard('stakeholder')->user()->fin_sec_signature = $fin_sec_signature;
-        Auth::guard('stakeholder')->user()->evang_sec_signature = $evang_sec_signature;
-        Auth::guard('stakeholder')->user()->phone = $request->phone;
-        Auth::guard('stakeholder')->user()->email = $request->email;
-        Auth::guard('stakeholder')->user()->day = $request->day;
-        Auth::guard('stakeholder')->user()->month = $request->month;
-        Auth::guard('stakeholder')->user()->year = $request->year;
-
-        Auth::guard('stakeholder')->user()->save();
+        $user->save();
 
         return back()->with('message', 'Update Successful');
     }
+
+    public function memberIndex(Request $request)
+    {
+        $chapter = auth()->guard('stakeholder')->user()?->chapter;
+
+        return view('stakeholder.users.index', [
+            'routes' => [
+                'create' => route('stakeholders.users.create'),
+                'import' => route('stakeholders.import.index'),
+                'export' => route('stakeholders.export'),
+                'all'    => route('stakeholders.all'),
+            ],
+            'isAdmin' => false,
+            'chapter'   => $chapter,
+        ]);
+    }
+
+    public function allMemberUsers(Request $request){
+        $chapterId = auth()->guard('stakeholder')->user()->chapter_id; // Sub-admins restricted by chapter
+
+        $request['chapter_id'] = $chapterId;
+        $request['canDelete'] = true;
+        $request['canSwitch'] = false;
+        $request['isStakeholder'] = true;
+        $json_data = $this->userService->getAllUsers( $request->all());
+
+        return response()->json($json_data);
+    }
+
     /**
      * Show the form for creating a new resource.
      *

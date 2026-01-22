@@ -8,12 +8,13 @@ use App\Models\Event;
 use App\Models\Field;
 use App\Models\Payment;
 use App\Models\Stakeholder;
+use App\Models\StakeholderDesignation;
 use Illuminate\Database\Eloquent\Model;
 
 class Chapter extends Model
 {
     protected $guarded = [];
-    
+
     public function users(){
         return $this->hasMany(User::class, 'chapter_id');
     }
@@ -57,5 +58,9 @@ class Chapter extends Model
     {
         return $this->hasManyThrough(Payment::class, User::class);
     }
-    
+
+    public function chapterPresident()
+    {
+        return $this->hasOne(User::class)->where('designation_id', 133);
+    }
 }
