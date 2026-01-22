@@ -141,7 +141,7 @@ class CronController extends Controller
     {
         $chapterRoleId = 5; // chapter role
         $allEmailData = [];
-        $this->sendZonalPastorCredentials();
+        
         // Get chapters that have email and do not yet have a stakeholder with role_id = 4
         $chapters = Chapter::whereNotNull('email')
             ->whereDoesntHave('stakeholders', function ($q) use ($chapterRoleId) {
