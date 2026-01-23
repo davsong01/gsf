@@ -32,7 +32,7 @@
                                         @foreach($stakeholders as $stakeholder)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td style="display: flex; align-items: center;">
+                                            <td>
                                                 @if($stakeholder?->avatar)
                                                     <img
                                                         src="{{ asset($stakeholder->avatar) }}"
@@ -66,10 +66,19 @@
                                                 <strong><i>{{$stakeholder?->designation?->name}}</i></strong>
                                             </td>
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                            <a class="actions" data-toggle="tooltip" title="View/Update stakeholder details" href="{{ route('stakeholderpersonnel.edit', $stakeholder->id) }}"> <i class="bx bxs-edit actions"></i>
-                                            </a>
+                                                <a class="actions" data-toggle="tooltip"
+                                                title="View/Update stakeholder details"
+                                                href="{{ route('stakeholderpersonnel.edit', $stakeholder->id) }}">
+                                                    <i class="bx bxs-edit actions"></i>
+                                                </a>
 
-                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete stakeholder" href="{{ route('stakeholderpersonnel.delete', $stakeholder->id) }}"> <i class="fa fa-trash actions"></i></a>
+                                                <a class="actions" data-toggle="tooltip"
+                                                onclick="return confirm('Are you really sure?');"
+                                                title="Delete stakeholder"
+                                                href="{{ route('stakeholderpersonnel.delete', $stakeholder->id) }}">
+                                                    <i class="fa fa-trash actions"></i>
+                                                </a>
+                                            </td>
                                         </tr>
 
                                         @endforeach
