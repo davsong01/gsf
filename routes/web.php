@@ -561,6 +561,10 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             // Legacy delete (if still needed)
             Route::get('deleteusers/{id}', 'delete')
                 ->name('users.delete');
+
+            Route::get('chapters/{chapter}/edit', 'chapterEdit')->name('chapters.edit');
+            Route::put('chapters/{chapter}', 'chapterUpdate')->name('chapters.update');
+
         });
 
     });

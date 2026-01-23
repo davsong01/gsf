@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Zone;
+use App\Models\Field;
+use App\Models\Chapter;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use App\Models\StakeholderReport;
@@ -114,6 +117,34 @@ class StakeholderAccountController extends Controller
         $json_data = $this->userService->getAllUsers( $request->all());
 
         return response()->json($json_data);
+    }
+
+
+    public function chapterEdit(Chapter $chapter)
+    {
+        if($chapter->id != auth()->guard('stakeholder')->user()->chapter_id){
+            return back()->with('error', 'Invalid route');
+        }
+
+        return view('stakeholder.chapters.edit', compact('chapter'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Chapter  $chapter
+     * @return \Illuminate\Http\Response
+     */
+    public function chapterUpdate(Request $request, Chapter $chapter)
+    {
+        if($request->has('chapter_banner')){
+            $request['banner'] = $this->uploadImage($request->chapter_banner, 'main/images/chapters');
+        }
+
+        $chapter->update($request->except('chapter_banner','name'));
+
+        return redirect()->back()->with('message', 'Update successful');
     }
 
     /**

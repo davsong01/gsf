@@ -127,8 +127,7 @@ class ChapterController extends Controller
         $chapters = Chapter::all();
         return view('admin.chapters.edit', compact('zones', 'fields','chapters'));
     }
-
-
+    
     public function store(Request $request)
     {
         $data = $this->validate($request, [

@@ -1,5 +1,6 @@
 @php
     $currentRoute = Route::currentRouteName();
+    $user = auth()->guard('stakeholder')->user();
 @endphp
 
 <div class="main-menu menu-fixed menu-light menu-accordion menu-shadow" data-scroll-to-active="true">
@@ -38,7 +39,7 @@
                 </a>
             </li>
 
-            @if(auth()->guard('stakeholder')->user()->role_id == 6)
+            @if($user->role_id == 6)
                 <li class="nav-item {{ $currentRoute === 'stakeholders.financial.report' ? 'active' : '' }}">
                     <a href="{{ route('stakeholders.financial.report') }}">
                         <i class="fa fa-file" aria-hidden="true"></i>
@@ -52,10 +53,17 @@
                         <span class="menu-title" data-i18n="User">Monthly Reports</span>
                     </a>
                 </li>
+                
                 <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.users') ? 'active' : '' }}">
                     <a href="{{ route('stakeholders.users.index') }}">
                         <i class="fa fa-users" aria-hidden="true"></i>
                         <span class="menu-title" data-i18n="User">Chapter Members</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.chapters') ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.chapters.edit', $user->chapter_id) }}">
+                        <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Chapter Details</span>
                     </a>
                 </li>
             @endif
