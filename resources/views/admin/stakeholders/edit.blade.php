@@ -204,7 +204,7 @@
                                         <fieldset class="form-group">
                                             <label for="portfolio">Office</label>
                                             <select class="form-control" name="portfolio" id="portfolio"
-                                                data-current="{{ $stakeholder->portfolio_id ?? '' }}">
+                                                data-current="{{ $stakeholder->designation_id ?? '' }}">
                                                 <option value="">--Select--</option>
                                             </select>
                                         </fieldset>
