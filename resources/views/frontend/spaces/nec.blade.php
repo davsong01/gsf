@@ -1,6 +1,6 @@
 @extends('frontend.spaces.layouts.app')
 @section('title', 'NEC')
-@section('ogtitle', 'GSF National Executive Committee Members')
+@section('ogtitle', 'GSF National Leaders')
 
 @section('css')
 <style>
@@ -118,7 +118,7 @@
                       <li class="breadcrumb-item text-muted active" aria-current="page">NEC</li>
                   </ol>
               </nav>
-              <h1 class="mb-5">GSF National Executive Council</h1>
+              <h1 class="mb-5">GSF National Leaders</h1>
           </div>
       </div>
   </div>

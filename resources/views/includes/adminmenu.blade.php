@@ -16,77 +16,260 @@
     </li>
 @endif
 
+@php
+    $userPermissions = auth()->user()->permissions ?? []
+@endphp
 
 @if(env('MINISTRY') == 'gsf')
-    @if(auth()->user()->conference_role == 'superadmin')
-    <li class="nav-item {{ Request::is('stakeholder*') ? 'open' : '' }}"><a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Portal Mgt</span></a>
-        <ul class="menu-content">
-            <!-- REPORTS -->
-            <li class="has-sub is_shown">
-                <a href="#">
-                    <i class="bx bx-file"></i>
-                    <span class="menu-item">Reports</span>
-                </a>
+    {{-- @if(auth()->user()->conference_role == 'superadmin')
+        <li class="nav-item {{ Request::is('stakeholder*') ? 'open' : '' }}"><a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Portal Mgt</span></a>
+            <ul class="menu-content">
+                <!-- REPORTS -->
+                @if(in_array($userPermissions, ['stakeholderreports.index']))
+                <li class="has-sub is_shown">
+                    <a href="#">
+                        <i class="bx bx-file"></i>
+                        <span class="menu-item">Reports</span>
+                    </a>
 
-                <ul class="menu-content">
-                    <li><a href="{{ route('stakeholderreports.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Monthly Reports</a></li>
-                </ul>
-            </li>
+                    <ul class="menu-content">
+                        <li><a href="{{ route('stakeholderreports.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Monthly Reports</a></li>
+                    </ul>
+                </li>
+                @endif
+                <!-- REPORT STRUCTURE -->
+                <li class="has-sub is_shown">
+                    <a href="#">
+                        <i class="bx bx-layer"></i>
+                        <span class="menu-item">Report Structure</span>
+                    </a>
+                    <ul class="menu-content">
+                        <li><a href="{{ route('stakeholderreportsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Sections</a></li>
+                        <li><a href="{{ route('stakeholderreportsubsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Sub Sections</a></li>
+                        <li><a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Items</a></li>
+                    </ul>
+                </li>
 
-            <!-- REPORT STRUCTURE -->
-            <li class="has-sub is_shown">
-                <a href="#">
-                    <i class="bx bx-layer"></i>
-                    <span class="menu-item">Report Structure</span>
-                </a>
-                <ul class="menu-content">
-                    <li><a href="{{ route('stakeholderreportsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Sections</a></li>
-                    <li><a href="{{ route('stakeholderreportsubsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Sub Sections</a></li>
-                    <li><a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Items</a></li>
-                </ul>
-            </li>
+                <!-- ACCESS CONTROL -->
+                <li class="has-sub is_shown">
+                    <a href="#">
+                        <i class="bx bx-lock"></i>
+                        <span class="menu-item">Access Control</span>
+                    </a>
+                    <ul class="menu-content">
+                        <li><a href="{{ route('stakeholderroles.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Roles</a></li>
+                        <li><a href="{{ route('stakeholderpermissions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Permissions</a></li>
+                        <li><a href="{{ route('designation.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Designations</a></li>
+                        <li><a href="{{ route('stakeholderpersonnel.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Stakeholders</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
 
-            <!-- ACCESS CONTROL -->
-            <li class="has-sub is_shown">
-                <a href="#">
-                    <i class="bx bx-lock"></i>
-                    <span class="menu-item">Access Control</span>
-                </a>
-                <ul class="menu-content">
-                    <li><a href="{{ route('stakeholderroles.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Roles</a></li>
-                    <li><a href="{{ route('stakeholderpermissions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Permissions</a></li>
-                    <li><a href="{{ route('designation.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Designations</a></li>
-                    <li><a href="{{ route('stakeholderpersonnel.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Stakeholders</a></li>
-                </ul>
-            </li>
-        </ul>
+        <li class=" nav-item {{ Request::is('nec*') ? 'active' : '' }}"><a href="{{ route('nec.index') }}"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 1 224 0a128 128 0 1 1 0 256zM209.1 359.2l-18.6-31c-6.4-10.7 1.3-24.2 13.7-24.2H224h19.7c12.4 0 20.1 13.6 13.7 24.2l-18.6 31 33.4 123.9 36-146.9c2-8.1 9.8-13.4 17.9-11.3c70.1 17.6 121.9 81 121.9 156.4c0 17-13.8 30.7-30.7 30.7H285.5c-2.1 0-4-.4-5.8-1.1l.3 1.1H168l.3-1.1c-1.8 .7-3.8 1.1-5.8 1.1H30.7C13.8 512 0 498.2 0 481.3c0-75.5 51.9-138.9 121.9-156.4c8.1-2 15.9 3.3 17.9 11.3l36 146.9 33.4-123.9z"/></svg></i><span class="menu-title"> &nbsp; &nbsp; &nbsp; NEC Management</span></a></li>
+        <li class=" nav-item {{ Request::is('archive-nec*') ? 'active' : '' }}"><a href="{{ route('archive.nec.index') }}"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 1 224 0a128 128 0 1 1 0 256zM209.1 359.2l-18.6-31c-6.4-10.7 1.3-24.2 13.7-24.2H224h19.7c12.4 0 20.1 13.6 13.7 24.2l-18.6 31 33.4 123.9 36-146.9c2-8.1 9.8-13.4 17.9-11.3c70.1 17.6 121.9 81 121.9 156.4c0 17-13.8 30.7-30.7 30.7H285.5c-2.1 0-4-.4-5.8-1.1l.3 1.1H168l.3-1.1c-1.8 .7-3.8 1.1-5.8 1.1H30.7C13.8 512 0 498.2 0 481.3c0-75.5 51.9-138.9 121.9-156.4c8.1-2 15.9 3.3 17.9 11.3l36 146.9 33.4-123.9z"/></svg></i><span class="menu-title"> &nbsp; &nbsp; &nbsp; Archive NEC Members</span></a></li>
+
+        <li class=" nav-item {{ Request::is('users*') ? 'active' : '' }}"><a href="{{ route('users.index') }}"><i class="fa fa-user"></i><span class="menu-title">Users</span></a></li>
+        <li class=" nav-item {{ Request::is('conference*') ? 'active' : '' }}"><a href="{{ route('officials.index') }}"><i class="fa fa-users"></i><span class="menu-title">Officials</span></a></li>
+        <li class=" nav-item {{ Request::is('listing-pending*') ? 'active' : '' }}"><a href="{{ route('listing-pending') }}"><i class="fa fa-user"></i><span class="menu-title">Pending Listing</span></a></li>
+        <li class="nav-item {{ Request::is('trashedusers') ? 'active' : '' }}"><a href="{{ route('users.trashed') }}"><i class="fa fa-trash-o"></i><span class="menu-title">Trashed Users</span></a></li>
+        <li class="nav-item {{ Request::is('events*') ? 'active' : '' }}"><a href="{{ route('events.index') }}"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title">Events</span></a></li>
+        <li class="nav-item {{ Request::is('all-donations*') ? 'active' : '' }}"><a href="{{ route('donations.all') }}"><i class="fa fa-money" aria-hidden="true"></i><span class="menu-title">Donations</span></a></li>
+        <li class="nav-item {{ Request::is('fields*') ? 'active' : '' }}"><a href="{{ route('fields.index') }}"><i class="fa fa-globe" aria-hidden="true"></i><span class="menu-title">Fields</span></a>
+        </li>
+        <li class="nav-item {{ Request::is('zones*') ? 'active' : '' }}"><a href="{{ route('zones.index') }}"><i class="fa fa-flag" aria-hidden="true"></i><span class="menu-title">Zones</span></a>
+        </li>
+        <li class="nav-item {{ Request::is('chapters*') ? 'active' : '' }}"><a href="{{ route('chapters.index') }}"><i class="fa fa-thumb-tack" aria-hidden="true"></i><span class="menu-title">Chapters</span></a>
+        </li>
+
+        <li class=" nav-item {{ Request::is('useremails') ? 'active' : '' }}"><a href="{{ route('useremails.index') }}"><i class="fa fa-envelope"></i><span class="menu-title">Emails</span></a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link {{ Request::is('criticalemails*') ? 'active' : '' }}" href="{{ route('criticalEmail.index') }}"><i class="fa fa-envelope"></i><span class="menu-title" >Logged Emails</a>
+        </li>
+    @endif --}}
+
+    @if(
+    in_array('stakeholderreports.index', $userPermissions) ||
+    in_array('stakeholderreportsection.index', $userPermissions) ||
+    in_array('stakeholderreportsubsection.index', $userPermissions) ||
+    in_array('stakeholder.questions.index', $userPermissions) ||
+    in_array('stakeholderroles.index', $userPermissions) ||
+    in_array('stakeholderpermissions.index', $userPermissions) ||
+    in_array('designation.index', $userPermissions) ||
+    in_array('stakeholderpersonnel.index', $userPermissions)
+)
+<li class="nav-item has-sub {{ Request::is('stakeholder*') ? 'open is_shown' : '' }}">
+    <a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Portal Mgt</span></a>
+    <ul class="menu-content">
+        {{-- REPORTS --}}
+        @if(in_array('stakeholderreports.index', $userPermissions))
+        <li class="has-sub {{ Request::is('stakeholderreports*') ? 'open is_shown' : '' }}">
+            <a href="#"><i class="bx bx-file"></i><span class="menu-item">Reports</span></a>
+            <ul class="menu-content">
+                <li>
+                    <a href="{{ route('stakeholderreports.index') }}">
+                        <i class="bx bx-right-arrow-alt"></i><span class="menu-item">Monthly Reports</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        @endif
+
+        {{-- REPORT STRUCTURE --}}
+        @if(
+            in_array('stakeholderreportsection.index', $userPermissions) ||
+            in_array('stakeholderreportsubsection.index', $userPermissions) ||
+            in_array('stakeholder.questions.index', $userPermissions)
+        )
+        <li class="has-sub {{ Request::is('stakeholderreportsection*') || Request::is('stakeholderreportsubsection*') || Request::is('stakeholder.questions*') ? 'open is_shown' : '' }}">
+            <a href="#"><i class="bx bx-layer"></i><span class="menu-item">Report Structure</span></a>
+            <ul class="menu-content">
+                @if(in_array('stakeholderreportsection.index', $userPermissions))
+                <li>
+                    <a href="{{ route('stakeholderreportsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Sections</span></a>
+                </li>
+                @endif
+                @if(in_array('stakeholderreportsubsection.index', $userPermissions))
+                <li>
+                    <a href="{{ route('stakeholderreportsubsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Sub Sections</span></a>
+                </li>
+                @endif
+                @if(in_array('stakeholder.questions.index', $userPermissions))
+                <li>
+                    <a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Items</span></a>
+                </li>
+                @endif
+            </ul>
+        </li>
+        @endif
+
+        {{-- ACCESS CONTROL --}}
+        @if(
+            in_array('stakeholderroles.index', $userPermissions) ||
+            in_array('stakeholderpermissions.index', $userPermissions) ||
+            in_array('designation.index', $userPermissions) ||
+            in_array('stakeholderpersonnel.index', $userPermissions)
+        )
+        <li class="has-sub {{ Request::is('stakeholderroles*') || Request::is('stakeholderpermissions*') || Request::is('designation*') || Request::is('stakeholderpersonnel*') ? 'open is_shown' : '' }}">
+            <a href="#"><i class="bx bx-lock"></i><span class="menu-item">Access Control</span></a>
+            <ul class="menu-content">
+                @if(in_array('stakeholderroles.index', $userPermissions))
+                <li><a href="{{ route('stakeholderroles.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Roles</span></a></li>
+                @endif
+                @if(in_array('stakeholderpermissions.index', $userPermissions))
+                <li><a href="{{ route('stakeholderpermissions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Permissions</span></a></li>
+                @endif
+                @if(in_array('designation.index', $userPermissions))
+                <li><a href="{{ route('designation.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Designations</span></a></li>
+                @endif
+                @if(in_array('stakeholderpersonnel.index', $userPermissions))
+                <li><a href="{{ route('stakeholderpersonnel.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Stakeholders</span></a></li>
+                @endif
+            </ul>
+        </li>
+        @endif
+    </ul>
+</li>
+@endif
+
+    {{-- NEC MANAGEMENT --}}
+    @if(in_array('nec.index', $userPermissions))
+    <li class="nav-item {{ Request::is('nec*') ? 'active' : '' }}">
+        <a href="{{ route('nec.index') }}"><i class="fa fa-shield"></i><span class="menu-title"> NEC Management</span></a>
     </li>
+    @endif
 
-    <li class=" nav-item {{ Request::is('nec*') ? 'active' : '' }}"><a href="{{ route('nec.index') }}"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 1 224 0a128 128 0 1 1 0 256zM209.1 359.2l-18.6-31c-6.4-10.7 1.3-24.2 13.7-24.2H224h19.7c12.4 0 20.1 13.6 13.7 24.2l-18.6 31 33.4 123.9 36-146.9c2-8.1 9.8-13.4 17.9-11.3c70.1 17.6 121.9 81 121.9 156.4c0 17-13.8 30.7-30.7 30.7H285.5c-2.1 0-4-.4-5.8-1.1l.3 1.1H168l.3-1.1c-1.8 .7-3.8 1.1-5.8 1.1H30.7C13.8 512 0 498.2 0 481.3c0-75.5 51.9-138.9 121.9-156.4c8.1-2 15.9 3.3 17.9 11.3l36 146.9 33.4-123.9z"/></svg></i><span class="menu-title"> &nbsp; &nbsp; &nbsp; NEC Management</span></a></li>
-    <li class=" nav-item {{ Request::is('archive-nec*') ? 'active' : '' }}"><a href="{{ route('archive.nec.index') }}"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 1 224 0a128 128 0 1 1 0 256zM209.1 359.2l-18.6-31c-6.4-10.7 1.3-24.2 13.7-24.2H224h19.7c12.4 0 20.1 13.6 13.7 24.2l-18.6 31 33.4 123.9 36-146.9c2-8.1 9.8-13.4 17.9-11.3c70.1 17.6 121.9 81 121.9 156.4c0 17-13.8 30.7-30.7 30.7H285.5c-2.1 0-4-.4-5.8-1.1l.3 1.1H168l.3-1.1c-1.8 .7-3.8 1.1-5.8 1.1H30.7C13.8 512 0 498.2 0 481.3c0-75.5 51.9-138.9 121.9-156.4c8.1-2 15.9 3.3 17.9 11.3l36 146.9 33.4-123.9z"/></svg></i><span class="menu-title"> &nbsp; &nbsp; &nbsp; Archive NEC Members</span></a></li>
+    @if(in_array('archive.nec.index', $userPermissions))
+    <li class="nav-item {{ Request::is('archive-nec*') ? 'active' : '' }}">
+        <a href="{{ route('archive.nec.index') }}"><i class="fa fa-archive"></i><span class="menu-title"> Archive NEC Members</span></a>
+    </li>
+    @endif
 
-    <li class=" nav-item {{ Request::is('users*') ? 'active' : '' }}"><a href="{{ route('users.index') }}"><i class="fa fa-user"></i><span class="menu-title">Users</span></a></li>
-    <li class=" nav-item {{ Request::is('conference*') ? 'active' : '' }}"><a href="{{ route('staff.index') }}"><i class="fa fa-users"></i><span class="menu-title">Staff</span></a></li>
-    <li class=" nav-item {{ Request::is('listing-pending*') ? 'active' : '' }}"><a href="{{ route('listing-pending') }}"><i class="fa fa-user"></i><span class="menu-title">Pending Listing</span></a></li>
-    <li class="nav-item {{ Request::is('trashedusers') ? 'active' : '' }}"><a href="{{ route('users.trashed') }}"><i class="fa fa-trash-o"></i><span class="menu-title">Trashed Users</span></a></li>
-    <li class="nav-item {{ Request::is('events*') ? 'active' : '' }}"><a href="{{ route('events.index') }}"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title">Events</span></a></li>
-    <li class="nav-item {{ Request::is('all-donations*') ? 'active' : '' }}"><a href="{{ route('donations.all') }}"><i class="fa fa-money" aria-hidden="true"></i><span class="menu-title">Donations</span></a></li>
-    <li class="nav-item {{ Request::is('fields*') ? 'active' : '' }}"><a href="{{ route('fields.index') }}"><i class="fa fa-globe" aria-hidden="true"></i><span class="menu-title">Fields</span></a>
-    </li>
-    <li class="nav-item {{ Request::is('zones*') ? 'active' : '' }}"><a href="{{ route('zones.index') }}"><i class="fa fa-flag" aria-hidden="true"></i><span class="menu-title">Zones</span></a>
-    </li>
-    <li class="nav-item {{ Request::is('chapters*') ? 'active' : '' }}"><a href="{{ route('chapters.index') }}"><i class="fa fa-thumb-tack" aria-hidden="true"></i><span class="menu-title">Chapters</span></a>
-    </li>
 
-    <li class=" nav-item {{ Request::is('useremails') ? 'active' : '' }}"><a href="{{ route('useremails.index') }}"><i class="fa fa-envelope"></i><span class="menu-title">Emails</span></a>
+    {{-- USERS --}}
+    @if(in_array('users.index', $userPermissions))
+    <li class="nav-item {{ Request::is('users*') ? 'active' : '' }}">
+        <a href="{{ route('users.index') }}"><i class="fa fa-user"></i><span class="menu-title">Users</span></a>
     </li>
+    @endif
 
+    {{-- OFFICIALS --}}
+    @if(in_array('officials.index', $userPermissions))
+    <li class="nav-item {{ Request::is('conference*') ? 'active' : '' }}">
+        <a href="{{ route('officials.index') }}"><i class="fa fa-users"></i><span class="menu-title">Officials</span></a>
+    </li>
+    @endif
+
+    {{-- PENDING LISTING --}}
+    @if(in_array('listing-pending', $userPermissions))
+    <li class="nav-item {{ Request::is('listing-pending*') ? 'active' : '' }}">
+        <a href="{{ route('listing-pending') }}"><i class="fa fa-user"></i><span class="menu-title">Pending Listing</span></a>
+    </li>
+    @endif
+
+    {{-- TRASHED USERS --}}
+    @if(in_array('users.trashed', $userPermissions))
+    <li class="nav-item {{ Request::is('trashedusers') ? 'active' : '' }}">
+        <a href="{{ route('users.trashed') }}"><i class="fa fa-trash-o"></i><span class="menu-title">Trashed Users</span></a>
+    </li>
+    @endif
+
+    {{-- EVENTS --}}
+    @if(in_array('events.index', $userPermissions))
+    <li class="nav-item {{ Request::is('events*') ? 'active' : '' }}">
+        <a href="{{ route('events.index') }}"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title">Events</span></a>
+    </li>
+    @endif
+
+    {{-- DONATIONS --}}
+    @if(in_array('donations.all', $userPermissions))
+    <li class="nav-item {{ Request::is('all-donations*') ? 'active' : '' }}">
+        <a href="{{ route('donations.all') }}"><i class="fa fa-money" aria-hidden="true"></i><span class="menu-title">Donations</span></a>
+    </li>
+    @endif
+
+    {{-- FIELDS --}}
+    @if(in_array('fields.index', $userPermissions))
+    <li class="nav-item {{ Request::is('fields*') ? 'active' : '' }}">
+        <a href="{{ route('fields.index') }}"><i class="fa fa-globe" aria-hidden="true"></i><span class="menu-title">Fields</span></a>
+    </li>
+    @endif
+
+    {{-- ZONES --}}
+    @if(in_array('zones.index', $userPermissions))
+    <li class="nav-item {{ Request::is('zones*') ? 'active' : '' }}">
+        <a href="{{ route('zones.index') }}"><i class="fa fa-flag" aria-hidden="true"></i><span class="menu-title">Zones</span></a>
+    </li>
+    @endif
+
+    {{-- CHAPTERS --}}
+    @if(in_array('chapters.index', $userPermissions))
+    <li class="nav-item {{ Request::is('chapters*') ? 'active' : '' }}">
+        <a href="{{ route('chapters.index') }}"><i class="fa fa-thumb-tack" aria-hidden="true"></i><span class="menu-title">Chapters</span></a>
+    </li>
+    @endif
+
+    {{-- EMAILS --}}
+    @if(in_array('useremails.index', $userPermissions))
+    <li class="nav-item {{ Request::is('useremails') ? 'active' : '' }}">
+        <a href="{{ route('useremails.index') }}"><i class="fa fa-envelope"></i><span class="menu-title">Emails</span></a>
+    </li>
+    @endif
+
+    {{-- LOGGED EMAILS --}}
+    @if(in_array('criticalEmail.index', $userPermissions))
     <li class="nav-item">
-        <a class="nav-link {{ Request::is('criticalemails*') ? 'active' : '' }}" href="{{ route('criticalEmail.index') }}"><i class="fa fa-envelope"></i><span class="menu-title" >Logged Emails</a>
-    </li>
-    <li class="nav-item {{ Request::is('profile*') ? 'active' : '' }}">
-    <a href="{{ route('users.show', auth()->user()->id) }}"><i class="fa fa-user-circle-o"></i><span class="menu-title"
-    data-i18n="Kanban">My Profile</span></a>
+        <a class="nav-link {{ Request::is('criticalemails*') ? 'active' : '' }}" href="{{ route('criticalEmail.index') }}">
+            <i class="fa fa-envelope"></i><span class="menu-title">Logged Emails</span>
+        </a>
     </li>
     @endif
 @endif
+
+<li class="nav-item {{ Request::is('profile*') ? 'active' : '' }}">
+<a href="{{ route('users.show', auth()->user()->id) }}"><i class="fa fa-user-circle-o"></i><span class="menu-title"
+data-i18n="Kanban">My Profile</span></a>
+</li>
+

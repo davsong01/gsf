@@ -28,6 +28,10 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	protected $guarded = [];
 
+    protected $casts = [
+        'permissions' => 'array'
+    ];
+
 	public function isSubAdmin() {
 		$subAdmins = [3,4,5,6];
         if(in_array($this->role, $subAdmins) && $this->status == 0){

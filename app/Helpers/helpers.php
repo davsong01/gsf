@@ -9,6 +9,217 @@ use App\Models\StakeholderRole;
 use App\Models\ConferenceEdition;
 use App\Models\StakeholderReport;
 
+if (!function_exists('rootPermissions')) {
+    function rootPermissions()
+    {
+        $menus = [
+            [
+                'id' => 1,
+                'slug' => 'stakeholder*',
+                'name' => 'Digital Portal Mgt',
+                'icon' => 'fa fa-calendar',
+                'children' => [
+                    [
+                        'id' => 2,
+                        'slug' => 'stakeholderreports.index',
+                        'name' => 'Reports',
+                        'icon' => 'bx bx-file',
+                        'children' => [
+                            [
+                                'id' => 3,
+                                'slug' => 'stakeholderreports.index',
+                                'name' => 'Monthly Reports'
+                            ]
+                        ]
+                    ],
+                    [
+                        'id' => 4,
+                        'slug' => 'report-structure',
+                        'name' => 'Report Structure',
+                        'icon' => 'bx bx-layer',
+                        'children' => [
+                            [
+                                'id' => 5,
+                                'slug' => 'stakeholderreportsection.index',
+                                'name' => 'Sections'
+                            ],
+                            [
+                                'id' => 6,
+                                'slug' => 'stakeholderreportsubsection.index',
+                                'name' => 'Sub Sections'
+                            ],
+                            [
+                                'id' => 7,
+                                'slug' => 'stakeholder.questions.index',
+                                'name' => 'Items'
+                            ]
+                        ]
+                    ],
+                    [
+                        'id' => 8,
+                        'slug' => 'access-control',
+                        'name' => 'Access Control',
+                        'icon' => 'bx bx-lock',
+                        'children' => [
+                            [
+                                'id' => 9,
+                                'slug' => 'stakeholderroles.index',
+                                'name' => 'Roles'
+                            ],
+                            [
+                                'id' => 10,
+                                'slug' => 'stakeholderpermissions.index',
+                                'name' => 'Permissions'
+                            ],
+                            [
+                                'id' => 11,
+                                'slug' => 'designation.index',
+                                'name' => 'Designations'
+                            ],
+                            [
+                                'id' => 12,
+                                'slug' => 'stakeholderpersonnel.index',
+                                'name' => 'Stakeholders'
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'id' => 13,
+                'slug' => 'nec.index',
+                'name' => 'NEC Management',
+                'svg' => '<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 1 224 0a128 128 0 1 1 0 256zM209.1 359.2l-18.6-31c-6.4-10.7 1.3-24.2 13.7-24.2H224h19.7c12.4 0 20.1 13.6 13.7 24.2l-18.6 31 33.4 123.9 36-146.9c2-8.1 9.8-13.4 17.9-11.3c70.1 17.6 121.9 81 121.9 156.4c0 17-13.8 30.7-30.7 30.7H285.5c-2.1 0-4-.4-5.8-1.1l.3 1.1H168l.3-1.1c-1.8 .7-3.8 1.1-5.8 1.1H30.7C13.8 512 0 498.2 0 481.3c0-75.5 51.9-138.9 121.9-156.4c8.1-2 15.9 3.3 17.9 11.3l36 146.9 33.4-123.9z"/></svg>'
+            ],
+            [
+                'id' => 14,
+                'slug' => 'archive.nec.index',
+                'name' => 'Archive NEC Members',
+                'svg' => '<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 1 224 0a128 128 0 1 1 0 256zM209.1 359.2l-18.6-31c-6.4-10.7 1.3-24.2 13.7-24.2H224h19.7c12.4 0 20.1 13.6 13.7 24.2l-18.6 31 33.4 123.9 36-146.9c2-8.1 9.8-13.4 17.9-11.3c70.1 17.6 121.9 81 121.9 156.4c0 17-13.8 30.7-30.7 30.7H285.5c-2.1 0-4-.4-5.8-1.1l.3 1.1H168l.3-1.1c-1.8 .7-3.8 1.1-5.8 1.1H30.7C13.8 512 0 498.2 0 481.3c0-75.5 51.9-138.9 121.9-156.4c8.1-2 15.9 3.3 17.9 11.3l36 146.9 33.4-123.9z"/></svg>'
+            ],
+            [
+                'id' => 15,
+                'slug' => 'users.index',
+                'name' => 'Users',
+                'icon' => 'fa fa-user'
+            ],
+            [
+                'id' => 16,
+                'slug' => 'officials.index',
+                'name' => 'Officials',
+                'icon' => 'fa fa-users'
+            ],
+            [
+                'id' => 17,
+                'slug' => 'listing-pending',
+                'name' => 'Pending Listing',
+                'icon' => 'fa fa-user'
+            ],
+            [
+                'id' => 18,
+                'slug' => 'users.trashed',
+                'name' => 'Trashed Users',
+                'icon' => 'fa fa-trash-o'
+            ],
+            [
+                'id' => 19,
+                'slug' => 'events.index',
+                'name' => 'Events',
+                'icon' => 'fa fa-calendar'
+            ],
+            [
+                'id' => 20,
+                'slug' => 'donations.all',
+                'name' => 'Donations',
+                'icon' => 'fa fa-money'
+            ],
+            [
+                'id' => 21,
+                'slug' => 'fields.index',
+                'name' => 'Fields',
+                'icon' => 'fa fa-globe'
+            ],
+            [
+                'id' => 22,
+                'slug' => 'zones.index',
+                'name' => 'Zones',
+                'icon' => 'fa fa-flag'
+            ],
+            [
+                'id' => 23,
+                'slug' => 'chapters.index',
+                'name' => 'Chapters',
+                'icon' => 'fa fa-thumb-tack'
+            ],
+            [
+                'id' => 24,
+                'slug' => 'useremails.index',
+                'name' => 'Emails',
+                'icon' => 'fa fa-envelope'
+            ],
+            [
+                'id' => 25,
+                'slug' => 'criticalEmail.index',
+                'name' => 'Logged Emails',
+                'icon' => 'fa fa-envelope'
+            ],
+        ];
+
+        return collect($menus);
+    }
+}
+
+// work on this later
+// if (!function_exists('renderMenu')) {
+//     function renderMenu($menus = null, $userPermissions = null)
+//     {
+//         // Load menu structure if not provided
+//         if ($menus === null) {
+//             $menus = rootPermissions()->toArray();
+//         }
+
+//         // Load user permissions if not provided
+//         if ($userPermissions === null) {
+//             $userPermissions = auth()->user()->permissions ?? [];
+//         }
+
+//         foreach ($menus as $menu) {
+
+//             $hasChildren = isset($menu['children']) && count($menu['children']) > 0;
+
+//             // Determine if parent should be shown
+//             $showParent = $hasChildren
+//                 ? collect($menu['children'])->pluck('slug')->intersect($userPermissions)->isNotEmpty()
+//                 : in_array($menu['slug'], $userPermissions);
+
+//             if (!$showParent) continue;
+
+//             // Assign proper classes and icons per menu
+//             $icon = $menu['icon'] ?? 'fa fa-circle';
+//             $liClass = $hasChildren ? 'nav-item has-sub is_shown' : 'nav-item';
+//            $activeClass = $hasChildren
+//     ? (collect($menu['children'])->pluck('slug')->intersect($userPermissions)->isNotEmpty() ? 'open' : '')
+//     : (Request::is(str_replace('.', '*', $menu['slug']).'*') ? 'active' : '');
+
+//             // Parent menu with children
+//             if ($hasChildren) {
+//                 echo '<li class="'.$liClass.' '.$activeClass.'">';
+//                 echo '<a href="#"><i class="'.$icon.'"></i> <span class="menu-title">'.$menu['name'].'</span></a>';
+//                 echo '<ul class="menu-content">';
+//                 renderMenu($menu['children'], $userPermissions); // recursion
+//                 echo '</ul>';
+//                 echo '</li>';
+//             } else {
+//                 // Single item
+//                 echo '<li class="'.$liClass.' '.$activeClass.'">';
+//                 echo '<a href="'.route($menu['slug']).'"><i class="bx bx-right-arrow-alt"></i> <span class="menu-item">'.$menu['name'].'</span></a>';
+//                 echo '</li>';
+//             }
+//         }
+//     }
+// }
+
+
 if (!function_exists('canAddNextMonthReport')) {
     function getMonths()
     {

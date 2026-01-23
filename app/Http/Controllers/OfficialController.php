@@ -12,29 +12,25 @@ class OfficialController extends Controller
 {
     public function index()
 	{
-		$count = 1;
-   
-		if (auth()->user()->level == 'Admin' && auth()->user()->official == NULL ) {
-
-			$participants = User::with('moderator')->wherelevel('Admin')->orderBy('created_at', 'desc')->where('id', '<>', auth()->user()->id)->get();
-            
-			return view('admin.official.index', compact('participants', 'count'));
-		}
+        $participants = User::where('role', 1)->latest()->get();
+        
+        return view('admin.official.index', compact('participants'));
 
 		return abort(404);
 	}
 
     public function create()
 	{
-        if (auth()->user()->level == 'Admin' && auth()->user()->official == NULL ) {
-			return view('admin.official.create');
-		} 
-		return back(404);
+        if (auth()->user()->role != 1 ) {
+            return back(404);
+        }
+
+        return view('admin.official.create');
 	}
 
     public function store(Request $request){
-        // dd($request->all());
-       
+        dd($request->all());
+
 		//Store block for Admin
 		if (auth()->user()->level == 'Admin') {
 			$data = $this->validate($request, [
@@ -54,14 +50,14 @@ class OfficialController extends Controller
             }
 
                 //Handle Passport Upload
-                //get filename with extensionz 
+                //get filename with extensionz
             if ($request['passport']) {
 
                 $imgName = date('Y-m-d-His') . $request->passport->getClientOriginalName();
                 $passport = Image::make($request->passport)->resize(500, 500);
                 $passport->save('frontend/passports' . '/' . $imgName);
                 $passport = 'frontend/passports/' . $imgName;
-            
+
             } else {
                 $passport = NULL;
             }
@@ -78,7 +74,7 @@ class OfficialController extends Controller
                 'type' => 4,
                 'Official' => 'YES',
                 'uploaded_by' => auth()->user()->id
-                
+
             ]);
 
             $user->update([
@@ -94,9 +90,9 @@ class OfficialController extends Controller
     public function edit(User $official)
 	{
         if (auth()->user()->level == 'Admin' && auth()->user()->official == NULL ) {
-        
+
             return view('admin.official.edit')->with('official', $official);
-            
+
         }
     }
 
@@ -107,7 +103,7 @@ class OfficialController extends Controller
         } else {
             $request['password'] = Hash::make($request['phone']);
         }
-        
+
         if($request->level == 'Admin'){
             $request['official'] = NULL;
 
@@ -126,14 +122,14 @@ class OfficialController extends Controller
         if (auth()->user()->id == $official->id) {
             return back()->with('warning', 'I\'m sorry but You cannot delete your self');
         }
-     
+
         if (isset($official->passport)) {
             unlink($official->passport);
         }
         $official->forceDelete();
-    
-        
+
+
         return redirect(route('officials.index'))->with('message', 'Delete Successful');
     }
-    
+
 }
