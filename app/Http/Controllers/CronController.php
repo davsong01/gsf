@@ -7,6 +7,7 @@ use App\Models\Nec;
 use App\Models\Chapter;
 use App\Models\TempUser;
 use App\Models\Stakeholder;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\CriticalEmail;
 use App\Services\EmailService;
@@ -141,90 +142,93 @@ class CronController extends Controller
     {
         $chapterRoleId = 5; // Chapter Representative role
         $allEmailData = [];
+        $sentCount = 0;
+
         Stakeholder::where(function ($q) {
-            // Case 1: no chapter, field, and zone
             $q->whereNull('chapter_id')
             ->whereNull('field_id')
             ->whereNull('zone_id');
         })
         ->orWhere(function ($q) {
-            // Case 2: inactive OR invalid role
             $q->where('status', 'inactive')
             ->orWhere('role_id', 0);
         })
         ->delete();
+
         // 1. Get chapters that have email
         $chapters = Chapter::whereNotNull('email')->get();
 
         foreach ($chapters as $chapter) {
-
-            // 2. Check if a stakeholder exists for this chapter and role
             $stakeholder = Stakeholder::where('chapter_id', $chapter->id)
                 ->where('role_id', $chapterRoleId)
+                ->where('status', 'active')
                 ->first();
 
             if ($stakeholder) {
-                // Skip if credentials already sent
                 if ($stakeholder->credentials_sent) {
                     continue;
                 }
 
-                $passwordPlain = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+                $passwordPlain = Str::random(8);
+
                 $stakeholder->update([
-                    'password' => bcrypt($passwordPlain),
-                    'credentials_sent' => 1,
+                    'password'          => bcrypt($passwordPlain),
+                    'credentials_sent'  => 1,
                 ]);
             } else {
-                // No stakeholder exists yet — create one
-                $passwordPlain = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+                $passwordPlain = Str::random(8);
 
                 $stakeholder = Stakeholder::create([
-                    'role_id'         => $chapterRoleId,
-                    'chapter_id'      => $chapter->id,
-                    'name'            => $chapter->name . ' Representative',
-                    'email'           => $chapter->email,
-                    'phone'           => $chapter->phone,
-                    'status'          => 'active',
-                    'password'        => bcrypt($passwordPlain),
-                    'credentials_sent'=> 1,
+                    'role_id'          => $chapterRoleId,
+                    'chapter_id'       => $chapter->id,
+                    'name'             => $chapter->name . ' Representative',
+                    'email'            => $chapter->email,
+                    'phone'            => $chapter->phone,
+                    'status'           => 'active',
+                    'password'         => bcrypt($passwordPlain),
+                    'credentials_sent' => 1,
                 ]);
             }
 
-            // 3. Generate welcome email content
+            // Email content
             $loginLink = "<a href='" . url('/stakeholders/login') . "'>Login</a>";
-            $subject = "Welcome to GSF Digital Portal";
-            $content = "
-                <h4>Dear Representative of {$chapter->name},</h4>
-                <p>Calvary greetings to you and welcome to the GOFAMINT STUDENTS' FELLOWSHIP (GSF) Digital portal. Your fellowship representative account has been created or updated. Please find details below.</p>
-                <p><strong>Email:</strong> {$stakeholder->email}<br>
-                <strong>Password:</strong> {$passwordPlain}</p>
-                <p>{$loginLink} to access your account and start submitting reports.</p>
-                <p>Please change your password after first login.<br></p>
-                <p>In His Service,<br>GSF National ICT</p>
-            ";
 
             $allEmailData[] = [
                 'recipient'  => $chapter->email,
                 'type'       => 'report_email',
-                'subject'    => $subject,
-                'content'    => $content,
+                'subject'    => 'Welcome to GSF Digital Portal',
+                'content'    => "
+                    <h4>Dear Representative of {$chapter->name},</h4>
+                    <p>Your fellowship representative account has been created or updated.</p>
+                    <p><strong>Email:</strong> {$stakeholder->email}<br>
+                    <strong>Password:</strong> {$passwordPlain}</p>
+                    <p>{$loginLink}</p>
+                    <p>Please change your password after first login.</p>
+                    <p>In His Service,<br>GSF National ICT</p>
+                ",
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+
+            $sentCount++;
         }
 
-        // 4. Log emails for sending
-        if (!empty($allEmailData)) {
+        if ($sentCount > 0) {
             EmailService::logEmail([
                 'type'       => 'report_email',
                 'recipients' => $allEmailData,
             ]);
         }
 
-        return 'Stakeholder credentials emails queued for sending.';
+        return back()->with(
+            'message',
+            "{$sentCount} stakeholder credential email(s) queued successfully."
+        );
     }
 
-    public function sendZonalPastorCredentials(){
+    public function createNecDummyCredentials(){
+        return;
+
         $tenure = '2025/2027';
         $necRoleId = 7;
         $fieldRoleId = 6;
@@ -1073,4 +1077,156 @@ class CronController extends Controller
 
         return;
     }
+
+    public function sendZonalPastorCredentials()
+    {
+        $zonalPastorRoleId = 4;
+        $emailsToQueue = [];
+
+       $stakeholders = Stakeholder::query()
+        ->where('role_id', $zonalPastorRoleId)
+        ->where('credentials_sent', 0)
+        ->where('status', 'active')
+        ->whereNotNull('email')
+        ->where('email', 'not like', '%@example.com')
+        ->whereHas('designation', function ($query) {
+            $query->whereNotNull('zone_id')->where('status','active');
+        })
+        ->get();
+
+        foreach ($stakeholders as $stakeholder) {
+            // Generate secure random password
+            $passwordPlain = Str::random(10);
+
+            $stakeholder->update([
+                'password'          => bcrypt($passwordPlain),
+                'credentials_sent'  => 1,
+            ]);
+
+            $loginLink = url('/stakeholders/login');
+
+            $subject = 'Your GSF Digital Portal Access';
+
+            $content = "
+                <p>Dear {$stakeholder->name},</p>
+
+                <p>Calvary greetings.</p>
+
+                <p>Your access to the <strong>GSF Digital Portal</strong> has been activated.
+                Below are your login credentials:</p>
+
+                <p>
+                    <strong>Email:</strong> {$stakeholder->email}<br>
+                    <strong>Password:</strong> {$passwordPlain}
+                </p>
+
+                <p>
+                    Please <a href='{$loginLink}'>click here to login</a> and change your password immediately after first login.
+                </p>
+
+                <p>
+                    If you have any issues accessing the portal, kindly contact the GSF ICT team.
+                </p>
+
+                <p>
+                    In His Service,<br>
+                    <strong>GSF National ICT</strong>
+                </p>
+            ";
+
+            $emailsToQueue[] = [
+                'recipient'  => $stakeholder->email,
+                'type'       => 'report_email',
+                'subject'    => $subject,
+                'content'    => $content,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        if (!empty($emailsToQueue)) {
+            EmailService::logEmail([
+                'type'       => 'report_email',
+                'recipients' => $emailsToQueue,
+            ]);
+        }
+
+        return back()->with('message', "{$stakeholders->count()} zonal pastor credential emails queued successfully.");
+    }
+     public function sendFieldPastorCredentials()
+    {
+        $zonalPastorRoleId = 3;
+        $emailsToQueue = [];
+
+       $stakeholders = Stakeholder::query()
+        ->where('role_id', $zonalPastorRoleId)
+        ->where('credentials_sent', 0)
+        ->where('status', 'active')
+        ->whereNotNull('email')
+        ->where('email', 'not like', '%@example.com')
+        ->whereHas('designation', function ($query) {
+            $query->whereNotNull('field_id')->where('status','active');
+        })
+        ->get();
+
+        foreach ($stakeholders as $stakeholder) {
+            // Generate secure random password
+            $passwordPlain = Str::random(10);
+
+            $stakeholder->update([
+                'password'          => bcrypt($passwordPlain),
+                'credentials_sent'  => 1,
+            ]);
+
+            $loginLink = url('/stakeholders/login');
+
+            $subject = 'Your GSF Digital Portal Access';
+
+            $content = "
+                <p>Dear {$stakeholder->name},</p>
+
+                <p>Calvary greetings.</p>
+
+                <p>Your access to the <strong>GSF Digital Portal</strong> has been activated.
+                Below are your login credentials:</p>
+
+                <p>
+                    <strong>Email:</strong> {$stakeholder->email}<br>
+                    <strong>Password:</strong> {$passwordPlain}
+                </p>
+
+                <p>
+                    Please <a href='{$loginLink}'>click here to login</a> and change your password immediately after first login.
+                </p>
+
+                <p>
+                    If you have any issues accessing the portal, kindly contact the GSF ICT team.
+                </p>
+
+                <p>
+                    In His Service,<br>
+                    <strong>GSF National ICT</strong>
+                </p>
+            ";
+
+            $emailsToQueue[] = [
+                'recipient'  => $stakeholder->email,
+                'type'       => 'report_email',
+                'subject'    => $subject,
+                'content'    => $content,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        if (!empty($emailsToQueue)) {
+            EmailService::logEmail([
+                'type'       => 'report_email',
+                'recipients' => $emailsToQueue,
+            ]);
+        }
+
+        return back()->with('message', "{$stakeholders->count()} zonal pastor credential emails queued successfully.");
+    }
+
 }

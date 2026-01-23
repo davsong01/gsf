@@ -20,26 +20,44 @@ class StakeholderLoginController extends Controller
             'password' => 'required',
         ]);
 
-        $credentials = [
+        if (Auth::guard('stakeholder')->attempt([
             'email'    => $request->email,
             'password' => $request->password,
-            'status'   => 'active', // Only allow active users
-        ];
+        ])) {
+            $request->session()->regenerate();
 
-        if (Auth::guard('stakeholder')->attempt($credentials)) {
+            $user = Auth::guard('stakeholder')->user();
+
+            if ($user->status !== 'active') {
+                Auth::guard('stakeholder')->logout();
+                return $this->loginFailed('Account is inactive.');
+            }
+
+            if ($user->designation_id) {
+                if (
+                    !$user->designation ||
+                    $user->designation->status !== 'active'
+                ) {
+                    Auth::guard('stakeholder')->logout();
+                    return $this->loginFailed('Your designation is inactive.');
+                }
+            }
+
+            $user->update([
+                'last_login' => now(),
+            ]);
+
             return redirect()->intended('/stakeholders/dashboard');
         }
 
-        // Authentication failed
         return $this->loginFailed();
     }
-
 
     public function logout(Request $request)
     {
         $request->session()->invalidate();
         return redirect(route('stakeholders.login'));
-    
+
     }
 
     private function validator(Request $request)
@@ -59,11 +77,11 @@ class StakeholderLoginController extends Controller
         $request->validate($rules,$messages);
     }
 
-    private function loginFailed(){
+    private function loginFailed($message=null){
         return redirect()
             ->back()
             ->withInput()
-            ->with('error','Login failed, please try again with the right credentials!');
+            ->with('error', $message ?? 'Login failed, please try again with the right credentials!');
     }
 
 }

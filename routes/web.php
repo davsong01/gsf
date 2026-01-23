@@ -98,8 +98,10 @@ Route:: get('cron/birthday-notification', [CronController::class, 'cron']);
 Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
 Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
 
-Route::get('send-stakeholder-credentials', [CronController::class, 'sendStakeholderCredentials']);
-Route::get('create-zonal-pastor-credentials', [CronController::class, 'sendZonalPastorCredentials']);
+Route::get('send-stakeholder-credentials', [CronController::class, 'sendStakeholderCredentials'])->name('send.chapter.credentials');
+Route::get('send-zonal-pastor-credentials', [CronController::class, 'sendZonalPastorCredentials'])->name('send.zone.credentials');
+Route::get('send-field-pastor-credentials', [CronController::class, 'sendFieldPastorCredentials'])->name('send.field.credentials');
+Route::get('send-national-credentials', [CronController::class, 'sendNationalCredentials'])->name('send.national.credentials');
 
 Route::get('utility-populate-designation', [StakeholderDesignationController::class, 'populate']);
 

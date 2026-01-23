@@ -30,7 +30,9 @@ class Stakeholder extends Authenticatable
         'day',
         'month',
         'year',
-        'status'
+        'status',
+        'credentials_sent',
+        'last_login'
     ];
 
     protected $hidden = [
@@ -58,7 +60,7 @@ class Stakeholder extends Authenticatable
     {
         return $this->belongsTo(StakeholderDesignation::class, 'designation_id');
     }
-    
+
     // public function roles()
     // {
     //     return $this->belongsToMany(

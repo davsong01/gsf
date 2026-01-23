@@ -10,10 +10,33 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h4 class="card-title">All stakeholders</h4>
-                        <a href="{{ route('stakeholderpersonnel.create') }}" class="btn btn-primary mt-1">Add new stakeholder</a>
+                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                        <h4 class="card-title mb-0">All stakeholders</h4>
+
+                        <div class="btn-group mt-1">
+                            <a href="{{ route('stakeholderpersonnel.create') }}" class="btn btn-primary btn-sm">
+                                Add new stakeholder
+                            </a>
+
+                            <a href="{{ route('send.chapter.credentials') }}"
+                            class="btn btn-success btn-sm"
+                            onclick="return confirm('Send credentials to eligible stakeholders?');">
+                                Send Chapter Credentials
+                            </a>
+
+                            <a href="{{ route('send.zone.credentials') }}"
+                            class="btn btn-warning btn-sm"
+                            onclick="return confirm('Send credentials to zonal pastors?');">
+                                Send Zonal Credentials
+                            </a>
+                            <a href="{{ route('send.field.credentials') }}"
+                            class="btn btn-danger btn-sm"
+                            onclick="return confirm('Send credentials to field pastors?');">
+                                Send Field Credentials
+                            </a>
+                        </div>
                     </div>
+
                     <div class="card-content">
                         <div class="card-body card-dashboard">
                             <div class="table-responsive">
@@ -42,6 +65,14 @@
                                                 <div>
                                                     {{ $stakeholder->name }} <br>
                                                     <small><strong>Status: </strong>{{ ucfirst($stakeholder->status) }}</small>
+                                                    @if($stakeholder->credentials_sent)
+                                                    <br>
+                                                    <small style="color:green">Login Credentials sent</small>
+                                                    @endif
+                                                    @if($stakeholder->last_login)
+                                                    <br>
+                                                    <small style="color:red">Last Login: <strong>{{$stakeholder->last_login}}</strong></small>
+                                                    @endif
                                                 </div>
                                             </td>
 
