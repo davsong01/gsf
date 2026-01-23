@@ -22,7 +22,7 @@
           </div>
           <div class="col-12 d-flex align-items-center justify-content-center" style="margin-bottom:20px">
             <div class="signin-inner mt-3 mt-lg-0 bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-500">
-                @include('includes.alerts')
+                @include('includes.falerts')
 
                 <form action="{{ route('login') }}" method="POST">
                   @csrf
@@ -35,28 +35,28 @@
                     </div>
                     </div>
                     <div class="form-group">
-                    <div class="form-group"><label for="password">Password</label>
-                        <div class="input-group mb-4">
-                        <div class="input-group-prepend"><span class="input-group-text"><span
-                                class="fas fa-unlock-alt"></span></span></div><input class="form-control" id="password"
-                            placeholder="Password" type="password" name="password" aria-label="Password" required>
+                        <div class="form-group"><label for="password">Password</label>
+                            <div class="input-group mb-4">
+                            <div class="input-group-prepend"><span class="input-group-text"><span
+                                    class="fas fa-unlock-alt"></span></span></div><input class="form-control" id="password"
+                                placeholder="Password" type="password" name="password" aria-label="Password" required hidden>
+                            </div>
                         </div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div class="form-check"><input class="form-check-input" type="checkbox" value id="rm" name="remember_me"> <label
-                            class="form-check-label" for="remember">Remember me</label></div>
-                        <div><a href="password/reset" class="small text-right">Forgot password?</a></div>
-                    </div>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check"><input class="form-check-input" type="checkbox" value id="rm" name="remember_me"> <label
+                                class="form-check-label" for="remember">Remember me</label></div>
+                            <div><a href="password/reset" class="small text-right">Forgot password?</a></div>
+                        </div>
 
                     </div>
 
                     <button type="submit" class="btn btn-block btn-primary">Sign in</button>
                 </form>
-               
+
             </div>
           </div>
         </div>
       </div>
     </section>
-    
+
 @endsection

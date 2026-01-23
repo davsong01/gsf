@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -13,7 +14,7 @@ class OfficialController extends Controller
     public function index()
 	{
         $participants = User::where('role', 1)->latest()->get();
-        
+
         return view('admin.official.index', compact('participants'));
 
 		return abort(404);
@@ -28,93 +29,71 @@ class OfficialController extends Controller
         return view('admin.official.create');
 	}
 
-    public function store(Request $request){
-        dd($request->all());
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name'        => 'required|string|min:3',
+            'email'       => 'required|email|unique:users,email',
+            'phone'       => 'required|string',
+            'gender'      => 'required|in:Male,Female',
+            'passport'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // 2MB
+            'password'    => 'nullable|string',
+            'permissions' => 'nullable|array',
+        ]);
 
-		//Store block for Admin
-		if (auth()->user()->level == 'Admin') {
-			$data = $this->validate($request, [
-				'name' => 'required|min:3',
-				'email' => 'required|unique:users,email',
-				'phone' => 'required',
-				'gender' => 'required',
-                'passport' => 'nullable|max:200',
-                'password' => 'nullable',
-			]);
+        // Handle password
+        $password = Hash::make(
+            $data['password'] ?? $data['phone']
+        );
 
-             //Handle password
-            if ($request['password']) {
-                $password = Hash::make($request['password']);
-            } else {
-                $password = Hash::make($request['phone']);
-            }
-
-                //Handle Passport Upload
-                //get filename with extensionz
-            if ($request['passport']) {
-
-                $imgName = date('Y-m-d-His') . $request->passport->getClientOriginalName();
-                $passport = Image::make($request->passport)->resize(500, 500);
-                $passport->save('frontend/passports' . '/' . $imgName);
-                $passport = 'frontend/passports/' . $imgName;
-
-            } else {
-                $passport = NULL;
-            }
-
-            $user = User::create([
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'],
-                'gender' => $data['gender'],
-                'password' => $password,
-                'slot' => 1,
-                'slot_filled' => 1,
-                'level' => 'Admin',
-                'type' => 4,
-                'Official' => 'YES',
-                'uploaded_by' => auth()->user()->id
-
-            ]);
-
-            $user->update([
-                'conference_number' => 'GSF-official-' . $user->id,
-
-            ]);
-
-            return redirect(route('officials.index'))->with('message', 'Official successfully created');
-
+        // Handle passport upload
+        $passportPath = null;
+        if ($request->hasFile('passport')) {
+            $passportPath = $this->uploadImage(
+                $request->file('passport'),
+                'frontend/passports'
+            );
         }
+
+        $user = User::create([
+            'name'        => $data['name'],
+            'slug'        => Str::slug($data['name']),
+            'email'       => $data['email'],
+            'phone'       => $data['phone'],
+            'gender'      => $data['gender'],
+            'passport'    => $passportPath,
+            'password'    => $password,
+            'role'        => 1,
+            'permissions' => $data['permissions'] ?? [],
+        ]);
+
+        $user->update([
+            'family_id' => 'GSF-OFF-' . $user->id,
+        ]);
+
+        return redirect()
+            ->route('officials.index')
+            ->with('message', 'Official successfully created');
     }
 
     public function edit(User $official)
 	{
-        if (auth()->user()->level == 'Admin' && auth()->user()->official == NULL ) {
-
-            return view('admin.official.edit')->with('official', $official);
-
-        }
+        return view('admin.official.create')->with('official', $official);
     }
 
     public function update(User $official, Request $request){
-// dd($request->all(), $official);
         if ($request['password']) {
             $request['password'] = Hash::make($request['password']);
         } else {
             $request['password'] = Hash::make($request['phone']);
         }
 
-        if($request->level == 'Admin'){
-            $request['official'] = NULL;
-
-        }
-        if($request->level == 'Official'){
-            $request['official'] = 'YES';
-            $request['level'] = 'Admin';
+        if($request->filled('passport')){
+            $request['passport'] = $this->uploadImage($request->passport, 'frontend/passports');
         }
         $official->update($request->all());
 
-        return back()->with('message', 'Update successful');
+        return redirect(route('officials.index'))->with('message', 'Update successful');
     }
 
     public function delete(User $official){

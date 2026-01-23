@@ -18,7 +18,8 @@ class FileUploadService
     ): string {
         $disk = 'protected_uploads';
         $filename = $filename ?: $this->generateFilename($file);
-        $folder = trim($folder, '/');
+        $folder = trim('uploads/'.$folder, '/');
+        
         $path = "{$folder}/{$filename}";
 
         // Delete old file if exists (expects relative path)
@@ -39,6 +40,8 @@ class FileUploadService
 
     public function publicUpload(UploadedFile $file, string $folder = 'uploads', string $oldFile = '', $filename = false): string
     {
+        $folder = 'uploads/'.$folder;
+
         $folderPath = public_path(trim($folder, '/')); // e.g., public/uploads
         $filename   = $filename ?? $file->getClientOriginalName();
 
@@ -69,6 +72,8 @@ class FileUploadService
 
     public function uploadImage($image, $location, $width = null, $height = null)
     {
+        $location = 'uploads/'.$location; // lets have them in one folder henceforth
+
         // Make sure the directory exists
         if (!file_exists($location)) {
             mkdir($location, 0755, true); // recursive mkdir with permissions
@@ -106,7 +111,7 @@ class FileUploadService
         $absolutePath = Storage::disk($disk)->path($decoded);
         $mimeType = Storage::disk($disk)->mimeType($decoded) ?? 'application/octet-stream';
         $fileName = basename($decoded);
-    
+
         // Inline for images/PDF, download otherwise
         $inlineTypes = ['image/jpeg', 'image/png', 'application/pdf'];
         $disposition = in_array($mimeType, $inlineTypes) ? 'inline' : 'attachment';

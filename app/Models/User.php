@@ -86,6 +86,7 @@ class User extends Authenticatable implements MustVerifyEmail
 		} else return false;
 	}
 
+
 	public function scopeIsChoir($edition)
 	{
 		$check = Transaction::where(['level' => 'Choir', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();

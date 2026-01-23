@@ -4,6 +4,11 @@
 <li class="breadcrumb-item">All Officials</li>
 @endsection
 @section('content')
+<style>
+    .details{
+        font-weight: normal
+    }
+</style>
 <div class="content-body">
 	<!-- Zero configuration table -->
 	<section id="basic-datatable">
@@ -16,7 +21,6 @@
 							<a href="{{ route('officials.create') }}" class="btn btn-primary mt-1">Add new official</a>
 
 						</div>
-						@include('includes.alerts')
 
 					</div>
 					<div class="card-content">
@@ -26,15 +30,8 @@
 									<thead>
 										<tr>
 											<th>S/N</th>
-											<th>Date</th>
 											<th>Avatar</th>
-											<th>Login ID</th>
-											<th>Type</th>
-											<th>Name</th>
-											<th>Email</th>
-											<th>Phone</th>
-											<th>Gender</th>
-											<th>Added by</th>
+											<th>Details</th>
 											<th>Actions</th>
 										</tr>
 									</thead>
@@ -42,35 +39,32 @@
 										@foreach($participants as $participant)
 										<tr>
 											<td>{{ $loop->iteration }}</td>
-											<td>{{ $participant->created_at->format('Y-m-d') }}</td>
-											<td><img class="mr-1" style="border-radius:50%"
-													src="{{ asset($participant->passport ? $participant->passport : 'frontend/passports/avatar.jpg') }}"
-													alt="avatar" height="40" width="40"></td>
-											<td>{{ $participant->conference_number }}</td>
 											<td>
-												@if($participant->level == 'Admin' && $participant->official == NULL)Admin  @endif
-												@if($participant->level == 'Admin' && $participant->official == 'YES')Official @endif
-											</td>
-
-											<td>{{ $participant->name }}</td>
-											<td>{{ $participant->email }}</td>
-											<td>{{ $participant->phone }}</td>
-											<td>{{ $participant->gender }}</td>
-											<td style="color:green">{{ isset($participant->moderator) ?$participant->moderator->name : 'N/A'}}</td>
+                                                <img class="mr-1" style="border-radius:50%"
+													src="{{ asset($participant->passport ? $participant->passport : 'frontend/passports/avatar.jpg') }}"
+													alt="avatar" height="40" width="40">
+                                            </td>
+											<td>
+                                                LoginID: <span class="details">{{ $participant->family_id }}</span> <br>
+                                                Name: <span class="details">{{ $participant->name }}</span> <br>
+                                                Email: <span class="details">{{ $participant->email }}</span> <br>
+                                                Phone: <span class="details">{{ $participant->phone }}</span> <br>
+                                                Gender: <span class="details">{{ $participant->gender }}</span>
+                                            </td>
 											<td style="padding-left: 5px; padding-right: 5px;">
-    <div class="btn-group" role="group" aria-label="User Actions">
-        {{-- Edit Button --}}
-        <a href="{{ route('officials.edit', $participant->id) }}" class="btn btn-sm btn-primary">
-            Edit
-        </a>
+                                                <div class="btn-group" role="group" aria-label="User Actions">
+                                                    {{-- Edit Button --}}
+                                                    <a href="{{ route('officials.edit', $participant->id) }}" class="btn btn-sm btn-primary">
+                                                        Edit
+                                                    </a>
 
-        {{-- Delete Button --}}
-        <a href="{{ route('officials.delete', $participant->id) }}" class="btn btn-sm btn-danger"
-           onclick="return confirm('Are you really sure?');">
-            Delete
-        </a>
-    </div>
-</td>
+                                                    {{-- Delete Button --}}
+                                                    <a href="{{ route('officials.delete', $participant->id) }}" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Are you really sure?');">
+                                                        Delete
+                                                    </a>
+                                                </div>
+                                            </td>
 
 										</tr>
 										@endforeach
