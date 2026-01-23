@@ -33,7 +33,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 		$this->data = $data;
 		$this->payment = $payment;
 		$this->setting = $data['setting'] ?? activeConferenceEdition();
-		
+
 		switch ($this->data['import_level']) {
 			case 'Participant':
 				$this->type = 1;
@@ -56,7 +56,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 				$details = app('App\Http\Controllers\Controller')->getExtras(1, $this->setting);
 				break;
 		}
-		
+
 		$this->prefix = $details['ledge'];
 		$this->amount_paid = $this->setting->registration_fee;
 	}
@@ -76,7 +76,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 		$amount_paid = $row['amount_paid'] ?? $this->amount_paid;
 		$payment_type = $row['payment_type'] ?? 'Bulk Upload';
 		$uploaded_by = $row['uploaded_by'] ?? Auth::user()->id;
-		
+
 		if(!$this->data['chapter_id'] && auth()->user()->isAdmin()){
 			$chapter_id = !empty($row['chapter_id']) ? $row['chapter_id'] : $this->getChapterIdByChapterName(trim($row['chapter']));
 		}else{
@@ -103,7 +103,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			'password' => $password,
 			'conference_edition_id' => $this->setting->id
 		];
-		
+
 		$user = app('App\Http\Controllers\Controller')->createUser($data);
 		$payment = app('App\Http\Controllers\Controller')->createPayment($data, $user);
 
@@ -150,7 +150,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 				'registration_status' => 'Complete'
 			]);
 		}
-	
+
 		return $user;
 	}
 
@@ -165,7 +165,7 @@ class ConferenceUsersImport implements ToModel, WithHeadingRow, WithValidation, 
 			'*.gender' => $this->data['import_level'] === 'Participant' ? 'required|in:Male,Female' : 'nullable|in:Male,Female',
 			'*.chapter' => 'nullable|exists:chapters,name',
 		];
-		
+
 	}
 
 	public function customValidationMessages()

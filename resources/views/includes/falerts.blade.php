@@ -18,7 +18,7 @@
         <ul>
             @foreach(session('failures') as $failure)
                 <li>
-                    Row {{ $failure['row'] }} — 
+                    Row {{ $failure['row'] }} —
                     <!-- Display values for email and phone (or any other columns you want) -->
                     @if(isset($failure['data']['email']))
                         Email: <strong>{{ $failure['data']['email'] }}</strong>

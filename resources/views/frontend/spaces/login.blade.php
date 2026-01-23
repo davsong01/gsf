@@ -39,7 +39,7 @@
                             <div class="input-group mb-4">
                             <div class="input-group-prepend"><span class="input-group-text"><span
                                     class="fas fa-unlock-alt"></span></span></div><input class="form-control" id="password"
-                                placeholder="Password" type="password" name="password" aria-label="Password" required hidden>
+                                placeholder="Password" type="password" name="password" aria-label="Password" required>
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-4">

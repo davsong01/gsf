@@ -15,26 +15,20 @@
 @endif
 
 {{-- Import failures --}}
-@if(session('failures'))
-<div class="alert alert-danger alert-dismissible fade show w-100" role="alert">
-    <ul class="mb-0">
-        @foreach(session('failures') as $failure)
-        <li>
-            Row {{ $failure['row'] }} —
-            @if(isset($failure['data']['email']))
-            Email: <strong>{{ $failure['data']['email'] }}</strong>
-            @endif
-            @if(isset($failure['data']['phone']))
-            | Phone: <strong>{{ $failure['data']['phone'] }}</strong>
-            @endif
-            <br>
-            Errors: {{ implode(', ', $failure['errors']) }}
-        </li>
-        @endforeach
-    </ul>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
+@if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show w-100" role="alert">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"></button>
+    </div>
 @endif
+
 
 {{-- Warning --}}
 @if(session()->get('warning'))

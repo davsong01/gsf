@@ -184,7 +184,7 @@ class UserController extends Controller
         ]);
 
         $data = $this->userService->prepareUserData($request);
-
+        
         try {
             $this->userService->createUser($data);
         } catch (\Exception $e) {

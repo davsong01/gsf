@@ -13,6 +13,14 @@ class StakeholderLoginController extends Controller
         return view('auth.stakeholder.login', ['url' => 'stakeholder']);
     }
 
+
+    public function logout(Request $request)
+    {
+        $request->session()->invalidate();
+        return redirect(route('stakeholders.login'));
+
+    }
+
     public function stakeholderLogin(Request $request)
     {
         $request->validate([
@@ -51,13 +59,6 @@ class StakeholderLoginController extends Controller
         }
 
         return $this->loginFailed();
-    }
-
-    public function logout(Request $request)
-    {
-        $request->session()->invalidate();
-        return redirect(route('stakeholders.login'));
-
     }
 
     private function validator(Request $request)

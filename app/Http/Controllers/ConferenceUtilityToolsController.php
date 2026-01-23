@@ -17,7 +17,7 @@ class ConferenceUtilityToolsController extends Controller
     public function utilityIndex(){
         $edition = ConferenceEdition::where('id', request()->edition)
             ->first();
-        
+
         $count = Transaction::where('conference_edition_id', $edition->id)
             ->where('fix_status', 'pending')
             ->whereNotIn('status',['Initiated','abandoned', 'Complete'])
@@ -26,7 +26,7 @@ class ConferenceUtilityToolsController extends Controller
             //         ->where('conference_edition_id', $edition->id);
             // })
             ->count();
-    
+
         if(auth()->user()->conference_role == 'superadmin'){
             return view('conference_management.admin.editions.utility_index', compact('edition','count'));
         }
@@ -42,7 +42,7 @@ class ConferenceUtilityToolsController extends Controller
         if (!$edition) {
             abort(404, 'Edition not found.');
         }
-        
+
         $tempusers = Transaction::where('conference_edition_id', $edition->id)
             ->whereIn('status', ['Initiated', 'abandoned', 'Complete'])
             ->whereIn('fix_status', ['pending'])
@@ -53,7 +53,7 @@ class ConferenceUtilityToolsController extends Controller
             ->take(20)
             ->get()
             ->unique('email');
-            
+
         if(!$tempusers){
             return back()->with([
                 'warning' => 'No Attempted user match'
@@ -68,7 +68,7 @@ class ConferenceUtilityToolsController extends Controller
             try {
                 $request['email'] = $tempuser->email;
                 $validPayment = $this->paystackGetCustomerValidTransactionByEmail($request);
-                
+
                 if (isset($validPayment['transaction']) && $validPayment['success'] == true) {
                     $valid = $validPayment['transaction'];
                     $amount = ($valid['amount'] / 100);
@@ -87,6 +87,7 @@ class ConferenceUtilityToolsController extends Controller
                         'chapter_id' => $tempuser->chapter_id ?? null,
                         'chapter' => $tempuser->chapter_id ?? null,
                         'gender' => $tempuser->gender,
+                        'status' => 1,
                         'registration_status' => 'Complete',
                         'slot' => $slot,
                         'slot_filled' => $slot_filled,
@@ -160,7 +161,7 @@ class ConferenceUtilityToolsController extends Controller
 
                     $tempuser->fix_status = 'checked';
                     $tempuser->save();
-                 
+
                     \Log::warning('No valid transaction for: ' . $tempuser->email);
                     \Log::warning('tempuser: ' . $tempuser);
                     continue;
@@ -188,22 +189,22 @@ class ConferenceUtilityToolsController extends Controller
     {
         try {
             $setting = $request['setting'] ?? activeConferenceEdition();
-            
+
             $paystackSecretKey = $setting->PAYSTACK_SECRET_KEY;
-            
+
             // Step 1: Get customer ID using email
             $customerResponse = Http::withToken($paystackSecretKey)
                 ->get("https://api.paystack.co/customer/{$request->email}");
-            
+
             if (!$customerResponse->ok() || !$customerResponse->json('data.id')) {
                 return [
-                    'success' => false, 
+                    'success' => false,
                     'message' => 'Customer not found.'
                 ];
             }
 
             $customerId = $customerResponse->json('data.id');
-            
+
             // Step 2: Get transactions for this customer ID
             $transactionsResponse = Http::withToken($paystackSecretKey)
                 ->get("https://api.paystack.co/transaction?customer={$customerId}");
@@ -216,7 +217,7 @@ class ConferenceUtilityToolsController extends Controller
             }
 
             $transactions = $transactionsResponse->json('data');
-            // \Log::info(['transactions' => $transactions]);  
+            // \Log::info(['transactions' => $transactions]);
             $filtered = collect($transactions)
                 ->filter(function ($tx) use ($request) {
                     $result = $this->getSuccessFullTransaction($tx, $request['setting']);
@@ -229,14 +230,14 @@ class ConferenceUtilityToolsController extends Controller
                     return $this->getSuccessFullTransaction($tx, $request['setting'])['transaction'];
                 })
                 ->first();
- 
+
             return [
                 'success' => true,
                 'transaction' => $filtered
             ];
         } catch (\Exception $e) {
             return [
-                'success' => false, 
+                'success' => false,
                 'message' => 'Error: ' . $e->getMessage(). ' Line'. $e->getLine() .' File' . $e->getFile()
             ];
         }

@@ -46,7 +46,7 @@
 
                                 <div class="field-set" style="background-size: cover; background-repeat: no-repeat;">
                                     <label>Password</label>
-                                    <input value="{{ old('password') }}" type="text" name="password" id="password" class="form-underline" placeholder="Enter Password" required>
+                                    <input value="{{ old('password') }}" type="password" name="password" id="password" class="form-underline" placeholder="Enter Password" required>
                                 </div>
 
                                 <div class="field-set" style="background-size: cover; background-repeat: no-repeat;">

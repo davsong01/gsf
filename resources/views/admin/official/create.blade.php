@@ -34,7 +34,7 @@
                                 $editing = isset($official);
 
                                 $userPermissions = $editing
-                                    ? $official->permissions
+                                    ? ($official->permissions ?? [])
                                     : old('permissions', []);
 
                                 $permissions = rootPermissions();
@@ -107,7 +107,22 @@
                                             <input type="file" class="form-control" name="passport" accept="image/*">
                                         </div>
                                     </div>
-
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Status</label>
+                                            <select class="form-control" name="status" required>
+                                                <option value="">-- Select --</option>
+                                                <option value="Male"
+                                                    {{ old('status', $official->status ?? '') === '1' ? 'selected' : '' }}>
+                                                    Active
+                                                </option>
+                                                <option value="Female"
+                                                    {{ old('status', $official->status ?? '') === '0' ? 'selected' : '' }}>
+                                                    Inactive
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Password</label>
