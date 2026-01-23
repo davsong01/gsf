@@ -52,7 +52,7 @@
                                                 Gender: <span class="details">{{ $participant->gender }}</span>
                                             </td>
                                             <td>
-                                                Last Login: {{$participant->last_login}}
+                                                {{$participant->last_login}}
                                             </td>
 											<td style="padding-left: 5px; padding-right: 5px;">
                                                 <div class="btn-group" role="group" aria-label="User Actions">

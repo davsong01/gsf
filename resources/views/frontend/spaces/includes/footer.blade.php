@@ -38,7 +38,7 @@
         <div class="row">
             <div class="col mb-md-0">
                 <div class="d-flex text-center justify-content-center align-items-center" role="contentinfo">
-                    <p class="font-weight-normal font-small mb-0">Copyright © {{ env('APP_NAME') }} 
+                    <p class="font-weight-normal font-small mb-0">Copyright © {{ env('APP_NAME') }}
                         <span class="current-year">{{date('Y')}}</span>. All rights reserved
                     </p>
                 </div>
@@ -100,6 +100,22 @@
             };
         }
     })();
+
+     document.querySelectorAll('.toggle-password').forEach(function(toggle) {
+        toggle.addEventListener('click', function() {
+            const input = this.closest('#show_hide_password').querySelector('input');
+            const icon = this.querySelector('i');
+            if(input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
 </script>
 <script defer src="{{asset('gsfcom/js/beacon.min.js')}}" integrity="" data-cf-beacon='' crossorigin="anonymous"></script>
 @yield('js')

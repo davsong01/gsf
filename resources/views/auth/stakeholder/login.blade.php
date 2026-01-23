@@ -49,16 +49,16 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div><a href="#" class="small text-right">Forgot Password? Contact the NPS to have your password reset</a></div>
+                        <div><a href="#" class="small text-right">Forgot Password? Contact the ICT Team to have your password reset</a></div>
                     </div>
                     </div>
                     <button type="submit" class="btn btn-block btn-primary">Sign in</button>
                 </form>
-               
+
             </div>
           </div>
         </div>
       </div>
     </section>
-    
+
 @endsection
