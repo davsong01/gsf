@@ -198,7 +198,7 @@ class CronController extends Controller
                 'type'       => 'report_email',
                 'subject'    => 'Welcome to GSF Digital Portal',
                 'content'    => "
-                    <h4>Dear Representative of {$chapter->name},</h4>
+                    <h5>Dear Representative of {$chapter->name},</h5>
                     <p>Your fellowship representative account has been created or updated.</p>
                     <p><strong>Email:</strong> {$stakeholder->email}<br>
                     <strong>Password:</strong> {$passwordPlain}</p>

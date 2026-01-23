@@ -19,7 +19,7 @@
 
 @if(env('MINISTRY') == 'gsf')
     @if(auth()->user()->conference_role == 'superadmin')
-    <li class="nav-item {{ Request::is('stakeholder*') ? 'open' : '' }}"><a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Reports</span></a>
+    <li class="nav-item {{ Request::is('stakeholder*') ? 'open' : '' }}"><a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Portal Mgt</span></a>
         <ul class="menu-content">
             <!-- REPORTS -->
             <li class="has-sub is_shown">

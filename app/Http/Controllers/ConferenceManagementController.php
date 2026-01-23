@@ -44,12 +44,11 @@ class ConferenceManagementController extends Controller
 			} else {
 				$editions = ConferenceEdition::with('ministry')->where('id', $this->edition->id)->get();
 			}
-			
-			$count = 1;
-			return view('conference_management.admin.editions.index', compact('editions', 'count'));
+
+			return view('conference_management.admin.editions.index', compact('editions'));
 		} else {
 			$edition = (object) activeConferenceEdition();
-			
+
 			if (auth()->user()->transactions->count() > 0) {
 				if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)) {
 					return view('conference_management.participant.index', compact('edition'));
@@ -124,7 +123,7 @@ class ConferenceManagementController extends Controller
 		$filledFields = $transaction->allocationFields
 			->pluck('value', 'key')
 			->toArray();
-		
+
 		$moderator = Transaction::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 
 		$chapters = Chapter::all();
@@ -180,7 +179,7 @@ class ConferenceManagementController extends Controller
 		$chapters = Chapter::all();
 		$edition = ConferenceEdition::where('id', $request->edition)->first();
 		$payment = $conferencemanagement;
-		
+
 		if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isNec($edition) || auth()->user()->isChoir($edition)) {
 			return view('conference_management.participant.single_payment', compact('edition', 'payment', 'chapters'));
 		}
@@ -188,7 +187,7 @@ class ConferenceManagementController extends Controller
 		if (auth()->user()->isModerator($edition)) {
 			$allparticipants = Transaction::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->orderBy('created_at', 'desc');
 			$thispayment = Transaction::with(['hostel', 'moderator'])->where(['uploaded_by' => auth()->user()->id, 'user_id' => auth()->user()->id, 'conference_edition_id' => $payment->conference_edition_id])->first();
-			
+
 			$myParticipants = clone $allparticipants;
 			$myParticipantsAll = $myParticipants->get();
 			$participants = $allparticipants->count();
@@ -228,24 +227,24 @@ class ConferenceManagementController extends Controller
 		} else {
 			$data = $request->all();
 		}
-		
+
 		//Handle password
 		if ($request['password']) {
 			$data['password'] = Hash::make($request['password']);
 		} else {
 			$data['password']  = Hash::make($request['phone']);
 		}
-		
+
 		//Handle Passport Upload
 		if ($request->has('passport')) {
 			$data['passport'] = $this->uploadImage($request->passport, 'images/passports', 400, 400);
 		} else {
 			$data['passport'] = NULL;
 		}
-		
+
 		$setting = ConferenceEdition::find($request->edition);
 		$data['conference_edition_id'] = $setting->id;
-		
+
 		//Store block for Admin
 		if (auth()->user()->role == 1) {
 			$plan = ConferencePlan::where('status', 1)->where('id', $request->conference_plan_id)->where('conference_edition_id', $setting->id)->first();
@@ -271,7 +270,7 @@ class ConferenceManagementController extends Controller
 			$data['amount_paid'] = $request->amount_paid;
 			$data['registration_status'] = 'Complete';
 			$data['payment_type'] = 'Admin';
-			
+
 			$user = $this->createUser($data);
 			$payment = $this->createPayment($data, $user);
 			$family_id = $this->createFamilyId($user, $extras['ledge']);
@@ -311,13 +310,13 @@ class ConferenceManagementController extends Controller
 		}
 
 		$plan = ConferencePlan::where('status', 1)->where('conference_edition_id', $setting->id)->where('level', 'Participant')->first();
-		
+
 		if(!$plan){
 			return back()->with('error', 'No Participant plan found, please contact support');
 		}
 
 		$moderator = Transaction::where(['user_id' => auth()->user()->id, 'level' => 'Moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
-		
+
 		if ($moderator) {
 			// prepare the registration fields
 			$newUserArray = $request->all();
@@ -328,7 +327,7 @@ class ConferenceManagementController extends Controller
 
 			// merge correctly
 			$newUserArray = array_merge($fields, $newUserArray);
-			
+
 			if ($moderator->slot_filled >= $moderator->slot) {
 				DB::rollBack();
 				return back()->with('warning', 'You can no longer add participants because you have used up all available slots');
@@ -341,9 +340,9 @@ class ConferenceManagementController extends Controller
 				$newUserArray['plan']    = $plan;
 				$newUserArray['amount']  = $plan->price;
 				$newUserArray['setting'] = $setting;
-				
+
 				$transaction = PaymentService::initializeTransaction($newUserArray);
-				
+
 				if (!$transaction['status']) {
 					DB::rollBack();
 					return back()->with('error', $transaction['message'] ?? '');
@@ -370,7 +369,7 @@ class ConferenceManagementController extends Controller
 
 				// Generate Family ID
 				$familyId = PaymentService::generateFamilyId($user, $setting);
-				
+
 				$user->update([
 					'passport' => $data['passport'] ?? "frontend/passports/avatar.jpg",
 					'family_id' => $familyId
@@ -481,7 +480,7 @@ class ConferenceManagementController extends Controller
 	{
 		$transaction = Transaction::with('user')->whereId($id)->first();
 		$user = $transaction->user;
-		
+
 		$setting = ConferenceEdition::where('status', 'active')->where('id', $transaction->conference_edition_id)->first();
 		$data = $request->all();
 
@@ -503,7 +502,7 @@ class ConferenceManagementController extends Controller
 
 				$paymentArray['field_id'] = $transaction?->user?->campus?->id;
 				$paymentArray['setting'] = $setting;
-				
+
 				$hostel_allocation = HostelAllocationService::assignHostel($transaction, $paymentArray);
 
 				$data['allocated_hostel_data'] = $hostel_allocation;
@@ -601,7 +600,7 @@ class ConferenceManagementController extends Controller
 		if (auth()->user()->role != 1 && auth()->user()->conference_role != 'superadmin') {
 			return back()->with('message', 'You are not authorized to access this resource');
 		}
-		
+
 		$setting = ConferenceEdition::where('status', 'active')->where('id', $transaction->conference_edition_id)->first();
 		$data = $request->all();
 
@@ -616,7 +615,7 @@ class ConferenceManagementController extends Controller
 			$update['name'] = $paymentupdate['name'] = $data['registration_fields']['name'] ?? $user->name;
 			$update['gender'] = $paymentupdate['gender'] = $data['registration_fields']['gender'] ?? $user->gender;
 			$update['email'] = $paymentupdate['email'] = $data['registration_fields']['email'] ?? $user->email;
-			
+
 			if ($data['registration_fields']['chapter'] || $data['registration_fields']['chapter_id']) {
 				$chapter_id = $data['registration_fields']['chapter'] ?? $data['registration_fields']['chapter_id'];
 				$chapter = Chapter::where('id', $chapter_id)->first();
@@ -641,7 +640,7 @@ class ConferenceManagementController extends Controller
 				if ($request->has('hostel_id') && $request['hostel_id'] != $transaction->hostel_id) {
 					$paymentArray['new_hostel_id'] = $request['hostel_id'] ?? null;
 				}
-				
+
 				$hostel_allocation = HostelAllocationService::assignHostel($transaction, $paymentArray);
 
 				$data['allocated_hostel_data'] = $hostel_allocation;
@@ -685,7 +684,7 @@ class ConferenceManagementController extends Controller
 			if ($request->has('password') && !empty($request->password)) {
 				$update['password'] = Hash::make($request['password']);
 			}
-			
+
 			// handle food change
 			if ($request->has('food_id') && $request['food_id'] != $transaction->food_id) {
 				$paymentArray = array_merge($data, $transaction->ToArray());
@@ -693,7 +692,7 @@ class ConferenceManagementController extends Controller
 
 				$paymentArray['new_food_id'] = $request['food_id'];
 				$service_point = ServicePointAllocationService::assignFoodStand($paymentArray);
-	
+
 				$data['allocated_service_point_data'] = $service_point;
 				$paymentupdate['service_point_allocation_number'] = $service_point['service_point_allocation_number'];
 				$paymentupdate['service_point_allocation_type'] = $service_point['service_point_allocation_type'];
@@ -701,13 +700,13 @@ class ConferenceManagementController extends Controller
 			} else {
 				$paymentupdate['food_id'] = $transaction->food_id;
 			}
-			
+
 			$user->update($update);
-			
+
 			if (!empty($paymentupdate)) {
 				$transaction->update($paymentupdate);
 			}
-			
+
 
 			// Update registration fields
 			if (!empty($data['registration_fields'])) {
@@ -724,7 +723,7 @@ class ConferenceManagementController extends Controller
 			// END UPDATE registrationn fields
 			// $user = $user->fresh();
 			// $transaction = $transaction->fresh();
-			
+
 			DB::commit();
 
 			return back()->with('message', 'Operation successful');
@@ -741,7 +740,7 @@ class ConferenceManagementController extends Controller
 
 		$edition = ConferenceEdition::find($request->edition);
 		$user = User::find($id);
-		
+
 		if (isset($edition) && $edition->status == 'active') {
 			if (auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin') {
 				//Handle password
@@ -771,11 +770,11 @@ class ConferenceManagementController extends Controller
 	public function participants($type = '', $edition = '')
 	{
 		$count = 1;
-		
+
 		if (auth()->user()->role == 1) {
 			$participants = Transaction::with('user')->where('conference_edition_id', $edition)->wherehas('user')->where('level', $type)->latest()->take(10)->get();
 			$edition = ConferenceEdition::find($edition);
-			
+
 			return view('conference_management.admin.users.index', compact('participants', 'count', 'edition', 'type'));
 		}
 	}
@@ -854,23 +853,23 @@ class ConferenceManagementController extends Controller
 		$currentPlan = ConferencePlan::where('status', 1)
 			->where('conference_edition_id', $edition->id)->where('level', $type)->first();
 
-	
+
 		$fields = $currentPlan?->fields()->sortBy('display_order');
-		
+
 		if (auth()->user()->role == 1) {
 			$type = $request->type;
 			$chapters = Chapter::all();
-			
+
 			return view('conference_management.admin.users.import', compact('chapters', 'edition', 'type'));
 		}
-		
+
 		if (auth()->user()->isModerator($edition)) {
 			$transaction = Transaction::where(['user_id' => auth()->user()->id, 'conference_edition_id' => $edition->id, 'registration_status' => 'Complete'])->first();
 
 			if ($transaction->slot_filled >= $transaction->slot) {
 				return back()->with('error', 'You have already exhausted your registration slots');
 			}
-			
+
 			return view('conference_management.moderator.users.import', compact('edition', 'type', 'transaction', 'fields'));
 		}
 	}
@@ -897,21 +896,21 @@ class ConferenceManagementController extends Controller
 				$headers[] = $name;
 			}
 		}
-		
+
 		$sample = [];
 		foreach ($fields as $type => $names) {
 			foreach ($names as $name) {
 				$sample[$name] = generateSampleValue($type, $name);
 			}
 		}
-		
+
 		return ExcelService::download([$sample], $headers, Str::lower($request->type) . 'sample.xlsx');
 	}
 
 
 	public function import(Request $request)
 	{
-		
+
 // "name" => "sdsdsdsdsd"
 //   "email" => "aa@gmail.com"
 //   "phone" => "0930493434"
@@ -940,16 +939,16 @@ class ConferenceManagementController extends Controller
 	public function adminImport(Request $request)
 	{
 		$edition = ConferenceEdition::find($request->edition) ?? activeConferenceEdition();
-		
+
 		$data = $this->validate($request, [
 			'file' => 'required|mimes:xlsx,csv',
 			'chapter_id' => 'nullable',
 			'import_level' => 'required|in:Participant,Moderator,Alumni,Nec,Choir',
 		]);
-		
+
 		$data['setting'] = $edition;
 		$redirectRoute = auth()->user()->isAdmin() ? route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]) : route('conferenceusers.import.index');
-		
+
 		return redirect(route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]))->with([
 			'message' => 'Upload Successful',
 		]);
