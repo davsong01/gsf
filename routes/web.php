@@ -41,6 +41,7 @@ use App\Http\Controllers\CriticalEmailController;
 use App\Http\Controllers\MinistryFieldController;
 use App\Http\Controllers\ConferencePlanController;
 use App\Http\Controllers\PaymentProviderController;
+use App\Http\Controllers\StaffManagementController;
 use App\Http\Controllers\StakeholderRoleController;
 use App\Http\Controllers\StakeholderLoginController;
 use App\Http\Controllers\ConferenceEditionController;
@@ -214,6 +215,17 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::get('nec-delete/{id}', [NecController::class, 'delete'])->name('nec.delete');
     Route::resource('users', UserController::class);
+
+
+    Route::controller(StaffManagementController::class)->group(function () {
+        Route::get('staff', 'index')->name('staff.index');
+        Route::get('staff-create/{edition?}', 'create')->name('staff.create');
+        Route::post('staff-store/{edition?}', 'ctore')->name('staff.store');
+        Route::get('staff-edit/{id}/{edition?}', 'edit')->name('staff.edit');
+        Route::PATCH('staff-update/{id}', 'update')->name('staff.update');
+        Route::get('staff.delete/{id}', 'destroy')->name('staff.delete');
+    });
+
     Route::get('export-users', [UserController::class, 'exportUsers'])->name('users.export');
 
     Route::get('donations-all', [DonationController::class, 'allDonations'])->name('donations.all');
