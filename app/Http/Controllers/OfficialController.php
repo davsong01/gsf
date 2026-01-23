@@ -42,9 +42,11 @@ class OfficialController extends Controller
         ]);
 
         // Handle password
-        $password = Hash::make(
-            $data['password'] ?? $data['phone']
-        );
+       if ($request['password']) {
+            $password = Hash::make($request['password']);
+        } else {
+            $password = Hash::make($request['phone']);
+        }
 
         // Handle passport upload
         $passportPath = null;
