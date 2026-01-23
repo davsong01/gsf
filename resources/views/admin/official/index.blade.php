@@ -19,7 +19,6 @@
 						<h4 class="card-title">All Officials</h4>
 						<div class="">
 							<a href="{{ route('officials.create') }}" class="btn btn-primary mt-1">Add new official</a>
-
 						</div>
 
 					</div>
@@ -32,6 +31,7 @@
 											<th>S/N</th>
 											<th>Avatar</th>
 											<th>Details</th>
+											<th>Last Login</th>
 											<th>Actions</th>
 										</tr>
 									</thead>
@@ -50,6 +50,9 @@
                                                 Email: <span class="details">{{ $participant->email }}</span> <br>
                                                 Phone: <span class="details">{{ $participant->phone }}</span> <br>
                                                 Gender: <span class="details">{{ $participant->gender }}</span>
+                                            </td>
+                                            <td>
+                                                Last Login: {{$participant->last_login}}
                                             </td>
 											<td style="padding-left: 5px; padding-right: 5px;">
                                                 <div class="btn-group" role="group" aria-label="User Actions">

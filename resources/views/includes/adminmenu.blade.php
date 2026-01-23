@@ -91,88 +91,88 @@
     @endif --}}
 
     @if(
-    in_array('stakeholderreports.index', $userPermissions) ||
-    in_array('stakeholderreportsection.index', $userPermissions) ||
-    in_array('stakeholderreportsubsection.index', $userPermissions) ||
-    in_array('stakeholder.questions.index', $userPermissions) ||
-    in_array('stakeholderroles.index', $userPermissions) ||
-    in_array('stakeholderpermissions.index', $userPermissions) ||
-    in_array('designation.index', $userPermissions) ||
-    in_array('stakeholderpersonnel.index', $userPermissions)
-)
-<li class="nav-item has-sub {{ Request::is('stakeholder*') ? 'open is_shown' : '' }}">
-    <a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Portal Mgt</span></a>
-    <ul class="menu-content">
-        {{-- REPORTS --}}
-        @if(in_array('stakeholderreports.index', $userPermissions))
-        <li class="has-sub {{ Request::is('stakeholderreports*') ? 'open is_shown' : '' }}">
-            <a href="#"><i class="bx bx-file"></i><span class="menu-item">Reports</span></a>
+        in_array('stakeholderreports.index', $userPermissions) ||
+        in_array('stakeholderreportsection.index', $userPermissions) ||
+        in_array('stakeholderreportsubsection.index', $userPermissions) ||
+        in_array('stakeholder.questions.index', $userPermissions) ||
+        in_array('stakeholderroles.index', $userPermissions) ||
+        in_array('stakeholderpermissions.index', $userPermissions) ||
+        in_array('designation.index', $userPermissions) ||
+        in_array('stakeholderpersonnel.index', $userPermissions)
+    )
+        <li class="nav-item has-sub {{ Request::is('stakeholder*') ? 'open is_shown' : '' }}">
+            <a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Portal Mgt</span></a>
             <ul class="menu-content">
-                <li>
-                    <a href="{{ route('stakeholderreports.index') }}">
-                        <i class="bx bx-right-arrow-alt"></i><span class="menu-item">Monthly Reports</span>
-                    </a>
+                {{-- REPORTS --}}
+                @if(in_array('stakeholderreports.index', $userPermissions))
+                <li class="has-sub {{ Request::is('stakeholderreports*') ? 'open is_shown' : '' }}">
+                    <a href="#"><i class="bx bx-file"></i><span class="menu-item">Reports</span></a>
+                    <ul class="menu-content">
+                        <li>
+                            <a href="{{ route('stakeholderreports.index') }}">
+                                <i class="bx bx-right-arrow-alt"></i><span class="menu-item">Monthly Reports</span>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
-            </ul>
-        </li>
-        @endif
+                @endif
 
-        {{-- REPORT STRUCTURE --}}
-        @if(
-            in_array('stakeholderreportsection.index', $userPermissions) ||
-            in_array('stakeholderreportsubsection.index', $userPermissions) ||
-            in_array('stakeholder.questions.index', $userPermissions)
-        )
-        <li class="has-sub {{ Request::is('stakeholderreportsection*') || Request::is('stakeholderreportsubsection*') || Request::is('stakeholder.questions*') ? 'open is_shown' : '' }}">
-            <a href="#"><i class="bx bx-layer"></i><span class="menu-item">Report Structure</span></a>
-            <ul class="menu-content">
-                @if(in_array('stakeholderreportsection.index', $userPermissions))
-                <li>
-                    <a href="{{ route('stakeholderreportsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Sections</span></a>
+                {{-- REPORT STRUCTURE --}}
+                @if(
+                    in_array('stakeholderreportsection.index', $userPermissions) ||
+                    in_array('stakeholderreportsubsection.index', $userPermissions) ||
+                    in_array('stakeholder.questions.index', $userPermissions)
+                )
+                <li class="has-sub {{ Request::is('stakeholderreportsection*') || Request::is('stakeholderreportsubsection*') || Request::is('stakeholder.questions*') ? 'open is_shown' : '' }}">
+                    <a href="#"><i class="bx bx-layer"></i><span class="menu-item">Report Structure</span></a>
+                    <ul class="menu-content">
+                        @if(in_array('stakeholderreportsection.index', $userPermissions))
+                        <li>
+                            <a href="{{ route('stakeholderreportsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Sections</span></a>
+                        </li>
+                        @endif
+                        @if(in_array('stakeholderreportsubsection.index', $userPermissions))
+                        <li>
+                            <a href="{{ route('stakeholderreportsubsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Sub Sections</span></a>
+                        </li>
+                        @endif
+                        @if(in_array('stakeholder.questions.index', $userPermissions))
+                        <li>
+                            <a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Items</span></a>
+                        </li>
+                        @endif
+                    </ul>
                 </li>
                 @endif
-                @if(in_array('stakeholderreportsubsection.index', $userPermissions))
-                <li>
-                    <a href="{{ route('stakeholderreportsubsection.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Sub Sections</span></a>
-                </li>
-                @endif
-                @if(in_array('stakeholder.questions.index', $userPermissions))
-                <li>
-                    <a href="{{ route('stakeholder.questions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Items</span></a>
-                </li>
-                @endif
-            </ul>
-        </li>
-        @endif
 
-        {{-- ACCESS CONTROL --}}
-        @if(
-            in_array('stakeholderroles.index', $userPermissions) ||
-            in_array('stakeholderpermissions.index', $userPermissions) ||
-            in_array('designation.index', $userPermissions) ||
-            in_array('stakeholderpersonnel.index', $userPermissions)
-        )
-        <li class="has-sub {{ Request::is('stakeholderroles*') || Request::is('stakeholderpermissions*') || Request::is('designation*') || Request::is('stakeholderpersonnel*') ? 'open is_shown' : '' }}">
-            <a href="#"><i class="bx bx-lock"></i><span class="menu-item">Access Control</span></a>
-            <ul class="menu-content">
-                @if(in_array('stakeholderroles.index', $userPermissions))
-                <li><a href="{{ route('stakeholderroles.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Roles</span></a></li>
-                @endif
-                @if(in_array('stakeholderpermissions.index', $userPermissions))
-                <li><a href="{{ route('stakeholderpermissions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Permissions</span></a></li>
-                @endif
-                @if(in_array('designation.index', $userPermissions))
-                <li><a href="{{ route('designation.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Designations</span></a></li>
-                @endif
-                @if(in_array('stakeholderpersonnel.index', $userPermissions))
-                <li><a href="{{ route('stakeholderpersonnel.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Stakeholders</span></a></li>
+                {{-- ACCESS CONTROL --}}
+                @if(
+                    in_array('stakeholderroles.index', $userPermissions) ||
+                    in_array('stakeholderpermissions.index', $userPermissions) ||
+                    in_array('designation.index', $userPermissions) ||
+                    in_array('stakeholderpersonnel.index', $userPermissions)
+                )
+                <li class="has-sub {{ Request::is('stakeholderroles*') || Request::is('stakeholderpermissions*') || Request::is('designation*') || Request::is('stakeholderpersonnel*') ? 'open is_shown' : '' }}">
+                    <a href="#"><i class="bx bx-lock"></i><span class="menu-item">Access Control</span></a>
+                    <ul class="menu-content">
+                        @if(in_array('stakeholderroles.index', $userPermissions))
+                        <li><a href="{{ route('stakeholderroles.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Roles</span></a></li>
+                        @endif
+                        @if(in_array('stakeholderpermissions.index', $userPermissions))
+                        <li><a href="{{ route('stakeholderpermissions.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Permissions</span></a></li>
+                        @endif
+                        @if(in_array('designation.index', $userPermissions))
+                        <li><a href="{{ route('designation.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Designations</span></a></li>
+                        @endif
+                        @if(in_array('stakeholderpersonnel.index', $userPermissions))
+                        <li><a href="{{ route('stakeholderpersonnel.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Stakeholders</span></a></li>
+                        @endif
+                    </ul>
+                </li>
                 @endif
             </ul>
         </li>
-        @endif
-    </ul>
-</li>
-@endif
+    @endif
 
     {{-- NEC MANAGEMENT --}}
     @if(in_array('nec.index', $userPermissions))
