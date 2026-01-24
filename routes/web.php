@@ -542,12 +542,6 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('users/{user}/edit', 'memberEdit')->name('users.edit');
             Route::patch('users/{user}', 'memberUpdate')->name('users.update');
 
-            Route::delete('users/{user}', 'destroy')->name('users.destroy');
-
-            // Profile
-            Route::patch('users/profile/{user}', 'saveProfile')
-                ->name('users.profile.save');
-
             // Export / Import
             Route::get('export-users', 'exportUsers')->name('export');
 
@@ -555,15 +549,23 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
                 ->name('import.index');
 
             Route::post('users/import/index', 'import')
-                ->name('import');
+                ->name('users.import');
 
             // Legacy delete (if still needed)
-            Route::get('deleteusers/{id}', 'delete')
-                ->name('users.delete');
+            // Route::get('deleteusers/{id}', 'delete')
+                // ->name('users.delete');
+
+
+            // Alumni Management
+            Route::get('alumni', 'alumniIndex')->name('alumni.index');
+            Route::post('allalumni', 'allMemberalumni' )->name('alumni.all');
+            Route::post('alumni', 'memberStore')->name('alumni.store');
+            Route::get('alumni/create', 'memberCreate')->name('alumni.create');
+            Route::get('alumni/{user}/edit', 'memberEdit')->name('alumni.edit');
+            Route::patch('alumni/{user}', 'memberUpdate')->name('alumni.update');
 
             Route::get('chapters/{chapter}/edit', 'chapterEdit')->name('chapters.edit');
             Route::put('chapters/{chapter}', 'chapterUpdate')->name('chapters.update');
-
         });
 
     });

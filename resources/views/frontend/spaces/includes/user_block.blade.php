@@ -1,3 +1,10 @@
+<style>
+    .rounded-circle{
+        object-fit: cover;
+        height: 150px;
+        width: 150px;
+    }
+</style>
 <div class="col-12 col-md-6 col-lg-4 mb-7">
     <div class="card border-light text-center shadow">
         <div class="profile-thumbnail mx-auto mt-n6">
@@ -13,26 +20,24 @@
                 @if($user->stakeholder->role == 'Field Pastor' && !is_null($user->stakeholder->field_id)) <span class="portfolio">Field Pastor, </span>{{ $user->stakeholder->field->name ?? 'N/A' }}@endif
                 @if($user->stakeholder->role == 'Portfolio') <span class="portfolio" >{{ 'GSF National '.$user->stakeholder->portfolio }} </span> @endif
             @endif
-            <br>
+
             @if(!empty($user->campus->id) && $user->campus->id != 86)
             <span class="card-subtitle text-gray font-weight-normal"><em>
                 {{ $user->campus->name ?? $user->c_name }}
             </em>
-            <br>
+
             @endif
-            @if($user->is_graduated == 0 && $user->rolename <> 'Admin')
+            @if($user->rolename !== 'Admin')
                 <small>
-                    @if($user->rolename == 'Member')
-                    ( <strong>{{ $user->rolename }}</strong>
-                    @if($user->matric_year && $user->graduation_year), {{ $user->matric_year . ' - ' . $user->graduation_year }} )
-                    @else) @endif
-                    @else
-                    @if($user->rolename)
-                    (<strong>{{ $user->rolename . ', '}}</strong>{{ $user->portfolio_session }})
-                    @endif
+                    @if($user->is_graduated && $user->matric_year && $user->graduation_year)
+                        <br>
+                        ({{ $user->matric_year . ' - ' . $user->graduation_year }})
+                    @elseif(!$user->is_graduated && $user->matric_year)
+                        <br>({{ $user->matric_year }} - {{ now()->year }})
                     @endif
                 </small>
             @endif
+
             @if($user->show_phone == 1)
             <br>
             <li class="list-group-item small p-0"><span class="fa fa-mobile" data-toggle="tooltip" data-html="true" title="Phone" aria-hidden="true"></span> {{ $user->phone }}
@@ -60,7 +65,7 @@
                 @endif
             </ul>
             <p class="card-text my-2">
-                @if($user->is_graduated == 0)
+                @if($user->status == 0)
                 <a href="{{ route('user.single', $user->slug) }}" class="btn btn-sm btn-primary animate-up-2" style="color: white;">View details</a>
                 @else
                 <a href="{{ route('user.single', $user->slug) }}"><button class="btn btn-sm btn-primary animate-up-2">View details</button></a>

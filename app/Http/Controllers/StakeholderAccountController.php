@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\User;
 use App\Models\Zone;
 use App\Models\Field;
 use App\Models\Chapter;
+use App\Imports\UsersImport;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Excel;
 use App\Services\UserService;
+use App\Services\ExcelService;
 use App\Models\StakeholderReport;
 use App\Services\FileUploadService;
 use App\Http\Controllers\Controller;
@@ -110,6 +114,22 @@ class StakeholderAccountController extends Controller
         ]);
     }
 
+    public function alumniIndex(Request $request)
+    {
+        $chapter = auth()->guard('stakeholder')->user()?->chapter;
+
+        return view('stakeholder.users.index', [
+            'routes' => [
+                'create' => route('stakeholders.alumni.create'),
+                'import' => route('stakeholders.alumni.index'),
+                'export' => route('stakeholders.export'),
+                'all'    => route('stakeholders.alumni.all'),
+            ],
+            'isAdmin' => false,
+            'chapter'   => $chapter,
+        ]);
+    }
+
     public function allMemberUsers(Request $request){
         $chapterId = auth()->guard('stakeholder')->user()->chapter_id; // Sub-admins restricted by chapter
 
@@ -118,6 +138,27 @@ class StakeholderAccountController extends Controller
         $request['canEdit'] = true;
         $request['canSwitch'] = false;
         $request['isStakeholder'] = true;
+        $request['filters'] = [
+            'is_graduated' => 0
+        ];
+
+        $json_data = $this->userService->getAllUsers( $request->all());
+
+        return response()->json($json_data);
+    }
+
+    public function allMemberalumni(Request $request){
+        $chapterId = auth()->guard('stakeholder')->user()->chapter_id; // Sub-admins restricted by chapter
+
+        $request['chapter_id'] = $chapterId;
+        $request['canDelete'] = false;
+        $request['canEdit'] = true;
+        $request['canSwitch'] = false;
+        $request['isStakeholder'] = true;
+        $request['filters'] = [
+            'is_graduated' => 1
+        ];
+
         $json_data = $this->userService->getAllUsers( $request->all());
 
         return response()->json($json_data);
@@ -145,6 +186,31 @@ class StakeholderAccountController extends Controller
         $isAdmin = false;
 
         return view('stakeholder.users.edit', compact('portfolios', 'sessions','campusDesignations', 'isAdmin'));
+	}
+
+    public function usersImportIndex()
+	{
+		return view('stakeholder.users.import');
+	}
+
+	public function import(Request $request)
+	{
+        $request['chapter_id'] = auth()->guard('stakeholder')->user()->chapter_id;
+
+		$data = $this->validate($request, [
+			'type' => 'required|numeric',
+			'chapter_id' => 'required|numeric',
+			'file' => 'required|mimes:xlsx,csv',
+		]);
+
+		try {
+			$this->userService->importUsers($request);
+		} catch (Exception $ex) {
+			$error = $ex->getMessage();
+			return back()->with('error', $error);
+		}
+
+        return redirect(route('stakeholders.users.index'));
 	}
 
     public function chapterEdit(Chapter $chapter)

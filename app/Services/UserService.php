@@ -53,20 +53,36 @@ class UserService
         return $user->update($data);
     }
 
-    public function uploadImage($file, $folder = 'frontend/passports', $width = 500, $height = 500): string
+    public function importUsers($request)
     {
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $path = $file->storeAs($folder, $filename, 'public');
+        $users = ExcelService::import($request->file('file'));
 
-        // Optional: resize with Intervention Image if needed
-        // \Image::make(storage_path("app/public/$path"))->fit($width, $height)->save();
+        foreach ($users as &$user) {
+            $user = array_change_key_case($user, CASE_LOWER);
 
-        return 'storage/' . $path;
+            // Normalize values as needed
+            $user['password'] = Hash::make(trim(strtolower($user['phone'])));
+            $user['chapter_id'] = $request->chapter_id;
+            $user['gender'] = ucfirst(strtolower($user['gender']));
+            $user['role'] = 2;
+            $user['status'] = 'active';
+            $user['is_graduated'] = $request->type;
+            $user['slug'] = $user['name'];
+
+            try {
+                $this->createUser($user);
+                //code...
+            } catch (\Throwable $th) {
+                continue;
+            }
+        }
+
+        return;
     }
 
     protected function createFamilyId(User $user)
     {
-        $user->family_id = 'FAM-' . str_pad($user->id, 5, '0', STR_PAD_LEFT);
+        $user->family_id = 'GSFP-' . str_pad($user->id, 5, '0', STR_PAD_LEFT);
         $user->save();
     }
 
@@ -128,8 +144,14 @@ class UserService
         $canDelete    = $requestData['canDelete'] ?? false;
         $canSwitch    = $requestData['canSwitch'] ?? false;
         $isStakeholder= $requestData['isStakeholder'] ?? false;
+        $filters = $requestData['filters'] ?? [];
+        $isAdmin = $requestData['isAdmin'] ?? false;
 
         $baseQuery = User::query()->where('role', '<>', 1);
+
+        if (!empty($filters)) {
+            $baseQuery->where($filters);
+        }
 
         if ($chapterId) {
             $baseQuery->where('chapter_id', $chapterId);
@@ -173,7 +195,10 @@ class UserService
                 'family_id' => $user->family_id . '<br>' .
                ($user->status == 'active'
                    ? '<span class="badge bg-success">Active</span>'
-                   : '<span class="badge bg-danger">Inactive</span>'),
+                   : '<span class="badge bg-danger">Inactive</span>') .
+               ($isAdmin
+                   ? '<br><span>Last Login: ' . ($user->last_login ?? 'N/A') . '</span>'
+                   : ''),
 
                 'details' => "<strong>{$user->name}</strong><br>
                             <i class='fa fa-envelope'></i> {$user->email}<br>

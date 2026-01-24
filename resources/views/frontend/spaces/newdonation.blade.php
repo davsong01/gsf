@@ -61,25 +61,25 @@
                           <label for="campus">Alma Mater (Campus - Optional)</label>
                           <select name="campus" id="campus" class="form-control select2" aria-label="Campus" >
                             <option value="" selected>Select...</option>
-                            @foreach(\App\Models\Chapter::where('id','<>',86)->get() as $chapter)
+                            @foreach(\App\Models\Chapter::where('id','<>',86)->orderBy('name')->get() as $chapter)
                               <option value="{{$chapter->id}}" {{ old('campus') == $chapter->id ? 'selected' : '' }}>{{ $chapter->name }}</option>
                             @endforeach
                           </select>
-                      </div> 
+                      </div>
                       <div class="mb-4">
                           <label for="type">Are you an Alumni</label>
                           <select name="membership_status" id="membership_status" class="form-control" required aria-label="membership_status" >
                             <option value="Alumni" {{ old('membership_status') == 'Alumni' ? 'selected' : '' }}>Yes</option>
                             <option value="Student" {{ old('membership_status') == 'Stadent' ? 'selected' : '' }}>No</option>
                           </select>
-                      </div>  
+                      </div>
                       <div class="mb-4">
                           <label for="type">Donation Type</label>
                           <select name="type" id="type" class="form-control" required aria-label="type" >
                             <option value="donation" {{ old('type') == 'donation' ? 'selected' : '' }}>Donation</option>
                             <option value="annual-due" {{ old('type') == 'annual-due' ? 'selected' : '' }}>Annual Due</option>
                           </select>
-                      </div>  
+                      </div>
                       <div class="mb-4">
                         <label for="amount">Amount</label>
                         <input class="form-control" required id="amount" name="amount" value="{{old('amount')}}" placeholder="Enter Amount" type="text" aria-label="amount">
@@ -97,7 +97,7 @@
                       <button type="submit" class="btn btn-block btn-primary">Make payment</button>
                     </div>
                   </div>
-                  
+
                 </form>
             </div>
           </div>

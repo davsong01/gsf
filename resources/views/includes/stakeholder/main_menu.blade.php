@@ -53,11 +53,17 @@
                         <span class="menu-title" data-i18n="User">Monthly Reports</span>
                     </a>
                 </li>
-                
+
                 <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.users') ? 'active' : '' }}">
                     <a href="{{ route('stakeholders.users.index') }}">
                         <i class="fa fa-users" aria-hidden="true"></i>
                         <span class="menu-title" data-i18n="User">Chapter Members</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.alumni') ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.alumni.index') }}">
+                        <i class="fa fa-graduation-cap" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Chapter Alumni</span>
                     </a>
                 </li>
                 <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.chapters') ? 'active' : '' }}">

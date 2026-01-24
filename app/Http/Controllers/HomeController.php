@@ -157,8 +157,17 @@ class HomeController extends Controller
     }
 
     public function alumni() {
-        $alumnis = User::wherehas('campus')->whereStatus(1)->where('role', '<>', 1)->paginate(12)->withQueryString();
-        return view('frontend.' . frontendTemplate() . '.alumni', compact('alumnis'));
+        $chapters = Chapter::orderBy('name')->get();
+
+        $alumnis = User::wherehas('campus')
+            ->whereStatus('active')
+                ->where('role', '<>', 1)
+                    ->where('is_graduated', 1)
+                        ->latest()
+                            ->paginate(15)
+                                ->withQueryString();
+        
+        return view('frontend.' . frontendTemplate() . '.alumni', compact('alumnis','chapters'));
     }
 
     public function nec()
@@ -175,7 +184,13 @@ class HomeController extends Controller
     }
 
     public function students() {
-        $alumnis = User::wherehas('campus')->whereStatus(0)->where('role', '<>', 1)->paginate(15)->withQueryString();
+        $alumnis = User::wherehas('campus')
+            ->whereStatus('active')
+                ->where('role', '<>', 1)
+                    ->where('is_graduated', 0)
+                        ->latest()
+                            ->paginate(15)
+                                ->withQueryString();
         return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
     }
 

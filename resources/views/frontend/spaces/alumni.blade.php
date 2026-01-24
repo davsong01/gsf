@@ -1,10 +1,3 @@
-<?php
-  use App\Models\Chapter;
-  $chapters = Chapter::where('id', '!=', 86)->get();
-  $portfolios = app('App\Http\Controllers\Controller')->getCommunityPortfolios();
-  $sessions = range(date('Y'), date('1982'));
-
-?>
 @extends('frontend.spaces.layouts.app')
 @section('title', 'Alumni')
 
@@ -81,14 +74,14 @@
                         <div class="col-12 col-lg-5">
                             <div class="form-group form-group-lg mb-lg-0">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="input-group-text"><span class="fas fa-user"></span></span></div><input id="name" name="name" type="text" class="form-control" placeholder="Type a name">
+                                    <div class="input-group-prepend"><span class="input-group-text"><span class="fas fa-user"></span></span></div><input id="namex" name="name" type="text" class="form-control" placeholder="Type a name">
                                 </div>
                             </div>
                         </div>
                         <div class="col-12 col-lg-5">
                             <div class="form-group form-group-lg mb-lg-0">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="input-group-text"><span class="fas fa-university"></span></span></div><input id="school" name="school" type="text" class="form-control" placeholder="Type school name or leave empty">
+                                    <div class="input-group-prepend"><span class="input-group-text"><span class="fas fa-university"></span></span></div><input id="schoolx" name="school" type="text" class="form-control" placeholder="Type school name or leave empty">
                                 </div>
                             </div>
                         </div>
@@ -127,138 +120,115 @@
     </div>
   </div>
 
-  <div class="modal fade" id="modal-form-single" tabindex="-1" role="dialog" aria-labelledby="modal-form" style="display: none;" aria-hidden="true">
+<div class="modal fade" id="modal-form-single" tabindex="-1" role="dialog" aria-labelledby="modal-form" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content"><div class="modal-body p-0">
-            <div class="card shadow-md border-0">
-                <div class="card-body position-relative">
-                    <button type="button" class="close mb-2" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                    <form class="mt-3" action="{{ route('upload-alumni', 'single') }}" method="POST" enctype="multipart/form-data">
-                      @csrf
-                      <div class="row">
-                          <div class="col-md-12 col-sm-12">
-                            <h4 style="text-align: center;margin-bottom:40px">Can't find your details in the GSF alumni database? Submit this form and get added.</h4>
-                          </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-md-6 col-sm-12">
-                            <fieldset class="form-group">
-                                <label for="name">Name</label>
-                                <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" placeholder="Enter name">
-                            </fieldset>
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <div class="card shadow border-0">
+                    <div class="card-body position-relative">
+                        <button type="button" class="close mb-2" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
 
-                            <fieldset class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" id="email" name="email" placeholder="Enter email" class="form-control" value="{{ old('email') }}" required>
-                            </fieldset>
+                        <form class="mt-3" action="{{ route('upload-alumni', 'single') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div class="text-center mb-4">
+                                <h4>Can't find your details in the GSF alumni database? Submit this form and get added.</h4>
+                            </div>
 
-                            <fieldset class="form-group">
-                                <label for="phone">Phone</label>
-                                <input type="phone" id="phone" placeholder="Enter phone number" name="phone" class="form-control" value="{{ old('phone') }}" required>
-                            </fieldset>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <fieldset class="form-group">
+                                        <label for="name">Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" placeholder="Enter name">
+                                    </fieldset>
 
-                            <fieldset class="form-group">
-                                <label for="gender">Gender</label>
-                                <select class="form-control" name="gender" id="gender" required>
-                                      <option value="">--Select Gender--</option>
-                                    <option value="Male" {{ old('gender') == 'Male' ? 'selected' : ''}}>Male</option>
-                                    <option value="Female" {{ old('gender') == 'Female' ? 'selected' : ''}}>Female</option>
-                                </select>
-                            </fieldset>
-                            <input type="hidden" name="status" value="1">
+                                    <fieldset class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" placeholder="Enter email" required>
+                                    </fieldset>
 
-                          <fieldset class="form-group">
-                              <label for="open_to_work">Open to work?</label>
-                              <select class="form-control" name="open_to_work" id="open_to_work" required>
-                                  <option value="1" {{ old('open_to_work') == 1 ? 'selected' : ''}}>Yes</option>
-                                  <option value="0" {{ old('open_to_work') == 0 ? 'selected' : ''}}>No</option>
-                              </select>
-                          </fieldset>
-                          <fieldset class="form-group @error('image')is-invalid @enderror">
-                              <label for="image">Upload Passport</label>
-                              <input type= "file"  accept="image/*" class="form-control" name="image" id="image">
-                          </fieldset>
+                                    <fieldset class="form-group">
+                                        <label for="phone">Phone</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone" value="{{ old('phone') }}" placeholder="Enter phone number" required>
+                                    </fieldset>
 
-                        </div>
+                                    <fieldset class="form-group">
+                                        <label for="gender">Gender</label>
+                                        <select class="form-control select2" name="gender" id="gender" required>
+                                            <option value="">--Select Gender--</option>
+                                            <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
+                                            <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
+                                        </select>
+                                    </fieldset>
 
-                        <div class="col-md-6 col-sm-12">
-                          <fieldset class="form-group">
-                            <label for="chapter">Campus</label>
-                            <select class="form-control" name="chapter" id="chapter" required>
-                                {{-- //include chapter --}}
-                                <option value="">--Select Campus--</option>
-                                @foreach($chapters as $chapter)
-                                <option value="{{ $chapter->id }}" {{ old('old') == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
-                                @endforeach
-                            </select>
-                          </fieldset>
-                          <fieldset class="form-group">
-                            <label for="matriculation_year">Year of Matriculation</label>
-                            <select class="form-control" name="matriculation_year" id="matriculation_year">
-                                @foreach($sessions as $session=>$value)
-                                <option value="{{ $value . '/' . ($value + 1) }}" {{ old('matriculation_year') == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                            @endforeach
-                            </select>
-                          </fieldset>
+                                    <fieldset class="form-group">
+                                        <label for="open_to_work">Open to work?</label>
+                                        <select class="form-control select2" name="open_to_work" id="open_to_work" required>
+                                            <option value="1" {{ old('open_to_work') == 1 ? 'selected' : '' }}>Yes</option>
+                                            <option value="0" {{ old('open_to_work') == 0 ? 'selected' : '' }}>No</option>
+                                        </select>
+                                    </fieldset>
 
-                          <fieldset class="form-group">
-                            <label for="graduation_year">Year of graduation</label>
-                            <select class="form-control" name="graduation_year" id="graduation_year">
-                                @foreach($sessions as $session=>$value)
-                                <option value="{{ $value . '/' . ($value + 1) }}" {{ old('graduation_year') == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                            @endforeach
-                            </select>
-                          </fieldset>
-                          <fieldset class="form-group">
-                              <label for="portfolio">Portfolio</label>
-                              <select class="form-control" name="role" id="role" required>
-                                  <option value="">--Select Portfolio--</option>
-                                  @foreach($portfolios as $portfolio=>$value)
-                                      @if($portfolio <> 1)
-                                      <option value="{{ $portfolio }}" {{ old('portfolio') == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
-                                      @endif
-                                  @endforeach
-                              </select>
-                          </fieldset>
-                          <fieldset class="form-group">
-                              <label for="program">Program</label>
-                              <select class="form-control" name="program" required>
-                                  <option value="">Select...</option>
-                                  <option value="PHD"  {{ old('program')== 'PHD' ? 'selected' : '' }}>PHD</option>
-                                  <option value="PGD"  {{ old('program')== 'PGD' ? 'selected' : '' }}>PGD</option>
-                                  <option value="MSC"  {{ old('program')== 'MSC' ? 'selected' : '' }}>MSC</option>
-                                  <option value="BSC"  {{ old('program')== 'BSC' ? 'selected' : '' }}>BSC</option>
-                                  <option value="HND"  {{ old('program')== 'HND' ? 'selected' : '' }}>HND</option>
-                                  <option value="OND"  {{ old('program')== 'OND' ? 'selected' : '' }}>OND</option>
-                                  <option value="NCE"  {{ old('program')== 'NCE' ? 'selected' : '' }}>NCE</option>
-                              </select>
-                          </fieldset>
-                            <fieldset class="form-group">
-                                <label for="course">Course of study</label>
-                                <select class="form-control" name="course"  id="course">
-                                    <option value="">Select...</option>
-                                    @foreach(coursesOfStudy() as $course)
-                                    <option value="{{$course}}" {{ (old('course') == $course) ? 'selected' : '' }}>{{$course}}</option>
-                                    @endforeach
-                                </select>
-                            </fieldset>
-                        </div>
-                      </div>
-                      <div class="row">
-                          <div class="col-md-12 col-sm-12">
-                              <button class="btn btn-primary" style="width:100%" type="submit">Submit</button>
-                              </form>
-                          </div>
-                      </div>
-                    </form>
-                  </div>
+                                    <fieldset class="form-group">
+                                        <label for="image">Upload Passport</label>
+                                        <input type="file" class="form-control" accept="image/*" name="image" id="image">
+                                    </fieldset>
+
+                                    <input type="hidden" name="status" value="1">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <fieldset class="form-group">
+                                        <label for="program">Program</label>
+                                        <select class="form-control select2" name="program" id="program" required>
+                                            <option value="">Select Program...</option>
+                                            @foreach(['PHD','PGD','MSC','BSC','HND','OND','NCE'] as $prog)
+                                                <option value="{{ $prog }}" {{ old('program') == $prog ? 'selected' : '' }}>{{ $prog }}</option>
+                                            @endforeach
+                                        </select>
+                                    </fieldset>
+
+                                    <fieldset class="form-group">
+                                        <label for="course">Course of Study</label>
+                                        <select class="form-control select2" name="course" id="course">
+                                            <option value="">Select Course...</option>
+                                            @foreach(coursesOfStudy() as $course)
+                                                <option value="{{ $course }}" {{ old('course') == $course ? 'selected' : '' }}>{{ $course }}</option>
+                                            @endforeach
+                                        </select>
+                                    </fieldset>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-  </div>
+</div>
+
+{{-- Include this JS somewhere in your page --}}
+@section('js')
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            placeholder: 'Select an option',
+            allowClear: true
+        });
+    });
+</script>
+@endsection
+
 
   <div class="modal fade" id="modal-form-multiple" tabindex="-1" role="dialog" aria-labelledby="modal-form" style="display: none;" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
@@ -320,17 +290,7 @@
                                   @endforeach
                               </select>
                             </fieldset>
-                            <fieldset class="form-group">
-                                <label for="portfolio">Portfolio</label>
-                                <select class="form-control" name="role" id="role" required>
-                                    <option value="">--Select Portfolio--</option>
-                                    @foreach($portfolios as $portfolio=>$value)
-                                        @if($portfolio <> 1)
-                                        <option value="{{ $portfolio }}" {{ old('portfolio') == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
-                                        @endif
-                                    @endforeach
-                                </select>
-                            </fieldset>
+
                             <fieldset class="form-group">
                                 <label for="program">Program</label>
                                 <select class="form-control" name="program" required>
@@ -376,7 +336,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.1/bootstrap3-typeahead.min.js"></script>
   <script type="text/javascript">
     var path = "{{ route('alumni.suggestions') }}";
-    $('#name').typeahead({
+    $('#namex').typeahead({
         source: function (query, process) {
             return $.get(path, {
                 query: query
@@ -387,7 +347,7 @@
     });
 
     var path2 = "{{ route('campus.suggestions') }}";
-    $('#school').typeahead({
+    $('#schoolx').typeahead({
         source: function (query, process) {
             return $.get(path2, {
                 query: query
