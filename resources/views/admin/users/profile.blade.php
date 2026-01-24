@@ -93,14 +93,14 @@
                                     </select>
                                 </fieldset>
                                 <fieldset class="form-group">
-                                    <label for="status">Status</label>
-                                    <select class="form-control" name="status" id="status" required>
+                                    <label for="is_graduated">Undergraduate Status</label>
+                                    <select class="form-control" name="is_graduated" id="is_graduated" required>
                                         <option value="">--Select Status--</option>
-                                        <option value="0" {{ $user->status == 0 ? 'selected' : ''}}>Student</option>
-                                        <option value="1" {{ $user->status == 1 ? 'selected' : ''}}>Alumni</option>
+                                        <option value="0" {{ $user->is_graduated == 0 ? 'selected' : ''}}>Student</option>
+                                        <option value="1" {{ $user->is_graduated == 1 ? 'selected' : ''}}>Alumni</option>
                                     </select>
                                 </fieldset>
-
+                                
                                 <fieldset class="form-group">
                                     <label for="open_to_work">Open to work? (this will add an open to work label on user profile)</label>
                                     <select class="form-control" name="open_to_work" id="open_to_work" required>

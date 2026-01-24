@@ -6,18 +6,18 @@
                 <li><a href="{{ $user->facebook }}" target="_blank"><i class="fa fa-facebook"></i></a></li>
                 <li><a href="{{ $user->twitter }}" target="_blank"><i class="fa fa-twitter"></i></a></li>
             </ul>
-        </div>                        
+        </div>
     </div>
     <div class="team-content">
         <a href="{{ route('student.single', $user->slug) }}">{{ ucfirst($user->name) }}</a><br>
         <em>{{ isset($user->campus) ? $user->campus->name : ''}}</em> <br>
         @if($user->matric_year != NULL)
         <em>
-            @if($user->status == 1 && $user->graduation_year!= NULL)
+            @if($user->is_graduated == 1 && $user->graduation_year!= NULL)
                 @if( $user->rolename == 'Member' )({{ $user->rolename . ', '}}{{ $user->matric_year . ' - ' . $user->graduation_year }})
                 @endif
             @endif
-            @if($user->status == 0 && $user->rolename <> 'Admin')
+            @if($user->is_graduated == 0 && $user->rolename <> 'Admin')
                 @if($user->rolename == 'Member')
                 ({{ $user->rolename . ', ' . $user->matric_year . ' - ' . date('Y')}})
                 @else
@@ -29,8 +29,8 @@
         @else
         <br>
         @endif
-      
-        @if($user->status == 0)
+
+        @if($user->is_graduated == 0)
         <a href="{{ route('student.single', $user->slug) }}"><button class="btn btn-info view-campus-details">View details</button></a>
         @else
         <a href="{{ route('alumni.single', $user->slug) }}"><button class="btn btn-info view-campus-details">View details</button></a>

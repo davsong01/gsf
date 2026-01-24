@@ -32,7 +32,12 @@
                                         @foreach($designations as $designation)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $designation->name }}</td>
+                                            <td>
+                                                {{ $designation->name }}
+                                                @if($designation->stakeholder)
+                                                <br> <strong>- {{$designation->stakeholder->name}}</strong>
+                                                @endif
+                                            </td>
                                             <td>{{ $designation->order }}</td>
                                             <td>{{ ucfirst($designation->type) }}</td>
                                             <td>

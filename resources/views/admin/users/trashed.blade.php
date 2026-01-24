@@ -44,22 +44,22 @@
                                               <i class="fa fa-university"></i> {{ 'GSF, ' . $user->campus->name ?? '' }}
                                             </td>
                                             <td>
-                                                @if($user->status == 0)
+                                                @if($user->is_graduated == 0)
                                                 Student @else Alumni
                                                 @endif
                                             </td>
                                             <td>{{ $user->rolename }}  @if($user->rolename <> 'Admin' && $user->rolename <> 'Member')<em>{{ $user->portfolio_session }}</em>
-                                               
+
                                                 @endif
                                             </td>
-                                                                                                        
+
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                               
+
                                                 <a class="actions" onclick="return confirm('Are you sure?')" data-toggle="tooltip" title="Restore" href="{{ route('users.restore', $user->id) }}"> <i class="fa fa-undo"></i></
                                                 </a>
                                                 <a class="actions" onclick="return confirm('Are you sure?')" data-toggle="tooltip" title="Delete permanently" href="{{ route('users.delete', $user->id) }}"> <i class="fa fa-trash"></i></
                                                 </a>
-                                               
+
                                             </td>
                                         </tr>
                                         @endforeach
@@ -68,7 +68,7 @@
                             </div>
                         </div>
                     </div>
-                   
+
                 </div>
             </div>
         </div>

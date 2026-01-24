@@ -537,8 +537,8 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             // Member management
             Route::get('users', 'memberIndex')->name('users.index');
             Route::post('all', 'allMemberUsers' )->name('all');
-            Route::post('users', 'memberCreate')->name('users.create');
-            Route::get('users/{user}', 'show')->name('users.show');
+            Route::post('users', 'memberStore')->name('users.store');
+            Route::get('users/create', 'memberCreate')->name('users.create');
             Route::get('users/{user}/edit', 'memberEdit')->name('users.edit');
             Route::patch('users/{user}', 'memberUpdate')->name('users.update');
 

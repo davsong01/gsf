@@ -16,14 +16,14 @@
                     <div class="card-content">
                         <div class="card-body card-dashboard">
                             <div class="table-responsive">
-                                <table class="table zero-configuration" id="users">
+                                <table class="table" id="users">
                                     <thead>
                                         <tr>
                                             <th>S/N</th>
                                             <th>ID</th>
                                             <th>Avatar</th>
                                             <th>Details</th>
-                                            <th>Status</th>
+                                            <th>Graduation Status</th>
                                             <th>Chapter Designation</th>
                                             <th>Role</th>
                                             <th>Actions</th>
@@ -45,6 +45,8 @@ $(document).ready(function () {
     $('#users').DataTable({
         processing: true,
         serverSide: true,
+        pageLength: 20,
+        lengthMenu: [[20, 30, 50, 100, -1], [20, 30, 50, 100, "All"]],
         ajax: {
             url: "{{ $routes['all'] }}",
             type: "POST",
@@ -58,7 +60,7 @@ $(document).ready(function () {
             { data: "family_id" },
             { data: "avatar" },
             { data: "details" },
-            { data: "status" },
+            { data: "is_graduated" },
             { data: "designation" },
             { data: "role" },
             { data: "actions" }

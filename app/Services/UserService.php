@@ -12,7 +12,7 @@ class UserService
     public function prepareUserData($request, ?User $user = null): array
     {
         $data = $request->only([
-            'name', 'email', 'phone','skills', 'gender', 'status', 'open_to_work', 'dob','chapter_id', 'role','designation_id', 'portfolio_session', 'program', 'course','skills', 'course_duration','matric_year','graduation_year','facebook','twitter','show_phone', 'show_email'
+            'name', 'email', 'phone','is_graduated','skills', 'gender', 'status', 'open_to_work', 'dob','chapter_id', 'role','designation_id', 'portfolio_session', 'program', 'course','skills', 'course_duration','matric_year','graduation_year','facebook','twitter','show_phone', 'show_email'
         ]);
 
         // Handle password
@@ -83,7 +83,7 @@ class UserService
         return $query;
     }
 
-    public function emptySearch(User $currentUser, int $start = 0, int $limit = 10)
+    public function emptySearch(User $currentUser, int $start = 0, int $limit = 20)
     {
         $query = $this->totalData($currentUser)
                       ->orderBy('created_at', 'desc');
@@ -95,7 +95,7 @@ class UserService
         return $query->get();
     }
 
-    public function results(User $currentUser, string $search, int $start = 0, int $limit = 10): array
+    public function results(User $currentUser, string $search, int $start = 0, int $limit = 20): array
     {
         $query = $this->totalData($currentUser)
                       ->where(function ($q) use ($search) {
@@ -119,54 +119,68 @@ class UserService
 
     public function getAllUsers(array $requestData): array
     {
-        $count = 1;
-        $start = $requestData['start'] ?? 0;
-        $limit = $requestData['length'] ?? 10;
+        $start  = (int) ($requestData['start'] ?? 0);
+        $limit  = (int) ($requestData['length'] ?? 20);
         $search = $requestData['search']['value'] ?? null;
-        $chapterId = $requestData['chapter_id'] ?? null;
-        $canEdit = $requestData['canEdit'] ?? false;
-        $canDelete = $requestData['canDelete'] ?? false;
-        $canSwitch = $requestData['canSwitch'] ?? false;
-        $isStakeholder = $requestData['isStakeholder'] ?? false;
 
-        $query = User::query()->where('role', '<>', 1);
+        $chapterId    = $requestData['chapter_id'] ?? null;
+        $canEdit      = $requestData['canEdit'] ?? false;
+        $canDelete    = $requestData['canDelete'] ?? false;
+        $canSwitch    = $requestData['canSwitch'] ?? false;
+        $isStakeholder= $requestData['isStakeholder'] ?? false;
+
+        $baseQuery = User::query()->where('role', '<>', 1);
 
         if ($chapterId) {
-            $query->where('chapter_id', $chapterId);
+            $baseQuery->where('chapter_id', $chapterId);
         }
 
-        $totalData = $query->count();
+        // recordsTotal (no search)
+        $recordsTotal = (clone $baseQuery)->count();
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
+        // Apply search
+        if (!empty($search)) {
+            $baseQuery->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%")
                 ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
-        $totalFiltered = $query->count();
+        // recordsFiltered (after search)
+        $recordsFiltered = (clone $baseQuery)->count();
 
-        $users = $query->orderByDesc('created_at')
-                    ->skip($start)
-                    ->take($limit)
-                    ->get();
+        // Data query
+        $query = $baseQuery->orderByDesc('created_at');
+
+        // Apply pagination ONLY if not "All"
+        if ($limit != -1) {
+            $query->skip($start)->take($limit);
+        }
+
+        $users = $query->get();
 
         $data = [];
+        $count = $start + 1; // correct serial number
+
         foreach ($users as $user) {
             $avatar = asset($user->passport ?? "frontend/passports/avatar.jpg");
             $campus = $user->campus?->name ?? '';
 
-            $nestedData = [
+            $data[] = [
                 'S/N' => $count++,
                 'email' => $user->email,
-                'family_id' => $user->family_id,
+                'family_id' => $user->family_id . '<br>' .
+               ($user->status == 'active'
+                   ? '<span class="badge bg-success">Active</span>'
+                   : '<span class="badge bg-danger">Inactive</span>'),
+
                 'details' => "<strong>{$user->name}</strong><br>
                             <i class='fa fa-envelope'></i> {$user->email}<br>
                             <i class='fa fa-phone'></i> {$user->phone}<br>
                             <i class='fa fa-university'></i> GSF, {$campus}",
-                'avatar' => "<img class='mr-1' style='border-radius:50%' src='{$avatar}' alt='avatar' height='40' width='40'>",
-                'status' => $user->status == 0 ? 'Student' : 'Alumni',
+                'avatar' => "<img style='border-radius:50%' src='{$avatar}' height='40' width='40'>",
+                'is_graduated' => $user->is_graduated == 0 ? 'Student' : 'Alumni',
                 'designation' => $user?->designation?->name ?? 'N/A',
                 'role' => $user->rolename
                             . '<br><em>'
@@ -174,17 +188,16 @@ class UserService
                             . '</em>',
                 'actions' => $this->generateActionButtons($user, $canDelete, $canEdit, $canSwitch, $isStakeholder),
             ];
-
-            $data[] = $nestedData;
         }
 
         return [
             'draw' => intval($requestData['draw'] ?? 1),
-            'recordsTotal' => $totalData,
-            'recordsFiltered' => $totalFiltered,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
             'data' => $data,
         ];
     }
+
 
     protected function generateActionButtons(User $user, bool $canDelete, bool $canEdit, bool $canSwitch, ?bool $isStakeholder = false): string
     {

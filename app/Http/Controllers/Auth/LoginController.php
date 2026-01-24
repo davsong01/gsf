@@ -82,11 +82,11 @@ class LoginController extends Controller
         }
 
         // Check if account is inactive
-        // if ($user->status == 0) {
-        //     return back()->withErrors([
-        //         'login' => 'Your account is inactive. Please contact the administrator.',
-        //     ])->withInput();
-        // }
+        if ($user->status == 0) {
+            return back()->withErrors([
+                'login' => 'Your account is inactive. Please contact the administrator.',
+            ])->withInput();
+        }
 
         // Check password
         if (!Hash::check($password, $user->password)) {

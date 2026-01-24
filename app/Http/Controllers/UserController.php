@@ -62,7 +62,7 @@ class UserController extends Controller
 
         $request['canDelete'] = $canDelete;
         $request['canEdit'] = $canEdit;
-        
+
         $request['canSwitch'] = $user->isAdmin();
 
         $json_data = $this->userService->getAllUsers( $request->all());
@@ -129,10 +129,12 @@ class UserController extends Controller
 		$foods = Food::all();
 		$chapters = Chapter::all();
 		$portfolios = getCommunityPortfolios();
+        $campusDesignations = StakeholderDesignation::select('id','name')->where('type', 'chapter_executive')->orderBy('order')->get();
+
 		$sessions = range(date('1982'), date('Y'));
 
 		if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
-			return view('admin.users.create', compact('chapters', 'portfolios', 'sessions'));
+			return view('admin.users.edit', compact('chapters', 'portfolios', 'sessions','campusDesignations'));
 		}
 
 		else return back(404);
@@ -217,7 +219,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
-
+        
         return redirect()->route('users.index')->with('message', 'User updated successfully.');
     }
 
@@ -429,7 +431,7 @@ class UserController extends Controller
 		// $data['dob'] = $user->date_of_birth;
 		$data['slug'] = Str::slug($user->name);
 		$data['chapter_id'] = $user->chapter;
-		$data['status'] = $user->status ?? 0;
+		$data['status'] = $user->is_graduated ?? 0;
 		$data['role'] = 2;
 		unset($data['chapter']);
 		unset($data['marital_status']);

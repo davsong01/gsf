@@ -128,13 +128,23 @@ class StakeholderAccountController extends Controller
         if($user->chapter_id != auth()->guard('stakeholder')->user()->chapter_id){
             return back()->with('error', 'Invalid route');
         }
-		$chapters = Chapter::all();
+
 		$portfolios = getCommunityPortfolios();
         $campusDesignations = StakeholderDesignation::select('id','name')->where('type', 'chapter_executive')->orderBy('order')->get();
 		$sessions = range(date('1982'), date('Y'));
         $isAdmin = true;
 
-        return view('stakeholder.users.edit', compact('user', 'chapters', 'portfolios', 'sessions','campusDesignations', 'isAdmin'));
+        return view('stakeholder.users.edit', compact('user', 'portfolios', 'sessions','campusDesignations', 'isAdmin'));
+	}
+
+    public function memberCreate()
+	{
+		$portfolios = getCommunityPortfolios();
+        $campusDesignations = StakeholderDesignation::select('id','name')->where('type', 'chapter_executive')->orderBy('order')->get();
+		$sessions = range(date('1982'), date('Y'));
+        $isAdmin = false;
+
+        return view('stakeholder.users.edit', compact('portfolios', 'sessions','campusDesignations', 'isAdmin'));
 	}
 
     public function chapterEdit(Chapter $chapter)
@@ -186,6 +196,25 @@ class StakeholderAccountController extends Controller
         }
 
         return redirect()->route('stakeholders.users.index')->with('message', 'User updated successfully.');
+    }
+
+    public function memberStore(Request $request){
+        $request['chapter_id'] = auth()->guard('stakeholder')->user()->chapter_id;
+
+        $request->validate([
+            'email' => 'unique:users,email',
+            'phone' => 'unique:users,phone',
+        ]);
+
+        $data = $this->userService->prepareUserData($request);
+
+        try {
+            $this->userService->createUser($data);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('stakeholders.users.index')->with('message', 'User added successfully.');
     }
 
     /**

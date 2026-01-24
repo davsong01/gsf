@@ -61,6 +61,6 @@ class Chapter extends Model
 
     public function chapterPresident()
     {
-        return $this->hasOne(User::class)->where('designation_id', 133);
+        return $this->hasOne(User::class)->where('designation_id', 143);
     }
 }

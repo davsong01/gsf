@@ -45,9 +45,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-$(document).ready(function() {
+// $(document).ready(function() {
 
-	$('select').select2({
+
+
+// });
+$(document).ready(function () {
+    $('select').select2({
 	    width: '100%' // need to override the changed default
 	});
 
@@ -59,8 +63,22 @@ $(document).ready(function() {
 		}
 
 	});
+    const selector = '.zero-configuration';
 
+    if ($.fn.DataTable.isDataTable(selector)) {
+        $(selector).DataTable().destroy();
+    }
+
+    $(selector).DataTable({
+        pageLength: 20,
+        lengthMenu: [[20, 30, 50, 100, -1], [20, 30, 50, 100, "All"]],
+        ordering: true,
+        searching: true,
+        responsive: true,
+        autoWidth: false,
+    });
 });
+
 
 </script>
 @yield('extra_scripts')

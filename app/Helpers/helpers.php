@@ -384,9 +384,9 @@ if (!function_exists('getCommunityPortfolios')) {
     function getCommunityPortfolios()
     {
         $portfolios = [
-            1 => 'Admin',
+            // 1 => 'Admin',
             2 => 'Member',
-            3 => 'Alumni',
+            // 3 => 'Alumni',
             // 3 => 'President',
             // 4 => 'Publicity Secretary',
             // 5 => 'Media Coordinator',

@@ -16,7 +16,7 @@
 		rel="stylesheet">
 
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-		
+
 	<!--Font Awesome--->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -47,10 +47,10 @@
 
 
 	<!-- END: Page CSS-->
-	
+
 	<!-- BEGIN: Custom CSS-->
 	<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
-	
+
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 	@yield('extra_styles')
 	<!---Modal CSS-->
@@ -77,7 +77,7 @@
 		}
 
 		.info{
-			font-weight: 900; 
+			font-weight: 900;
 			font-size: 18px;
 			color: blue !important;
 		}
@@ -89,7 +89,7 @@
 		transform: translate(-50%, -50%);
 		display: contents;
 		overflow: hidden;
-		} 
+		}
 
 		/* .modal-content {
 			position: absolute;
@@ -110,8 +110,8 @@
 		.sections{
 			color:blue;
 		}
-		
+
 	</style>
-	
+
 </head>
 <!-- END: Head-->
