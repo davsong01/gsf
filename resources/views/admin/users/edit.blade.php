@@ -37,7 +37,7 @@
                             </div>
                             <div class="col-md-9">
                                 <label for="">Overview</label> <br>
-                                <span><strong>Family ID:</strong> {{ $user->family_id }}</span> <br>
+                                <span><strong>Login ID:</strong> {{ $user->family_id }}</span> <br>
                                 <span><strong>Campus:</strong> GSF, {{ $user->campus->name ?? '' }} </span> <br>
                                 @if($user->status == 0)
                                 @if(!is_null($president))
@@ -169,7 +169,12 @@
                                 </fieldset>
                                 <fieldset class="form-group">
                                     <label for="course">Course of study</label>
-                                    <input type="text" id="course" name="course" class="form-control" value="{{ old('course') ?? $user->course }}">
+                                    <select class="form-control" name="course"  id="course">
+                                        <option value="">Select...</option>
+                                        @foreach(coursesOfStudy() as $course)
+                                        <option value="{{$course}}" {{ (old('course') ?? $user->course == $course) ? 'selected' : '' }}>{{$course}}</option>
+                                        @endforeach
+                                    </select>
                                 </fieldset>
                                 <fieldset class="form-group">
                                     <label for="skills">Skills</label>

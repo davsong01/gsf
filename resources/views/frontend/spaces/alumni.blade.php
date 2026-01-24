@@ -1,4 +1,4 @@
-<?php 
+<?php
   use App\Models\Chapter;
   $chapters = Chapter::where('id', '!=', 86)->get();
   $portfolios = app('App\Http\Controllers\Controller')->getCommunityPortfolios();
@@ -56,12 +56,12 @@
               <i class="fas fa-user mr-1"></i><span class="d-xl-inline">Submit my details</span>
             </a>
             <a href="{{ route('newdonation') }}" style="margin-bottom:10px" target="_blank" class="btn btn-md btn-outline-white animate-up-2">
-             <i class="fas fa-donate mr-1"></i> 
+             <i class="fas fa-donate mr-1"></i>
             <span class="d-xl-inline">Make Donation</span>
             </a>
 
             {{-- <a href=""  data-toggle="modal" data-target="#modal-form-multiple" style="margin-bottom:10px" target="_blank" class="btn btn-md btn-outline-white animate-up-2">
-                      <i class="fas fa-upload mr-1"></i> 
+                      <i class="fas fa-upload mr-1"></i>
                       <span class="d-xl-inline">Upload Multiple Alumni</span>
             </a> --}}
 
@@ -98,7 +98,7 @@
             </div>
         </div>
       </div>
-      
+
       <div class="row">
         <div class="col-12 col-lg-12 order-lg-1">
           <div class="justify-content-between align-items-center d-none d-md-flex" style="margin-bottom:120px">
@@ -168,7 +168,7 @@
                                 </select>
                             </fieldset>
                             <input type="hidden" name="status" value="1">
-                            
+
                           <fieldset class="form-group">
                               <label for="open_to_work">Open to work?</label>
                               <select class="form-control" name="open_to_work" id="open_to_work" required>
@@ -178,12 +178,12 @@
                           </fieldset>
                           <fieldset class="form-group @error('image')is-invalid @enderror">
                               <label for="image">Upload Passport</label>
-                              <input type= "file"  accept="image/*" class="form-control" name="image" id="image">	
-                          </fieldset>           
-                            
+                              <input type= "file"  accept="image/*" class="form-control" name="image" id="image">
+                          </fieldset>
+
                         </div>
 
-                        <div class="col-md-6 col-sm-12">                               
+                        <div class="col-md-6 col-sm-12">
                           <fieldset class="form-group">
                             <label for="chapter">Campus</label>
                             <select class="form-control" name="chapter" id="chapter" required>
@@ -199,16 +199,16 @@
                             <select class="form-control" name="matriculation_year" id="matriculation_year">
                                 @foreach($sessions as $session=>$value)
                                 <option value="{{ $value . '/' . ($value + 1) }}" {{ old('matriculation_year') == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                            @endforeach                                
+                            @endforeach
                             </select>
                           </fieldset>
-                      
+
                           <fieldset class="form-group">
                             <label for="graduation_year">Year of graduation</label>
                             <select class="form-control" name="graduation_year" id="graduation_year">
                                 @foreach($sessions as $session=>$value)
                                 <option value="{{ $value . '/' . ($value + 1) }}" {{ old('graduation_year') == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                            @endforeach                                
+                            @endforeach
                             </select>
                           </fieldset>
                           <fieldset class="form-group">
@@ -216,10 +216,10 @@
                               <select class="form-control" name="role" id="role" required>
                                   <option value="">--Select Portfolio--</option>
                                   @foreach($portfolios as $portfolio=>$value)
-                                      @if($portfolio <> 1)  
+                                      @if($portfolio <> 1)
                                       <option value="{{ $portfolio }}" {{ old('portfolio') == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
                                       @endif
-                                  @endforeach                               
+                                  @endforeach
                               </select>
                           </fieldset>
                           <fieldset class="form-group">
@@ -235,11 +235,15 @@
                                   <option value="NCE"  {{ old('program')== 'NCE' ? 'selected' : '' }}>NCE</option>
                               </select>
                           </fieldset>
-                          <fieldset class="form-group">
-                              <label for="course">Course of study</label>
-                              <input type="text" id="course" name="course" class="form-control" value="{{ old('course') }}" required>
-                          </fieldset>
-                    
+                            <fieldset class="form-group">
+                                <label for="course">Course of study</label>
+                                <select class="form-control" name="course"  id="course">
+                                    <option value="">Select...</option>
+                                    @foreach(coursesOfStudy() as $course)
+                                    <option value="{{$course}}" {{ (old('course') == $course) ? 'selected' : '' }}>{{$course}}</option>
+                                    @endforeach
+                                </select>
+                            </fieldset>
                         </div>
                       </div>
                       <div class="row">
@@ -297,15 +301,15 @@
                                   </select>
                               </fieldset>
                               <input type="hidden" name="status" value="1">
-                              
-                          
+
+
                           <fieldset class="form-group @error('image')is-invalid @enderror">
                               <label for="image">Upload Passport</label>
-                              <input type= "file"  accept="image/*" class="form-control" name="image" id="image">	
-                          </fieldset>           
-                              
+                              <input type= "file"  accept="image/*" class="form-control" name="image" id="image">
+                          </fieldset>
+
                           </div>
-                          <div class="col-md-6 col-sm-12">                               
+                          <div class="col-md-6 col-sm-12">
                             <fieldset class="form-group">
                               <label for="chapter">Campus</label>
                               <select class="form-control" name="chapter" id="chapter" required>
@@ -321,10 +325,10 @@
                                 <select class="form-control" name="role" id="role" required>
                                     <option value="">--Select Portfolio--</option>
                                     @foreach($portfolios as $portfolio=>$value)
-                                        @if($portfolio <> 1)  
+                                        @if($portfolio <> 1)
                                         <option value="{{ $portfolio }}" {{ old('portfolio') == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
                                         @endif
-                                    @endforeach                               
+                                    @endforeach
                                 </select>
                             </fieldset>
                             <fieldset class="form-group">

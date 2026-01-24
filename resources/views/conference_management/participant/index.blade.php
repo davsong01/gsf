@@ -9,7 +9,7 @@
 	<div class="row">
 		@if(isset(auth()->user()->transactions))
 			@foreach(auth()->user()->transactions->sortByDesc('created_at') as $payment)
-			
+
 			<div class="col-md-6 col-sm-12">
 				<div class="card" style="height: 250px; background-color: {{ $payment->edition->id == $edition->id ? 'green':'gray;'}}">
 					<a href="{{ route('conferencemanagement.show', ['conferencemanagement'=>$payment->id, 'edition'=>$payment->conference_edition_id]) }}">
@@ -19,11 +19,11 @@
 					</div>
 					<div class="card-content">
 						<div class="card-body">
-							<span style="color:yellow">Family ID: <strong style="color:white;font-weight: bold;">{{ $payment->user->family_id }}</strong></span> <br>
+							<span style="color:yellow">Login ID: <strong style="color:white;font-weight: bold;">{{ $payment->user->family_id }}</strong></span> <br>
 							<span style="color:yellow">Transaction ID: <strong style="color:white;font-weight: bold;">{{ $payment->transid }}</strong></span> <br>
 							{{-- @if($payment->edition->id == App\ConferenceEdition::where('status', 'active')->first()->id) --}}
 							<center style="padding-top: 10px;">
-							<button class="btn btn-primary">Click to Access</button></center> 
+							<button class="btn btn-primary">Click to Access</button></center>
 							{{-- @endif --}}
 						</div>
 					</div>

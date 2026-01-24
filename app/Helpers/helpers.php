@@ -219,6 +219,144 @@ if (!function_exists('rootPermissions')) {
 //     }
 // }
 
+function coursesOfStudy()
+{
+    return [
+            // Business, Management & Law
+            'Accounting',
+            'Banking & Finance',
+            'Business Administration',
+            'Business Education',
+            'Chartered Institute of Bankers of Nigeria (CIBN) Pathway',
+            'Legal Studies / Law',
+            'Marketing',
+            'Insurance',
+            'Taxation',
+            'Office Technology & Management',
+            'Public Administration',
+            'International Relations',
+
+            // Humanities & Social Sciences
+            'Adult Education',
+            'Anthropology',
+            'Archaeology',
+            'Arts & Social Sciences',
+            'Christian Religious Studies',
+            'Communication Arts / Mass Communication',
+            'Criminology',
+            'Economics',
+            'Education (various specializations)',
+            'English & Literary Studies',
+            'French',
+            'Geography',
+            'History & International Studies',
+            'Human Kinetics',
+            'Languages & Linguistics',
+            'Linguistics',
+            'Political Science',
+            'Psychology',
+            'Religious Studies',
+            'Sociology',
+            'Social Work',
+
+            // Sciences
+            'Biochemistry',
+            'Biology',
+            'Botany',
+            'Chemistry',
+            'Computer Science',
+            'Environmental Science',
+            'Fisheries & Aquaculture',
+            'Geography',
+            'Geology / Earth Sciences',
+            'Industrial Chemistry',
+            'Mathematics',
+            'Microbiology',
+            'Physics',
+            'Plant Science',
+            'Zoology',
+
+            // Engineering & Technology
+            'Agricultural Engineering',
+            'Chemical Engineering',
+            'Civil Engineering',
+            'Computer Engineering',
+            'Electrical / Electronic Engineering',
+            'Mechanical Engineering',
+            'Mechatronics Engineering',
+            'Metallurgical / Materials Engineering',
+            'Petroleum Engineering',
+            'Telecommunications Engineering',
+            'Industrial and Production Engineering',
+            'Systems Engineering',
+            'Biomedical Engineering',
+
+            // Health Sciences & Allied Fields
+            'Anatomy',
+            'Anatomy & Physiology',
+            'Anatomy & Cell Biology',
+            'Biochemistry',
+            'Environmental Health',
+            'Human Nutrition & Dietetics',
+            'Medical Laboratory Science',
+            'Medicine and Surgery (MBBS)',
+            'Medical Radiography',
+            'Nursing',
+            'Optometry',
+            'Pharmacy',
+            'Physiotherapy / Physical Therapy',
+            'Public Health',
+            'Radiography',
+            'Toxicology',
+            'Dental Surgery / Dentistry',
+
+            // Education (All Specializations)
+            'Education & Mathematics',
+            'Education & Physics',
+            'Education & Biology',
+            'Education & Chemistry',
+            'Education & Geography',
+            'Education & English Language',
+            'Education & Social Studies',
+            'Education & Computer Science',
+            'Education & Economics',
+            'Education & Political Science',
+            'Education & French',
+
+            // Agricultural & Environmental Sciences
+            'Agriculture',
+            'Agricultural Economics & Extension',
+            'Animal Science',
+            'Crop Science',
+            'Forestry & Wildlife',
+            'Soil Science',
+            'Environmental Management & Toxicology',
+            'Urban & Regional Planning',
+
+            // Computer, IT & Cyber Fields
+            'Software Engineering',
+            'Cyber Security',
+            'Information Technology (IT)',
+            'Artificial Intelligence (AI)',
+            'Data Science',
+            'Information Systems',
+            'Network & System Security',
+            'Computer Applications',
+
+            // Arts, Design & Creative Fields
+            'Architecture',
+            'Fine & Applied Arts',
+            'Industrial Design',
+            'Theatre Arts',
+            'Performing Arts',
+            'Music',
+            'Fashion Design',
+            'Graphic Design',
+            'Interior Design',
+        ];
+}
+
+
 
 if (!function_exists('canAddNextMonthReport')) {
     function getMonths()

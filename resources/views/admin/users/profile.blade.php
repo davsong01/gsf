@@ -48,7 +48,7 @@
                             </div>
                             <div class="col-md-9">
                                 <label for="">Overview</label> <br>
-                                <span><strong>Family ID:</strong> {{ $user->family_id }}</span> <br>
+                                <span><strong>Login ID:</strong> {{ $user->family_id }}</span> <br>
                                 @if($user->campus)
                                 <span><strong>Campus:</strong> GSF, {{ $user->campus->name ?? '' }} </span> <br>
                                 @endif
@@ -78,13 +78,13 @@
                                 </fieldset>
 
                                 <fieldset class="form-group">
-                                    
+
                                     <label for="phone">Phone</label>
 
                                     <input type="phone" id="phone" name="phone" class="form-control" value="{{ old('phone') ?? $user->phone }}" required>
                                     <input type="checkbox" id="show_phone" name="show_phone" {{ $user->show_phone == 1 ? 'checked' : '' }}><label for="show_phone">&nbsp; Make phone public</label>
                                 </fieldset>
-                               
+
                                 <fieldset class="form-group">
                                     <label for="gender">Gender</label>
                                     <select class="form-control" name="gender" id="gender" required {{ isset($setting) && $setting->status == 'active'?'disabled':'' }}>
@@ -97,10 +97,10 @@
                                     <select class="form-control" name="status" id="status" required>
                                         <option value="">--Select Status--</option>
                                         <option value="0" {{ $user->status == 0 ? 'selected' : ''}}>Student</option>
-                                        <option value="1" {{ $user->status == 1 ? 'selected' : ''}}>Alumni</option>                                    
+                                        <option value="1" {{ $user->status == 1 ? 'selected' : ''}}>Alumni</option>
                                     </select>
                                 </fieldset>
-                             
+
                                 <fieldset class="form-group">
                                     <label for="open_to_work">Open to work? (this will add an open to work label on user profile)</label>
                                     <select class="form-control" name="open_to_work" id="open_to_work" required>
@@ -112,18 +112,18 @@
                                     <label for="dob">Date of birth</label>
                                     <input type="date" id="dob" name="dob" class="form-control" value="{{ old('dob') ?? $user->dob }}">
                                 </fieldset>
-                            
+
                             <fieldset class="form-group @error('passport')is-invalid @enderror">
                                 <label for="passport">Change Passport</label>
-                                <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">	
-                            </fieldset>           
+                                <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">
+                            </fieldset>
                             <fieldset class="form-group">
                                 <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank to use this user's phone number as password</i></small>
                                 <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
-                            </fieldset> 
+                            </fieldset>
                         </div>
-                        <div class="col-md-6 col-sm-12">    
-                                @if(auth()->user()->isAdmin())                           
+                        <div class="col-md-6 col-sm-12">
+                                @if(auth()->user()->isAdmin())
                                 <fieldset class="form-group">
                                     <label for="chapter_id">Campus</label>
                                     <select class="form-control" name="chapter_id" id="chapter_id" required>
@@ -141,22 +141,22 @@
                                     <select class="form-control" name="role" id="role" required>
                                         <option value="">--Select Portfolio--</option>
                                         @foreach($portfolios as $portfolio=>$value)
-                                            @if(auth()->user()->isSubAdmin() && $portfolio <> 1)  
+                                            @if(auth()->user()->isSubAdmin() && $portfolio <> 1)
                                                 <option value="{{ $portfolio }}" {{ $user->role == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
                                             @endif
-                                            @if(auth()->user()->isAdmin())  
+                                            @if(auth()->user()->isAdmin())
                                                 <option value="{{ $portfolio }}" {{ $user->role == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
                                             @endif
-                                        @endforeach                               
+                                        @endforeach
                                     </select>
                                 </fieldset>
-                               
+
                                 <fieldset class="form-group" id="session" style="display: {{ ($user->role == 1 || $user->role == 2) ? 'none' : '' }}">
                                     <label for="portfolio">Portfolio session</label>
                                     <select class="form-control" name="portfolio_session" id="portfolio_session">
                                         @foreach($sessions as $session=>$value)
                                             <option value="{{ $value . '/' . ($value + 1) }}" {{ old('portfolio_session') == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                                        @endforeach                               
+                                        @endforeach
                                     </select>
                                 </fieldset>
                                 @endif
@@ -175,7 +175,12 @@
                                 </fieldset>
                                 <fieldset class="form-group">
                                     <label for="course">Course of study</label>
-                                    <input type="text" id="course" name="course" class="form-control" value="{{ old('course') ?? $user->course }}" required>
+                                    <select class="form-control" name="course"  id="course">
+                                        <option value="">Select...</option>
+                                        @foreach(coursesOfStudy() as $course)
+                                        <option value="{{$course}}" {{ (old('course') ?? $user->course == $course) ? 'selected' : '' }}>{{$course}}</option>
+                                        @endforeach
+                                    </select>
                                 </fieldset>
                                 <fieldset class="form-group">
                                     <label for="course_duration">Course Duration(Years)</label>
@@ -190,7 +195,7 @@
                                     <select class="form-control" name="matric_year" id="matric_year">
                                         @foreach($sessions as $session=>$value)
                                         <option value="{{ $value . '/' . ($value + 1) }}" {{ $user->matric_year == $value . '/' . ($value + 1) ? 'selected' : '' }} required>{{ $value . '/' . ($value + 1) }}</option>
-                                    @endforeach                                
+                                    @endforeach
                                     </select>
                                 </fieldset>
                                 <fieldset class="form-group">
@@ -199,10 +204,10 @@
                                         <option value="">Select...</option>
                                         @foreach($sessions as $session=>$value)
                                         <option value="{{ $value . '/' . ($value + 1) }}" {{ $user->graduation_year == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                                    @endforeach                                
+                                    @endforeach
                                     </select>
                                 </fieldset>
-                                
+
                                 <fieldset class="form-group">
                                     <label for="facebook">Facebook Profile</label>
                                     <input type="link" id="facebook" name="facebook" class="form-control" value="{{ old('facebook') ?? $user->facebook }}">
@@ -224,8 +229,8 @@
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->   
-         
+    <!-- Basic Inputs end -->
+
 </div>
 
 @endsection

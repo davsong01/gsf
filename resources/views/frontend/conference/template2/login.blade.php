@@ -13,7 +13,7 @@
         height: calc(100% - 73px);
     }
 
-  
+
 </style>
 @endsection
 @section('content')
@@ -31,7 +31,7 @@
     <section class="vh-100">
         <div class="container-fluid h-custom">
             <div class="row d-flex justify-content-center align-items-center h-100">
-                
+
                 <div class="col-md-9 col-lg-6 col-xl-5">
                     <img src="{{ asset($setting->banner)}}"
                         class="img-fluid" alt="Sample image">
@@ -45,9 +45,9 @@
                         </div> --}}
                         <!-- Email input -->
                         <div data-mdb-input-init class="form-outline mb-4">
-                            <label class="form-label" for="family_id">Family ID</label>
+                            <label class="form-label" for="family_id">Login ID</label>
                             <input required type="text" id="family_id" name="family_id" class="form-control form-control-lg"
-                                placeholder="Enter your family ID" value="{{ old('family_id') }}">
+                                placeholder="Enter your login ID" value="{{ old('family_id') }}">
                         </div>
 
                         <!-- Password input -->
@@ -55,7 +55,7 @@
                             <label class="form-label" for="password">Password</label>
                             <input type="password" id="password" name="password" class="form-control form-control-lg"
                                 placeholder="Enter password" />
-   
+
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center">

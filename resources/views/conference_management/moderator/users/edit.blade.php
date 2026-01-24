@@ -46,7 +46,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <fieldset class="form-group">
-                                            <label for="conference_id">Family ID</label>
+                                            <label for="conference_id">Login ID</label>
                                             <input type="text" class="form-control" value="{{ $transaction->user->family_id }}" disabled>
                                         </fieldset>
                                     </div>
@@ -77,9 +77,9 @@
 
                         </div>
 
-                        <div class="row mt-2"> 
+                        <div class="row mt-2">
                             <div class="col-md-6 col-sm-12">
-                                
+
                                     <fieldset class="form-group">
                                     <label for="uploaded_by" style="color:blue">Registered by</label>
                                     <input type="text" id="uploaded_by" name="uploaded_by" class="form-control" value="{{ ($transaction->moderator === NULL) ? 'N/A' : $transaction->moderator->name }}" disabled required>
@@ -87,10 +87,10 @@
                                 <fieldset class="form-group">
                                 <label for="amount" style="color:blue">Amount Paid (&#8358;)</label>
                                 <input type="number" id="amount" class="form-control @error('amount_paid')is-invalid @enderror" value="{{ $transaction->amount_paid }}" disabled required>
-                            
+
                             </fieldset>
-                            
-                            
+
+
                             </div>
                             <div class="col-md-6 col-sm-12">
                                 <fieldset class="form-group" style="color:blue">
@@ -110,7 +110,7 @@
                         <div class="col-md-6 col-sm-12">
                             <fieldset class="form-group @error('passport')is-invalid @enderror">
                                 <label for="passport" style="color:blue">Change Passport</label>
-                                <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">	
+                                <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">
                             </fieldset>
 
                             <fieldset class="form-group">
@@ -119,7 +119,7 @@
                             </fieldset>
 
                         </div>
-                        
+
                     </div>
                     <div class="row">
                     <div class="col-md-12 col-sm-12">
@@ -133,6 +133,6 @@
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->          
+    <!-- Basic Inputs end -->
 </div>
 @endsection

@@ -29,7 +29,7 @@
                                 <p>{{ $data['phone'] }}</p>
                             </div>
                         </div>
-                       
+
                     </div>
                     <div class="col-md-6">
                         <div class="contact-info">
@@ -51,23 +51,23 @@
                             </div>
                         </div>
                     </div>
-                  
+
                     <div class="col-md-12">
                         <div class="contact-text">
-                            <a class="btn submitregistration" 
+                            <a class="btn submitregistration"
                             href="{{ route('conferencemanagement', ['edition' => $data['edition']->id]) }}"
-                            data-bs-toggle="tooltip" data-bs-placement="top" 
-                            title="Click to login" 
+                            data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Click to login"
                             style="width:100%; margin-bottom:30px">
                             Login to access your dashboard
                             </a>
 
                             <h3> <strong> Your Login Details are</strong>
                             </h3>
-                            <p>Family ID: {{ $data['family_id'] }}  <br>
-                            Password: {{ $data['phone'] }} 
+                            <p>Login ID: {{ $data['family_id'] }}  <br>
+                            Password: {{ $data['phone'] }}
                             </p>
-                        </div>                       
+                        </div>
                     </div>
                 </div>
             </div>

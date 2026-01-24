@@ -12,7 +12,7 @@ class UserService
     public function prepareUserData($request, ?User $user = null): array
     {
         $data = $request->only([
-            'name', 'email', 'phone', 'gender', 'status', 'open_to_work', 'dob','chapter_id', 'role','designation_id', 'portfolio_session', 'program', 'course','skills', 'course_duration','matric_year','graduation_year','facebook','twitter','show_phone', 'show_email'
+            'name', 'email', 'phone','skills', 'gender', 'status', 'open_to_work', 'dob','chapter_id', 'role','designation_id', 'portfolio_session', 'program', 'course','skills', 'course_duration','matric_year','graduation_year','facebook','twitter','show_phone', 'show_email'
         ]);
 
         // Handle password
@@ -154,7 +154,7 @@ class UserService
 
         $data = [];
         foreach ($users as $user) {
-            $avatar = $user->passport ?? "frontend/passports/avatar.jpg";
+            $avatar = asset($user->passport ?? "frontend/passports/avatar.jpg");
             $campus = $user->campus?->name ?? '';
 
             $nestedData = [

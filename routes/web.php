@@ -540,8 +540,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::post('users', 'memberCreate')->name('users.create');
             Route::get('users/{user}', 'show')->name('users.show');
             Route::get('users/{user}/edit', 'memberEdit')->name('users.edit');
-            Route::put('users/{user}', 'update')->name('users.update');
-            Route::patch('users/{user}', 'update');
+            Route::patch('users/{user}', 'memberUpdate')->name('users.update');
 
             Route::delete('users/{user}', 'destroy')->name('users.destroy');
 

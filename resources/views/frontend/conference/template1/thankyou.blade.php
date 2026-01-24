@@ -30,7 +30,7 @@
                         <p>{{ $data['phone'] }}</p>
                     </div>
                 </div>
-                
+
             </div>
             <div class="col-md-6">
                 <div class="contact-info">
@@ -51,7 +51,7 @@
                         <p>{{ number_format($data['amount']) }} </p>
                     </div>
                 </div>
-                
+
             </div>
 
             @if(isset($data['family_id']) && !empty($data['family_id']))
@@ -60,10 +60,10 @@
                     <a style="margin-bottom:20px" href="{{ route('conferencemanagement.index') }}" data-toggle="tooltip" data-placement="top" title="Click to login" class="btn btn-outline-danger rounded-pill order-0">Login to access your dashboard</a><br><br>
                     <h3> <strong> Your Login Details are</strong>
                     </h3>
-                    <p>Family ID: {{ $data['family_id'] }}  <br>
-                    Password: {{ $data['phone'] }} 
+                    <p>Login ID: {{ $data['family_id'] }}  <br>
+                    Password: {{ $data['phone'] }}
                     </p>
-                </div>                       
+                </div>
             </div>
             @endif
         </div>

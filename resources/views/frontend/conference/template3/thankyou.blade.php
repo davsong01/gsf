@@ -22,10 +22,10 @@
             <div class="col-lg-8">
                 <h3 class="text-uppercase mb-3">We’re glad to have you onboard</h3>
                 <p class="text-muted">
-                    Dear <strong>{{ $transaction->name ?? 'Participant' }}</strong>, thank you for registering 
+                    Dear <strong>{{ $transaction->name ?? 'Participant' }}</strong>, thank you for registering
                     {{ isset($transaction->edition->conference_theme) ? 'for ' . $transaction->edition->conference_theme : '' }}.
                     <br>
-                    A confirmation email has been sent to <strong>{{ $transaction->email }}</strong> 
+                    A confirmation email has been sent to <strong>{{ $transaction->email }}</strong>
                     with your login credentials and next steps.
                 </p>
             </div>
@@ -46,7 +46,7 @@
                         <p><strong>Total Amount Paid:</strong> ₦{{ number_format($transaction->total_amount, 2) }}</p>
                         <p><strong>Transaction ID:</strong> {{ $transaction->transid ?? 'N/A' }}</p>
                     @endif
-                
+
                     @if(!empty($transaction->hostel_id))
                         <hr class="border-light">
                         <p><strong>Hostel:</strong> {{ $transaction->hostel->name }}</p>
@@ -67,7 +67,7 @@
                 <div class="p-4 rounded-4 bg-dark text-dark shadow">
                     <h5 class="text-uppercase mb-3">Your Login Details</h5>
                     <p>
-                        <strong>Family ID:</strong> {{ $transaction->user->family_id ?? 'N/A' }} <br>
+                        <strong>Login ID:</strong> {{ $transaction->user->family_id ?? 'N/A' }} <br>
                         <strong>Password:</strong> {{ $transaction->phone ?? 'Your registered phone number' }}
                     </p>
 

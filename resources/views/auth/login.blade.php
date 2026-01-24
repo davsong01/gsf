@@ -25,7 +25,7 @@
                 
                     <div class='form-group-icon mb15'>
                         <i class='fa fa-users'></i>
-                        <input type="family_id" class='form-control' name="family_id" value="{{ old('family_id') }}" placeholder="Family ID">
+                        <input type="family_id" class='form-control' name="family_id" value="{{ old('family_id') }}" placeholder="Login ID">
                     </div>
                     
                       

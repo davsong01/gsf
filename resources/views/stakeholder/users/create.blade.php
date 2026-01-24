@@ -21,7 +21,7 @@
                         <div class="card-body">
                             <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
-                        
+
                             <div class="row">
                                 <div class="col-md-6 col-sm-12">
                                     <fieldset class="form-group">
@@ -46,13 +46,13 @@
                                             <option value="Female" {{ old('gender') == 'Female' ? 'selected' : ''}}>Female</option>
                                         </select>
                                     </fieldset>
-                                
+
                                     <fieldset class="form-group">
                                         <label for="status">Status</label>
                                         <select class="form-control" name="status" id="status" required>
                                             <option value="">--Select Status--</option>
                                             <option value="0" {{ old('status') == 0 ? 'selected' : ''}}>Student</option>
-                                            <option value="1" {{ old('status') == 1 ? 'selected' : ''}}>Alumni</option>                                    
+                                            <option value="1" {{ old('status') == 1 ? 'selected' : ''}}>Alumni</option>
                                         </select>
                                     </fieldset>
                                     <fieldset class="form-group">
@@ -66,18 +66,18 @@
                                         <label for="dob">Date of birth</label>
                                         <input type="date" id="dob" name="dob" class="form-control" value="{{ old('dob') }}">
                                     </fieldset>
-                                
+
                                     <fieldset class="form-group">
                                         <label for="passport">Upload Passport</label>
-                                        <input type="file"  accept="image/*" class="form-control" name="passport" id="passport">	
-                                    </fieldset>           
+                                        <input type="file"  accept="image/*" class="form-control" name="passport" id="passport">
+                                    </fieldset>
                                     <fieldset class="form-group">
                                         <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank to use this user's phone number as password</i></small>
                                         <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}">
-                                    </fieldset> 
+                                    </fieldset>
                             </div>
-                            <div class="col-md-6 col-sm-12">  
-                                    @if(auth()->user()->isAdmin())                                 
+                            <div class="col-md-6 col-sm-12">
+                                    @if(auth()->user()->isAdmin())
                                     <fieldset class="form-group">
                                         <label for="chapter_id">Campus</label>
                                         <select class="form-control" name="chapter_id" id="chapter_id" required>
@@ -94,25 +94,25 @@
                                         <select class="form-control" name="role" id="role" required>
                                             <option value="">--Select Portfolio--</option>
                                             @foreach($portfolios as $portfolio=>$value)
-                                                @if(auth()->user()->isSubAdmin() && $portfolio <> 1)  
+                                                @if(auth()->user()->isSubAdmin() && $portfolio <> 1)
                                                     <option value="{{ $portfolio }}" {{ old('portfolio') == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
                                                 @endif
-                                                @if(auth()->user()->isAdmin())  
+                                                @if(auth()->user()->isAdmin())
                                                 <option value="{{ $portfolio }}" {{ old('portfolio') == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
                                                 @endif
-                                            @endforeach                               
+                                            @endforeach
                                         </select>
                                     </fieldset>
-                                    
+
                                     <fieldset class="form-group" id="session" style="display:none">
                                         <label for="portfolio_session">Portfolio session</label>
                                         <select class="form-control" name="portfolio_session" id="portfolio_session">
                                             @foreach($sessions as $session=>$value)
                                                 <option value="{{ $value . '/' . ($value + 1) }}" {{ old('portfolio_session') == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                                            @endforeach                               
+                                            @endforeach
                                         </select>
                                     </fieldset>
-                                
+
                                     <fieldset class="form-group">
                                         <label for="program">Program</label>
                                         <select class="form-control" name="program" required>
@@ -126,10 +126,15 @@
                                             <option value="NCE"  {{ old('program')== 'NCE' ? 'selected' : '' }}>NCE</option>
                                         </select>
                                     </fieldset>
-                                
+
                                     <fieldset class="form-group">
                                         <label for="course">Course of study</label>
-                                        <input type="text" id="course" name="course" class="form-control" value="{{ old('course') }}" required>
+                                        <select class="form-control" name="course"  id="course">
+                                            <option value="">Select...</option>
+                                            @foreach(coursesOfStudy() as $course)
+                                            <option value="{{$course}}" {{ (old('course') == $course) ? 'selected' : '' }}>{{$course}}</option>
+                                            @endforeach
+                                        </select>
                                     </fieldset>
                                     <fieldset class="form-group">
                                         <label for="skills">Skills</label>
@@ -144,7 +149,7 @@
                                         <select class="form-control" name="matric_year" id="matric_year">
                                             @foreach($sessions as $session=>$value)
                                             <option value="{{ $value . '/' . ($value + 1) }}" {{ old('matric_year') == $value . '/' . ($value + 1) ? 'selected' : '' }} required>{{ $value . '/' . ($value + 1) }}</option>
-                                        @endforeach                                
+                                        @endforeach
                                         </select>
                                     </fieldset>
                                     <fieldset class="form-group">
@@ -153,10 +158,10 @@
                                             <option value="">Select...</option>
                                             @foreach($sessions as $session=>$value)
                                             <option value="{{ $value . '/' . ($value + 1) }}" {{ old('graduation_year') == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                                        @endforeach                                
+                                        @endforeach
                                         </select>
                                     </fieldset>
-                                    
+
                                     <fieldset class="form-group">
                                         <label for="facebook">Facebook Profile</label>
                                         <input type="link" id="facebook" name="facebook" class="form-control" value="{{ old('facebook') }}">
@@ -179,6 +184,6 @@
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->     
+    <!-- Basic Inputs end -->
 </div>
 @endsection

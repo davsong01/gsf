@@ -21,7 +21,7 @@
 							<div class="d-flex justify-content-between align-items-end">
 								<div class="dashboard-content-left">
 									<h1 class="text-primary font-large-2 text-bold-500"></h1>
-									
+
 									@if(auth()->user()->completeReg($edition) && $payment->hostel && $payment->food && !empty($edition->template_settings))
 										<a href="{{ route('participants.card', ['id'=>$payment->id, 'edition'=>$edition->id]) }}" class="btn btn-primary glow"><i class="fa fa-print" aria-hidden="true"></i>  View/Download Badge</a>
 										@if(isset($edition->material) && !empty($edition->material))
@@ -47,8 +47,8 @@
 			<div class="card-header">
 				<h4 class="greeting-text">Your Registration Details</h4>
 			</div>
-			<?php 
-			
+			<?php
+
 				$state = $payment->edition->status == 'active' ? '' : 'disabled';
 			?>
 			<div class="card-content">
@@ -61,7 +61,7 @@
 						<div class="row">
 							<div class="col-md-6 col-sm-12">
 								<fieldset class="form-group">
-									<label for="conference_id">Family ID</label>
+									<label for="conference_id">Login ID</label>
 									<input type="text" class="form-control" name="conference_id" id="conference_id"
 										value="{{ auth()->user()->family_id }}" disabled required>
 								</fieldset>
@@ -123,7 +123,7 @@
 											{{ auth()->user()->gender == 'Female' ? 'selected' : ''}}>Female</option>
 									</select>
 								</fieldset>
-								
+
 							</div>
 							<div class="col-md-6 col-sm-12">
 								<fieldset class="form-group">
@@ -151,8 +151,8 @@
 										value="{{ ($payment->service_point_allocation_number === NULL) ? 'N/A' :$payment->service_point_allocation_number }}" disabled
 										required>
 								</fieldset>
-								
-								
+
+
 								@if(!empty($payment->allocationFields))
 									@foreach($payment->allocationFields as $field)
 										<fieldset class="form-group">
@@ -166,7 +166,7 @@
 									<label for="passport">Change Passport <small>(Not more than 200kilobyte | Only jpeg,jpg,png format is accepted)</small></label>
 									<input type="file" accept="image/*" class="form-control" name="passport" id="passport">
 								</fieldset>
-								
+
 								<fieldset class="form-group">
 									<label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank
 											except you want to change your password</i></small>

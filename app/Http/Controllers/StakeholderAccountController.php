@@ -134,7 +134,7 @@ class StakeholderAccountController extends Controller
 		$sessions = range(date('1982'), date('Y'));
         $isAdmin = true;
 
-        return view('stakeholder.users.edit', compact('user', 'chapters', 'portfolios', 'sessions', 'president','campusDesignations', 'isAdmin'));
+        return view('stakeholder.users.edit', compact('user', 'chapters', 'portfolios', 'sessions','campusDesignations', 'isAdmin'));
 	}
 
     public function chapterEdit(Chapter $chapter)
@@ -162,6 +162,30 @@ class StakeholderAccountController extends Controller
         $chapter->update($request->except('chapter_banner','name'));
 
         return redirect()->back()->with('message', 'Update successful');
+    }
+
+    public function memberUpdate(Request $request, User $user){
+        if($user->chapter_id != auth()->guard('stakeholder')->user()->chapter_id){
+            return back()->with('error', 'Invalid route');
+        }
+
+        // Validate email uniqueness
+        $request->validate([
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'required|unique:users,phone,' . $user->id,
+        ]);
+
+
+        // Prepare data using the service
+        $data = $this->userService->prepareUserData($request, $user);
+
+        try {
+            $this->userService->updateUser($user, $data);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('stakeholders.users.index')->with('message', 'User updated successfully.');
     }
 
     /**

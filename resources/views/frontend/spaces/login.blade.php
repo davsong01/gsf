@@ -34,7 +34,7 @@
 
                         {{-- Family ID --}}
                         <div class="form-group mb-3">
-                            <label for="family_id">Family ID</label>
+                            <label for="family_id">Login ID</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-users"></i></span>
                                 <input type="text" class="form-control @error('family_id') is-invalid @enderror"

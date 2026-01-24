@@ -31,7 +31,7 @@
 @section('sec-content')
 <section class="bg-100 py-7" id="register">
     <div class="container-lg small-container">
-        
+
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-5 text-center mb-3">
                 <h2>Login</h2>
@@ -43,16 +43,15 @@
                 <form action="{{ route('login') }}" method="POST">
                     @csrf
                     <div class="control-group">
-                        <label>Family ID</label>
-                        <input type="text" class="form-control id="family_id"
-                            name="family_id" placeholder="Enter your family ID" required="required" value="{{ old('family_id') }}">
+                        <label>Login ID</label>
+                        <input type="text" class="form-control" id="family_id" name="family_id" placeholder="Enter your login ID" required="required" value="{{ old('family_id') }}">
                     </div>
                     <div class="control-group">
                         <label>Password</label>
                         <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required="required">
-                        
+
                     </div>
-                
+
                     <div class="form-group-icon mb15 mt-3">
                         <small onclick="newFunction()" style="cursor: pointer;">
                             <div class="form-check">

@@ -62,7 +62,7 @@
             <div class="single-intro-text single-contact-feature">
                 <h3 class="ts-title">Amount Paid</h3>
                 <p>
-                &#8358;{{ number_format($data['amount']) }} 
+                &#8358;{{ number_format($data['amount']) }}
                 </p>
                 <p>
                 {{ $data['payment_type'] }}
@@ -113,8 +113,8 @@
             <div class="text-center">
                 <br> <br>
                 <h3> <strong> Your Login Details are</strong></h3>
-                <p>Family ID: {{ $data['family_id'] }}  <br>
-                Password: {{ $data['phone'] }} 
+                <p>Login ID: {{ $data['family_id'] }}  <br>
+                Password: {{ $data['phone'] }}
                 </p>
                 <a style="margin-bottom:20px; background-color:#183187;border: none;" href="{{ route('conferencemanagement.index') }}" data-toggle="tooltip" data-placement="top" title="Click to login" class="btn btn-outline-danger rounded-pill order-0">Access dashboard</a><br><br>
             </div>
