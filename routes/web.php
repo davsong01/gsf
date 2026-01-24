@@ -539,7 +539,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::post('all', 'allMemberUsers' )->name('all');
             Route::post('users', 'memberCreate')->name('users.create');
             Route::get('users/{user}', 'show')->name('users.show');
-            Route::get('users/{user}/edit', 'edit')->name('users.edit');
+            Route::get('users/{user}/edit', 'memberEdit')->name('users.edit');
             Route::put('users/{user}', 'update')->name('users.update');
             Route::patch('users/{user}', 'update');
 

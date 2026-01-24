@@ -35,8 +35,8 @@
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $field->name }}</td>
                                             <td>
-                                                @if ($field->stakeholder)
-                                                    <a href="{{route('stakeholderpersonnel.edit', $field->stakeholder->id)}}">{{ $field->stakeholder->name }}</a>
+                                                @if ($field->fieldCord)
+                                                    <a href="{{route('stakeholderpersonnel.edit', $field->fieldCord->id)}}">{{ $field->fieldCord->name }}</a>
                                                 @else
                                                     N/A
                                                 @endif

@@ -118,7 +118,7 @@
                                         </fieldset>
 
                                         {{-- About --}}
-                                        <label for="about">About</label><small><br>Write brief biography of chapter, you can include fellowship periods</small>
+                                        <label for="about">About</label><small><br>Write brief biography of chapter, you can include fellowship service periods</small>
                                         <fieldset class="form-group position-relative has-icon-left">
                                             <textarea class="form-control" id="about" rows="3" name="about">{!! old('about', $chapter->about ?? '') !!}</textarea>
                                         </fieldset>

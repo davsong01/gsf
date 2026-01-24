@@ -7,6 +7,7 @@
 <script src="https://cdn.ckeditor.com/4.16.0/standard/ckeditor.js"></script>
 <div class="content-body">
     <section id="basic-input">
+        {{-- Field & Zone Summary Card --}}
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
@@ -28,7 +29,7 @@
                                                 type="text"
                                                 class="form-control"
                                                 id="name"
-                                                
+
                                                 value="{{ old('name', $chapter->name ?? '') }}"
                                                 placeholder="Enter name"
                                                 disabled
@@ -62,7 +63,7 @@
                                         </fieldset>
 
                                         {{-- About --}}
-                                        <label for="about">About</label><small><br>Write brief biography of chapter, you can include fellowship periods</small>
+                                        <label for="about">About</label><small><br>Write brief biography of chapter, you can include fellowship service periods</small>
                                         <fieldset class="form-group position-relative has-icon-left">
                                             <textarea class="form-control" id="about" rows="3" name="about">{!! old('about', $chapter->about ?? '') !!}</textarea>
                                         </fieldset>

@@ -21,7 +21,7 @@
                         <div class="card-body">
                             <form action="{{ route('chapters.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
-                            
+
                             <div class="row">
                                 <div class="col-md-12 col-sm-12">
                                     <fieldset class="form-group">
@@ -37,7 +37,7 @@
                                             @endforeach
                                         </select>
                                     </fieldset>
-                                    
+
                                     <fieldset class="form-group">
                                         <label for="address">Address(Optional)</label>
                                         <input type="text" class="form-control" id="address" name="address" value="{{ old('address') }}" placeholder="Enter address">
@@ -58,14 +58,14 @@
                                         <label for="twitter">Twitter Link(Optional)</label>
                                         <input type="text" class="form-control" id="twitter" name="twitter" value="{{ old('twitter') }}" placeholder="Enter address">
                                     </fieldset>
-                                    <label for="about">About</label><small> <br>Write brief biography of chapter, you can include fellowship periods</small>
+                                    <label for="about">About</label><small> <br>Write brief biography of chapter, you can include fellowship service periods</small>
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <textarea class="form-control" id="about" rows="3" name="about" rows="10" cols="200">{!! old('about') !!}</textarea>
                                     </fieldset>
                                     <fieldset class="form-group">
                                         <label for="chapter_banner">Upload banner</label>
-                                        <input type="file" accept="image/*" class="form-control" name="chapter_banner" id="chapter_banner">	
-                                    </fieldset> 
+                                        <input type="file" accept="image/*" class="form-control" name="chapter_banner" id="chapter_banner">
+                                    </fieldset>
                                 </div>
                             </div>
                             <div class="row">
@@ -79,7 +79,7 @@
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->          
+    <!-- Basic Inputs end -->
 </div>
 <script>
     CKEDITOR.replace( 'about' );

@@ -26,4 +26,8 @@ class Field extends Model
     public function fieldCord(){
         return $this->hasOne(Stakeholder::class, 'field_id')->where('role_id', 3);
     }
+
+    public function zonalCord(){
+        return $this->hasOne(Stakeholder::class, 'field_id')->where('role_id', 4);
+    }
 }

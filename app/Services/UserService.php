@@ -124,6 +124,7 @@ class UserService
         $limit = $requestData['length'] ?? 10;
         $search = $requestData['search']['value'] ?? null;
         $chapterId = $requestData['chapter_id'] ?? null;
+        $canEdit = $requestData['canEdit'] ?? false;
         $canDelete = $requestData['canDelete'] ?? false;
         $canSwitch = $requestData['canSwitch'] ?? false;
         $isStakeholder = $requestData['isStakeholder'] ?? false;
@@ -171,7 +172,7 @@ class UserService
                             . '<br><em>'
                             . (($user->rolename !== 'Admin' && $user->rolename !== 'Member') ? $user->portfolio_session : '')
                             . '</em>',
-                'actions' => $this->generateActionButtons($user, $canDelete, $canSwitch, $isStakeholder),
+                'actions' => $this->generateActionButtons($user, $canDelete, $canEdit, $canSwitch, $isStakeholder),
             ];
 
             $data[] = $nestedData;
@@ -185,14 +186,18 @@ class UserService
         ];
     }
 
-    protected function generateActionButtons(User $user, bool $canDelete, bool $canSwitch, ?bool $isStakeholder = false): string
+    protected function generateActionButtons(User $user, bool $canDelete, bool $canEdit, bool $canSwitch, ?bool $isStakeholder = false): string
     {
         $buttons = '<div class="btn-group" role="group" aria-label="User Actions">';
 
-        if ($canDelete) {
+        if ($canEdit) {
             $buttons .= sprintf('<a href="%s" class="btn btn-sm btn-primary">Edit</a>', route($isStakeholder ? 'stakeholders.users.edit' : 'users.edit', $user->id));
+        }
+
+        if ($canDelete) {
             $buttons .= sprintf('<a href="%s" class="btn btn-sm btn-danger" onclick="return confirm(\'Delete this user?\');">Delete</a>', route($isStakeholder ? 'stakeholders.users.destroy' : 'users.destroy', $user->id));
         }
+
 
         if ($canSwitch && !$isStakeholder) {
             $buttons .= sprintf('<a href="%s" class="btn btn-sm btn-warning" onclick="return confirm(\'Switch to this user?\');">Switch</a>', route('switchuser', $user->id));

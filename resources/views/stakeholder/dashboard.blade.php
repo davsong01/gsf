@@ -1,29 +1,177 @@
 @extends('layouts.stakeholderdashboard')
-<style>
-    .monitor-card{
-        margin-bottom:20px !important
-    }
-</style>
-@section('title', 'Reports Dashboard')
-
-@section('active')
-<li class="breadcrumb-item">Reports</li>
-@endsection
 
 @section('content')
+<style>
+    .monitor-card {
+        margin-bottom: 20px !important;
+    }
+
+    .content-header {
+        display: none !important;
+    }
+
+    /* Sleeker cards */
+    .card {
+        border-radius: 0.75rem !important; /* smoother edges */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important; /* subtle shadow */
+    }
+
+    /* Smaller shadow for inner cards like field/zone avatars */
+    .card-body .card {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    }
+</style>
+
 <div class="content-body">
 
-    <div class="row mb-4">
-        <div class="col-12">
-            <h4 class="fw-bold">Reports Dashboard</h4>
-            <p class="text-muted mb-0">
-                Manage submissions, approvals, and performance insights for stakeholder reports.
-            </p>
+    @if($user->role_id == 5)
+    {{-- CHAPTER HEADER --}}
+    @php
+    $bgStyle = $chapter->banner
+        ? "background-image: url('" . asset($chapter->banner) . "');"
+        : "background: linear-gradient(135deg, #0d6efd, #0b5ed7);";
+
+    $fieldCord = $chapter->field->fieldCord;
+    @endphp
+
+    <div class="card shadow-sm mb-1 border-0"
+        style="{{ $bgStyle }} background-size:cover; background-position:center; position:relative;">
+
+        {{-- Dark Overlay --}}
+        <div style="
+            position:absolute;
+            inset:0;
+            background: rgba(0, 0, 0, 0.71);
+            border-radius: .75rem;
+        "></div>
+
+        <div class="card-body text-center py-4 position-relative text-white">
+            <h2 class="fw-bold mb-1" style="color:white">
+                {{ $chapter->name ?? 'My Chapter' }}
+            </h2>
+
+            <small class="opacity-75">
+                Welcome back, {{ Auth::guard('stakeholder')->user()->name }}
+            </small> <br>
+            <span class="badge bg-light text-dark mt-2">
+                Chapter Dashboard
+            </span>
         </div>
     </div>
 
-    {{-- Quick Actions --}}
-    <div class="row g-3 mb-4">
+    {{-- FIELD & ZONE CARDS --}}
+    <div class="row mb-1">
+
+        {{-- FIELD CARD --}}
+        <div class="col-12 col-md-6 mb-1">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="row align-items-center">
+
+                        {{-- Avatar --}}
+                        <div class="col-12 col-md-5 text-center mb-1 mb-md-0">
+                            <img
+                                src="{{ asset(optional($chapter->field->fieldCord)->avatar ?? 'images/avatar.png') }}"
+                                class="rounded-circle mb-2"
+                                style="width:100px;height:100px;object-fit:cover;"
+                            >
+                            <h6 class="mb-0 d-block text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                {{ optional($chapter->field->fieldCord)->name ?? 'N/A' }}
+                            </h6>
+                            <small class="text-muted d-block">Field Pastor</small>
+                        </div>
+
+                        {{-- Info --}}
+                        <div class="col-12 col-md-7 text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                            <h6 class="text-primary mb-2">
+                                <i class="fa fa-map-marker"></i> Field Information
+                            </h6>
+
+                            <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;"><strong>Field:</strong> {{ $chapter->field->name ?? 'N/A' }}</p>
+                            <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                <i class="fa fa-envelope text-muted"></i> {{ optional($chapter->field->fieldCord)->email ?? 'N/A' }}
+                            </p>
+                            <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                <i class="fa fa-phone text-muted"></i> {{ optional($chapter->field->fieldCord)->phone ?? 'N/A' }}
+                            </p>
+
+                            @php $fieldCord = $chapter->field->fieldCord; @endphp
+                            @if($fieldCord && $fieldCord->day && $fieldCord->month)
+                                <span class="badge badge-light-primary d-block mt-1 w-100 text-break"
+                                    style="background-color:#0028FF;color:white !important; word-wrap: break-word; overflow-wrap: anywhere;">
+                                    🎉 <strong>{{ \Carbon\Carbon::create(null, $fieldCord->month, $fieldCord->day)->format('F jS') }}</strong>
+                                </span>
+                            @endif
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ZONE CARD --}}
+        <div class="col-12 col-md-6 mb-1">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-primary mb-2">
+                        <i class="fa fa-globe"></i> Zone Information
+                    </h6>
+
+                    <p class="mb-2" style="word-wrap: break-word; overflow-wrap: anywhere;"><strong>Zone:</strong> {{ $chapter->zone->name ?? 'N/A' }}</p>
+
+                    <div class="row">
+                        @forelse($chapter->zone->zonalCords ?? collect() as $cord)
+                            <div class="col-12 mb-1">
+                                <div class="row align-items-center">
+
+                                    {{-- Avatar --}}
+                                    <div class="col-3 col-md-2 text-center mb-1 mb-md-0">
+                                        <img
+                                            src="{{ asset($cord->avatar ?? 'images/avatar.png') }}"
+                                            class="rounded-circle"
+                                            style="width:50px;height:50px;object-fit:cover;"
+                                        >
+                                    </div>
+
+                                    {{-- Info --}}
+                                    <div class="col-9 col-md-10 text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                        <strong class="d-block text-break">{{ $cord->name }}</strong>
+
+                                        <span class="d-block text-muted small" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                            <i class="fa fa-envelope"></i> {{ $cord->email ?? 'N/A' }}
+                                        </span>
+
+                                        <span class="d-block text-muted small" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                            <i class="fa fa-phone"></i> {{ $cord->phone ?? 'N/A' }}
+                                        </span>
+
+                                        @if($cord && $cord->day && $cord->month)
+                                            <span class="badge badge-light-primary d-block mt-1 w-100 text-break"
+                                                style="background-color:#3B50C4;color:white !important; word-wrap: break-word; overflow-wrap: anywhere;">
+                                                🎉 <strong>{{ \Carbon\Carbon::create(null, $cord->month, $cord->day)->format('F jS') }}</strong>
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                </div>
+                                <hr class="my-2">
+                            </div>
+                        @empty
+                            <div class="col-12 text-muted">
+                                No zonal coordinators assigned
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    @endif
+
+     <div class="row g-3 mb-4">
 
         {{-- My Reports --}}
         <div class="col-md-3 col-sm-6 monitor-card">
@@ -138,44 +286,5 @@
             </a>
         </div>
     </div>
-
-    {{-- Insights / Analytics --}}
-    <div class="row g-3">
-
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0">Report Insights</h6>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted mb-2">
-                        Access summarized insights and trends from submitted reports.
-                    </p>
-                    <a href="{{ route('stakeholders.reports.analysis') }}"
-                       class="btn btn-outline-primary btn-sm">
-                        View Analysis
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0">Download Reports</h6>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted mb-2">
-                        Download approved reports for offline review or record keeping.
-                    </p>
-                    <a href="{{ route('stakeholders.reports.index', ['download' => 1]) }}" class="btn btn-outline-success btn-sm">
-                        Browse Downloads
-                    </a>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
 </div>
 @endsection

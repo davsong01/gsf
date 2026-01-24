@@ -49,7 +49,8 @@ class UserController extends Controller
     {
         $user = auth()->user();
 
-        $canEdit   = $user->isAdmin() || ($user->isSubAdmin() && $user->isMember());
+        $canEdit = $user->isAdmin() || ($user->isSubAdmin() && $user->isMember());
+        $canDelete = $user->isAdmin() || ($user->isSubAdmin() && $user->isMember());
 
         if($user->isAdmin()){
             $request['chapter_id'] = null;
@@ -59,7 +60,9 @@ class UserController extends Controller
             $request['chapter_id'] = $user->chapter_id;
         }
 
-        $request['canDelete'] = $canEdit;
+        $request['canDelete'] = $canDelete;
+        $request['canEdit'] = $canEdit;
+        
         $request['canSwitch'] = $user->isAdmin();
 
         $json_data = $this->userService->getAllUsers( $request->all());
@@ -184,7 +187,7 @@ class UserController extends Controller
         ]);
 
         $data = $this->userService->prepareUserData($request);
-        
+
         try {
             $this->userService->createUser($data);
         } catch (\Exception $e) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Zone;
 use App\Models\Field;
 use App\Models\Chapter;
@@ -12,6 +13,7 @@ use App\Services\FileUploadService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\StakeholderDesignation;
 use App\Traits\UserDatatableFeaturesTrait;
 
 class StakeholderAccountController extends Controller
@@ -34,10 +36,11 @@ class StakeholderAccountController extends Controller
 
     public function dashboard()
     {
-        $count = 1;
+        $user = auth::guard('stakeholder')->user();
+        $chapter = $user->chapter ?? null;
+        $role = Auth::guard('stakeholder')->user()->role_id;
         // return redirect(route('stakeholder.login'));
         if (!auth::guard('stakeholder')->check()) return redirect(route('stakeholders.login'));
-        $role = Auth::guard('stakeholder')->user()->role_id;
 
         if (in_array($role, chapterStakeholders())) {
             $reports = StakeholderReport::whereChapterId(Auth::guard('stakeholder')->user()->chapter_id)->orderBy('created_at', 'desc')->get();
@@ -51,7 +54,7 @@ class StakeholderAccountController extends Controller
             $reports = StakeholderReport::orderBy('created_at', 'desc')->get();
         }
 
-        return view('stakeholder.dashboard', compact('reports', 'count'));
+        return view('stakeholder.dashboard', compact('reports', 'chapter', 'user'));
     }
 
     public function profile()
@@ -111,7 +114,8 @@ class StakeholderAccountController extends Controller
         $chapterId = auth()->guard('stakeholder')->user()->chapter_id; // Sub-admins restricted by chapter
 
         $request['chapter_id'] = $chapterId;
-        $request['canDelete'] = true;
+        $request['canDelete'] = false;
+        $request['canEdit'] = true;
         $request['canSwitch'] = false;
         $request['isStakeholder'] = true;
         $json_data = $this->userService->getAllUsers( $request->all());
@@ -119,6 +123,19 @@ class StakeholderAccountController extends Controller
         return response()->json($json_data);
     }
 
+    public function memberEdit(User $user)
+	{
+        if($user->chapter_id != auth()->guard('stakeholder')->user()->chapter_id){
+            return back()->with('error', 'Invalid route');
+        }
+		$chapters = Chapter::all();
+		$portfolios = getCommunityPortfolios();
+        $campusDesignations = StakeholderDesignation::select('id','name')->where('type', 'chapter_executive')->orderBy('order')->get();
+		$sessions = range(date('1982'), date('Y'));
+        $isAdmin = true;
+
+        return view('stakeholder.users.edit', compact('user', 'chapters', 'portfolios', 'sessions', 'president','campusDesignations', 'isAdmin'));
+	}
 
     public function chapterEdit(Chapter $chapter)
     {
