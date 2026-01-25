@@ -131,7 +131,7 @@
                                                                 {{ $alumni->matric_year . ' - ' . $alumni->graduation_year }}</span>
                                                             @endif
                                                             @else
-                                                                {{ $alumni->designation->name ?? 'Member' . ', '}} <br>
+                                                                {{ $alumni->designation->name ?? 'Member'}} <br>
                                                             <span class="sub" style="font-size: small;">
                                                                     {{-- {{ $alumni->portfolio_session }} --}}
                                                             </span>
