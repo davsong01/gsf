@@ -1,4 +1,4 @@
-<?php 
+<?php
     $main = $alumni->id;
 ?>
 @extends('frontend.spaces.layouts.app')
@@ -6,11 +6,12 @@
 @section('ogtitle', $alumni->name)
 @section('title', $alumni->name)
 @section('ogurl', route('user.single', $alumni->slug))
-<meta property="og:image" content="{{ !is_null($alumni->passport) ? asset($alumni->passport) : asset('frontend/passports/avatar.jpg') }}"/> 
+<meta property="og:image" content="{{ !is_null($alumni->passport) ? asset($alumni->passport) : asset('frontend/passports/avatar.jpg') }}"/>
 
 @section('content')
+
 <div class="section section-header bg-primary pb-md-6 pb-lg-0 bg-soft">
-   
+
 </div>
 <div class="section pt-lg-0" style="padding-bottom:0">
     <div id="spaces-container" class="container">
@@ -19,7 +20,7 @@
                 <div id="profile-sidebar">
                     <div class="sidebar-inner">
                         <div class="card mt-n7 d-none d-lg-block border-light text-center p-2">
-                            <div class="profile-cover rounded-top" data-background=""></div>
+                            <div class="profile-cover rounded-top" style="paddinf-top:50px !important"></div>
                             <div class="card-body p-2">
                                 <div class="profile-thumbnail small-thumbnail mt-n6 mx-auto">
                                     <img src="{{ !is_null($alumni->passport) ? asset($alumni->passport) : asset('frontend/passports/avatar.jpg') }}"
@@ -33,13 +34,13 @@
                                 @endif
                                 <ul class="list-inline row mx-auto my-2" style="display: inherit;">
                                     @if($alumni->facebook )
-                                    <a href="{{ $alumni->facebook }}" target="_blank" aria-label="facebook social link" class="icon-facebook mr-3"><span class="fab fa-facebook-f"></span></a> 
+                                    <a href="{{ $alumni->facebook }}" target="_blank" aria-label="facebook social link" class="icon-facebook mr-3"><span class="fab fa-facebook-f"></span></a>
                                     @endif
                                     @if($alumni->twitter )
-                                    <a href="{{ $alumni->twitter }}" target="_blank" aria-label="facebook social link" class="icon-twitter mr-3"><span class="fab fa-twitter"></span></a> 
+                                    <a href="{{ $alumni->twitter }}" target="_blank" aria-label="facebook social link" class="icon-twitter mr-3"><span class="fab fa-twitter"></span></a>
                                     @endif
                                 </ul>
-                            
+
                                 @if($alumni->email)
                                 <a style="color: white;" class="btn btn-sm btn-secondary mb-3" data-toggle="modal" data-target="#modal-form"><span class="fas fa-user-plus mr-1"></span>
                                         Send Message</a>
@@ -58,11 +59,11 @@
                         <ul class="list-inline row mx-auto my-4" style="display: block">
                             @if($alumni->facebook )
                                 <a href="{{ $alumni->facebook }}" target="_blank" aria-label="facebook social link" class="icon-facebook mr-3"><span class="fab fa-facebook-f"></span>
-                                </a> 
+                                </a>
                             @endif
                             @if($alumni->twitter)
                                 <a href="{{ $alumni->twitter }}" target="_blank" aria-label="facebook social link" class="icon-facebook mr-3"><span class="fab fa-twitter"></span>
-                                </a> 
+                                </a>
                             @endif
                         </ul>
                         @if($alumni->email)
@@ -86,8 +87,13 @@
                                                 </li>
                                                 @endif
                                                 @if(!is_null($alumni->course))
-                                                <li class="list-group-item p-0"><span
-                                                        class="fas fa-book mr-2" data-toggle="tooltip" data-html="true" title="Discipline" aria-hidden="true"></span>{{ $alumni->course }}  @if($alumni->status == 1 && $alumni->graduation_year != NULL )({{ $alumni->matric_year . ' - ' . $alumni->graduation_year }})@endif</li>
+                                                <li class="list-group-item p-0">
+                                                    <span class="fas fa-book mr-2" data-toggle="tooltip" data-html="true" title="Discipline" aria-hidden="true"></span>
+                                                        {{ $alumni->course }}
+                                                        @if($alumni->is_graduated == 1 && $alumni->graduation_year != NULL )
+                                                            ({{ $alumni->matric_year . ' - ' . $alumni->graduation_year }})
+                                                        @endif
+                                                </li>
                                                 @endif
                                                 @if(!is_null($alumni->skills))
                                                  <li class="list-group-item p-0"><span class="fas fa-bullseye mr-2" data-toggle="tooltip" data-html="true" title="Skills" aria-hidden="true"></span>{{ $alumni->skills }}
@@ -109,38 +115,36 @@
                                                        &nbsp; {{ $alumni->phone }}
                                                 </li>
                                                 @endif
-                                                           
+
                                             </ul>
                                         </div>
                                         <div class="card-footer bg-soft border-top">
                                             <div class="d-flex justify-content-between">
                                                 <div class="col pr-0" style="width:250px">
-                                                    @if($alumni->stakeholder)
-                                                        @if($alumni->stakeholder->role == 'President' && !is_null($alumni->stakeholder->chapter_id))<span class="portfolio">President, </span>{{ $alumni->stakeholder->chapter->name ?? 'N/A' }}@endif
-                                                        @if($alumni->stakeholder->role == 'Zonal Pastor' && !is_null($alumni->stakeholder->zone_id))<span class="portfolio">Zonal Pastor, </span>{{ $alumni->stakeholder->zone->name ?? 'N/A' }}@endif
-                                                        @if($alumni->stakeholder->role == 'Field Pastor' && !is_null($alumni->stakeholder->field_id)) <span class="portfolio">Field Pastor, </span>{{ $alumni->stakeholder->field->name ?? 'N/A' }}@endif
-                                                        @if($alumni->stakeholder->role == 'Portfolio') <span class="portfolio" >{{ 'GSF National '.$alumni->stakeholder->portfolio }} </span> @endif
+                                                    @if($alumni->designation)
+                                                        <span class="portfolio"></span>{{ $alumni->designation->name ?? 'N/A' }}
                                                     @else
-                                                        @if($alumni->rolename == 'Member')
-                                                            {{ $alumni->rolename }} <br>
-                                                            @if(!is_null($alumni->matric_year))
-                                                            <span class="sub" style="font-size: small;">{{ $alumni->matric_year . ' - ' . $alumni->graduation_year }}</span>
+                                                        @if($alumni->is_graduated)
+                                                            {{ $alumni->designation->name ?? 'Member' }} <br>
+                                                            @if(!empty($alumni->matric_year) && !empty($alumni->graduation_year))
+                                                            <span class="sub" style="font-size: small;">
+                                                                {{ $alumni->matric_year . ' - ' . $alumni->graduation_year }}</span>
                                                             @endif
                                                             @else
-                                                                {{ $alumni->rolename . ', '}} <br>
+                                                                {{ $alumni->designation->name ?? 'Member' . ', '}} <br>
                                                             <span class="sub" style="font-size: small;">
-                                                                    {{ $alumni->portfolio_session }}
+                                                                    {{-- {{ $alumni->portfolio_session }} --}}
                                                             </span>
                                                         @endif
                                                     @endif
                                                 </div>
                                             </div>
-                                           
+
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                         </div>
                     </div>
 

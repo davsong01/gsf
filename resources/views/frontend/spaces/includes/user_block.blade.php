@@ -1,76 +1,147 @@
 <style>
-    .rounded-circle{
-        object-fit: cover;
-        height: 150px;
-        width: 150px;
+    .alumni-card{
+        border-radius: 16px;
+        padding-top: 40px;
+        transition: all .3s ease;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
+
+    .alumni-card:hover{
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+    }
+
+    .alumni-img{
+        width:120px;
+        height:120px;
+        object-fit:cover;
+        border:4px solid #fff;
+        box-shadow:0 4px 12px rgba(0,0,0,.15);
+    }
+
+    .role-badge{
+        background: linear-gradient(45deg,#1f3c88,#4facfe);
+        color:#fff;
+        padding:4px 14px;
+        border-radius:20px;
+        font-size:12px;
+    }
+
+    .social-icon{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        width:36px;
+        height:36px;
+        border-radius:50%;
+        background:#f2f4f8;
+        color:#1f3c88;
+        transition:.3s;
+    }
+
+    .social-icon.facebook:hover{ background:#1877f2;color:#fff; }
+    .social-icon.twitter:hover{ background:#1da1f2;color:#fff; }
+
 </style>
-<div class="col-12 col-md-6 col-lg-4 mb-7">
-    <div class="card border-light text-center shadow">
-        <div class="profile-thumbnail mx-auto mt-n6">
-            <img class="card-img-top rounded-circle border-0" src="{{ !is_null($user->passport) ? asset($user->passport) : asset('frontend/passports/avatar.jpg') }}" alt="{{ $user->passport }}" class="img-responsive alumni-img">
+<div class="col-12 col-md-6 col-lg-4 mb-5">
+    <div class="card alumni-card border-0 text-center">
+
+        {{-- Profile Image --}}
+        <div class="profile-thumbnail mx-auto mt-n5">
+            <img
+                src="{{ !is_null($user->passport) ? asset($user->passport) : asset('frontend/passports/avatar.jpg') }}"
+                alt="{{ $user->name }}"
+                class="rounded-circle alumni-img">
         </div>
 
-        <div class="card-body" style="height: 350px;">
-            <a href="{{ route('user.single', $user->slug) }}"><h2 class="h4 card-title mb-2">{{ ucfirst($user->name) }}</h2></a>
+        <div class="card-body pt-3">
+
+            {{-- Name --}}
+            <a href="{{ route('user.single', $user->slug) }}">
+                <h5 class="fw-bold mb-1">{{ ucfirst($user->name) }}</h5>
+            </a>
+
+            {{-- Role --}}
             @if($user->stakeholder)
-
-                @if($user->stakeholder->role == 'President' && !is_null($user->stakeholder->chapter_id))<span class="portfolio">President, </span>{{ $user->stakeholder->chapter->name ?? 'N/A' }}@endif
-                @if($user->stakeholder->role == 'Zonal Pastor' && !is_null($user->stakeholder->zone_id))<span class="portfolio">Zonal Pastor, </span>{{ $user->stakeholder->zone->name ?? 'N/A' }}@endif
-                @if($user->stakeholder->role == 'Field Pastor' && !is_null($user->stakeholder->field_id)) <span class="portfolio">Field Pastor, </span>{{ $user->stakeholder->field->name ?? 'N/A' }}@endif
-                @if($user->stakeholder->role == 'Portfolio') <span class="portfolio" >{{ 'GSF National '.$user->stakeholder->portfolio }} </span> @endif
-            @endif
-
-            @if(!empty($user->campus->id) && $user->campus->id != 86)
-            <span class="card-subtitle text-gray font-weight-normal"><em>
-                {{ $user->campus->name ?? $user->c_name }}
-            </em>
-
-            @endif
-            @if($user->rolename !== 'Admin')
-                <small>
-                    @if($user->is_graduated && $user->matric_year && $user->graduation_year)
-                        <br>
-                        ({{ $user->matric_year . ' - ' . $user->graduation_year }})
-                    @elseif(!$user->is_graduated && $user->matric_year)
-                        <br>({{ $user->matric_year }} - {{ now()->year }})
+                <span class="role-badge mb-2 d-inline-block">
+                    @if($user->stakeholder->role == 'President' && $user->stakeholder->chapter_id)
+                        President, {{ $user->stakeholder->chapter->name ?? 'N/A' }}
+                    @elseif($user->stakeholder->role == 'Zonal Pastor' && $user->stakeholder->zone_id)
+                        Zonal Pastor, {{ $user->stakeholder->zone->name ?? 'N/A' }}
+                    @elseif($user->stakeholder->role == 'Field Pastor' && $user->stakeholder->field_id)
+                        Field Pastor, {{ $user->stakeholder->field->name ?? 'N/A' }}
+                    @elseif($user->stakeholder->role == 'Portfolio')
+                        GSF National {{ $user->stakeholder->portfolio }}
                     @endif
-                </small>
+                </span>
+            @else
+                <span class="role-badge mb-2 d-inline-block">
+                    {{ $user->rolename }}
+                </span>
             @endif
 
-            @if($user->show_phone == 1)
-            <br>
-            <li class="list-group-item small p-0"><span class="fa fa-mobile" data-toggle="tooltip" data-html="true" title="Phone" aria-hidden="true"></span> {{ $user->phone }}
+            {{-- Campus --}}
+            @if(!empty($user->campus->id) && $user->campus->id != 86)
+                <p class="text-muted small mb-1">
+                    <i class="fas fa-university text-primary"></i>
+                    {{ $user->campus->name ?? $user->c_name }}
+                </p>
             @endif
-            @if($user->show_email== 1)
-            <br>
-            <li class="list-group-item small p-0"><span class="fa fa-envelope" data-toggle="tooltip" data-html="true" title="Email" aria-hidden="true"></span> {{ $user->email }}
-            </li>
+
+            {{-- Session --}}
+            @if($user->rolename !== 'Admin')
+                <p class="text-muted small">
+                    @if($user->is_graduated && $user->matric_year && $user->graduation_year)
+                        ({{ $user->matric_year }} - {{ $user->graduation_year }})
+                    @elseif(!$user->is_graduated && $user->matric_year)
+                        ({{ $user->matric_year }} - {{ now()->year }})
+                    @endif
+                </p>
             @endif
-            </span>
+
+            {{-- Skills --}}
             @if(!is_null($user->skills))
-            <li class="list-group-item small p-0"><span class="fas fa-bullseye mr-2" data-toggle="tooltip" data-html="true" title="Skills" aria-hidden="true"></span>{{ $user->skills }}
-            </li>
+                <p class="small mt-2">
+                    <i class="fas fa-bullseye text-success"></i> {{ $user->skills }}
+                </p>
             @endif
 
-            <ul class="list-unstyled d-flex justify-content-center mt-3 mb-0">
-                @if($user->facebook )
-                <li><a href="{{ $user->facebook }}" target="_blank" aria-label="facebook social link" class="icon-facebook mr-3"><span
-                    class="fab fa-facebook-f"></span></a></li>
+            {{-- Contact --}}
+            @if($user->show_phone == 1)
+                <p class="small mb-0">
+                    <i class="fas fa-phone text-primary"></i> {{ $user->phone }}
+                </p>
+            @endif
+
+            @if($user->show_email == 1)
+                <p class="small">
+                    <i class="fas fa-envelope text-primary"></i> {{ $user->email }}
+                </p>
+            @endif
+
+            {{-- Social --}}
+            <ul class="list-inline mt-3 mb-2">
+                @if($user->facebook)
+                    <li class="list-inline-item">
+                        <a href="{{ $user->facebook }}" target="_blank" class="social-icon facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                    </li>
                 @endif
                 @if($user->twitter)
-                <li><a href="{{$user->twitter}}" target="_blank" aria-label="twitter social link" class="icon-twitter mr-3"><span
-                        class="fab fa-twitter"></span></a>
-                </li>
+                    <li class="list-inline-item">
+                        <a href="{{ $user->twitter }}" target="_blank" class="social-icon twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                    </li>
                 @endif
             </ul>
-            <p class="card-text my-2">
-                @if($user->status == 0)
-                <a href="{{ route('user.single', $user->slug) }}" class="btn btn-sm btn-primary animate-up-2" style="color: white;">View details</a>
-                @else
-                <a href="{{ route('user.single', $user->slug) }}"><button class="btn btn-sm btn-primary animate-up-2">View details</button></a>
-                @endif
-            </p>
+
+            {{-- Button --}}
+            <a href="{{ route('user.single', $user->slug) }}" class="btn btn-sm btn-primary rounded-pill px-4">
+                View Profile
+            </a>
+
         </div>
     </div>
 </div>
