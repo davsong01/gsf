@@ -98,6 +98,7 @@ Route::get('/clear', function () {
 Route:: get('cron/birthday-notification', [CronController::class, 'cron']);
 Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
 Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
+Route::get('cron/send-report-reminders', [CronController::class, 'sendReportReminders']);
 
 Route::get('send-stakeholder-credentials', [CronController::class, 'sendStakeholderCredentials'])->name('send.chapter.credentials');
 Route::get('send-zonal-pastor-credentials', [CronController::class, 'sendZonalPastorCredentials'])->name('send.zone.credentials');

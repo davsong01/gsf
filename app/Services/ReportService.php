@@ -343,6 +343,8 @@ class ReportService
 
         } catch (\Throwable $e) {
             DB::rollBack();
+            // dd($e->getFile(), $e->getLine());
+
             return [
                 'status'  => false,
                 'message' => 'Failed to save report: ' . $e->getMessage(),

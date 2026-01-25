@@ -42,9 +42,9 @@ class StakeholderReportsController extends Controller
     public function create()
     {
         $user = Auth::guard('stakeholder')->user();
-        $eligibleMonth = canAddReport($user);
+        $eligibleMonth = canAddReport($user->chapter_id);
 
-        if(empty($eligibleMonth)) return back()->with('error', 'You cannot submit report for requested month.');
+        if(!($eligibleMonth['eligible'])) return back()->with('error', 'You cannot submit report for requested month.');
 
         $months = getMonths();
         $chapter = $user->chapter;
@@ -65,7 +65,7 @@ class StakeholderReportsController extends Controller
             'year' => date('Y'),
             'year_established' => $chapter->year_established ?? '',
             'session' => date('Y') - 1 . '/'. date('Y'),
-            'president_name' => '',
+            'president_name' => $chapter->chapterPresident->name ?? '',
         ];
 
         $isAdmin = false;
@@ -77,9 +77,12 @@ class StakeholderReportsController extends Controller
     {
         $stakeholder = Auth::guard('stakeholder')->user();
 
-        $validated = $this->validateRequest($request);
-
-        return $this->saveReport($stakeholder, null, $validated);
+        $validated = app(ReportService::class)->validateRequest($request);
+        $result = app(ReportService::class)->saveReport($stakeholder, null, $validated);
+        
+        return $result['status']
+            ? redirect()->route('stakeholders.reports.index')->with('message', $result['message'])
+            : back()->with('error', $result['message']);
     }
 
     public function nudge(StakeholderReport $report)
@@ -123,7 +126,7 @@ class StakeholderReportsController extends Controller
     public function edit(StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
-        $canEdit = app(\App\Services\ReportService::class)->canEditReport($report, $user);
+        $canEdit = app(ReportService::class)->canEditReport($report, $user);
 
         if(!$canEdit['canEdit']){
             return back()->with('error', 'You are not authorized to edit this report');

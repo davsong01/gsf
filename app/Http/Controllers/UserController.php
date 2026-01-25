@@ -219,7 +219,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
-        
+
         return redirect()->route('users.index')->with('message', 'User updated successfully.');
     }
 
@@ -276,7 +276,7 @@ class UserController extends Controller
 		if (auth()->user()->id == $user->id) {
 			return back()->with('warning', 'I\'m sorry but You cannot delete your self');
 		}
-
+        // fix this later
 		if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
 
 			if(auth()->user()->isSubAdmin() && auth()->user()->isMember() && auth()->user()->chapter_id <> $user->chapter_id){

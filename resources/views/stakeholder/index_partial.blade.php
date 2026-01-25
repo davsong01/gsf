@@ -3,14 +3,14 @@
         <h4 class="card-title">All Reports</h4>
         {{-- {{dd(canAddNextMonthReport($user))}} --}}
         @php
-            $eligibleMonth = canAddReport($user);
+            $eligibleMonth = canAddReport($user->chapter_id);
         @endphp
 
-        @if($eligibleMonth)
+        @if($eligibleMonth['eligible'])
         <div class="row mb-3">
             <div class="col-12 d-flex justify-content-between">
                 <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">
-                    Add {{ $eligibleMonth }}’s Report
+                    Add {{ $eligibleMonth['month'] }}’s Report
                 </a>
             </div>
         </div>

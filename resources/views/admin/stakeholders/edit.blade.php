@@ -434,7 +434,7 @@ $(document).ready(function () {
         if (['portfolio', 'nec', 'nec-member'].includes(roleSlug)) $('.selectportfolio').show();
 
         const rolesWithDesignation = [
-            'portfolio', 'chapter-representative', 'field-pastor',
+            'portfolio', 'field-pastor',
             'nec', 'nec-member', 'zonal-pastor', 'secretariat', 'ncp'
         ];
 

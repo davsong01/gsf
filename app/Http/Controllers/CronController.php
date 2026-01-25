@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\CriticalEmail;
 use App\Services\EmailService;
 use App\Mail\NotificationEmail;
+use App\Models\StakeholderReport;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\PaymentController;
@@ -136,6 +137,85 @@ class CronController extends Controller
         }
 
         echo $count . ' emails sent successfully';
+    }
+
+    public function sendReportReminders()
+    {
+        $chapterRoleId = 5;
+        $allEmailData = [];
+        $sentCount = 0;
+
+        $today = Carbon::today();
+
+        // 1. Check if today is within report submission window
+        $windowCheck = canAddReport(Chapter::first()->id); // dummy chapterId just to get window dates
+
+        if (!$windowCheck['eligible'] && isset($windowCheck['window_close'])) {
+            return [
+                'status' => 'window_closed',
+                'message' => 'Reports window is currently closed.',
+            ];
+        }
+
+        // 2. Fetch chapters with active stakeholder of the right role that do NOT have a report for current month
+        $chapters = Chapter::with('stakeholder')
+            ->whereHas('stakeholder', function ($q) use ($chapterRoleId) {
+                $q->where('role_id', $chapterRoleId)
+                ->where('status', 'active');
+            })
+            ->whereNotNull('email')
+            ->get()
+            ->filter(function ($chapter) use ($today) {
+                $reportExists = StakeholderReport::where('chapter_id', $chapter->id)
+                    ->whereYear('created_at', $today->year)
+                    ->whereMonth('created_at', $today->month)
+                    ->exists();
+                return !$reportExists;
+            });
+
+        if ($chapters->isEmpty()) {
+            return [
+                'status' => 'no_reminders',
+                'message' => 'No chapters need reminders today.',
+            ];
+        }
+
+        foreach ($chapters as $chapter) {
+            $stakeholder = $chapter->stakeholder;
+
+            // Prepare email content
+            $loginLink = "<a href='" . url('/stakeholders/login') . "'>Login</a>";
+            $windowClose = canAddReport($chapter->id)['window_close'] ?? null;
+
+            $allEmailData[] = [
+                'recipient'  => $chapter->stakeholder->email,
+                'type'       => 'report_email',
+                'subject'    => "Reminder: Submit {$today->format('F')} Monthly Report",
+                'content'    => "
+                    <h5>Dear Representative of {$chapter->stakeholder->name},</h5>
+                    <p>This is a friendly reminder to submit your chapter report for <strong>{$today->format('F')}</strong>.</p>
+                    <p>The reporting window closes on <strong>{$windowClose}</strong>.</p>
+                    <p>Please log in here: {$loginLink}. <br>After login, click the Monthly Reports Menu to access the monthly report section.</p>
+                    <p>In His Service,<br>GSF National ICT</p>
+                    " . chapterEmailFooter(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+            $sentCount++;
+        }
+
+        // Log emails (send can be handled elsewhere)
+        if ($sentCount > 0) {
+            EmailService::logEmail([
+                'type'       => 'report_email',
+                'recipients' => $allEmailData,
+            ]);
+        }
+
+        return [
+            'status' => 'success',
+            'message' => "{$sentCount} chapter reminder email(s) queued successfully.",
+        ];
     }
 
     public function sendStakeholderCredentials()

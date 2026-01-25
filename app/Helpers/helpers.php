@@ -356,7 +356,7 @@ if (!function_exists('coursesOfStudy')) {
                 'Graphic Design',
                 'Interior Design',
             ];
-            
+
         sort($courses, SORT_STRING); // Alphabetically sort the courses
         return $courses;
     }
@@ -364,7 +364,7 @@ if (!function_exists('coursesOfStudy')) {
 
 
 
-if (!function_exists('canAddNextMonthReport')) {
+if (!function_exists('getMonths')) {
     function getMonths()
     {
         $months = [
@@ -443,46 +443,120 @@ if (!function_exists('finIds')) {
     }
 }
 
-if (!function_exists('canAddNextMonthReport')) {
-    function canAddReport($stakeholder, $daysBeforeEnd = 5, $daysAfterStart = 5): ?string
+if (!function_exists('chapterEmailFooter')) {
+    function chapterEmailFooter(): string
     {
-        if (!isset($stakeholder->chapter_id)) {
-            return null;
+        $exampleProfileUrl = route('user.single', 'david-oghi');
+
+        return "
+            <hr style='margin-top:20px;margin-bottom:20px;'>
+
+            <p style='font-size:14px;'>
+                <strong>Chapter Records & Member Visibility</strong>
+            </p>
+
+            <p style='font-size:13px; line-height:1.6;'>
+                Kindly note that you can manage and maintain accurate records of your chapter members and alumni through the
+                <strong>Chapter Members</strong> and <strong>Chapter Alumni</strong> sections of the portal. These tools allow you to:
+            </p>
+
+            <ul style='font-size:13px; line-height:1.6;'>
+                <li>Add and update member and alumni information.</li>
+                <li>Upload multiple records at once using the Excel import feature.</li>
+                <li>Ensure your chapter’s data remains complete and up to date.</li>
+            </ul>
+
+            <p style='font-size:13px; line-height:1.6;'>
+                Maintaining accurate member and alumni records provides the following benefits:
+            </p>
+
+            <ul style='font-size:13px; line-height:1.6;'>
+                <li>Each registered member receives a dedicated profile page on the <strong>GSF Directory</strong>, visible globally.</li>
+                <li>Improved record keeping for administrative and historical purposes.</li>
+                <li>Enhanced visibility and credibility of your chapter on the national platform.</li>
+            </ul>
+
+            <p style='font-size:13px; line-height:1.6;'>
+                Example of a member profile page:<br>
+                <a href=\"{$exampleProfileUrl}\" target=\"_blank\">{$exampleProfileUrl}</a>
+            </p>
+
+            <p style='font-size:13px; margin-top:15px;'>
+                Thank you for your continued cooperation in keeping your chapter records accurate and up to date.
+            </p>
+        ";
+    }
+}
+
+
+if (!function_exists('canAddReport')) {
+    /**
+     * Determine if a chapter is eligible to submit the report for the current month.
+     *
+     * @param int $chapterId
+     * @param int|null $daysBeforeEnd
+     * @param int|null $daysAfterStart
+     * @return array ['eligible' => bool, 'month' => ?string]
+     */
+    function canAddReport(int $chapterId, ?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
+    {
+        $daysBeforeEnd = $daysBeforeEnd ?? env('REPORT_WINDOW_START_OFFSET', 5); // days before month end
+        $daysAfterStart = $daysAfterStart ?? env('REPORT_WINDOW_END_OFFSET', 2);  // days after next month start
+
+        $chapter = Chapter::with('stakeholder')->find($chapterId);
+
+        if (!$chapter || !$chapter->stakeholder) {
+            return ['eligible' => false, 'month' => null];
         }
 
+        $stakeholder = $chapter->stakeholder;
+
         if (!in_array($stakeholder->role_id, chapterStakeholders())) {
-            return null;
+            return ['eligible' => false, 'month' => null];
         }
 
         $today = Carbon::today();
-
         $monthStart = $today->copy()->startOfMonth();
         $monthEnd = $today->copy()->endOfMonth();
 
-        // Window: previous month end → days before current month starts
-        $windowOpen = $monthStart->copy()->subDays($daysBeforeEnd); // e.g., Dec 26
-        // Window: X days into current month
-        $windowClose = $monthStart->copy()->addDays($daysAfterStart - 1); // e.g., Jan 5
+        // Last Sunday of the current month
+        $lastSunday = $monthEnd->copy()->previous(Carbon::SUNDAY);
+
+        // X days before the end of the month
+        $daysBeforeEndDate = $monthEnd->copy()->subDays($daysBeforeEnd);
+
+        // Window opens: whichever comes first
+        $windowOpen = $lastSunday->lt($daysBeforeEndDate) ? $lastSunday : $daysBeforeEndDate;
+
+        // Window closes: X days after the start of next month
+        $windowClose = $monthEnd->copy()->addDays($daysAfterStart);
 
         // Check if today is within the report window
-        if (! $today->between($windowOpen, $windowClose)) {
-            return null;
+        if (!$today->between($windowOpen, $windowClose)) {
+            return ['eligible' => false, 'month' => null];
         }
 
         // Check if report already exists for this chapter & current month
-        $reportExists = StakeholderReport::where('chapter_id', $stakeholder->chapter_id)
+        $reportExists = StakeholderReport::where('chapter_id', $chapterId)
             ->whereYear('created_at', $today->year)
             ->whereMonth('created_at', $today->month)
             ->exists();
 
         if ($reportExists) {
-            return null;
+            return ['eligible' => false, 'month' => null];
         }
 
-        // Eligible: return the month name
-        return $today->format('F');
+        // Eligible: return month and eligibility
+        return [
+            'eligible' => true,
+            'month' => $today->format('F'),
+            'window_close' => $windowClose->format('Y-m-d'), // optional, can be useful for email
+        ];
     }
 }
+
+
+
 
 if (!function_exists('generateSampleValue')) {
     function generateSampleValue($type, $name)
