@@ -76,7 +76,7 @@ class StakeholderController extends Controller
         $validated = $request->validate([
             'name'       => ['required', 'string', 'max:255'],
             'email'      => ['required', 'email', 'max:255', 'unique:stakeholders,email'],
-            'phone'      => ['nullable', 'string', 'max:20'],
+            'phone'      => ['nullable', 'string', 'max:50'],
             'password'   => ['nullable', 'string', 'min:8'],
             'day'        => ['nullable', 'integer', 'between:1,31'],
             'month'      => ['nullable', 'integer', 'between:1,12'],
@@ -195,7 +195,7 @@ class StakeholderController extends Controller
         $request->validate([
             'name'       => ['required', 'string', 'max:255'],
             'email'      => ['required', 'email', 'max:255', 'unique:stakeholders,email,' . $stakeholder->id],
-            'phone'      => ['nullable', 'string', 'max:20'],
+            'phone'      => ['nullable', 'string', 'max:50'],
             'password'   => ['nullable', 'string', 'min:8'],
             'day'        => ['nullable', 'integer', 'between:1,31'],
             'month'      => ['nullable', 'integer', 'between:1,12'],
