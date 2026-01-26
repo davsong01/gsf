@@ -36,7 +36,8 @@
                                             <td>{{ $field->name }}</td>
                                             <td>
                                                 @if ($field->fieldCord)
-                                                    <a href="{{route('stakeholderpersonnel.edit', $field->fieldCord->id)}}">{{ $field->fieldCord->name }}</a>
+                                                    <a href="{{route('stakeholderpersonnel.edit', $field->fieldCord->id)}}">{{ $field->fieldCord->name }} <i class="fa fa-external-link"></i></a>
+                                                    <br>{{$field->fieldCord->email}}
                                                 @else
                                                     N/A
                                                 @endif

@@ -13,7 +13,7 @@ class FieldController extends Controller
 {
     public function index()
     {
-        $fields = Field::with(['zones', 'chapters', 'stakeholder'])->get();
+        $fields = Field::with(['zones', 'chapters', 'stakeholder','fieldCord'])->get();
 
         return view('admin.fields.index', compact('fields'));
     }

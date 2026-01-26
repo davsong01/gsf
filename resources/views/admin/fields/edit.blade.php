@@ -70,7 +70,7 @@
                                                 @foreach ($pastors as $pastor)
                                                     <option
                                                         value="{{ $pastor->id }}"
-                                                        {{ (int) old('stakeholder_id', $field->stakeholder->id ?? null) === (int) $pastor->id ? 'selected' : '' }}
+                                                        {{ (int) old('stakeholder_id', $field->fieldCord->id ?? null) === (int) $pastor->id ? 'selected' : '' }}
                                                     >
                                                         {{ $pastor->name }}
                                                     </option>
