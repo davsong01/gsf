@@ -49,12 +49,20 @@ class StakeholderReportsController extends Controller
         $months = getMonths();
         $chapter = $user->chapter;
 
-        $sections = StakeholderQuestionSection::isActive()->with([
-            'subsections.questions' => function ($query) {
-                $query->orderBy('order');
-            }
-        ])->orderBy('id')->get();
 
+        $sections = StakeholderQuestionSection::isActive()
+            ->with([
+                'subsections' => function ($subQuery) {
+                    $subQuery->isActive()->with([
+                        'questions' => function ($q) {
+                            $q->isActive()->orderBy('order');
+                        }
+                    ]);
+                }
+            ])
+            ->orderBy('id')
+            ->get();
+            
         if(!in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders())){
             return back()->with('error', 'Unauthorized Access');
         }
@@ -72,6 +80,21 @@ class StakeholderReportsController extends Controller
         return view('stakeholder.create', compact('months', 'sections', 'prefillData', 'user','isAdmin'));
     }
 
+    public function edit(StakeholderReport $report)
+    {
+        $user = Auth::guard('stakeholder')->user();
+        $canEdit = app(ReportService::class)->canEditReport($report, $user);
+
+        if(!$canEdit['canEdit']){
+            return back()->with('error', 'You are not authorized to edit this report');
+        }
+
+        return view(
+            'stakeholder.create',
+            app(ReportService::class)->prepareEditData($report, $user, false)
+            + compact('user')
+        );
+    }
 
     public function store(Request $request)
     {
@@ -123,21 +146,7 @@ class StakeholderReportsController extends Controller
 
     }
 
-    public function edit(StakeholderReport $report)
-    {
-        $user = Auth::guard('stakeholder')->user();
-        $canEdit = app(ReportService::class)->canEditReport($report, $user);
 
-        if(!$canEdit['canEdit']){
-            return back()->with('error', 'You are not authorized to edit this report');
-        }
-
-        return view(
-            'stakeholder.create',
-            app(ReportService::class)->prepareEditData($report, $user, false)
-            + compact('user')
-        );
-    }
 
     public function rejectReport(Request $request, StakeholderReport $report)
     {
