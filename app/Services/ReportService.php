@@ -56,7 +56,7 @@ class ReportService
         /** =====================
          * ROLE-BASED SCOPING
          * ===================== */
-        if ($isAdmin || in_array($role, finStakeholders())) {
+        if ($isAdmin || finStakeholders($user)) {
             // Admin → full access
             $chapterIds = Chapter::pluck('id');
             $zoneIds    = Zone::pluck('id');
@@ -94,8 +94,9 @@ class ReportService
          * REPORT QUERY
          * ===================== */
 
-        if(in_array($role, finStakeholders())) {
+        if(finStakeholders($user)) {
             $finIds = finSubSectionIds();
+            
             $reports = StakeholderReport::whereHas('answers', function ($query) use ($finIds) {
                 $query->whereHas('question', function ($q) use ($finIds) {
                     $q->whereHas('subsection', function ($q) use ($finIds) {

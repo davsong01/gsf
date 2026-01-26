@@ -39,21 +39,23 @@
                 </a>
             </li>
 
-            @if($user->role_id == 6)
+            @if(finStakeholders($user))
                 <li class="nav-item {{ $currentRoute === 'stakeholders.financial.report' ? 'active' : '' }}">
                     <a href="{{ route('stakeholders.financial.report') }}">
                         <i class="fa fa-file" aria-hidden="true"></i>
                         <span class="menu-title" data-i18n="User">Financial Reports</span>
                     </a>
                 </li>
-            @else
+            @endif
+            @if(!finStakeholders($user))
                 <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.reports') ? 'active' : '' }}">
                     <a href="{{ route('stakeholders.reports.index') }}">
                         <i class="fa fa-file" aria-hidden="true"></i>
                         <span class="menu-title" data-i18n="User">Monthly Reports</span>
                     </a>
                 </li>
-
+            @endif
+            @if(in_array($user->role_id, chapterStakeholders()))
                 <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.users') ? 'active' : '' }}">
                     <a href="{{ route('stakeholders.users.index') }}">
                         <i class="fa fa-users" aria-hidden="true"></i>

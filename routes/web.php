@@ -67,29 +67,29 @@ Route::get('/queue', function () {
     Artisan::call('queue:work --tries=2');
 });
 
-Route::get('/fix-stakeholder', function () {
-    $stakeholders = Stakeholder::with('chapter')
-        ->where('role_id', 5)
-        ->whereNull('zone_id')
-        ->get();
+// Route::get('/fix-stakeholder', function () {
+//     $stakeholders = Stakeholder::with('chapter')
+//         ->where('role_id', 5)
+//         ->whereNull('zone_id')
+//         ->get();
 
-    foreach ($stakeholders as $stakeholder) {
+//     foreach ($stakeholders as $stakeholder) {
 
-        if (!$stakeholder->chapter) {
-            continue; // prevent error if chapter is missing
-        }
+//         if (!$stakeholder->chapter) {
+//             continue; // prevent error if chapter is missing
+//         }
 
-        $stakeholder->update([
-            'zone_id'  => $stakeholder->chapter->zone_id,
-            'field_id' => $stakeholder->chapter->field_id,
-        ]);
-    }
+//         $stakeholder->update([
+//             'zone_id'  => $stakeholder->chapter->zone_id,
+//             'field_id' => $stakeholder->chapter->field_id,
+//         ]);
+//     }
 
-    return response()->json([
-        'message' => 'Stakeholders updated successfully',
-        'count' => $stakeholders->count()
-    ]);
-});
+//     return response()->json([
+//         'message' => 'Stakeholders updated successfully',
+//         'count' => $stakeholders->count()
+//     ]);
+// });
 
 
 Route::get('/retry', function () {

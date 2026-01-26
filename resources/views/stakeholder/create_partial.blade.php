@@ -118,6 +118,9 @@
 </style>
 @endsection
 @section('content')
+@php
+    $userRole = $user->role_id;
+@endphp
 <div class="content-body">
     <section id="basic-input">
         <form action="{{ isset($report) ? route(($isAdmin ? 'stakeholderreports.update' : 'stakeholders.reports.update'), $report->id) : route('stakeholders.reports.store') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('You are about to submit this report, action is irreversible');">
@@ -354,9 +357,12 @@
             </style>
 
             <div class="mt-4 d-flex button-gap">
+                @if(in_array($userRole, chapterStakeholders()) || $isAdmin)
                 <button class="btn btn-warning flex-fill" name="edit_mode" value="1" type="submit">
                     Save and Submit later
                 </button>
+                @endif
+
                 @if(!$isAdmin)
                 <button class="btn btn-success flex-fill" name="edit_mode" value="0" type="submit">
                     {{ isset($report) ? 'Update and Final Submission' : 'Final Submission' }}
@@ -368,7 +374,6 @@
 </div>
 
 @php
-    $userRole = $user->role_id;
     $canAct = false;
 
     // Zone approval

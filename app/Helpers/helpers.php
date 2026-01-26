@@ -435,10 +435,10 @@ if (!function_exists('getCommunityPortfolios')) {
     }
 }
 
-if (!function_exists('finIds')) {
-    function finIds()
+if (!function_exists('finSubSectionIds')) {
+    function finSubSectionIds()
     {
-        $finIds = [13, 14]  ;
+        $finIds = [13, 14];
         return $finIds;
     }
 }
@@ -498,8 +498,12 @@ if (!function_exists('canAddReport')) {
      * @param int|null $daysAfterStart
      * @return array ['eligible' => bool, 'month' => ?string]
      */
-    function canAddReport(int $chapterId, ?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
+    function canAddReport(?int $chapterId = null, ?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
     {
+        if(empty($chapterId )){
+            return ['eligible' => false, 'month' => null];
+        }
+
         $daysBeforeEnd = $daysBeforeEnd ?? env('REPORT_WINDOW_START_OFFSET', 5); // days before month end
         $daysAfterStart = $daysAfterStart ?? env('REPORT_WINDOW_END_OFFSET', 2);  // days after next month start
 
@@ -618,10 +622,16 @@ if (!function_exists('portfolioStakeholders')) {
 }
 
 if (!function_exists('finStakeholders')) {
-    function finStakeholders()
+    function finStakeholders($user)
     {
-        $roles = [6];
-        return $roles;
+        $designation_id = $user->designation_id;
+        $role_id = $user->role_id;
+
+        if(in_array($designation_id, [122]) && in_array($role_id, [7])){
+            return true;
+        }
+
+        return false;
     }
 }
 
