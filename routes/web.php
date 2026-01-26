@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Stakeholder;
 use App\Models\CriticalEmail;
 use App\Services\EmailService;
 use App\Services\FileUploadService;
@@ -65,6 +66,31 @@ Route::get('/queue', function () {
     // Artisan::call('queue:retry all');
     Artisan::call('queue:work --tries=2');
 });
+
+Route::get('/fix-stakeholder', function () {
+    $stakeholders = Stakeholder::with('chapter')
+        ->where('role_id', 5)
+        ->whereNull('zone_id')
+        ->get();
+
+    foreach ($stakeholders as $stakeholder) {
+
+        if (!$stakeholder->chapter) {
+            continue; // prevent error if chapter is missing
+        }
+
+        $stakeholder->update([
+            'zone_id'  => $stakeholder->chapter->zone_id,
+            'field_id' => $stakeholder->chapter->field_id,
+        ]);
+    }
+
+    return response()->json([
+        'message' => 'Stakeholders updated successfully',
+        'count' => $stakeholders->count()
+    ]);
+});
+
 
 Route::get('/retry', function () {
     Artisan::call('queue:retry all');

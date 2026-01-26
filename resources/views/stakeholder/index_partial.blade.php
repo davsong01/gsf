@@ -6,7 +6,7 @@
             $eligibleMonth = canAddReport($user->chapter_id);
         @endphp
 
-        @if($eligibleMonth['eligible'])
+        @if($eligibleMonth['eligible'] && !$isAdmin)
         <div class="row mb-3">
             <div class="col-12 d-flex justify-content-between">
                 <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">

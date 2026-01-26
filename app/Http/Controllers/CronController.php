@@ -261,6 +261,8 @@ class CronController extends Controller
                 $stakeholder = Stakeholder::create([
                     'role_id'          => $chapterRoleId,
                     'chapter_id'       => $chapter->id,
+                    'zone_id'           => $chapter->zone_id,
+                    'field_id'           => $chapter->field_id,
                     'name'             => $chapter->name . ' Representative',
                     'email'            => $chapter->email,
                     'phone'            => $chapter->phone,
