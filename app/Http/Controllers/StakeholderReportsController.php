@@ -79,7 +79,7 @@ class StakeholderReportsController extends Controller
 
         $validated = app(ReportService::class)->validateRequest($request);
         $result = app(ReportService::class)->saveReport($stakeholder, null, $validated);
-        
+
         return $result['status']
             ? redirect()->route('stakeholders.reports.index')->with('message', $result['message'])
             : back()->with('error', $result['message']);

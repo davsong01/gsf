@@ -58,6 +58,7 @@ class StakeholderAccountController extends Controller
             $reports = StakeholderReport::orderBy('created_at', 'desc')->get();
         }
 
+        $reports = collect([]);
         return view('stakeholder.dashboard', compact('reports', 'chapter', 'user'));
     }
 

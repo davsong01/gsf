@@ -96,7 +96,7 @@ class ReportService
 
         if(finStakeholders($user)) {
             $finIds = finSubSectionIds();
-            
+
             $reports = StakeholderReport::whereHas('answers', function ($query) use ($finIds) {
                 $query->whereHas('question', function ($q) use ($finIds) {
                     $q->whereHas('subsection', function ($q) use ($finIds) {
@@ -110,7 +110,7 @@ class ReportService
                 ->when($zoneIds->isNotEmpty(), fn ($q) => $q->whereIn('zone_id', $zoneIds))
                 ->when($fieldIds->isNotEmpty(), fn ($q) => $q->whereIn('field_id', $fieldIds));
         }
-
+        // dd($reports->get(), $chapterIds, $zoneIds, $fieldIds);
         if ($request->filled('from_date')) {
             $reports->whereDate('created_at', '>=', $request->from_date);
         }
@@ -284,9 +284,9 @@ class ReportService
                     ]);
                 }
 
-                $report->chapter_id = $stakeholder->chapter_id;
-                $report->zone_id    = $stakeholder->zone_id  ?? $chapter?->zone?->id;
-                $report->field_id   = $stakeholder->field_id ?? $chapter?->field?->id;
+                $report->chapter_id = (int) $stakeholder->chapter_id;
+                $report->zone_id    = (int) (($stakeholder->zone_id) ?? $chapter?->zone_id);
+                $report->field_id   = (int) (($stakeholder->field_id) ?? $chapter?->field_id);
             }
 
             /** =====================
