@@ -81,6 +81,7 @@ class ReportNotificationService
         }
 
         $pdfFilePath = self::generatePdf($report);
+        
         $report->update(['file_location' => $pdfFilePath['relative_path'] ?? null]);
 
         $allEmailData = [];
