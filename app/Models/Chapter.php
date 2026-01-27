@@ -21,12 +21,12 @@ class Chapter extends Model
 
     public function members()
     {
-        return User::where('chapter_id', $this->id)->where('status', 0)->where('role', '<>', 1)->orderBy('created_at', 'ASC')->get();
+        return User::where('chapter_id', $this->id)->where('is_graduated', 0)->where('role', '<>', 1)->latest()->get();
     }
 
     public function alumni()
     {
-        return User::where('chapter_id', $this->id)->where('status', 1)->where('role', '<>', 1)->orderBy('created_at', 'ASC')->get();
+        return User::where('chapter_id', $this->id)->where('is_graduated', 1)->where('role', '<>', 1)->latest()->get();
     }
 
     public function stakeholder(){

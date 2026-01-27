@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Zone;
 use App\Models\Field;
 use App\Models\Chapter;
 use App\Models\Setting;
+use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Exports\ExportChapters;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Concerns\Exportable;
@@ -33,6 +36,32 @@ class ChapterController extends Controller
             }
     }
 
+    public function moveMembers(Request $request, Chapter $chapter)
+    {
+        $request->validate([
+            'new_chapter_id' => 'required|exists:chapters,id'
+        ]);
+
+        $newChapter = Chapter::findOrFail($request->new_chapter_id);
+
+        DB::transaction(function () use ($chapter, $newChapter) {
+
+            // Stakeholders
+            Stakeholder::where('chapter_id', $chapter->id)->update([
+                'chapter_id' => $newChapter->id,
+                'zone_id'    => $newChapter->zone_id,
+                'field_id'   => $newChapter->field_id,
+            ]);
+
+            // Members
+            User::where('chapter_id', $chapter->id)->update([
+                'chapter_id' => $newChapter->id,
+            ]);
+
+        });
+
+        return back()->with('message', 'All members and stakeholders moved successfully.');
+    }
 
     public function campusUpdate()
     {
@@ -109,12 +138,12 @@ class ChapterController extends Controller
     {
         $count = 1;
         if(auth()->user()->isSubAdmin() && auth()->user()->isMember() ){
-            $chapter = Chapter::with('users')->whereId(auth()->user()->chapter_id)->first();
+            $chapter = Chapter::with('users','stakeholders')->whereId(auth()->user()->chapter_id)->first();
             return view('admin.chapters.edit', compact('chapter', 'zones'));
         }
 
         if(auth()->user()->isAdmin()){
-            $chapters = Chapter::with('users')->get();
+            $chapters = Chapter::with('users','stakeholders')->get();
             return view('admin.chapters.index', compact('chapters', 'count'));
         }
 
@@ -127,7 +156,7 @@ class ChapterController extends Controller
         $chapters = Chapter::all();
         return view('admin.chapters.edit', compact('zones', 'fields','chapters'));
     }
-    
+
     public function store(Request $request)
     {
         $data = $this->validate($request, [
@@ -204,10 +233,9 @@ class ChapterController extends Controller
      */
     public function destroy(Chapter $chapter)
     {
-
-        if(auth()->user()->level == 'Admin'){
+        if(auth()->user()->role == 1){
             if($chapter->users->count() > 0){
-                return back()->with('error', 'Sorry, this chapter has participants. You cannot deleete it');
+                return back()->with('error', 'Sorry, this chapter has members. You cannot deleete it');
             }
 
             $chapter->delete();

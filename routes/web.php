@@ -425,6 +425,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('officials', OfficialController::class);
 
     Route::resource('chapters', ChapterController::class);
+    Route::post('/chapters/{chapter}/move-members', [ChapterController::class, 'moveMembers'])
+    ->name('chapters.move-members');
     Route::controller(ChapterController::class)->group(function () {
         Route::get('newtoken/{id}', 'generateNewToken')->name('chapter.newtoken');
         Route::get('chapters/delete/{chapter}', 'destroy')->name('chapters.delete');

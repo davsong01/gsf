@@ -14,7 +14,7 @@
                         <h4 class="card-title">All chapters</h4>
                         <a href="{{ route('chapters.create') }}" class="btn btn-primary mt-1">Add new chapter</a>
                         <a href="{{ route('chapters.export') }}" class="btn btn-primary mt-1">Export</a>
-                        @include('includes.alerts')
+                        {{-- @include('includes.alerts') --}}
 
                     </div>
                     <div class="card-content">
@@ -58,20 +58,83 @@
                                             <td>{{ $chapter->phone }}</td>
                                             <td>
                                                 <small>
-                                                    Students: {{ $chapter->users->where('status', 0)->count() }} <br>
-                                                    Alumni: {{ $chapter->users->where('status', 1)->count() }}
-                                                    Stakeholders: {{ $chapter->stakeholders->where('status', 1)->count() }}
+                                                    Students: {{ $chapter->members()->count() }} <br>
+                                                    Alumni: {{ $chapter->alumni()->count() }}
+                                                    Stakeholders: {{ $chapter->stakeholders->count() }}
                                                 </small>
                                             </td>
                                             <td style="padding-left: 5px;padding-right: 5px;">
-                                            <a class="actions" data-toggle="tooltip" title="View/Update chapter details" href="{{ route('chapters.edit', $chapter->id) }}"> <i class="bx bxs-edit actions"></i>
-                                            </a>
-                                            <a class="actions" data-toggle="tooltip" title="Generate new token" href="{{ route('chapter.newtoken', $chapter->id) }}"> <i class="fa fa-refresh actions"></i>
-                                            </a>
+                                                <a class="actions"
+                                                    data-toggle="modal"
+                                                    data-target="#moveChapterModal{{ $chapter->id }}"
+                                                    title="Move members, alumni & stakeholders">
+                                                        <i class="fa fa-exchange actions"></i>
+                                                </a>
 
-                                            <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete chapter" href="{{ route('chapters.delete', $chapter->id) }}"> <i class="fa fa-trash actions"></i></
-                                            </a>
+                                                <a class="actions" data-toggle="tooltip" title="View/Update chapter details" href="{{ route('chapters.edit', $chapter->id) }}"> <i class="bx bxs-edit actions"></i>
+                                                </a>
+                                                <a class="actions" data-toggle="tooltip" title="Generate new token" href="{{ route('chapter.newtoken', $chapter->id) }}"> <i class="fa fa-refresh actions"></i>
+                                                </a>
+
+                                                <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete chapter" href="{{ route('chapters.delete', $chapter->id) }}"> <i class="fa fa-trash actions"></i></
+                                                </a>
+                                            </td>
                                         </tr>
+                                        <div class="modal fade" id="moveChapterModal{{ $chapter->id }}" tabindex="-1" role="dialog">
+                                            <div class="modal-dialog modal-md" role="document">
+                                                <form method="POST" action="{{ route('chapters.move-members', $chapter->id) }}">
+                                                    @csrf
+
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Move Chapter Members</h5>
+                                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                        </div>
+
+                                                        <div class="modal-body">
+
+                                                            <p class="text-danger">
+                                                                This action will move <strong>all members, alumni and stakeholders</strong>
+                                                                from <strong>{{ $chapter->name }}</strong> to another chapter.
+                                                            </p>
+
+                                                            <p>
+                                                                Their zone and field will also be updated to match the selected chapter.
+                                                                This action cannot be undone.
+                                                            </p>
+
+                                                            <div class="form-group">
+                                                                <label>Select destination chapter</label>
+                                                                <select name="new_chapter_id" class="form-control" required>
+                                                                    <option value="">-- Select Chapter --</option>
+                                                                    @foreach($chapters as $targetChapter)
+                                                                        @if($targetChapter->id != $chapter->id)
+                                                                            <option value="{{ $targetChapter->id }}">
+                                                                                {{ $targetChapter->name }}
+                                                                            </option>
+                                                                        @endif
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+
+                                                        </div>
+
+                                                        <div class="modal-footer">
+                                                            <button type="submit"
+                                                                    onclick="return confirm('Are you sure you want to move all records?');"
+                                                                    class="btn btn-danger">
+                                                                Move Records
+                                                            </button>
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                                Cancel
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                </form>
+                                            </div>
+                                        </div>
+
                                         @endforeach
                                     </tbody>
 
