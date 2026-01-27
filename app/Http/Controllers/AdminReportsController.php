@@ -55,7 +55,8 @@ class AdminReportsController extends Controller
         StakeholderReport::with(['stakeholder:id,zone_id,field_id', 'chapter:id,zone_id,field_id'])
             ->where(function ($q) {
                 $q->whereNull('zone_id')
-                ->orWhereNull('field_id');
+                ->orWhereNull('field_id')
+                ->orWhereNull('chapter_id');
             })
             ->chunk(200, function ($reports) use (&$count) {
 
@@ -63,9 +64,11 @@ class AdminReportsController extends Controller
 
                     $zoneId = $report->stakeholder?->zone_id ?? $report->chapter?->zone_id;
                     $fieldId = $report->stakeholder?->field_id ?? $report->chapter?->field_id;
+                    $chapterId = $report->stakeholder?->chapter_id;
 
                     if ($zoneId || $fieldId) {
                         $report->update([
+                            'chapter_id'  => $chapterId,
                             'zone_id'  => $zoneId,
                             'field_id' => $fieldId,
                         ]);
