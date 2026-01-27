@@ -163,10 +163,19 @@
                                         <td>{{ $loop->iteration }}</td>
 
                                         @if(in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
-                                            <td>{{ $report->chapter->name ?? '—' }}</td>
+                                            <td>
+                                                {{ $report->chapter->name ?? '—' }}
+                                            </td>
                                         @endif
 
-                                        <td>{{ date('F', mktime(0, 0, 0, $report->month, 10)) }}, {{ $report->year }}</td>
+                                        <td>
+                                            {{ date('F', mktime(0, 0, 0, $report->month, 10)) }}, {{ $report->year }}
+                                            <br>
+                                            <span class="badge {{ $report->edit_mode ? 'bg-warning' : 'bg-success' }}">
+                                                {{ $report->edit_mode ? 'Currently Editing' : 'Final Submission' }}
+                                            </span>
+                                        </td>
+
 
                                         <td class="text-start">
                                             @php

@@ -166,8 +166,8 @@
                         @foreach($subsection->questions as $question)
                            @php
                                 $answer = $report->answers->firstWhere('question_id', $question->id);
-                                
-                                $value = $answer
+
+                                $value = isset($answer)
                                     ? (($answer->question_label ?? $answer->answer_value) ?? json_decode($answer->answer_value, true))
                                     : '-';
                             @endphp
@@ -177,22 +177,25 @@
                             @if(in_array($question->type, ['text','number','date','year','month','textarea','select']))
                                 <tr>
                                     <th width="60%">{{ $question->label ?? $question->label  }}</th>
-                                    <td>{{ $value ?: '-' }}</td>
+                                    <td>{{ $value ?? '-' }}</td>
                                 </tr>
                             @endif
 
                             @if(in_array($question->type, ['file']))
+                            @if($value)
                                 <tr>
                                     <th width="60%">{{ $question->label ?? $question->label  }}</th>
                                     <td>@if($value)<img class="uploaded-file" src="{{ route(($isAdmin ? 'admin.protected.download' : 'protected.download'), ['file' => $value]) }}" alt="{{ $value ?: '-' }}">@else {{'-'}} @endif</td>
                                 </tr>
                             @endif
+                            @endif
 
                             <!-- Dynamic Table -->
                             @if($question->type === 'dynamic_table')
                                 @php
-                                    $value = $answer->answer_value ? json_decode($answer->answer_value, true) : [];
+                                    $value = $answer ? json_decode($answer->answer_value, true) : [];
                                 @endphp
+                                @if($value)
                                 <tr>
                                     <td colspan="2">
                                         <table>
@@ -222,12 +225,13 @@
                                         </table>
                                     </td>
                                 </tr>
+                                @endif
                             @endif
 
                             <!-- Income Table -->
                             @if($question->type === 'income_table')
                                 @php
-                                    $value = $answer->answer_value ? json_decode($answer->answer_value, true) : [];
+                                    $value = $answer ? json_decode($answer->answer_value, true) : [];
 
                                     $totals = [];
                                     foreach ($question->options['columns'] as $col) {

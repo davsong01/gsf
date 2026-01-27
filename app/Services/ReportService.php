@@ -268,7 +268,7 @@ class ReportService
                 $report = new StakeholderReport();
                 $isNew  = true;
             }
-            
+
             /** =====================
              * ROLE-BASED OWNERSHIP
              * ===================== */
@@ -307,6 +307,8 @@ class ReportService
                 $this->resetRejectedStatuses($report);
             }
 
+            $report->edit_mode = $editMode ? 1 : 0;
+
             $report->save();
 
             /** =====================
@@ -344,7 +346,7 @@ class ReportService
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            // dd($e->getFile(), $e->getLine());
+            // dd($e->getFile(), $e->getLine(), );
 
             return [
                 'status'  => false,
@@ -702,7 +704,6 @@ class ReportService
             default:
                 abort(403, 'Unauthorized action');
         }
-
         $report->save();
 
         ReportNotificationService::handleReportAction($report, $user, 'approve');
