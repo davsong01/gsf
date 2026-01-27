@@ -44,12 +44,11 @@ class StakeholderReportsController extends Controller
         $user = Auth::guard('stakeholder')->user();
         $eligibleMonth = canAddReport($user->chapter_id);
 
-        if(!($eligibleMonth['eligible'])) return back()->with('error', 'You cannot submit report for requested month.');
+        if(!($eligibleMonth['eligible'])) return redirect()->route('stakeholders.reports.index')->with('error', 'You cannot submit report for requested month.');
 
         $months = getMonths();
         $chapter = $user->chapter;
-
-
+        
         $sections = StakeholderQuestionSection::isActive()
             ->with([
                 'subsections' => function ($subQuery) {
@@ -103,7 +102,7 @@ class StakeholderReportsController extends Controller
         $validated = app(ReportService::class)->validateRequest($request);
 
         $result = app(ReportService::class)->saveReport($stakeholder, null, $validated);
-    
+
         return $result['status']
             ? redirect()->route('stakeholders.reports.index')->with('message', $result['message'])
             : back()->with('error', $result['message']);
