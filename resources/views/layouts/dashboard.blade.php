@@ -12,7 +12,7 @@
     <!-- BEGIN: Header-->
     @include('includes.header')
     <!-- END: Header-->
-    
+
     <!-- BEGIN: Main Menu-->
     @include('includes.main_menu')
     <!-- END: Main Menu-->
@@ -43,14 +43,22 @@
     </div>
 </div>
     <!-- END: Content-->
-
     <div class="sidenav-overlay"></div>
     <div class="drag-target"></div>
 
     <!-- BEGIN: Footer-->
     @include('includes.footer')
+    <script>
+        $(document).on('shown.bs.modal', '.modal', function () {
+            $(this).find('.select2-chapter').each(function () {
+                let modal = $(this).closest('.modal');
 
+                $(this).select2({
+                    dropdownParent: modal,
+                    width: '100%'
+                });
+            });
+        });
+    </script>
 </body>
-<!-- END: Body-->
-
 </html>

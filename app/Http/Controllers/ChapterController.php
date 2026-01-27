@@ -143,7 +143,7 @@ class ChapterController extends Controller
         }
 
         if(auth()->user()->isAdmin()){
-            $chapters = Chapter::with('users','stakeholders')->get();
+            $chapters = Chapter::with('users','stakeholders')->orderBy('name')->get();
             return view('admin.chapters.index', compact('chapters', 'count'));
         }
 

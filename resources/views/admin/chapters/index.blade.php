@@ -105,7 +105,7 @@
 
                                                             <div class="form-group">
                                                                 <label>Select destination chapter</label>
-                                                                <select name="new_chapter_id" class="form-control" required>
+                                                                <select name="new_chapter_id" class="form-control select2-chapter" data-modal="#moveChapterModal{{ $chapter->id }}" required>
                                                                     <option value="">-- Select Chapter --</option>
                                                                     @foreach($chapters as $targetChapter)
                                                                         @if($targetChapter->id != $chapter->id)
@@ -148,4 +148,5 @@
     </section>
     <!--/ Zero configuration table -->
 </div>
+
 @endsection
