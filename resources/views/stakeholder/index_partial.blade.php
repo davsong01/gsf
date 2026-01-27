@@ -1,6 +1,9 @@
 <div class="content-body">
     <section id="reports-dashboard">
-        <h4 class="card-title">All Reports</h4><a class="btn btn-primary btn-sm" href="{{route('report.fix.orphan')}}">Fix orphan reports</a>
+        <h4 class="card-title">All Reports</h4>
+        @if($isAdmin)
+        <a class="btn btn-primary btn-sm" href="{{route('report.fix.orphan')}}">Fix orphan reports</a>
+        @endif
         {{-- {{dd(canAddNextMonthReport($user))}} --}}
         @php
             $eligibleMonth = canAddReport($user->chapter_id);

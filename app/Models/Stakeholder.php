@@ -39,6 +39,15 @@ class Stakeholder extends Authenticatable
         'password',
     ];
 
+    protected $casts = [
+        'role_id' => 'integer',
+        'zone_id' => 'integer',
+        'field_id' => 'integer',
+        'chapter_id' => 'integer',
+        'designation_id' => 'integer',
+        'credentials_sent' => 'boolean',
+    ];
+
     public function zone(){
         return $this->belongsTo(Zone::class);
     }
