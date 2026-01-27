@@ -122,6 +122,17 @@
     $userRole = $user->role_id;
 @endphp
 <div class="content-body">
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <strong>Please fix the errors below:</strong>
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <section id="basic-input">
         <form action="{{ isset($report) ? route(($isAdmin ? 'stakeholderreports.update' : 'stakeholders.reports.update'), $report->id) : route('stakeholders.reports.store') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('You are about to submit this report, action is irreversible');">
             @csrf

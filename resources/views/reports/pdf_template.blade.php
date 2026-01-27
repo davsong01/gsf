@@ -166,7 +166,7 @@
                         @foreach($subsection->questions as $question)
                            @php
                                 $answer = $report->answers->firstWhere('question_id', $question->id);
-
+                                
                                 $value = $answer
                                     ? (($answer->question_label ?? $answer->answer_value) ?? json_decode($answer->answer_value, true))
                                     : '-';

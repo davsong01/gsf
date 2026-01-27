@@ -62,7 +62,7 @@ class StakeholderReportsController extends Controller
             ])
             ->orderBy('id')
             ->get();
-            
+
         if(!in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders())){
             return back()->with('error', 'Unauthorized Access');
         }
@@ -101,8 +101,9 @@ class StakeholderReportsController extends Controller
         $stakeholder = Auth::guard('stakeholder')->user();
 
         $validated = app(ReportService::class)->validateRequest($request);
-        $result = app(ReportService::class)->saveReport($stakeholder, null, $validated);
 
+        $result = app(ReportService::class)->saveReport($stakeholder, null, $validated);
+    
         return $result['status']
             ? redirect()->route('stakeholders.reports.index')->with('message', $result['message'])
             : back()->with('error', $result['message']);
