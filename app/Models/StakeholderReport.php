@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 class StakeholderReport extends Model
 {
     protected $guarded = [];
+    
     public function chapter(){
         return $this->belongsTo(Chapter::class);
     }
@@ -27,7 +28,7 @@ class StakeholderReport extends Model
     public function zone(){
         return $this->belongsTo(Zone::class);
     }
-    
+
     public function stakeholder()
     {
         return $this->belongsTo(Stakeholder::class);

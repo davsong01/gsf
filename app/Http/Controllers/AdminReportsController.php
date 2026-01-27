@@ -52,31 +52,44 @@ class AdminReportsController extends Controller
     {
         $count = 0;
 
-        StakeholderReport::with(['stakeholder:id,zone_id,field_id', 'chapter:id,zone_id,field_id'])
-            ->where(function ($q) {
-                $q->whereNull('zone_id')
-                ->orWhereNull('field_id')
-                ->orWhereNull('chapter_id');
-            })
-            ->chunk(200, function ($reports) use (&$count) {
+        StakeholderReport::with([
+            'stakeholder:id,chapter_id,zone_id,field_id',
+            'chapter:id,zone_id,field_id'
+        ])
+        ->where(function ($q) {
+            $q->whereNull('zone_id')
+            ->orWhereNull('field_id')
+            ->orWhereNull('chapter_id');
+        })
+        ->chunk(200, function ($reports) use (&$count) {
 
-                foreach ($reports as $report) {
+            foreach ($reports as $report) {
 
-                    $zoneId = $report->stakeholder?->zone_id ?? $report->chapter?->zone_id;
-                    $fieldId = $report->stakeholder?->field_id ?? $report->chapter?->field_id;
-                    $chapterId = $report->stakeholder?->chapter_id;
+                $chapterId = $report->stakeholder?->chapter_id;
+                $zoneId    = $report->stakeholder?->zone_id ?? $report->chapter?->zone_id;
+                $fieldId   = $report->stakeholder?->field_id ?? $report->chapter?->field_id;
 
-                    if ($zoneId || $fieldId) {
-                        $report->update([
-                            'chapter_id'  => $chapterId,
-                            'zone_id'  => $zoneId,
-                            'field_id' => $fieldId,
-                        ]);
-                        $count++;
-                    }
+                $data = [];
+
+                if (is_null($report->chapter_id) && $chapterId) {
+                    $data['chapter_id'] = $chapterId;
                 }
 
-            });
+                if (is_null($report->zone_id) && $zoneId) {
+                    $data['zone_id'] = $zoneId;
+                }
+
+                if (is_null($report->field_id) && $fieldId) {
+                    $data['field_id'] = $fieldId;
+                }
+
+                if (!empty($data)) {
+                    $report->update($data);
+                    $count++;
+                }
+            }
+
+        });
 
         return back()->with('message', "{$count} reports fixed");
     }
