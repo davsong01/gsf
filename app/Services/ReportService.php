@@ -307,7 +307,10 @@ class ReportService
                 $this->resetRejectedStatuses($report);
             }
 
-            $report->edit_mode = $editMode ? 1 : 0;
+            if(!$isAdmin)
+            {
+                $report->edit_mode = $editMode ? 1 : 0;
+            }
 
             $report->save();
 
