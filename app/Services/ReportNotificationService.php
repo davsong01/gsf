@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use App\Models\Stakeholder;
 use Illuminate\Support\Str;
 use App\Services\EmailService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Pdf;
 use App\Models\StakeholderReport;
 use App\Models\StakeholderQuestionSection;
 
@@ -81,7 +81,7 @@ class ReportNotificationService
         }
 
         $pdfFilePath = self::generatePdf($report);
-        
+
         $report->update(['file_location' => $pdfFilePath['relative_path'] ?? null]);
 
         $allEmailData = [];
