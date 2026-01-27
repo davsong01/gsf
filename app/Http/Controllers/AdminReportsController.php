@@ -48,6 +48,35 @@ class AdminReportsController extends Controller
     {
     }
 
+    public function fixOrphanReport()
+    {
+        $count = 0;
+
+        StakeholderReport::with(['stakeholder:id,zone_id,field_id', 'chapter:id,zone_id,field_id'])
+            ->where(function ($q) {
+                $q->whereNull('zone_id')
+                ->orWhereNull('field_id');
+            })
+            ->chunk(200, function ($reports) use (&$count) {
+
+                foreach ($reports as $report) {
+
+                    $zoneId = $report->stakeholder?->zone_id ?? $report->chapter?->zone_id;
+                    $fieldId = $report->stakeholder?->field_id ?? $report->chapter?->field_id;
+
+                    if ($zoneId || $fieldId) {
+                        $report->update([
+                            'zone_id'  => $zoneId,
+                            'field_id' => $fieldId,
+                        ]);
+                        $count++;
+                    }
+                }
+
+            });
+
+        return back()->with('message', "{$count} reports fixed");
+    }
 
     public function update(Request $request, StakeholderReport $stakeholderreport)
     {

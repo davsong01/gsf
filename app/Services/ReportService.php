@@ -268,7 +268,7 @@ class ReportService
                 $report = new StakeholderReport();
                 $isNew  = true;
             }
-
+            
             /** =====================
              * ROLE-BASED OWNERSHIP
              * ===================== */
