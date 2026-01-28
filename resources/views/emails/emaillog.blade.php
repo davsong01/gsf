@@ -47,8 +47,9 @@
                                                     @else
                                                     <span style="color:green">Sent at {{ $email->sent_at }}</span><br>
                                                     @endif
-                                                </small> <br>
+                                                <br>
                                                 Logged at: {{$email->created_at}}
+                                                </small>
                                                 </td>
                                                 <td>{{ $email->subject }}</td>
                                                 <td>{{ $email->recipient }}</td>
