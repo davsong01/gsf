@@ -220,6 +220,12 @@ class ChapterController extends Controller
         if($request->has('chapter_banner')){
             $request['banner'] = $this->uploadImage($request->chapter_banner, 'main/images/chapters');
         }
+
+        if($request->email != $chapter->email){
+            $chapter->stakeholder->update([
+                'email' => $request->email,
+            ]);
+        }
         $chapter->update($request->except('chapter_banner'));
 
         return redirect(route('chapters.index'))->with('message', 'Update successful');

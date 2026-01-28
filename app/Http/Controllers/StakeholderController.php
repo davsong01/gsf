@@ -101,7 +101,6 @@ class StakeholderController extends Controller
         |--------------------------------------------------------------------------
         */
         switch (true) {
-
             case in_array($role->slug, ['chapter-representative']):
                 $chapter = Chapter::find($request->chapter_id);
 
@@ -276,9 +275,14 @@ class StakeholderController extends Controller
                 'avatars',
                 $stakeholder->avatar
             );
-
         }
 
+        if($request->email != $stakeholder->email){
+            $stakeholder->chapter->update([
+                'email' => $request->email
+            ]);
+        }
+        
         // Update general info
         $stakeholder->fill([
             'name'  => $request->name,
