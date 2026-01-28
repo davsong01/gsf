@@ -10,12 +10,12 @@ class EmailService {
     {
         $subject = '';
         $content = '';
-        
+
         if(!empty($transaction)){
             $conferenceTheme = $transaction->edition->conference_theme ?? 'GSF National Conference';
             $user = $transaction->user ?? null;
             $fields = $transaction->allocationFields;
-            
+
             $registrationDetails = "
             <strong>Name:</strong> {$transaction->name}<br>
             <strong>Email:</strong> {$transaction->email}<br>
@@ -23,7 +23,7 @@ class EmailService {
             <strong>Amount Paid:</strong> &#8358;" . number_format($transaction->amount_paid ?? $transaction->amount ?? 0) . "<br><br>
             <strong>Service Charge:</strong> &#8358;" . number_format($transaction->provider_charge ?? 0) . "<br><br>
             <strong>Total Amount Paid:</strong> &#8358;" . number_format($transaction->total_amount ?? (($transaction->amount_paid ?? 0) + ($transaction->provider_charge ?? 0))) . "<br><br>";
-    
+
             $allocationDetails = '';
             if (!empty($transaction->hostel_id)) {
                 $allocationDetails .= "<strong>Allocated Hostel:</strong> {$transaction->hostel->name}<br>Hostel Allocation Number: {$transaction->hostel_allocation_number}<br>";
@@ -31,7 +31,7 @@ class EmailService {
             if (!empty($transaction->food_id)) {
                 $allocationDetails .= "<br><strong>Allocated Service Point:</strong> {$transaction->food->name}<br>Service Point Allocation Number: {$transaction->service_point_allocation_number}<br><br>";
             }
-    
+
             $loginDetails = $user ? "
             <strong>Login ID:</strong> {$user->family_id}<br>
             <strong>Password:</strong> {$transaction->phone}<br><br>
@@ -131,14 +131,14 @@ class EmailService {
     {
         $type = $data['type'];
         $transaction = $data['transaction'] ?? null;
-        
+
         $emailContent = self::getContent($type, $transaction, $data);
-        
+
         $subject = $data['subject'] ?? $emailContent['subject'];
         $content = $data['content'] ?? $emailContent['content'];
-        
+
         $insert = [];
-        
+
         if(in_array($data['type'], ['conference_bulk_email'])){
             $recipients = $data['recipients'] ?? null;
             foreach($recipients as $recipient){
@@ -167,8 +167,8 @@ class EmailService {
                 'updated_at' => now(),
             ];
         }
-        
-        CriticalEmail::insert($insert);        
+
+        CriticalEmail::insert($insert);
     }
 
     /**
@@ -194,7 +194,7 @@ class EmailService {
             if ($preview) {
                 return (new NotificationEmail($data))->render();
             }
-            
+
             if(env('APP_ENV') == 'local'){
                 $data['recipient'] = 'davsong16@gmail.com';
             }
@@ -202,11 +202,13 @@ class EmailService {
             Mail::to($data['recipient'])->send(new NotificationEmail($data));
 
             return [
+                'status' => true,
                 'message' => 'success'
             ];
         } catch (\Exception $e) {
             \Log::error($e->getMessage());
             return [
+                'status' => false,
                 'error' => $e->getMessage(),
             ];
         }

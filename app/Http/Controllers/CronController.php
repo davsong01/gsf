@@ -124,7 +124,7 @@ class CronController extends Controller
 
             $res = EmailService::sendEmail($data);
 
-            if (isset($res['message']) && $res['message'] == 'success') {
+            if (isset($res['status'])) {
                 $count++;
                 $email->status = 1;
                 $email->sent_at = now();
@@ -133,6 +133,7 @@ class CronController extends Controller
             } else {
                 $email->errors = $res['error'] ?? null;
                 $email->save();
+                continue;
             }
         }
 
