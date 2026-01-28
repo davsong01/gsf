@@ -13,7 +13,7 @@ class CriticalEmailController extends Controller
         switch ($data['type']) {
             case 'conference_registration_welcome_mail':
                 $account = "<a style='color: white;text-decoration: none;background-color: #29166f;padding: 7px;border-radius: 5px;' href='". route('conferencemanagement.index', ['edition' => $data['conference_edition_id']])."'>Login</a>";
-                
+
                 $content = "Dear ".$data['name']. ", <br><br>
                     Your registration for GSF National conference is successful. <br><br>Below are the details of your registration <br><br>
                     <strong>Name: </strong>".$data['name']."<br>
@@ -50,7 +50,7 @@ class CriticalEmailController extends Controller
                     <strong>Phone: </strong>" . $data[ 'family_id'] . "<br>
                     <strong>Chapter: </strong>" . $data['chapter'] . "<br>
                     <strong>Amount Paid: </strong> &#8358;" . $data['amount'] . "<br><br>Thanks";
-                    
+
                 break;
 
             case 'admin_donation_notification':
@@ -108,7 +108,7 @@ class CriticalEmailController extends Controller
                 $level = $data['status'] == 0 ? 'Student' : 'Alumni';
                 $content = "<p>Dear Admin, <br>
                 A new Listing has been submmitted on GSF Directory website via nultiple upload<br><br>
-                
+
                 </p><br><br>
                 Kindly sign in to approve listings
                 ";
@@ -157,7 +157,7 @@ class CriticalEmailController extends Controller
                 # code...
                 break;
             }
-            
+
             return $content;
     }
     /**
@@ -172,7 +172,27 @@ class CriticalEmailController extends Controller
         return view('emails.emaillog', compact('emails','count'));
     }
 
-    
+    public function bulkAction(Request $request)
+    {
+        $request->validate([
+            'action' => 'required',
+            'emails' => 'required|array'
+        ]);
+
+        if ($request->action === 'delete') {
+            CriticalEmail::whereIn('id', $request->emails)->delete();
+        }
+
+        // if ($request->action === 'resend') {
+        //     $emails = CriticalEmail::whereIn('id', $request->emails)->get();
+        //     foreach ($emails as $email) {
+        //         dispatch(new SendEmailJob($email));
+        //     }
+        // }
+
+        return back()->with('success', 'Bulk action completed successfully.');
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -216,12 +236,12 @@ class CriticalEmailController extends Controller
         $data['content'] = $criticalEmail->content;
         $data['subject'] = $criticalEmail->subject;
         $data['attachments'] = $criticalEmail->attachments;
-       
+
         $res = $this->sendEmail($data);
-        
+
         if (isset($res['message']) && $res['message'] == 'success') {
             $criticalEmail->update(['status'=>1,'sent_at'=>now()]);
-           
+
             return back()->with('message', 'Email resent successfully');
         }else{
             $criticalEmail->update(['errors' => $res['error']]);

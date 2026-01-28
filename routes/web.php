@@ -311,6 +311,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('CriticalEmail-delete/{id}','destroy')->name('CriticalEmail.delete');
     });
 
+    Route::post('/critical-email/bulk', [CriticalEmailController::class, 'bulkAction'])
+    ->name('criticalEmail.bulkAction');
+
     Route::controller(ConferenceManagementController::class)->group(function () {
         // Import conference users
         Route::get('participants/import/index', 'usersImportIndex')->name('conferenceusers.import.index');
