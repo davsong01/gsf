@@ -220,7 +220,7 @@ class ChapterController extends Controller
         if($request->has('chapter_banner')){
             $request['banner'] = $this->uploadImage($request->chapter_banner, 'main/images/chapters');
         }
-
+        
         if($chapter->stakeholder && $request->email != $chapter->email){
             $chapter->stakeholder->update([
                 'email' => $request->email,

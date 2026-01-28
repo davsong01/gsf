@@ -31,7 +31,7 @@
                                             <th>Recipient</th>
                                             <th>Preview</th>
                                             <th>Error(s)</th>
-                                            
+
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -47,7 +47,8 @@
                                                     @else
                                                     <span style="color:green">Sent at {{ $email->sent_at }}</span><br>
                                                     @endif
-                                                </small>
+                                                </small> <br>
+                                                Logged at: {{$email->created_at}}
                                                 </td>
                                                 <td>{{ $email->subject }}</td>
                                                 <td>{{ $email->recipient }}</td>
@@ -58,13 +59,13 @@
                                                 <td style="padding-left: 5px;padding-right: 5px;">
                                                     <a class="actions" data-toggle="tooltip" title="Resend" href="{{ route('criticalEmail.show', $email->id)}}" data-original-title="View/Update stakeholder details"> <i class="fa fa-envelope actions"></i>
                                                     </a>
-                                                
+
                                                     <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="" href="{{ route('CriticalEmail.delete', $email->id)}}" data-original-title="Delete email"> <i class="fa fa-trash actions"></i></a>
                                                 </td>
                                             </tr>
                                             <div class="modal fade" id="emailModal{{ $email->id }}" role="dialog">
                                                 <div class="modal-dialog modal-md  modal-dialog-scrollable">
-                                                
+
                                                 <!-- Modal content-->
                                                 <div class="modal-content">
                                                     <div class="modal-header">
@@ -78,10 +79,10 @@
                                                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                                     </div>
                                                 </div>
-                                                
+
                                                 </div>
                                             </div>
-                                           
+
                                             @endforeach
                                         @endif
                                     </tbody>
@@ -93,6 +94,6 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 @endsection

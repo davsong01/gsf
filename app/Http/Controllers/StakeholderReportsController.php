@@ -26,7 +26,7 @@ class StakeholderReportsController extends Controller
         }
 
         $isAdmin = false;
-
+        
         $data = app(ReportService::class)
             ->index($request, $user, $isAdmin);
 
