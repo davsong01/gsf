@@ -225,16 +225,16 @@ class CronController extends Controller
         $allEmailData = [];
         $sentCount = 0;
 
-        Stakeholder::where(function ($q) {
-            $q->whereNull('chapter_id')
-            ->whereNull('field_id')
-            ->whereNull('zone_id');
-        })
-        ->orWhere(function ($q) {
-            $q->where('status', 'inactive')
-            ->orWhere('role_id', 0);
-        })
-        ->delete();
+        // Stakeholder::where(function ($q) {
+        //     $q->whereNull('chapter_id')
+        //     ->whereNull('field_id')
+        //     ->whereNull('zone_id');
+        // })
+        // ->orWhere(function ($q) {
+        //     $q->where('status', 'inactive')
+        //     ->orWhere('role_id', 0);
+        // })
+        // ->delete();
 
         // 1. Get chapters that have email
         $chapters = Chapter::whereNotNull('email')->get();
@@ -310,7 +310,7 @@ class CronController extends Controller
     }
 
     public function createNecDummyCredentials(){
-        return;
+        // return;
 
         $tenure = '2025/2027';
         $necRoleId = 7;
@@ -318,18 +318,18 @@ class CronController extends Controller
         $zoneRoleId = 4;
         $ncpRoleId = 2;
 
-        Stakeholder::where(function ($q) {
-            // Case 1: no chapter, field, and zone
-            $q->whereNull('chapter_id')
-            ->whereNull('field_id')
-            ->whereNull('zone_id');
-        })
-        ->orWhere(function ($q) {
-            // Case 2: inactive OR invalid role
-            $q->where('status', 'inactive')
-            ->orWhere('role_id', 0);
-        })
-        ->delete();
+        // Stakeholder::where(function ($q) {
+        //     // Case 1: no chapter, field, and zone
+        //     $q->whereNull('chapter_id')
+        //     ->whereNull('field_id')
+        //     ->whereNull('zone_id');
+        // })
+        // ->orWhere(function ($q) {
+        //     // Case 2: inactive OR invalid role
+        //     $q->where('status', 'inactive')
+        //     ->orWhere('role_id', 0);
+        // })
+        // ->delete();
 
         $newStakeholders = [
             [
@@ -1141,6 +1141,12 @@ class CronController extends Controller
         ];
 
         foreach ($newStakeholders as $stakeholder) {
+            if(!in_array($stakeholder['role_id'], [$necRoleId, $ncpRoleId])){
+                continue;
+            }
+            // if($stakeholder['role_id'] == $necRoleId){
+            //     dd($stakeholder);
+            // }
             $check = Stakeholder::where('email', $stakeholder['email'])->where('role_id', $stakeholder['role_id'])->exists();
             if($check) continue;
 

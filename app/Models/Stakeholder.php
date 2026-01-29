@@ -8,11 +8,12 @@ use App\Models\Chapter;
 use App\Models\StakeholderRole;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Stakeholder extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, SoftDeletes;
 
     protected $guard = 'stakeholder';
 
@@ -46,6 +47,7 @@ class Stakeholder extends Authenticatable
         'chapter_id' => 'integer',
         'designation_id' => 'integer',
         'credentials_sent' => 'boolean',
+        'deleted_at' => 'datetime',
     ];
 
     public function zone(){

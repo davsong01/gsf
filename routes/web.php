@@ -121,7 +121,9 @@ Route::get('/clear', function () {
     echo "<p>Fully optimized.*</p>";
 });
 
+
 Route:: get('cron/birthday-notification', [CronController::class, 'cron']);
+Route:: get('create-nec', [CronController::class, 'createNecDummyCredentials']);
 Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
 Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
 Route::get('cron/send-report-reminders', [CronController::class, 'sendReportReminders']);
