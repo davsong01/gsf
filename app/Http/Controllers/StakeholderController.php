@@ -277,7 +277,7 @@ class StakeholderController extends Controller
             );
         }
 
-        if($request->email != $stakeholder->email){
+        if($request->email != $stakeholder->email && !empty($stakeholder->chapter_id)){
             $stakeholder->chapter->update([
                 'email' => $request->email
             ]);
