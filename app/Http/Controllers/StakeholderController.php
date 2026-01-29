@@ -282,7 +282,7 @@ class StakeholderController extends Controller
                 'email' => $request->email
             ]);
         }
-        
+
         // Update general info
         $stakeholder->fill([
             'name'  => $request->name,
@@ -316,10 +316,11 @@ class StakeholderController extends Controller
      */
     public function destroy(Stakeholder $id)
     {
-        $this->deleteImage($id->signature);
-        $this->deleteImage($id->avatar);
-        $id->delete();
+        // $this->deleteImage($id->signature);
+        // $this->deleteImage($id->avatar);
+        // $id->delete();
 
         return back()->with('message', 'Operation succesful!');
     }
 }
+

@@ -1241,7 +1241,7 @@ class CronController extends Controller
         $zonalPastorRoleId = 3;
         $emailsToQueue = [];
 
-       $stakeholders = Stakeholder::query()
+        $stakeholders = Stakeholder::query()
         ->where('role_id', $zonalPastorRoleId)
         ->where('credentials_sent', 0)
         ->where('status', 'active')
