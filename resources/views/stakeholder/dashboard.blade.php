@@ -46,357 +46,374 @@
     }
 
 </style>
-
 <div class="content-body">
-
-    @if($user->role_id == 5)
+    @if(in_array($user->role_id, [1, 2, 3, 4, 5]))
     {{-- CHAPTER HEADER --}}
-    @php
-    $bgStyle = $chapter->banner
-        ? "background-image: url('" . asset($chapter->banner) . "');"
-        : "background: linear-gradient(135deg, #0d6efd, #0b5ed7);";
+        @php
+            $bgStyle = $chapter?->banner
+                ? "background-image: url('" . asset($chapter->banner) . "');"
+                : "background: linear-gradient(135deg, #0d6efd, #0b5ed7);";
 
-    $fieldCord = $chapter->field->fieldCord;
-    @endphp
+            $fieldCord = $chapter->field->fieldCord ?? $user->field->fieldCord ?? null;
+            $zoneCords = $chapter->zone->zonalCords ?? $user->zone->zonalCords ?? null;
+            $field = $chapter->field ?? $user->field ?? null;
+            $zone = $chapter->zone ?? $user->zone ?? null;
+            $heroName = $chapter->name ?? $user->zone->name ?? $user->field->name ?? 'Secretariat';
 
-    <div class="card shadow-sm mb-1 border-0"
-        style="{{ $bgStyle }} background-size:cover; background-position:center; position:relative;">
+            if($user->role_id == 5){
+                $dashboardName = 'Chapter Dashboard';
+            }
 
-        {{-- Dark Overlay --}}
-        <div style="
-            position:absolute;
-            inset:0;
-            background: rgba(0, 0, 0, 0.71);
-            border-radius: .75rem;
-        "></div>
+            if($user->role_id == 4){
+                $dashboardName = 'Zone Dashboard';
+            }
 
-        <div class="card-body text-center py-4 position-relative text-white">
-            <h2 class="fw-bold mb-1" style="color:white">
-                {{ $chapter->name ?? 'My Chapter' }}
-            </h2>
+            if($user->role_id == 3){
+                $dashboardName = 'Field Dashboard';
+            }
 
-            <small class="opacity-75">
-                Welcome back, {{ Auth::guard('stakeholder')->user()->name }}
-            </small> <br>
-            <span class="badge bg-light text-dark mt-2">
-                Chapter Dashboard
-            </span>
-        </div>
-    </div>
+            if(in_array($user->role_id, [1,2])){
+                $dashboardName = 'Secretariat Dashboard';
+            }
 
-    {{-- FIELD & ZONE CARDS --}}
-    <div class="row mb-1">
+        @endphp
 
-        {{-- FIELD CARD --}}
-        <div class="col-12 col-md-6 mb-1">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <div class="row align-items-center">
+        <div class="card shadow-sm mb-1 border-0"
+            style="{{ $bgStyle }} background-size:cover; background-position:center; position:relative;">
 
-                        {{-- Avatar --}}
-                        <div class="col-12 col-md-5 text-center mb-1 mb-md-0">
-                            <img
-                                src="{{ asset(optional($chapter->field->fieldCord)->avatar ?? 'images/avatar.png') }}"
-                                class="rounded-circle mb-2"
-                                style="width:100px;height:100px;object-fit:cover;"
-                            >
-                            <h6 class="mb-0 d-block text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                {{ optional($chapter->field->fieldCord)->name ?? 'N/A' }}
-                            </h6>
-                            <small class="text-muted d-block">Field Pastor</small>
-                        </div>
+            {{-- Dark Overlay --}}
+            <div style="
+                position:absolute;
+                inset:0;
+                background: rgba(0, 0, 0, 0.71);
+                border-radius: .75rem;
+            "></div>
 
-                        {{-- Info --}}
-                        <div class="col-12 col-md-7 text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                            <h6 class="text-primary mb-2">
-                                <i class="fa fa-map-marker"></i> Field Information
-                            </h6>
+            <div class="card-body text-center py-4 position-relative text-white">
+                <h2 class="fw-bold mb-1" style="color:white">
+                    {{ $heroName }}
+                </h2>
 
-                            <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;"><strong>Field:</strong> {{ $chapter->field->name ?? 'N/A' }}</p>
-                            <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                <i class="fa fa-envelope text-muted"></i> {{ optional($chapter->field->fieldCord)->email ?? 'N/A' }}
-                            </p>
-                            <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                <i class="fa fa-phone text-muted"></i> {{ optional($chapter->field->fieldCord)->phone ?? 'N/A' }}
-                            </p>
-
-                            @php $fieldCord = $chapter->field->fieldCord; @endphp
-                            @if($fieldCord && $fieldCord->day && $fieldCord->month)
-                                <span class="badge badge-light-primary d-block mt-1 w-100 text-break"
-                                    style="background-color:#0028FF;color:white !important; word-wrap: break-word; overflow-wrap: anywhere;">
-                                    🎉 <strong>{{ \Carbon\Carbon::create(null, $fieldCord->month, $fieldCord->day)->format('F jS') }}</strong>
-                                </span>
-                            @endif
-                        </div>
-
-                    </div>
-                </div>
+                <small class="opacity-75">
+                    Welcome back, {{ Auth::guard('stakeholder')->user()->name }}
+                </small> <br>
+                <span class="badge bg-light text-dark mt-2">
+                   {{$dashboardName}}
+                </span>
             </div>
         </div>
 
-        {{-- ZONE CARD --}}
-        <div class="col-12 col-md-6 mb-1">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="text-primary mb-2">
-                        <i class="fa fa-globe"></i> Zone Information
-                    </h6>
+        {{-- FIELD & ZONE CARDS --}}
+        <div class="row mb-1">
 
-                    <p class="mb-2" style="word-wrap: break-word; overflow-wrap: anywhere;"><strong>Zone:</strong> {{ $chapter->zone->name ?? 'N/A' }}</p>
+            @if($fieldCord)
+            {{-- FIELD CARD --}}
+            <div class="col-12 col-md-6 mb-1">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="row align-items-center">
 
-                    <div class="row">
-                        @forelse($chapter->zone->zonalCords ?? collect() as $cord)
-                            <div class="col-12 mb-1">
-                                <div class="row align-items-center">
+                            {{-- Avatar --}}
+                            <div class="col-12 col-md-5 text-center mb-1 mb-md-0">
+                                <img
+                                    src="{{ asset(optional($fieldCord)->avatar ?? 'images/avatar.png') }}"
+                                    class="rounded-circle mb-2"
+                                    style="width:100px;height:100px;object-fit:cover;"
+                                >
+                                <h6 class="mb-0 d-block text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                    {{ optional($fieldCord)->name ?? 'N/A' }}
+                                </h6>
+                                <small class="text-muted d-block">Field Pastor</small>
+                            </div>
 
-                                    {{-- Avatar --}}
-                                    <div class="col-3 col-md-2 text-center mb-1 mb-md-0">
-                                        <img
-                                            src="{{ asset($cord->avatar ?? 'images/avatar.png') }}"
-                                            class="rounded-circle"
-                                            style="width:50px;height:50px;object-fit:cover;"
-                                        >
-                                    </div>
+                            {{-- Info --}}
+                            <div class="col-12 col-md-7 text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                <h6 class="text-primary mb-2">
+                                    <i class="fa fa-map-marker"></i> Field Information
+                                </h6>
 
-                                    {{-- Info --}}
-                                    <div class="col-9 col-md-10 text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                        <strong class="d-block text-break">{{ $cord->name }}</strong>
+                                <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;"><strong>Field:</strong> {{ $field->name ?? '' }}</p>
+                                <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                    <i class="fa fa-envelope text-muted"></i> {{ optional($fieldCord)->email ?? 'N/A' }}
+                                </p>
+                                <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                    <i class="fa fa-phone text-muted"></i> {{ optional($fieldCord)->phone ?? 'N/A' }}
+                                </p>
 
-                                        <span class="d-block text-muted small" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                            <i class="fa fa-envelope"></i> {{ $cord->email ?? 'N/A' }}
-                                        </span>
+                                @if($fieldCord && $fieldCord->day && $fieldCord->month)
+                                    <span class="badge badge-light-primary d-block mt-1 w-100 text-break"
+                                        style="background-color:#0028FF;color:white !important; word-wrap: break-word; overflow-wrap: anywhere;">
+                                        🎉 <strong>{{ \Carbon\Carbon::create(null, $fieldCord->month, $fieldCord->day)->format('F jS') }}</strong>
+                                    </span>
+                                @endif
+                            </div>
 
-                                        <span class="d-block text-muted small" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                            <i class="fa fa-phone"></i> {{ $cord->phone ?? 'N/A' }}
-                                        </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+            @if($zoneCords)
+            {{-- ZONE CARD --}}
+            <div class="col-12 col-md-6 mb-1">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-primary mb-2">
+                            <i class="fa fa-globe"></i> Zone Information
+                        </h6>
 
-                                        @if($cord && $cord->day && $cord->month)
-                                            <span class="badge badge-light-primary d-block mt-1 w-100 text-break"
-                                                style="background-color:#3B50C4;color:white !important; word-wrap: break-word; overflow-wrap: anywhere;">
-                                                🎉 <strong>{{ \Carbon\Carbon::create(null, $cord->month, $cord->day)->format('F jS') }}</strong>
+                        <p class="mb-2" style="word-wrap: break-word; overflow-wrap: anywhere;"><strong>Zone:</strong> {{ $zone->name ?? 'N/A' }}</p>
+                        <div class="row">
+                            @forelse($zoneCords ?? collect() as $cord)
+                                <div class="col-12 mb-1">
+                                    <div class="row align-items-center">
+
+                                        {{-- Avatar --}}
+                                        <div class="col-3 col-md-2 text-center mb-1 mb-md-0">
+                                            <img
+                                                src="{{ asset($cord->avatar ?? 'images/avatar.png') }}"
+                                                class="rounded-circle"
+                                                style="width:50px;height:50px;object-fit:cover;"
+                                            >
+                                        </div>
+
+                                        {{-- Info --}}
+                                        <div class="col-9 col-md-10 text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                            <strong class="d-block text-break">{{ $cord->name }}</strong>
+
+                                            <span class="d-block text-muted small" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                                <i class="fa fa-envelope"></i> {{ $cord->email ?? 'N/A' }}
                                             </span>
-                                        @endif
-                                    </div>
 
+                                            <span class="d-block text-muted small" style="word-wrap: break-word; overflow-wrap: anywhere;">
+                                                <i class="fa fa-phone"></i> {{ $cord->phone ?? 'N/A' }}
+                                            </span>
+
+                                            @if($cord && $cord->day && $cord->month)
+                                                <span class="badge badge-light-primary d-block mt-1 w-100 text-break"
+                                                    style="background-color:#3B50C4;color:white !important; word-wrap: break-word; overflow-wrap: anywhere;">
+                                                    🎉 <strong>{{ \Carbon\Carbon::create(null, $cord->month, $cord->day)->format('F jS') }}</strong>
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                    </div>
+                                    <hr class="my-2">
                                 </div>
-                                <hr class="my-2">
-                            </div>
-                        @empty
-                            <div class="col-12 text-muted">
-                                No zonal coordinators assigned
-                            </div>
-                        @endforelse
+                            @empty
+                                <div class="col-12 text-muted">
+                                    No zonal coordinators assigned
+                                </div>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
             </div>
+            @endif
         </div>
+    @endif
+    @if(in_array($user->role_id, [5]))
+        {{-- SISTER CAMPUSES ROW --}}
+        <div class="row">
 
-    </div>
+            {{-- ZONE SISTER CAMPUSES --}}
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
 
-    {{-- SISTER CAMPUSES ROW --}}
-    <div class="row">
+                        <h5 class="text-primary mb-3">
+                            <i class="fa fa-globe"></i> Sister Campuses in Same Zone
+                        </h5>
 
-        {{-- ZONE SISTER CAMPUSES --}}
-        <div class="col-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
+                        <div class="row">
 
-                    <h5 class="text-primary mb-3">
-                        <i class="fa fa-globe"></i> Sister Campuses in Same Zone
-                    </h5>
+                            @php
+                                $zoneCampuses = $chapter->relatedByZone()
+                                    ->where('id', '!=', $chapter->id)
+                                    ->get();
+                            @endphp
 
-                    <div class="row">
+                            @forelse($zoneCampuses as $campus)
+                                <div class="col-12 col-md-4 mb-2">
+                                    <div class="card h-100 border-left-primary shadow-sm">
+                                        <div class="card-body p-3">
 
-                        @php
-                            $zoneCampuses = $chapter->relatedByZone()
-                                ->where('id', '!=', $chapter->id)
-                                ->get();
-                        @endphp
+                                            <h6 class="mb-1 text-break">
+                                                <i class="fa fa-map-marker text-primary"></i>
+                                                {{ $campus->name }}
+                                            </h6>
 
-                        @forelse($zoneCampuses as $campus)
-                            <div class="col-12 col-md-4 mb-2">
-                                <div class="card h-100 border-left-primary shadow-sm">
-                                    <div class="card-body p-3">
+                                            <p class="mb-1 small text-muted text-break">
+                                                {{ $campus->address ?? 'Address not available' }}
+                                            </p>
 
-                                        <h6 class="mb-1 text-break">
-                                            <i class="fa fa-map-marker text-primary"></i>
-                                            {{ $campus->name }}
-                                        </h6>
+                                            <p class="mb-0 small">
+                                                <i class="fa fa-phone text-success"></i>
+                                                {{ $campus->phone ?? 'N/A' }}
+                                            </p>
 
-                                        <p class="mb-1 small text-muted text-break">
-                                            {{ $campus->address ?? 'Address not available' }}
-                                        </p>
-
-                                        <p class="mb-0 small">
-                                            <i class="fa fa-phone text-success"></i>
-                                            {{ $campus->phone ?? 'N/A' }}
-                                        </p>
-
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @empty
-                            <div class="col-12 text-muted text-center py-3">
-                                No sister campuses found in this Zone.
-                            </div>
-                        @endforelse
+                            @empty
+                                <div class="col-12 text-muted text-center py-3">
+                                    No sister campuses found in this Zone.
+                                </div>
+                            @endforelse
+
+                        </div>
 
                     </div>
-
                 </div>
             </div>
-        </div>
 
 
-        {{-- FIELD SISTER CAMPUSES --}}
-        <div class="col-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
+            {{-- FIELD SISTER CAMPUSES --}}
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
 
-                    <h5 class="text-primary mb-3">
-                        <i class="fa fa-map"></i> Sister Campuses in Same Field
-                    </h5>
+                        <h5 class="text-primary mb-3">
+                            <i class="fa fa-map"></i> Sister Campuses in Same Field
+                        </h5>
 
-                    <div class="row">
+                        <div class="row">
 
-                        @php
-                            $fieldCampuses = $chapter->relatedByField()
-                                ->where('id', '!=', $chapter->id)
-                                ->get();
-                        @endphp
+                            @php
+                                $fieldCampuses = $chapter->relatedByField()
+                                    ->where('id', '!=', $chapter->id)
+                                    ->get();
+                            @endphp
 
-                        @forelse($fieldCampuses as $campus)
-                            <div class="col-12 col-md-4 mb-2">
-                                <div class="card h-100 border-left-success shadow-sm">
-                                    <div class="card-body p-3">
+                            @forelse($fieldCampuses as $campus)
+                                <div class="col-12 col-md-4 mb-2">
+                                    <div class="card h-100 border-left-success shadow-sm">
+                                        <div class="card-body p-3">
 
-                                        <h6 class="mb-1 text-break">
-                                            <i class="fa fa-building text-success"></i>
-                                            {{ $campus->name }}
-                                        </h6>
+                                            <h6 class="mb-1 text-break">
+                                                <i class="fa fa-building text-success"></i>
+                                                {{ $campus->name }}
+                                            </h6>
 
-                                        <p class="mb-1 small text-muted text-break">
-                                            {{ $campus->address ?? 'Address not available' }}
-                                        </p>
+                                            <p class="mb-1 small text-muted text-break">
+                                                {{ $campus->address ?? 'Address not available' }}
+                                            </p>
 
-                                        <p class="mb-0 small">
-                                            <i class="fa fa-phone text-primary"></i>
-                                            {{ $campus->phone ?? 'N/A' }}
-                                        </p>
+                                            <p class="mb-0 small">
+                                                <i class="fa fa-phone text-primary"></i>
+                                                {{ $campus->phone ?? 'N/A' }}
+                                            </p>
 
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @empty
-                            <div class="col-12 text-muted text-center py-3">
-                                No sister campuses found in this Field.
-                            </div>
-                        @endforelse
+                            @empty
+                                <div class="col-12 text-muted text-center py-3">
+                                    No sister campuses found in this Field.
+                                </div>
+                            @endforelse
+
+                        </div>
 
                     </div>
-
                 </div>
             </div>
-        </div>
 
-    </div>
+        </div>
     @endif
     <div class="row g-3 mb-4">
 
-    {{-- All Reports --}}
-    <div class="col-md-3 col-sm-6 mb-2">
-        <a href="{{ route('stakeholders.reports.index') }}" class="text-decoration-none">
-            <div class="card h-100 shadow border-0 text-white bg-primary hover-card">
-                <div class="card-body d-flex flex-column align-items-center text-center">
-                    <div class="mb-2">
-                        <i class="fa fa-file fa-2x"></i>
+        {{-- All Reports --}}
+        <div class="col-md-3 col-sm-6 mb-2">
+            <a href="{{ route('stakeholders.reports.index') }}" class="text-decoration-none">
+                <div class="card h-100 shadow border-0 text-white bg-primary hover-card">
+                    <div class="card-body d-flex flex-column align-items-center text-center">
+                        <div class="mb-2">
+                            <i class="fa fa-file fa-2x"></i>
+                        </div>
+                        <h6 class="mb-1">All Reports</h6>
+                        <small>View submitted reports</small>
                     </div>
-                    <h6 class="mb-1">All Reports</h6>
-                    <small>View submitted reports</small>
                 </div>
-            </div>
-        </a>
-    </div>
+            </a>
+        </div>
 
-    {{-- Submit Report --}}
-    @if(canAddReport(Auth::guard('stakeholder')->user()->chapter_id)['eligible'])
-    <div class="col-md-3 col-sm-6 mb-2">
-        <a href="{{ route('stakeholders.reports.create') }}" class="text-decoration-none">
-            <div class="card h-100 shadow border-0 text-white bg-success hover-card">
-                <div class="card-body d-flex flex-column align-items-center text-center">
-                    <div class="mb-2">
-                        <i class="fa fa-plus fa-3x"></i>
+        {{-- Submit Report --}}
+        @if(canAddReport(Auth::guard('stakeholder')->user()->chapter_id)['eligible'])
+        <div class="col-md-3 col-sm-6 mb-2">
+            <a href="{{ route('stakeholders.reports.create') }}" class="text-decoration-none">
+                <div class="card h-100 shadow border-0 text-white bg-success hover-card">
+                    <div class="card-body d-flex flex-column align-items-center text-center">
+                        <div class="mb-2">
+                            <i class="fa fa-plus fa-3x"></i>
+                        </div>
+                        <h6 class="mb-1">Submit Report</h6>
+                        <small>Create a new monthly report</small>
                     </div>
-                    <h6 class="mb-1">Submit Report</h6>
-                    <small>Create a new monthly report</small>
                 </div>
-            </div>
-        </a>
-    </div>
-    @endif
+            </a>
+        </div>
+        @endif
 
-    {{-- Pending Zonal Reviews --}}
-    <div class="col-md-3 col-sm-6 mb-2">
-        <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
-            <div class="card h-100 shadow border-0 text-white hover-card" style="background-color:#f6c23e;"> {{-- Lighter yellow --}}
-                <div class="card-body d-flex flex-column align-items-center text-center">
-                    <div class="mb-2">
-                        <i class="fas fa-clock fa-3x"></i>
+        {{-- Pending Zonal Reviews --}}
+        <div class="col-md-3 col-sm-6 mb-2">
+            <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
+                <div class="card h-100 shadow border-0 text-white hover-card" style="background-color:#f6c23e;"> {{-- Lighter yellow --}}
+                    <div class="card-body d-flex flex-column align-items-center text-center">
+                        <div class="mb-2">
+                            <i class="fas fa-clock fa-3x"></i>
+                        </div>
+                        <h6 class="mb-1">Pending Zonal Reviews</h6>
+                        <small>Reports awaiting action from zonal Pastor</small>
                     </div>
-                    <h6 class="mb-1">Pending Zonal Reviews</h6>
-                    <small>Reports awaiting action from zonal Pastor</small>
                 </div>
-            </div>
-        </a>
-    </div>
+            </a>
+        </div>
 
-    {{-- Pending Field Reviews --}}
-    <div class="col-md-3 col-sm-6 mb-2">
-        <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
-            <div class="card h-100 shadow border-0 text-white hover-card" style="background-color:#f4b619;"> {{-- Medium yellow --}}
-                <div class="card-body d-flex flex-column align-items-center text-center">
-                    <div class="mb-2">
-                        <i class="fa fa-clock fa-3x"></i>
+        {{-- Pending Field Reviews --}}
+        <div class="col-md-3 col-sm-6 mb-2">
+            <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
+                <div class="card h-100 shadow border-0 text-white hover-card" style="background-color:#f4b619;"> {{-- Medium yellow --}}
+                    <div class="card-body d-flex flex-column align-items-center text-center">
+                        <div class="mb-2">
+                            <i class="fa fa-clock fa-3x"></i>
+                        </div>
+                        <h6 class="mb-1">Pending Field Reviews</h6>
+                        <small>Reports awaiting action from field pastor</small>
                     </div>
-                    <h6 class="mb-1">Pending Field Reviews</h6>
-                    <small>Reports awaiting action from field pastor</small>
                 </div>
-            </div>
-        </a>
-    </div>
+            </a>
+        </div>
 
-    {{-- Pending National Reviews --}}
-    <div class="col-md-3 col-sm-6 mb-2">
-        <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
-            <div class="card h-100 shadow border-0 text-white hover-card" style="background-color:#e09c00;"> {{-- Darker yellow/orange --}}
-                <div class="card-body d-flex flex-column align-items-center text-center">
-                    <div class="mb-2">
-                        <i class="fa fa-clock fa-3x"></i>
+        {{-- Pending National Reviews --}}
+        <div class="col-md-3 col-sm-6 mb-2">
+            <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
+                <div class="card h-100 shadow border-0 text-white hover-card" style="background-color:#e09c00;"> {{-- Darker yellow/orange --}}
+                    <div class="card-body d-flex flex-column align-items-center text-center">
+                        <div class="mb-2">
+                            <i class="fa fa-clock fa-3x"></i>
+                        </div>
+                        <h6 class="mb-1">Pending National Reviews</h6>
+                        <small>Reports awaiting action from the national</small>
                     </div>
-                    <h6 class="mb-1">Pending National Reviews</h6>
-                    <small>Reports awaiting action from the national</small>
                 </div>
-            </div>
-        </a>
-    </div>
+            </a>
+        </div>
 
-{{-- Approved Reports --}}
-    <div class="col-md-3 col-sm-6 mb-2">
-        <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'approved']) }}" class="text-decoration-none">
-            <div class="card h-100 shadow border-0 text-white bg-info hover-card">
-                <div class="card-body d-flex flex-column align-items-center text-center">
-                    <div class="mb-2">
-                        <i class="fa fa-check-circle fa-3x"></i>
+        {{-- Approved Reports --}}
+        <div class="col-md-3 col-sm-6 mb-2">
+            <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'approved']) }}" class="text-decoration-none">
+                <div class="card h-100 shadow border-0 text-white bg-info hover-card">
+                    <div class="card-body d-flex flex-column align-items-center text-center">
+                        <div class="mb-2">
+                            <i class="fa fa-check-circle fa-3x"></i>
+                        </div>
+                        <h6 class="mb-1">Approved Reports</h6>
+                        <small>Completed approvals</small>
                     </div>
-                    <h6 class="mb-1">Approved Reports</h6>
-                    <small>Completed approvals</small>
                 </div>
-            </div>
-        </a>
+            </a>
+        </div>
     </div>
-</div>
-
-
-
 </div>
 @endsection

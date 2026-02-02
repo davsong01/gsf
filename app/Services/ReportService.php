@@ -155,7 +155,7 @@ class ReportService
 
             return $this->downloadFinancialReport($reportsCollection);
         }
-
+        
         return [
             'reports'  => $reports->with(['chapter', 'zone', 'field'])
                                   ->orderByDesc('created_at')
