@@ -290,8 +290,8 @@
                                         <div class="card-body">
 
                                             <h6 class="mb-1 text-break">
-                                                <i class="fa fa-building text-success"></i>
-                                                <span style="color:#39DA8A">{{ $campus->name }}</strong> ({{$campus->zone->name}})
+                                                <i class="fa fa-building text-success" style="color:#29166F !important"></i>
+                                                <span style="color:#29166F">{{ $campus->name }}</strong> ({{$campus->zone->name}})
                                             </h6>
 
                                             <p class="mb-1 small text-muted text-break">
