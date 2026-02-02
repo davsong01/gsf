@@ -501,72 +501,74 @@ if (!function_exists('canAddReport')) {
 
 
     function canAddReport(?int $chapterId = null, ?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
-{
-    if (empty($chapterId)) {
-        return ['eligible' => false, 'month' => null];
+    {
+        if (empty($chapterId)) {
+            return ['eligible' => false, 'month' => null];
+        }
+
+        $daysBeforeEnd = $daysBeforeEnd ?? env('REPORT_WINDOW_START_OFFSET', 5);
+        $daysAfterStart = $daysAfterStart ?? env('REPORT_WINDOW_END_OFFSET', 2);
+
+        $chapter = Chapter::with('stakeholder')->find($chapterId);
+        if (!$chapter || !$chapter->stakeholder) {
+            return ['eligible' => false, 'month' => null];
+        }
+
+        $stakeholder = $chapter->stakeholder;
+        if (!in_array($stakeholder->role_id, chapterStakeholders())) {
+            return ['eligible' => false, 'month' => null];
+        }
+
+        $today = Carbon::today();
+
+        // --- Previous month window ---
+        $prevMonthEnd = $today->copy()->subMonth()->endOfMonth();
+        $prevMonthStart = $today->copy()->subMonth()->startOfMonth();
+        $lastSundayPrevMonth = $prevMonthEnd->copy()->previous(Carbon::SUNDAY);
+        $prevWindowOpen = $lastSundayPrevMonth->lt($prevMonthEnd->copy()->subDays($daysBeforeEnd))
+            ? $lastSundayPrevMonth
+            : $prevMonthEnd->copy()->subDays($daysBeforeEnd);
+        $prevWindowClose = $prevMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
+
+        // --- Current month window ---
+        $currMonthStart = $today->copy()->startOfMonth();
+        $currMonthEnd = $today->copy()->endOfMonth();
+        $lastSundayCurrMonth = $currMonthEnd->copy()->previous(Carbon::SUNDAY);
+        $currWindowOpen = $lastSundayCurrMonth->lt($currMonthEnd->copy()->subDays($daysBeforeEnd))
+            ? $lastSundayCurrMonth
+            : $currMonthEnd->copy()->subDays($daysBeforeEnd);
+        $currWindowClose = $currMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
+
+        $reportMonthDate = null;
+
+        // Use exclusive comparison for window close
+        if ($today->between($prevWindowOpen, $prevWindowClose, false)) {
+            $reportMonthDate = $prevMonthStart;
+        } elseif ($today->between($currWindowOpen, $currWindowClose, false)) {
+            $reportMonthDate = $currMonthStart;
+        } else {
+            return ['eligible' => false, 'month' => null];
+        }
+
+        // Check if report already exists for that month
+        $reportExists = StakeholderReport::where('chapter_id', $chapterId)
+            ->whereYear('created_at', $reportMonthDate->year)
+            ->whereMonth('created_at', $reportMonthDate->month)
+            ->exists();
+
+        if ($reportExists) {
+            return ['eligible' => false, 'month' => $reportMonthDate->format('F')];
+        }
+
+        return [
+            'eligible' => true,
+            'month_number' => $reportMonthDate->format('m'),
+            'month' => $reportMonthDate->format('F'),
+            'year' => $reportMonthDate->format('Y'),
+            'window_open' => ($reportMonthDate->isSameMonth($prevMonthStart) ? $prevWindowOpen : $currWindowOpen)->format('Y-m-d'),
+            'window_close' => ($reportMonthDate->isSameMonth($prevMonthStart) ? $prevWindowClose : $currWindowClose)->format('Y-m-d'),
+        ];
     }
-
-    $daysBeforeEnd = $daysBeforeEnd ?? env('REPORT_WINDOW_START_OFFSET', 5);
-    $daysAfterStart = $daysAfterStart ?? env('REPORT_WINDOW_END_OFFSET', 2);
-
-    $chapter = Chapter::with('stakeholder')->find($chapterId);
-    if (!$chapter || !$chapter->stakeholder) {
-        return ['eligible' => false, 'month' => null];
-    }
-
-    $stakeholder = $chapter->stakeholder;
-    if (!in_array($stakeholder->role_id, chapterStakeholders())) {
-        return ['eligible' => false, 'month' => null];
-    }
-
-    $today = Carbon::today();
-
-    // --- Previous month window ---
-    $prevMonthEnd = $today->copy()->subMonth()->endOfMonth();
-    $prevMonthStart = $today->copy()->subMonth()->startOfMonth();
-    $lastSundayPrevMonth = $prevMonthEnd->copy()->previous(Carbon::SUNDAY);
-    $prevWindowOpen = $lastSundayPrevMonth->lt($prevMonthEnd->copy()->subDays($daysBeforeEnd))
-        ? $lastSundayPrevMonth
-        : $prevMonthEnd->copy()->subDays($daysBeforeEnd);
-    $prevWindowClose = $prevMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
-
-    // --- Current month window ---
-    $currMonthStart = $today->copy()->startOfMonth();
-    $currMonthEnd = $today->copy()->endOfMonth();
-    $lastSundayCurrMonth = $currMonthEnd->copy()->previous(Carbon::SUNDAY);
-    $currWindowOpen = $lastSundayCurrMonth->lt($currMonthEnd->copy()->subDays($daysBeforeEnd))
-        ? $lastSundayCurrMonth
-        : $currMonthEnd->copy()->subDays($daysBeforeEnd);
-    $currWindowClose = $currMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
-
-    $reportMonthDate = null;
-
-    // Use exclusive comparison for window close
-    if ($today->between($prevWindowOpen, $prevWindowClose, false)) {
-        $reportMonthDate = $prevMonthStart;
-    } elseif ($today->between($currWindowOpen, $currWindowClose, false)) {
-        $reportMonthDate = $currMonthStart;
-    } else {
-        return ['eligible' => false, 'month' => null];
-    }
-
-    // Check if report already exists for that month
-    $reportExists = StakeholderReport::where('chapter_id', $chapterId)
-        ->whereYear('created_at', $reportMonthDate->year)
-        ->whereMonth('created_at', $reportMonthDate->month)
-        ->exists();
-
-    if ($reportExists) {
-        return ['eligible' => false, 'month' => $reportMonthDate->format('F')];
-    }
-
-    return [
-        'eligible' => true,
-        'month' => $reportMonthDate->format('F'),
-        'window_open' => ($reportMonthDate->isSameMonth($prevMonthStart) ? $prevWindowOpen : $currWindowOpen)->format('Y-m-d'),
-        'window_close' => ($reportMonthDate->isSameMonth($prevMonthStart) ? $prevWindowClose : $currWindowClose)->format('Y-m-d'),
-    ];
-}
 
 
 }

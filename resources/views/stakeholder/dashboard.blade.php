@@ -105,7 +105,6 @@
 
         {{-- FIELD & ZONE CARDS --}}
         <div class="row mb-1">
-
             @if($fieldCord)
             {{-- FIELD CARD --}}
             <div class="col-12 col-md-6 mb-1">

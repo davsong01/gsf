@@ -26,7 +26,7 @@ class StakeholderReportsController extends Controller
         }
 
         $isAdmin = false;
-        
+
         $data = app(ReportService::class)
             ->index($request, $user, $isAdmin);
 
@@ -59,14 +59,17 @@ class StakeholderReportsController extends Controller
             ->orderBy('id')
             ->get();
 
-        if(!in_array(Auth::guard('stakeholder')->user()->role_id, chapterStakeholders())){
+        if(!in_array($user->role_id, chapterStakeholders())){
             return back()->with('error', 'Unauthorized Access');
         }
 
+        $eligibleMonth = canAddReport($user->chapter_id);
+        if(!($eligibleMonth['eligible'])) return redirect()->route('stakeholders.reports.index')->with('error', 'You cannot submit report for requested month.');
+        
         $prefillData = [
             'chapter_name' => $chapter->name ?? '',
-            'month' => date('m'),
-            'year' => date('Y'),
+            'month' => $eligibleMonth['month_number'],
+            'year' => $eligibleMonth['year'],
             'year_established' => $chapter->year_established ?? '',
             'session' => date('Y') - 1 . '/'. date('Y'),
             'president_name' => $chapter->chapterPresident->name ?? '',
@@ -99,6 +102,8 @@ class StakeholderReportsController extends Controller
 
         if(!($eligibleMonth['eligible'])) return redirect()->route('stakeholders.reports.index')->with('error', 'You cannot submit report for requested month.');
         $validated = app(ReportService::class)->validateRequest($request);
+        $validated['month_number'] = $eligibleMonth['month_number'];
+        $validated['year'] = $eligibleMonth['year'];
 
         $result = app(ReportService::class)->saveReport($stakeholder, null, $validated);
 

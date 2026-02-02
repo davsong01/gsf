@@ -155,7 +155,7 @@ class ReportService
 
             return $this->downloadFinancialReport($reportsCollection);
         }
-        
+
         return [
             'reports'  => $reports->with(['chapter', 'zone', 'field'])
                                   ->orderByDesc('created_at')
@@ -292,10 +292,11 @@ class ReportService
             /** =====================
              * CORE DATA
              * ===================== */
+            dd($validated);
             $report->stakeholder_id = $stakeholder->id;
             $report->session        = $validated['responses']['session'] ?? $report->session;
-            $report->year           = $validated['responses']['year'] ?? $report->year;
-            $report->month          = $validated['responses']['month'] ?? $report->month;
+            $report->year           = $validated['year'] ?? $report->year;
+            $report->month          = $validated['month_number'] ?? $report->month;
 
             /** =====================
              * RESET REJECTIONS

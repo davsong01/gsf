@@ -167,7 +167,6 @@
                                                 {{ $report->chapter->name ?? '—' }}
                                             </td>
                                         @endif
-
                                         <td>
                                             {{ date('F', mktime(0, 0, 0, $report->month, 10)) }}, {{ $report->year }}
                                             <br>
