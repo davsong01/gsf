@@ -63,4 +63,16 @@ class Chapter extends Model
     {
         return $this->hasOne(User::class)->where('designation_id', 143);
     }
+
+    public function relatedByZone()
+    {
+        return Chapter::where('zone_id', $this->zone_id)
+                    ->where('id', '!=', $this->id);
+    }
+
+    public function relatedByField()
+    {
+        return Chapter::where('field_id', $this->field_id)
+                    ->where('id', '!=', $this->id);
+    }
 }

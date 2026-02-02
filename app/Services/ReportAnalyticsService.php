@@ -9,12 +9,10 @@ class ReportAnalyticsService
 {
     public function reportGraphStats($request, string $period)
     {
-        $table = 'transaction_all';
+        $table = 'stakeholder_reports';
 
         // Determine date selection based on period (always DATE, no time)
         $dateSelect = match ($period) {
-            'daily'   => "DATE($table.created_at)",
-            'weekly'  => "DATE(DATE_SUB($table.created_at, INTERVAL WEEKDAY($table.created_at) DAY))", // Monday of the week
             'monthly' => "DATE(DATE_FORMAT($table.created_at, '%Y-%m-01'))", // First day of the month
             'yearly'  => "DATE(DATE_FORMAT($table.created_at, '%Y-01-01'))", // First day of the year
             default   => "DATE($table.created_at)",
