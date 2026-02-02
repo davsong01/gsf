@@ -292,7 +292,7 @@ class ReportService
             /** =====================
              * CORE DATA
              * ===================== */
-            dd($validated);
+            
             $report->stakeholder_id = $stakeholder->id;
             $report->session        = $validated['responses']['session'] ?? $report->session;
             $report->year           = $validated['year'] ?? $report->year;
