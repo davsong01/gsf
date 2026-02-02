@@ -236,11 +236,11 @@
                             @forelse($zoneCampuses as $campus)
                                 <div class="col-12 col-md-4 mb-2">
                                     <div class="card h-100 border-left-primary shadow-sm">
-                                        <div class="card-body p-3">
+                                        <div class="card-body">
 
                                             <h6 class="mb-1 text-break">
                                                 <i class="fa fa-map-marker text-primary"></i>
-                                                {{ $campus->name }}
+                                                <span style="color:#29166f">{{ $campus->name }}</span>
                                             </h6>
 
                                             <p class="mb-1 small text-muted text-break">
@@ -288,11 +288,11 @@
                             @forelse($fieldCampuses as $campus)
                                 <div class="col-12 col-md-4 mb-2">
                                     <div class="card h-100 border-left-success shadow-sm">
-                                        <div class="card-body p-3">
+                                        <div class="card-body">
 
                                             <h6 class="mb-1 text-break">
                                                 <i class="fa fa-building text-success"></i>
-                                                {{ $campus->name }}
+                                                <span style="color:#39DA8A">{{ $campus->name }}</strong> ({{$campus->zone->name}})
                                             </h6>
 
                                             <p class="mb-1 small text-muted text-break">
