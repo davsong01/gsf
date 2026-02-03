@@ -3,124 +3,88 @@
 namespace App\Services;
 
 use Carbon\Carbon;
+use App\Models\Zone;
+use App\Models\Field;
+use App\Models\Chapter;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 
 class ReportAnalyticsService
 {
-    public function reportGraphStats($request, string $period)
-    {
-        $table = 'stakeholder_reports';
+  public function fetchAnalyticsTypeData(Request $request)
+{
+    $levelColumn = match ($request->level) {
+        'chapter' => 'chapter_id',
+        'zone'    => 'zone_id',
+        'field'   => 'field_id',
+        default   => 'chapter_id',
+    };
 
-        // Determine date selection based on period (always DATE, no time)
-        $dateSelect = match ($period) {
-            'monthly' => "DATE(DATE_FORMAT($table.created_at, '%Y-%m-01'))", // First day of the month
-            'yearly'  => "DATE(DATE_FORMAT($table.created_at, '%Y-01-01'))", // First day of the year
-            default   => "DATE($table.created_at)",
-        };
+    // Get all legends for this level
+    $legends = DB::table(
+        $levelColumn === 'chapter_id' ? 'chapters' :
+        ($levelColumn === 'zone_id' ? 'zones' : 'fields')
+    )
+    ->select('id', 'name')
+    ->get()
+    ->keyBy('id');
 
-        $q = DB::table($table)
-            ->whereIn("$table.status", self::successfulStatuses());
+    $query = DB::table('stakeholder_reports');
 
-        $q = $this->applyDateRangeFilter($q, $table, $period, $request, 'created_at');
+    if ($request->filled('legends')) {
+        $query->whereIn($levelColumn, $request->legends);
+    }
 
-        $q->selectRaw("
-            $table.product_id,
-            COALESCE($table.product_name, 'Unknown') AS product_name,
-            $dateSelect AS graph_date,
-            SUM($table.amount) AS total_amount,
-            COUNT(*) AS total_count
-        ");
+    if ($request->filled('from_date')) {
+        $from = \Carbon\Carbon::parse($request->from_date)->format('Y-m');
+        $query->whereRaw("CONCAT(year,'-',LPAD(month,2,'0')) = ?", [$from]);
+    }
 
-        // Group by product and period
-        $groupBy = ['product_id', 'product_name', DB::raw($dateSelect)];
+    $records = $query
+        ->select(
+            "$levelColumn as legend_id",
+            DB::raw("CONCAT(year,'-',LPAD(month,2,'0')) as graph_date"),
+            DB::raw("COUNT(*) as submitted")
+        )
+        ->groupBy('legend_id', 'graph_date')
+        ->orderBy('graph_date')
+        ->get()
+        ->groupBy('legend_id');
 
-        $q->groupBy($groupBy)
-            ->orderBy('graph_date');
+    // Collect all months
+    $allMonths = $records->flatten()->pluck('graph_date')->unique()->sort()->values();
 
-        // Domain filters
-        if ($request->filled('domain_urlx')) {
-            $domainId = Domain::where('url', $request->domain_urlx)->value('id');
-            if ($domainId) $q->where("$table.domain_id", $domainId);
-        } elseif ($request->filled('domain_id')) {
-            $q->where("$table.domain_id", $request->domain_id);
+    $labels = $allMonths->map(function ($month) {
+        return \Carbon\Carbon::createFromFormat('Y-m', $month)->format('M, Y');
+    })->toArray();
+
+    $datasets = [];
+
+    foreach ($records as $legendId => $rows) {
+        $legendName = $legends[$legendId]->name ?? 'Unknown';
+
+        $data = [];
+        foreach ($allMonths as $month) {
+            $row = $rows->firstWhere('graph_date', $month);
+            $data[] = $row->submitted ?? 0;
         }
 
-        $adminRoles     = session('admin_role_user', []);
-        $currentAdminId = session('admin_id');
-
-        if (array_intersect($adminRoles, [15, 26, 43, 44])) {
-            $request->merge(['business_developer_id' => $currentAdminId]);
-        }
-
-        if ($request->business_developer_id || $request->category_id) {
-            $q->join('customers', 'customers.id', '=', "$table.customer_id");
-        }
-
-        $q->when($request->business_developer_id, fn($x) => $x->where('customers.account_manager_id', $request->business_developer_id));
-        $q->when($request->category_id, fn($x) => $x->where('customers.category_id', $request->category_id));
-
-        $directFilters = [
-            'customer' => 'customer_id',
-            'channel'  => 'channel',
-            'email'    => 'email',
-            'phone'    => 'phone',
-            'platform' => 'platform',
-        ];
-
-        foreach ($directFilters as $req => $col) {
-            $q->when($request->$req, fn($x) => $x->where("$table.$col", $request->$req));
-        }
-
-        if (!empty($request->legends)) {
-            $q->whereIn("$table.product_id", $request->legends);
-        }
-
-        $records = $q->get()->groupBy('product_id');
-
-        // Build labels and datasets
-        $labels = $records
-            ->flatten()
-            ->pluck('graph_date')
-            ->unique()
-            ->sort()
-            ->values()
-            ->toArray();
-
-        $productIds    = $records->keys()->toArray();
-        $productColors = $this->getLegendColors($productIds);
-        $datasets      = [];
-
-        foreach ($records as $productId => $rows) {
-            $line   = [];
-            $counts = [];
-            foreach ($labels as $date) {
-                $match = $rows->firstWhere('graph_date', $date);
-                $line[]   = $match ? (float) $match->total_amount : 0;
-                $counts[] = $match ? (int) $match->total_count : 0;
-            }
-            $color = $productColors[$productId] ?? '#999';
-            $datasets[] = [
-                'label'           => $rows->first()->product_name,
-                'product_id'      => $productId,
-                'data'            => $line,
-                'total_count'     => $counts,
-                'borderColor'     => $color,
-                'backgroundColor' => $color,
-                'tension'         => 0.4,
-            ];
-        }
-
-        return [
-            'labels'           => $labels,
-            'datasets'         => $datasets,
-            'products'         => Product::select('id', 'name')->whereIn('id', $productIds)->get(),
-            'admins'           => getAdminsByRoles([15, 26, 43, 44]),
-            'roles'            => Role::where('type', 'customer')->pluck('name', 'id')->toArray(),
-            'admin_roles'      => $adminRoles,
-            'current_admin_id' => $currentAdminId,
-            'period'           => $period,
+        $datasets[] = [
+            'label'     => $legendName,
+            'legend_id' => $legendId,
+            'data'      => $data,
         ];
     }
+
+    return [
+        'labels'     => $labels,
+        'datasets'   => $datasets,
+        'graph_type' => 'multi',
+    ];
+}
+
+
 
     public function applyDateRangeFilter($q, $table, $period, $request, $start_date_column = 'start_date')
     {
@@ -172,7 +136,7 @@ class ReportAnalyticsService
         return $q;
     }
 
-    function getLegendColors(array $ids, $cacheKey = 'product_colors'): array
+    public function getLegendColors(array $ids, $cacheKey = 'product_colors'): array
     {
         if (empty($ids)) {
             return [];

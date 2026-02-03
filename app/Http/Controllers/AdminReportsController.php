@@ -2,30 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Zone;
-use App\Models\Field;
 use App\Models\Chapter;
-use App\Models\Reports;
-use App\Models\Setting;
-use App\Models\Stakeholder;
 use Illuminate\Http\Request;
-use App\Mail\NotificationEmail;
 use App\Services\ReportService;
 use App\Models\StakeholderReport;
-use Illuminate\Support\Facades\DB;
-use App\Services\FileUploadService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use App\Models\StakeholderReportAnswer;
-use App\Models\StakeholderReportQuestion;
-use App\Models\StakeholderQuestionSection;
-use App\Services\ReportNotificationService;
-use Spatie\FlareClient\Report;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Services\ReportAnalyticsService;
+
 
 class AdminReportsController extends Controller
 {
+    private $reportAnalyticService;
+
+    public function __construct(){
+        $this->reportAnalyticService = new ReportAnalyticsService;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -151,4 +143,67 @@ class AdminReportsController extends Controller
 
         return back()->with('message', 'Report actors have been nudged successfully!');
     }
+
+    public function reportAnalyticsIndex(){
+        $isAdmin = true;
+        $data = [];
+
+        return view('admin.reports.analytics.index', array_merge($data, compact('isAdmin')));
+    }
+
+    public function reportAnalyticsType(Request $request, $type){
+        $data = [
+            'isAdmin' => true,
+            'collapse' => filter_var($request->get('collapse_data'), FILTER_VALIDATE_BOOL),
+            'legendName' => 'Compliance Trend',
+            'graphType' => $request->collapse ? 'single' : 'multi',
+            'allowProductCollapse' => true,
+            'legends' => Chapter::orderBy('name')->get(),
+            'allowProductCollapse' => true,
+            'level' => $request->level ?? 'chapter',
+            'type' => $request->type ?? 'chapter',
+        ];
+
+        if ($request->ajax()) {
+            if($request->type == 'compliance'){
+                $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request);
+            }
+            // dd($result['labels'] );
+            // $result['labels'] = ["2026-01", "2026-02"];
+
+            // $result['datasets'] = [
+            //     [
+            //         'product_id' => 1,
+            //         'label' => 'Reports Submitted',
+            //         'data' => [12, 19, 8, 15, 22, 18],
+            //         'borderColor' => '#36A2EB',
+            //         'backgroundColor' => '#36A2EB',
+            //         'borderWidth' => 2,
+            //         'fill' => false,
+            //         'tension' => 0.4
+            //     ],
+            //     [
+            //         'product_id' => 2,
+            //         'label' => 'Approved Reports',
+            //         'data' => [10, 14, 6, 12, 18, 16],
+            //         'borderColor' => '#FF6384',
+            //         'backgroundColor' => '#FF6384',
+            //         'borderWidth' => 2,
+            //         'fill' => false,
+            //         'tension' => 0.4
+            //     ]
+            // ];
+
+            return response()->json([
+                'labels'     => $result['labels'],
+                'datasets'   => $result['datasets'],
+                'graph_type' => $data['graphType'],
+            ]);
+        }
+
+
+
+        return view('admin.reports.analytics.compliance', array_merge($data));
+    }
+
 }

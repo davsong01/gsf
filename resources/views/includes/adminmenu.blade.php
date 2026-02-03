@@ -113,6 +113,11 @@
                                 <i class="bx bx-right-arrow-alt"></i><span class="menu-item">Monthly Reports</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="{{ route('reports.analytics') }}">
+                                <i class="bx bx-right-arrow-alt"></i><span class="menu-item">Reports Analytics</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 @endif
