@@ -292,7 +292,7 @@ class ReportService
             /** =====================
              * CORE DATA
              * ===================== */
-            
+
             $report->stakeholder_id = $stakeholder->id;
             $report->session        = $validated['responses']['session'] ?? $report->session;
             $report->year           = $validated['year'] ?? $report->year;
@@ -449,7 +449,7 @@ class ReportService
         $natStatus   = $report->national_status;
 
         // Fully approved
-        $allApproved = $fieldStatus === 1 && $zoneStatus === 1 && $natStatus === 1;
+        $allApproved = $fieldStatus == 1 && $zoneStatus == 1 && $natStatus == 1;
 
         /*
         |--------------------------------------------------------------------------
@@ -457,10 +457,10 @@ class ReportService
         |--------------------------------------------------------------------------
         | Locks everyone except Super Admin
         */
-        if ($natStatus === 1) {
+        if ($natStatus == 1) {
             return [
                 'allApproved' => true,
-                'canEdit' => $role === 1, // Super Admin only
+                'canEdit' => $role == 1, // Super Admin only
             ];
         }
 
@@ -470,13 +470,13 @@ class ReportService
         |--------------------------------------------------------------------------
         | Locks Field, Zone, Chapter
         */
-        if ($fieldStatus === 1) {
+        if ($fieldStatus == 1) {
             return [
                 'allApproved' => false,
                 'canEdit' => (
                     in_array($role, secretariatStakeholders(), true) ||
                     in_array($role, ncpStakeholders(), true) ||
-                    $role === 1
+                    $role == 1
                 ),
             ];
         }
@@ -487,7 +487,7 @@ class ReportService
         |--------------------------------------------------------------------------
         | Locks Zone & Chapter
         */
-        if ($zoneStatus === 1) {
+        if ($zoneStatus == 1) {
             return [
                 'allApproved' => false,
                 'canEdit' => !(
