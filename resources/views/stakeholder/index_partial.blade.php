@@ -203,7 +203,7 @@
                                                 <div class="d-flex align-items-center gap-2 mb-1">
                                                     <small class="text-muted fw-medium pr-1">{{ $label }}</small>
 
-                                                    @if($data['value'] === 2)
+                                                    @if($data['value'] == 2)
                                                         <span class="badge bg-danger">Rejected</span>
 
                                                         <a href="#{{ $data['modal'] }}{{ $report->id }}"
@@ -215,7 +215,7 @@
 
                                                         @include($data['view'])
 
-                                                    @elseif($data['value'] === 1)
+                                                    @elseif($data['value'] == 1)
                                                         <span class="badge bg-success">Approved</span>
                                                     @else
                                                         <span class="badge bg-warning text-dark">Pending</span>
