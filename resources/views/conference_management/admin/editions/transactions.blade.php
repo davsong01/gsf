@@ -136,7 +136,7 @@
                                     <option value="">-- Select Action --</option>
                                     <option value="delete">Delete Selected</option>
                                     <option value="resolve">Resolve Selected</option>
-                                    <option value="fix-trans-id">Fix Transaction ID</option>
+                                    
                                 </select>
                             </div>
 
