@@ -145,7 +145,7 @@
                                     Apply
                                 </button>
                                 <div id="bulkSpinner" class="spinner-border text-primary" style="display:none; width:1.2rem; height:1.2rem;" role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                                    <span class="visually-hidden"></span>
                                 </div>
                             </div>
                         </div>
