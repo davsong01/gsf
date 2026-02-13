@@ -71,7 +71,7 @@ class TransactionController extends Controller
         }
 
         if($request->filled('status')){
-            if($request->status_filter == 'pending'){
+            if($request->status == 'pending'){
                 $mainQuery = $mainQuery->whereIn('status', ['Pending','Initiated']);
             }else{
                 $mainQuery = $mainQuery->where('status', $request->status);
