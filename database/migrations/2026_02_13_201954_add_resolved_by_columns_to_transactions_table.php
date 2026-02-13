@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('transactions', function (Blueprint $table) {
             $table->integer('resolved_by')->nullable()->after('status');
-            $table->tinyInteger('resolved_transaction_id')->default(0)->after('status');
+            $table->string('old_transid')->default(0)->after('transid');
             $table->timestamp('resolved_at')->nullable()->after('resolved_by');
         });
     }
@@ -26,7 +26,7 @@ return new class extends Migration
         Schema::table('transactions', function (Blueprint $table) {
             $table->dropColumn('resolved_by');
             $table->dropColumn('resolved_at');
-            $table->dropColumn('resolved_transaction_id');
+            $table->dropColumn('old_trans_id');
         });
     }
 };

@@ -39,7 +39,7 @@
                         <p class="mb-1"><strong>Email:</strong> {{ $transaction->email ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Phone:</strong> {{ $transaction->phone ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Gender:</strong> {{ ucfirst($transaction->gender ?? 'N/A') }}</p>
-                        <p class="mb-1"><strong>Registration Type:</strong> 
+                        <p class="mb-1"><strong>Registration Type:</strong>
                             {{ $transaction->conferenceplan->title }}
                         </p>
                         @if(!empty($transaction->location))
@@ -48,14 +48,14 @@
                     </div>
 
                     <h4 class="mb-3 text-uppercase">Payment Details</h4>
-                    
+
                     <div class="border-bottom pb-3 mb-3">
                         <p class="mb-1"><strong>Amount:</strong> ₦{{ number_format($transaction->amount_paid, 2) }}</p>
 
                         <p class="mb-1"><strong>Service Charge:</strong> ₦{{ number_format(($paymentProvider->customer_pays_provider_charge ? $transaction->provider_charge : 0), 2) }}</p>
                         {{-- @if($paymentProvider->customer_pays_provider_charge)
                         @endif --}}
-                        
+
                         <div class="mt-3 py-2 px-3 rounded bg-dark text-light d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center" style="border: 2px solid #ffc107;">
                             <strong class="fs-5 text-uppercase mb-1 mb-sm-0">Total Payable:</strong>
                             <span class="fs-4 fw-bold text-warning">
@@ -65,7 +65,7 @@
 
                         <hr class="my-3">
 
-                        <p class="mb-1"><strong>Status:</strong> 
+                        <p class="mb-1"><strong>Status:</strong>
                             <span class="badge {{ $transaction->status === 'Complete' ? 'bg-success' : 'bg-warning text-dark' }}">
                                 {{ ucfirst($transaction->status) }}
                             </span>
@@ -79,10 +79,10 @@
                             <p class="mb-0"><strong>Remarks:</strong> {{ $transaction->remarks }}</p>
                         @endif
                     </div>
-                    
+
                     <h4 class="mb-3 text-uppercase">Conference Edition</h4>
                     <p class="mb-1"><strong>Payment for:</strong> {{ $setting->conference_theme ?? 'N/A' }}</p>
- 
+
                     <div id="proceedBtn" class="d-flex justify-content-between align-items-center mt-4">
                         <button class="btn-main fx-slide" data-provider="{{$paymentProvider->slug}}">
                             <span>Proceed to Payment</span>
@@ -108,7 +108,7 @@ document.getElementById('proceedBtn').addEventListener('click', function() {
     const subAccountPercentage = {{ $paymentProvider->sub_account_fee_percentage ?? 0 }};
     const feeBearer = (subAccountPercentage > 85) ? 'subaccount' : 'account';
     const transid = "{{ $transaction->transid }}";
-    
+
     if (provider === 'paystack') {
         // Open Paystack modal
         let handler = PaystackPop.setup({
@@ -134,8 +134,21 @@ document.getElementById('proceedBtn').addEventListener('click', function() {
                         display_name: "Customer Email",
                         variable_name: "customer_email",
                         value: "{{ $transaction->email }}"
-                    }
-                ]
+                    },
+                    {
+                        display_name: "Transaction ID",
+                        variable_name: "transaction_id",
+                        value: "{{ $transaction->transid }}"
+                    },
+                    {
+                        display_name: "Conference Edition",
+                        variable_name: "conference_edition_id",
+                        value: "{{ $transaction->conference_edition_id }}"
+                    },
+
+                ],
+                'conference_edition_id': "{{ $transaction->conference_edition_id }}",
+                'transid': "{{ $transaction->transid }}",
             },
             @if($paymentProvider->enable_sub_account)
             subaccount: "{{ $paymentProvider->sub_account_code }}",
@@ -190,7 +203,7 @@ document.getElementById('proceedBtn').addEventListener('click', function() {
             }
         });
     }
-    
+
 });
 </script>
 

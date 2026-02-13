@@ -120,7 +120,7 @@ class TransactionController extends Controller
 
             foreach($transactions->chunk(10) as $transactionChunk){
                 foreach($transactionChunk as $transaction){
-                    $res = $this->resolveTransaction($transaction, false);
+                    $this->resolveTransaction($transaction, false);
                 }
             }
             $message = 'Transactions resolved successfully';
@@ -160,24 +160,19 @@ class TransactionController extends Controller
             'admin' => 'admin'
         ]);
 
+        $adminId = $isCron ? 0 : (auth()->user()->id ?? 0);
+
         $req = new PaymentController();
         $response = $req->handleGatewayCallback($request, $transaction->transid);
-        // if resolved
 
-        // resolved_by = auth()->user() ? auth()->user()->id : null;
-        // resolved_at = now();
-        if(isset($response) && !empty($response)){
-            $response = json_encode($response);
-            $transaction->update(['gateway_response' => $response]);
-
-            if($response->status == 'abandoned'){
-                $transaction->update(['status' => $response->status]);
-            }
+        if(isset($response->verification_response) && $response->verification_response->status == true){
+            $transaction->update([
+                'resolved_at' => now(),
+                'resolved_by' => $adminId,
+            ]);
         }
 
-        if($isCron){
-            return response()->json('Done');
-        }
+        return $response;
     }
 
     public function requery(Request $request, $id, $bypassAuth = false){
@@ -197,7 +192,10 @@ class TransactionController extends Controller
             // }
 
             if($status == 'abandoned'){
-                $temp->update(['status' => $status]);
+                $temp->update([
+                    'status' => $status,
+                    'fix_status' => 'closed'
+                ]);
 
                 if(isset($request->cron)){
                     return response()->json('An error occured');

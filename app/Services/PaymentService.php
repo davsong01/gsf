@@ -17,7 +17,7 @@ class PaymentService {
     {
         $setting = $data['setting'];
         $plan = $data['plan'];
-        
+
         $exists = Transaction::where('email', $data['email'])
             ->where('conference_edition_id', $setting->id)
             ->where('status', 'Complete')
@@ -32,7 +32,7 @@ class PaymentService {
 
         $location =  $data['location'] ?? null;
         $amount = $data['amount'] ?? $plan->price;
-        
+
         if ($setting->lock_online_payment == 'yes') {
             $location = 'On Site';
         } else {
@@ -45,10 +45,10 @@ class PaymentService {
                 $data['total_amount'] = $provider_charge + $data['amount'];
             }
         }
-        
+
         $extras = self::getExtras($plan, $setting, $data['amount']);
         $data['transid'] = strtoupper($setting->ministry->code) .'-'. PaymentService::generateTransactionId();
-        
+
         try {
             DB::beginTransaction();
             $transaction = Transaction::where('transid', $data['transid'])->first();
@@ -79,7 +79,7 @@ class PaymentService {
 
             $allocatableFields = $plan->fields()->pluck('name')->toArray();
             $filteredFields = [];
-            
+
             // Auto-fill field_id if missing but chapter exists
             if (in_array('field_id', $allocatableFields, true) && empty($data['field_id']) && !empty($data['chapter'])) {
                 $fieldId = DB::table('chapters')->where('id', $data['chapter'])->value('field_id');
@@ -87,14 +87,14 @@ class PaymentService {
                     $filteredFields['field_id'] = $fieldId;
                 }
             }
-            
+
             // Filter and prepare valid fields
             foreach ($allocatableFields as $key) {
                 if (in_array($key, $allocatableFields, true) && isset($data[$key])) {
                     $filteredFields[$key] = $data[$key];
                 }
             }
-            
+
             // Insert or update allocation fields
             foreach ($filteredFields as $key => $value) {
                 TransactionAllocationField::updateOrCreate(
@@ -142,7 +142,7 @@ class PaymentService {
     public static function createUser($transaction)
     {
         $user = User::firstOrNew(['email' => $transaction->email]);
-        
+
         $user->fill([
             'name' => $transaction->name,
             'phone' => $transaction->phone,
@@ -151,8 +151,9 @@ class PaymentService {
             'passport' => $user->passport,
             'slug' => Str::slug($transaction->name),
             'role' => $user->role ?? 2,
+            'status' => 'active',
         ]);
-        
+
         if (!$user->exists || $user->isDirty('phone')) {
             $user->password = bcrypt($transaction->phone);
         }
@@ -167,7 +168,7 @@ class PaymentService {
     {
         $prefix = strtoupper(substr($setting->reg_prefix ?? 'DEF', 0, 3));
         $prefix = strtoupper($setting->ministry->code) . $prefix .'-'. $user->id;
-        
+
         return $prefix;
     }
 

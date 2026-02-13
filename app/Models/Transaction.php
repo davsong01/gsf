@@ -20,7 +20,10 @@ class Transaction extends Model
     use HasFactory;
     protected $guarded = [];
 
-    protected $casts = ['api_response' => 'array'];
+    protected $casts = [
+        'api_response' => 'array',
+        'resolved_at' => 'datetime',
+    ];
 
     public function allocationFields()
     {
@@ -78,5 +81,9 @@ class Transaction extends Model
     public function foodstand()
     {
         return $this->belongsTo(Food::class);
+    }
+    public function resolvedBy()
+    {
+        return $this->belongsTo(User::class, 'resolved_by');
     }
 }

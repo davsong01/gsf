@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
+
 class PaystackService
 {
     public static function verify($transaction)
@@ -34,13 +36,14 @@ class PaystackService
         try {
             //code...
             if ($err) {
-                \Log::info("cURL Error #:" . $err);
+                Log::info("cURL Error #:" . $err);
             } else {
                 $response = json_decode($response);
-
+                
                 if (!empty($response) && $response->data->status == 'success' && (($response->data->amount / 100) == $transaction->total_amount)) {
                     $status = true;
                     $message = $response;
+                    $provider_reference = $response->data->reference;
                 }
             }
         } catch (\Throwable $th) {
@@ -50,6 +53,7 @@ class PaystackService
         return [
             'status' => $status,
             'message' => $message,
+            'provider_reference' => $provider_reference ?? null
         ];
     }
 

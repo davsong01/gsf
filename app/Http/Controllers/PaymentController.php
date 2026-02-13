@@ -96,8 +96,8 @@ class PaymentController extends Controller
 	public function showCheckout(Transaction $transaction){
 		$setting = $transaction->edition;
 		$transaction->load('conferenceplan');
-
-		$transaction->update(['transid' => strtoupper($setting->ministry->code) . '-' . PaymentService::generateTransactionId()]);
+        // dd($transaction);
+		// $transaction->update(['transid' => strtoupper($setting->ministry->code) . '-' . PaymentService::generateTransactionId()]); //No need to generate new transid here since it's already generated during initialization. This was causing issues with requerying the transaction after payment verification.
 		$paymentProvider = $transaction->paymentprovider;
 
 		return view('frontend.conference.template' . $setting->template_id . '.checkout', compact('transaction', 'paymentProvider', 'setting'));
@@ -129,7 +129,7 @@ class PaymentController extends Controller
 		}
 
 		$verify = $this->verify($transaction);
-        dd($verify);
+    
 		$transaction->update([
 			'api_response' => $verify['message'] ?? null,
 			'provider_reference' => $verify['provider_reference'] ?? null,
@@ -199,6 +199,8 @@ class PaymentController extends Controller
 
 		// Send emails
 		$transaction->user = $user;
+        $transaction->verification_response = $verify['message'] ?? null;
+
 		EmailService::sendRegistrationEmails($transaction);
 
 		// Auto-login (if needed)

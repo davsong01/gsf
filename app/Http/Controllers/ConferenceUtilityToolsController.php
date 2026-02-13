@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Chapter;
 use App\Models\TempUser;
 use App\Models\Transaction;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Models\ConferenceEdition;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use App\Services\HostelAllocationService;
 use App\Services\ServicePointAllocationService;
@@ -19,8 +22,7 @@ class ConferenceUtilityToolsController extends Controller
             ->first();
 
         $count = Transaction::where('conference_edition_id', $edition->id)
-            ->where('fix_status', 'pending')
-            ->whereNotIn('status',['Initiated','abandoned', 'Complete'])
+            ->whereNotIn('status',['Complete'])
             // ->whereDoesntHave('users.payments', function ($query) use ($edition) {
             //     $query->where('registration_status', 'Complete')
             //         ->where('conference_edition_id', $edition->id);
@@ -32,11 +34,12 @@ class ConferenceUtilityToolsController extends Controller
         }
     }
 
+
     public function fixAttemptedRegistration(Request $request)
     {
         ini_set('max_execution_time', 600);
 
-        $edition = ConferenceEdition::find($request->edition);
+        $edition = activeConferenceEdition();
         $request['setting'] = $edition;
 
         if (!$edition) {
@@ -44,16 +47,12 @@ class ConferenceUtilityToolsController extends Controller
         }
 
         $tempusers = Transaction::where('conference_edition_id', $edition->id)
-            ->whereIn('status', ['Initiated', 'abandoned', 'Complete'])
-            ->whereIn('fix_status', ['pending'])
-            ->whereDoesntHave('users.payments', function ($query) use ($edition) {
-                $query->where('registration_status', 'Complete')
-                    ->where('conference_edition_id', $edition->id);
-            })
-            ->take(20)
+            ->whereIn('status', ['Initiated', 'abandoned'])
+            ->where('transid', '!=', 'old_transid')
+            ->whereNull('fix_status')
             ->get()
             ->unique('email');
-
+        
         if(!$tempusers){
             return back()->with([
                 'warning' => 'No Attempted user match'
@@ -61,113 +60,50 @@ class ConferenceUtilityToolsController extends Controller
         }
 
         foreach ($tempusers as $tempuser) {
-            \Log::info(['Fixing Started' => $tempuser->email]);
-
-            DB::beginTransaction();
+            Log::info(['Attempted Fixing Started' => $tempuser->email]);
+            $adminId = auth()->user()->id ?? 0;
 
             try {
                 $request['email'] = $tempuser->email;
                 $validPayment = $this->paystackGetCustomerValidTransactionByEmail($request);
 
                 if (isset($validPayment['transaction']) && $validPayment['success'] == true) {
-                    $valid = $validPayment['transaction'];
-                    $amount = ($valid['amount'] / 100);
-                    $type = $valid['metadata']['type'];
-                    $extras = $this->getExtras($type, $request['setting'], $amount);
-                    $slot = $extras['slot'] ?? null;
-                    $level = $extras['level'] ?? null;
-                    $slot_filled = $extras['slot_filled'] ?? null;
-
-                    $data = [
-                        'name'  => $tempuser->name,
-                        'email' => $tempuser->email,
-                        'phone' => $tempuser->phone,
-                        'level' => $level,
-                        'type' => $type,
-                        'chapter_id' => $tempuser->chapter_id ?? null,
-                        'chapter' => $tempuser->chapter_id ?? null,
-                        'gender' => $tempuser->gender,
-                        'status' => 1,
-                        'registration_status' => 'Complete',
-                        'slot' => $slot,
-                        'slot_filled' => $slot_filled,
-                        'amount_paid' => $amount,
-                        'payment_type' => 'PAYSTACK',
-                        'transid' => $valid['reference'],
-                        'password' => bcrypt($tempuser->phone),
-                        'conference_edition_id' => $request['setting']->id
-                    ];
-
-                    $user = app('App\Http\Controllers\Controller')->createUser($data);
-
-                    if (!$user) {
-                        DB::rollBack();
-                        \Log::error('User creation failed for: ' . $tempuser->email);
-                        continue;
-                    }
-
-                    $payment = app('App\Http\Controllers\Controller')->createPayment($data, $user);
-
-                    if (!$payment) {
-                        DB::rollBack();
-                        \Log::error('Payment creation failed for: ' . $tempuser->email);
-                        continue;
-                    }
-
-                    $chapter = Chapter::with('field:id,name')->select('id', 'field_id')->where('id', $data['chapter_id'])->first();
-                    $data['field_id'] = $chapter->field->id ?? $data['field_id'] ?? null;
-                    $data['setting'] = $request['setting'];
-
-                    $hostel_allocation = HostelAllocationService::assignHostel($data);
-                    $service_point = ServicePointAllocationService::assignFoodStand($data);
-
-                    $data['allocated_hostel_data'] = $hostel_allocation;
-                    $data['allocated_service_point_data'] = $service_point;
-
-                    $payment->update([
-                        'hostel_allocation_number' => $hostel_allocation['hostel_allocation_number'],
-                        'hostel_allocation_type' => $hostel_allocation['hostel_allocation_type'],
-                        'service_point_allocation_number' => $service_point['service_point_allocation_number'],
-                        'service_point_allocation_type' => $service_point['service_point_allocation_type'],
-                        'hostel_id' => $hostel_allocation['hostel_id'],
-                        'food_id' => $service_point['service_point_allocation_id'],
-                        'api_response' => isset($valid) ? json_encode($valid) : null,
-                    ]);
-
-                    $this->createFamilyId($user, $extras['ledge']);
-
+                    // Go and resolve this transaction
                     $tempuser->update([
-                        'status' => 'Complete',
-                        'transid' => $valid['reference'],
-                        'amount' => $amount,
+                        'old_transid' => $tempuser->transid,
+                        'transid' => $validPayment['transaction']['reference']
                     ]);
 
-                    if ($payment->level == 'Moderator') {
-                        $payment->update([
-                            'uploaded_by' => $user->id,
+                    $transactionController = new TransactionController();
+                    $fakeRequest = new Request();
+                    $fakeRequest->merge([
+                        'reference' => $validPayment['transaction']['reference'],
+                        'setting' => $request['setting']
+                    ]);
+
+                    $resolve = $transactionController->resolveTransaction($tempuser, true);
+
+                    if($resolve['status']){
+                        $tempuser->update([
+                            'fix_status' => 'complete',
                         ]);
                     }
-
-                    DB::commit();
-                    $tempuser->fix_status = 'completed';
-                    $tempuser->save();
-                    // $tempuser->update([
-                    //     'fix_status' => 'complete'
-                    // ]);
-
-                    \Log::info('Committed: ' . $payment);
                 } else {
-                    DB::rollBack();
 
-                    $tempuser->fix_status = 'checked';
+                    $tempuser->fix_status = 'closed';
+
+                    $tempuser->resolved_at = now();
+                    $tempuser->resolved_by = $adminId ;
+
                     $tempuser->save();
 
-                    \Log::warning('No valid transaction for: ' . $tempuser->email);
-                    \Log::warning('tempuser: ' . $tempuser);
+                    Log::warning('No valid transaction for: ' . $tempuser->email);
+                    Log::warning('Transaction: ' . $tempuser);
                     continue;
                 }
 
-                $tempuser->fix_status = 'completed';
+
+
                 $tempuser->save();
             } catch (\Throwable $e) {
                 DB::rollBack();
@@ -179,9 +115,7 @@ class ConferenceUtilityToolsController extends Controller
             }
         }
 
-        return back()->with([
-            'message' => 'Attempted registrations processed.'
-        ]);
+        dd('Done processing attempted registrations.');
     }
 
 
@@ -217,13 +151,19 @@ class ConferenceUtilityToolsController extends Controller
             }
 
             $transactions = $transactionsResponse->json('data');
+
             // \Log::info(['transactions' => $transactions]);
             $filtered = collect($transactions)
                 ->filter(function ($tx) use ($request) {
                     $result = $this->getSuccessFullTransaction($tx, $request['setting']);
-                    return isset($tx['metadata']['conference_edition_id'])
-                        && $tx['metadata']['conference_edition_id'] == $request['setting']->id
-                        && $tx['customer']['email'] == $request->email
+                    // return isset($tx['metadata']['conference_edition_id'])
+                    //     && ($tx['metadata']['conference_edition_id'] == $request['setting']->id || Str::contains($tx['reference'], 'GYF'))
+                    //     && $tx['customer']['email'] == $request->email
+                    //     && $result['status'] === true;
+                    $ministryCode = strtoupper($request['setting']->ministry->code);
+                    return Str::contains($tx['reference'], $ministryCode)
+                        && $tx['customer']['email'] === $request->email
+                        && Carbon::parse($tx['paid_at'])->gte(Carbon::parse('2025-11-01 00:00:00'))
                         && $result['status'] === true;
                 })
                 ->map(function ($tx) use ($request) {
@@ -254,9 +194,10 @@ class ConferenceUtilityToolsController extends Controller
 
         foreach ($transactions as $transaction) {
             if (
-                isset($transaction['status'], $transaction['metadata']['conference_edition_id']) &&
-                $transaction['status'] === 'success' &&
-                $transaction['metadata']['conference_edition_id'] == $setting->id
+                // isset($transaction['status'], $transaction['metadata']['conference_edition_id']) &&
+                $transaction['status'] === 'success'
+                // &&
+                // $transaction['metadata']['conference_edition_id'] == $setting->id
             ) {
                 return [
                     'status' => true,

@@ -136,6 +136,7 @@
                                     <option value="">-- Select Action --</option>
                                     <option value="delete">Delete Selected</option>
                                     <option value="resolve">Resolve Selected</option>
+                                    <option value="fix-trans-id">Fix Transaction ID</option>
                                 </select>
                             </div>
 
@@ -184,13 +185,25 @@
                                                 @if(!empty($transaction->provider_reference))
                                                     <small><strong>Prov Ref:</strong> {{ $transaction->provider_reference }}</small><br>
                                                 @endif
+                                                @if($transaction->resolved_at)
+                                                <span style="color: red;">
+                                                    <span class="badge badge-success">Resolved</span>
+                                                    by: {{ $transaction->resolvedBy->fullname ?? 'CRON' }} <br>
+                                                    at: {{ $transaction->resolved_at ? $transaction->resolved_at->format('Y-m-d h:i a') : '' }}
+                                                </span>
+                                                @endif <br>
+                                                @if($transaction->fix_status)
+                                                <strong>Fix Status: </strong>{{$transaction->fix_status}} <br>
+                                                @endif
+                                                {{-- {{dd($transaction)}} --}}
                                                 <span class="badge badge-info">{{ $transaction->status }}</span>
                                                 <span class="badge badge-secondary">{{ $transaction->registration_status }}</span>
                                             </td>
 
                                             <!-- User Info -->
                                             <td>
-                                                <strong>{{ $transaction->name }}</strong>
+                                                <strong>Name: </strong>{{ $transaction->name }} <br>
+                                                <strong>Email: </strong>{{ $transaction->email }}
                                             </td>
 
                                             <!-- Payment Info -->
