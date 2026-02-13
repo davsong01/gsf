@@ -13,17 +13,17 @@ return new class extends Migration
     {
         if (!Schema::hasTable('necs')) {
             Schema::create('necs', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('office')->nullable();
-            $table->string('tenure')->nullable();
-            $table->string('bday')->nullable();
-            $table->string('passport')->nullable();
-            $table->integer('order')->nullable();
-            $table->string('gender')->nullable();
-            $table->timestamps();
+                $table->id();
+                $table->string('name');
+                $table->string('email')->nullable();
+                $table->string('phone')->nullable();
+                $table->string('office')->nullable();
+                $table->string('tenure')->nullable();
+                $table->string('bday')->nullable();
+                $table->string('passport')->nullable();
+                $table->integer('order')->nullable();
+                $table->string('gender')->nullable();
+                $table->timestamps();
             });
         }
     }
