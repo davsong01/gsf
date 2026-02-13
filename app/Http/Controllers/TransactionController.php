@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\TempUser;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Services\ExcelService;
 use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\PaymentController;
@@ -83,7 +84,66 @@ class TransactionController extends Controller
 
         if ($request->input('action') === 'export') {
             $transactions = $mainQuery->get();
-        } else {
+            $headers = [
+                'family_id'                 => 'Family ID',
+                'name'                      => 'Name',
+                'email'                     => 'Email',
+                'phone'                     => 'Phone',
+                'transid'                   => 'Transaction ID',
+                'provider_reference'        => 'Provider Reference',
+                'amount_paid'               => 'Amount',
+                'status'                    => 'Payment Status',
+                'registration_status'       => 'Registration Status',
+
+                'moderator'                 => 'Moderator',
+                'chapter_id'                => 'Chapter',
+                'field_id'                  => 'Field',
+                'zone_id'                   => 'Zone',
+                'gender'                    => 'Gender',
+
+                'level'                     => 'Registration Level',
+                'hostel_allocation_type'    => 'Hostel Allocation Type',
+                'hostel_allocation_number'  => 'Hostel Allocation Number',
+                'hostel_id'                 => 'Hostel Name',
+
+                'food_id'                   => 'Service Point Allocation',
+                'service_point_allocation_type'   => 'Service Point Allocation Type',
+                'service_point_allocation_number' => 'Service Point Allocation Number',
+
+                'conference_edition_id'     => 'Conference Edition',
+                'purpose'                   => 'Purpose',
+                'created_at'                => 'Registration Date',
+            ];
+
+            $data = $transactions->map(function ($transaction) use ($headers) {
+
+                return collect($headers)->mapWithKeys(function ($label, $key) use ($transaction) {
+
+                    return [$label => match (true) {
+
+                        in_array($key, ['chapter_id', 'field_id', 'zone_id']) =>
+                            optional($transaction->allocationFields
+                                ->firstWhere('key', $key))->value,
+
+                        in_array($key, ['hostel_id', 'food_id']) =>
+                            optional($transaction->{$key})->name,
+
+                        $key === 'created_at' =>
+                            optional($transaction->created_at)->format('Y-m-d H:i'),
+
+                        default =>
+                            $transaction->{$key} ?? null,
+                    }];
+                })->toArray();
+
+            });
+            
+            return ExcelService::download(
+                $data->toArray(),
+                array_values($headers),
+                'transactions.xlsx'
+            );
+        }else {
             $transactions = $mainQuery->paginate(50);
         }
 
