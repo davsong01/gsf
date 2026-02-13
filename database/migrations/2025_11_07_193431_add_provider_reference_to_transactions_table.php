@@ -13,7 +13,9 @@ return new class extends Migration
     {
         if (!Schema::hasColumn('transactions', 'provider_reference')) {
             Schema::table('transactions', function (Blueprint $table) {
-                $table->string('provider_reference')->nullable()->after('transid');
+                if (!Schema::hasColumn('transactions', 'provider_reference')) {
+                    $table->string('provider_reference')->nullable()->after('transid');
+                }
             });
         }
     }
@@ -24,7 +26,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->dropColumn('provider_reference');
+            if (Schema::hasColumn('transactions', 'provider_reference')) {
+                $table->dropColumn('provider_reference');
+            }
         });
     }
 };

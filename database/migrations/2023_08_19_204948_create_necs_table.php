@@ -14,15 +14,15 @@ return new class extends Migration
         if (!Schema::hasTable('necs')) {
             Schema::create('necs', function (Blueprint $table) {
                 $table->id();
-                $table->string('name');
-                $table->string('email')->nullable();
-                $table->string('phone')->nullable();
-                $table->string('office')->nullable();
-                $table->string('tenure')->nullable();
-                $table->string('bday')->nullable();
-                $table->string('passport')->nullable();
-                $table->integer('order')->nullable();
-                $table->string('gender')->nullable();
+                if (!Schema::hasColumn('necs', 'name')) $table->string('name');
+                if (!Schema::hasColumn('necs', 'email')) $table->string('email')->nullable();
+                if (!Schema::hasColumn('necs', 'phone')) $table->string('phone')->nullable();
+                if (!Schema::hasColumn('necs', 'office')) $table->string('office')->nullable();
+                if (!Schema::hasColumn('necs', 'tenure')) $table->string('tenure')->nullable();
+                if (!Schema::hasColumn('necs', 'bday')) $table->string('bday')->nullable();
+                if (!Schema::hasColumn('necs', 'passport')) $table->string('passport')->nullable();
+                if (!Schema::hasColumn('necs', 'order')) $table->integer('order')->nullable();
+                if (!Schema::hasColumn('necs', 'gender')) $table->string('gender')->nullable();
                 $table->timestamps();
             });
         }
@@ -33,6 +33,23 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('necs');
+        if (Schema::hasTable('necs')) {
+            $columnsToDrop = [];
+            if (Schema::hasColumn('necs', 'name')) $columnsToDrop[] = 'name';
+            if (Schema::hasColumn('necs', 'email')) $columnsToDrop[] = 'email';
+            if (Schema::hasColumn('necs', 'phone')) $columnsToDrop[] = 'phone';
+            if (Schema::hasColumn('necs', 'office')) $columnsToDrop[] = 'office';
+            if (Schema::hasColumn('necs', 'tenure')) $columnsToDrop[] = 'tenure';
+            if (Schema::hasColumn('necs', 'bday')) $columnsToDrop[] = 'bday';
+            if (Schema::hasColumn('necs', 'passport')) $columnsToDrop[] = 'passport';
+            if (Schema::hasColumn('necs', 'order')) $columnsToDrop[] = 'order';
+            if (Schema::hasColumn('necs', 'gender')) $columnsToDrop[] = 'gender';
+            if (!empty($columnsToDrop)) {
+                Schema::table('necs', function (Blueprint $table) use ($columnsToDrop) {
+                    $table->dropColumn($columnsToDrop);
+                });
+            }
+            Schema::dropIfExists('necs');
+        }
     }
 };

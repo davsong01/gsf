@@ -11,16 +11,20 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('stakeholders', function (Blueprint $table) {
-            $table->softDeletes(); // adds deleted_at
-        });
+        if (!Schema::hasColumn('stakeholders', 'deleted_at')) {
+            Schema::table('stakeholders', function (Blueprint $table) {
+                $table->softDeletes(); // adds deleted_at
+            });
+        }
     }
 
     public function down()
     {
-        Schema::table('stakeholders', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        if (Schema::hasColumn('stakeholders', 'deleted_at')) {
+            Schema::table('stakeholders', function (Blueprint $table) {
+                $table->dropSoftDeletes();
+            });
+        }
     }
 
 };

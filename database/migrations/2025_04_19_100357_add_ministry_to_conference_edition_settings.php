@@ -11,17 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasColumn('conference_editions', 'ministry')) {
-            return;
+        if (!Schema::hasColumn('conference_editions', 'ministry')) {
+            Schema::table('conference_editions', function (Blueprint $table) {
+                if (!Schema::hasColumn('conference_editions', 'ministry')) {
+                    $table->string('ministry')->nullable();
+                }
+            });
         }
-
-        Schema::table('conference_editions', function (Blueprint $table) {
-            $table->string('ministry')->nullable();
-        });
-        
-        Schema::table('conference_editions', function (Blueprint $table) {
-            //
-        });
     }
 
     /**
@@ -29,8 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('conference_edition_settings', function (Blueprint $table) {
-            //
-        });
+        if (Schema::hasColumn('conference_editions', 'ministry')) {
+            Schema::table('conference_editions', function (Blueprint $table) {
+                $table->dropColumn('ministry');
+            });
+        }
     }
 };

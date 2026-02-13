@@ -13,13 +13,17 @@ return new class extends Migration
     {
         if (!Schema::hasColumn('temp_members', 'marital_status')) {
             Schema::table('temp_members', function (Blueprint $table) {
-                $table->string('marital_status')->nullable();
+                if (!Schema::hasColumn('temp_members', 'marital_status')) {
+                    $table->string('marital_status')->nullable();
+                }
             });
         }
 
         if (!Schema::hasColumn('temp_members', 'date_of_birth')) {
             Schema::table('temp_members', function (Blueprint $table) {
-                $table->string('date_of_birth')->nullable();
+                if (!Schema::hasColumn('temp_members', 'date_of_birth')) {
+                    $table->string('date_of_birth')->nullable();
+                }
             });
         }
     }
@@ -30,8 +34,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('temp_members', function (Blueprint $table) {
-            $table->dropColumn("marital_status");
-            $table->dropColumn("date_of_birth");
-        }); 
+            if (Schema::hasColumn('temp_members', 'marital_status')) {
+                $table->dropColumn("marital_status");
+            }
+            if (Schema::hasColumn('temp_members', 'date_of_birth')) {
+                $table->dropColumn("date_of_birth");
+            }
+        });
     }
 };

@@ -13,22 +13,22 @@ return new class extends Migration
     {
         if (!Schema::hasTable('ministry_fields')) {
             Schema::create('ministry_fields', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('ministry_id');
-            $table->enum('field_usage',['registration','allocation','both'])->default('both');
+                $table->id();
+                $table->foreignId('ministry_id');
+                $table->enum('field_usage',['registration','allocation','both'])->default('both');
 
-            $table->string('name'); // field key
-            $table->string('label');
-            $table->integer('display_order')->nullable();
-            $table->enum('type', ['text', 'number', 'email', 'select', 'textarea', 'checkbox', 'radio']);
-            $table->json('options')->nullable(); // for select/radio/checkbox
-            $table->json('registration_types'); // e.g., [1,2]
-            $table->boolean('required')->default(false);
-            $table->boolean('status')->default(true);
-            $table->boolean('has_other_option')->default(false);
-            $table->string('onchange')->nullable();
-            $table->json('depends_on')->nullable(); // conditional logic
-            $table->timestamps();
+                $table->string('name'); // field key
+                $table->string('label');
+                $table->integer('display_order')->nullable();
+                $table->enum('type', ['text', 'number', 'email', 'select', 'textarea', 'checkbox', 'radio']);
+                $table->json('options')->nullable(); // for select/radio/checkbox
+                $table->json('registration_types'); // e.g., [1,2]
+                $table->boolean('required')->default(false);
+                $table->boolean('status')->default(true);
+                $table->boolean('has_other_option')->default(false);
+                $table->string('onchange')->nullable();
+                $table->json('depends_on')->nullable(); // conditional logic
+                $table->timestamps();
             });
         }
     }
@@ -38,6 +38,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ministry_fields');
+        if (Schema::hasTable('ministry_fields')) {
+            Schema::dropIfExists('ministry_fields');
+        }
     }
 };
