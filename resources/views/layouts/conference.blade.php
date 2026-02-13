@@ -11,21 +11,28 @@
                     <h5 style="color:blue">{{ $edition->conference_theme }} Conference Edition</h5>
                     <ul class="nav nav-tabs">
                       @if(isset($edition))
-                      
+
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('showedition*') ? 'active' : '' }}" href="{{ route('show.conference.edition',['id'=>$edition->id]) }}">Dashboard</a>
                         </li>
-                        
-                        @if($edition->conferenceplans)
-                            @foreach($edition->conferenceplans as $plan)
+                        <li class="nav-item">
+                          <a class="nav-link {{ Request::is('conference-transactions*') ? 'active' : '' }}" href="{{ route('conference.transactions',['edition'=>$edition->id]) }}">Transactions</a>
+                        </li>
+                        @if($edition->conferenceplans && $edition->conferenceplans->where('status', 1)->count())
+                            @foreach($edition->conferenceplans->where('status', 1) as $plan)
                                 <li class="nav-item">
-                                    <a class="nav-link {{ Request::is('conferenceparticipants/'.$plan->level.'*') ? 'active' : '' }}"
-                                      href="{{ route('conference.participants', ['type' => $plan->level, 'edition' => $edition->id]) }}">
-                                        {{ $plan->level }}
+                                    <a class="nav-link {{ Request::is('conferenceparticipants/'.$plan->level.'/'.$edition->id.'/'.$plan->slug) ? 'active' : '' }}"
+                                    href="{{ route('conference.participants', [
+                                            'type' => $plan->level,
+                                            'edition' => $edition->id,
+                                            'slug' => $plan->slug
+                                    ]) }}">
+                                        {{ $plan->title }}
                                     </a>
                                 </li>
                             @endforeach
                         @endif
+
 
                         {{-- <li class="nav-item">
                           <a class="nav-link {{ Request::is('donations*') ? 'active' : '' }}" href="{{ route('donations.index',['edition'=>$edition->id]) }}">Donations</a>
@@ -39,7 +46,7 @@
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('trashed*') ? 'active' : '' }}" href="{{ route('conferenceparticipants.trashed',['edition'=>$edition->id]) }}">Trashed Participants</a>
                         </li>
-                          
+
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('email*') ? 'active' : '' }}" href="{{ route('email.index', ['edition'=>$edition->id]) }}">Email Participants</a>
                         </li>
@@ -47,7 +54,7 @@
                         <li class="nav-item">
                             <a class="nav-link {{ Request::is('materials*') ? 'active' : '' }}" href="{{ route('materials.index',['edition'=>$edition->id]) }}">Materials</a>
                         </li>
-                        
+
                         <li class="nav-item">
                           <a onclick="return confirm('Are you sure?')" class="nav-link {{ Request::is('conferenceusers/export*') ? 'active' : '' }}" href="{{ route('conferenceusers.export',['edition'=>$edition->id]) }}">Export</a>
                         </li>
@@ -55,7 +62,7 @@
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('conferencestaff*') ? 'active' : '' }}" href="{{ route('conference.staff', $edition->id) }}">Conference Staff</a>
                         </li>
-            
+
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('conference-plans*') ? 'active' : '' }}" href="{{ route('conference_plans.index', $edition->id) }}">Conference Plans</a>
                         </li>
@@ -69,11 +76,11 @@
                           <a class="nav-link {{ Request::is('conferenceutilitytools*') ? 'active' : '' }}" href="{{ route('conference.utility.tools', ['edition'=>$edition->id]) }}">Utility Tools</a>
                         </li>
                         @endif
-                        
+
                       @endif
                       </ul>
                 </div>
-                
+
                 @yield('content2')
             </div>
 

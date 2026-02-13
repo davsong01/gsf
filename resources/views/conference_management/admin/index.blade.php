@@ -20,21 +20,22 @@
                             <h3 class="mb-0"></h3>
                         </div>
                     </div>
-                    
+
             </div>
         </div>
 
         @if($plans)
             @foreach($plans as $plan)
+            {{-- {{dd($plan->slug)}} --}}
             <div class="col-md-3 col-12 dashboard-users-success">
                 <div class="card text-center">
-                    <a href="{{ route('conference.participants',['type'=>$plan->level, 'edition'=>$edition->id]) }}">
+                    <a href="{{ route('conference.participants',['type'=>$plan->level, 'edition'=>$edition->id, 'slug' => $plan->slug]) }}">
                         <div class="card-content">
                             <div class="card-body py-1">
                                 <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
                                     {{ $plan->registered->where('status','Complete')->count() }}
                                 </div>
-                                <div class="text-muted line-ellipsis">{{ $plan->level }}</div>
+                                <div class="text-muted line-ellipsis">{{ $plan->title }}</div>
                                 <h3 class="mb-0"></h3>
                             </div>
                         </div>
@@ -63,8 +64,8 @@
             </div>
         </div>
         <div class="col-md-3 col-12 dashboard-users-success">
-            <div class="card text-center">
-                <a href="{{ route('users.index') }}">
+                <div class="card text-center">
+                    <a href="{{ route('conference.transactions', ['edition'=>$edition->id, 'status'=>'pending']) }}">
                     <div class="card-content">
                         <div class="card-body py-1">
                             <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
@@ -77,11 +78,11 @@
                 </a>
             </div>
         </div>
-       
+
         <div class="col-md-3 col-12 dashboard-users-success">
             <div class="card text-center">
                     <a href="{{ route('donations.index',['edition'=>$edition->id]) }}">
-                
+
                     <div class="card-content">
                         <div class="card-body py-1">
                             <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
@@ -140,7 +141,7 @@
 
                         function updateChart(labels, datasets) {
                             if (chartInstance) {
-                                chartInstance.destroy(); 
+                                chartInstance.destroy();
                             }
 
                             chartInstance = new Chart(ctx, {

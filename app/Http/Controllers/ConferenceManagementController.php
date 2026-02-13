@@ -306,7 +306,7 @@ class ConferenceManagementController extends Controller
 				'content' => app('App\Http\Controllers\CriticalEmailController')->getContent($data),
 			];
 			$this->logEmail($email);
-			return redirect(route('conference.participants', ['type' => $payment->level, 'edition' => $setting]))->with('message', 'Participant successfully created');
+			return redirect(route('conference.participants', ['type' => $payment->level, 'edition' => $setting, 'slug' => $payment->slug]))->with('message', 'Participant successfully created');
 		}
 
 		$plan = ConferencePlan::where('status', 1)->where('conference_edition_id', $setting->id)->where('level', 'Participant')->first();
@@ -767,7 +767,7 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-	public function participants($type = '', $edition = '')
+	public function participants($type = '', $edition = '', $slug = '')
 	{
 		$count = 1;
 

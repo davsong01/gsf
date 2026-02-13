@@ -54,9 +54,9 @@ class PaymentController extends Controller
 	public function checkout(Request $request){
 		$setting = activeConferenceEdition();
 		$this->frontend = frontendTemplate();
-		
+
 		$plan = ConferencePlan::where('status', 1)->where('id', $request->conference_plan_id)->where('conference_edition_id', $setting->id)->first();
-		
+
 		if(!$plan){
 			return back()->with('message', 'Invalid registration plan');
 		}
@@ -67,20 +67,20 @@ class PaymentController extends Controller
 		if(!in_array($plan->type, ['donation'])){
 			$request['amount'] = $plan->price;
 		}
-		
+
 		if (in_array($plan->type, ['multiple'])) {
 			$request['amount'] = $plan->price * ($request->no_of_participants ?? $request->participants);
 		}
-		
+
 
 		$request['plan'] = $plan;
-		
+
 		$transaction = PaymentService::initializeTransaction($request->all());
-		
+
 		if(!$transaction['status']){
 			return back()->with('error', $transaction['message'] ?? '');
 		}
-		
+
 		if ($setting->lock_online_payment == 'yes') {
 			return back()->with('message', 'Details received. Please make payment at the registration stand at the venue and show the registration officer your email address: ' . $request->email);
 		}
@@ -96,7 +96,7 @@ class PaymentController extends Controller
 	public function showCheckout(Transaction $transaction){
 		$setting = $transaction->edition;
 		$transaction->load('conferenceplan');
-		
+
 		$transaction->update(['transid' => strtoupper($setting->ministry->code) . '-' . PaymentService::generateTransactionId()]);
 		$paymentProvider = $transaction->paymentprovider;
 
@@ -107,16 +107,16 @@ class PaymentController extends Controller
 	public function handleGatewayCallback(Request $request, $reference)
 	{
 		$admin = $request->admin;
-		
+
 		$setting = $request['setting'] ?? activeConferenceEdition();
 		$extraData = [
 			'conference_year' => Carbon::parse($setting->start_date)->year,
 		];
-		
+
 		$transaction = Transaction::with(['user', 'paymentprovider', 'edition','conferenceplan', 'allocationFields'])
 			->where('transid', $reference)
 			->first();
-		
+
 		if (!$transaction) {
 			return response()->json(['error' => 'Transaction not found'], 404);
 		}
@@ -129,12 +129,12 @@ class PaymentController extends Controller
 		}
 
 		$verify = $this->verify($transaction);
-		
+        dd($verify);
 		$transaction->update([
 			'api_response' => $verify['message'] ?? null,
 			'provider_reference' => $verify['provider_reference'] ?? null,
 		]);
-		
+
 		// Stop early if verification failed and no manual confirmation
 		if (!$verify['status'] && empty($transfer_confirm) && empty($onsite_confirm)) {
 			if ($admin !== 'admin') {
@@ -236,7 +236,7 @@ class PaymentController extends Controller
 
 	public function thankYouPage($transaction, $extraData){
 		$transaction->fresh();
-		
+
 		if(!empty($transaction->edition)){
             return view('frontend.conference.template'. $transaction->edition->template_id.'.thankyou', compact('transaction', 'extraData'));
 		}else{
@@ -257,7 +257,7 @@ class PaymentController extends Controller
 	public function verify($transaction)
 	{
 		$provider = $transaction->paymentprovider->slug;
-		
+
 		if($provider == 'paystack'){
 			return PaystackService::verify($transaction);
 		}
@@ -271,7 +271,7 @@ class PaymentController extends Controller
 	{
 		$transaction = Transaction::where('transid', $request->transid)->first();
 		$provider = $transaction->paymentprovider->slug;
-		
+
 		if ($provider == 'paystack') {
 			return PaystackService::verify($transaction);
 		}
@@ -287,7 +287,7 @@ class PaymentController extends Controller
 
 		if(WebhookVerificationService::verifyWebhook($provider, $request->all())['status']){
 			$data = $request->all();
-			
+
 			Webhook::updateOrCreate([
 				'reference' => $data['data']['reference'],
 			],[
@@ -305,7 +305,7 @@ class PaymentController extends Controller
 	public function analyze(Request $request){
 		// Get all pending payments
 		$pendingPayments = Webhook::where('status', 'pending')->get();
-		
+
 		if($pendingPayments){
 			foreach($pendingPayments as $payment){
 				$user = Transaction::where('email', $payment->customer_email)->where('status', '!=', 'Complete')->first();

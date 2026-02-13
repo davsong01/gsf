@@ -294,11 +294,15 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     //Conference management
     Route::resource('conferencemanagement', ConferenceManagementController::class);
-    Route::get('tempusers', [TransactionController::class, 'attemptedTransactions'])->name('tempusers.index');
+    // Route::get('tempusers', [TransactionController::class, 'attemptedTransactions'])->name('tempusers.index');
 
     Route::post('fetch-transaction', [PaymentController::class, 'paystackGetCustomerIdByEmail'])->name('admin.transactions.fetch');
 
     Route::controller(TransactionController::class)->group(function () {
+        Route::get('conference-transactions/{edition?}', 'transactions')->name('conference.transactions');
+        // Route::get('conference-transaction-delete/{id}/{edition}', 'destroyTransaction')->name('conference.transaction.delete');
+        Route::any('transaction-bulk-action/{edition}', 'bulkAction')->name('conference.transactions.bulkAction');
+
         Route::get('tempusers-transfer-confirm/{id}', 'confirmTransfer')->name('tempusers.transfer.confirm');
         Route::get('tempusers-onsite-confirm/{id}', 'confirmOnSiteTransfer')->name('tempusers.onsite.confirm');
 
@@ -325,7 +329,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::post('participants-import', 'import')->name('conferenceusers.import');
         Route::post('conference-users-export/{type}', 'import')->name('conferenceuser.import');
         Route::post('admin-conference-users-export/{type}', 'adminImport')->name('admin.conferenceuser.import');
-        Route::get('conferenceparticipants/{type?}/{edition?}', 'participants')->name('conference.participants');
+        Route::get('conferenceparticipants/{type?}/{edition?}/{slug?}', 'participants')->name('conference.participants');
         Route::get('create-conferenceparticipants/{edition?}', 'create')->name('conference.participants.create');
         Route::post('store-conferenceparticipants/{edition?}', 'store')->name('conference.participants.store');
         Route::get('edit-conferenceparticipants/{id}/edit/{edition?}', 'edit')->name('conference.participants.edit');
