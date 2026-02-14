@@ -128,6 +128,9 @@ class TransactionController extends Controller
                         in_array($key, ['hostel_id', 'food_id']) =>
                             optional($transaction->{$key})->name,
 
+                        in_array($key, ['family_id']) =>
+                            optional($transaction->user)->family_id,
+
                         $key === 'created_at' =>
                             optional($transaction->created_at)->format('Y-m-d H:i'),
 
@@ -137,7 +140,7 @@ class TransactionController extends Controller
                 })->toArray();
 
             });
-            
+
             return ExcelService::download(
                 $data->toArray(),
                 array_values($headers),
