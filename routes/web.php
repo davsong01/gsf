@@ -539,6 +539,10 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
         Route::get('/login', 'showStakeholderLoginForm')->name('loginpage');
         Route::post('/login', 'stakeHolderLogin')->name('login');
         Route::get('/logout', 'logout')->name('logout');
+
+        Route::get('/forgot-password', 'showForgotPasswordForm')->name('forgot-password');
+        Route::post('/send-forgot-password-link', 'sendForgotPasswordLink')->name('forgot-password.send');
+        Route::post('/forgot-password', 'handleForgotPassword')->name('handle-forgot-password');
     });
 
     // Routes requiring stakeholder authentication

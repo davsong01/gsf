@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use App\Enums\OtpTypeEnum;
+use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\ForgotPasswordService;
 
 class StakeholderLoginController extends Controller
 {
@@ -85,4 +88,49 @@ class StakeholderLoginController extends Controller
             ->with('error', $message ?? 'Login failed, please try again with the right credentials!');
     }
 
+    public function showForgotPasswordForm()
+    {
+        return view('auth.stakeholder.forgot-password');
+    }
+
+    public function sendForgotPasswordLink(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:stakeholders,email',
+        ]);
+        if($request->user_type == 'stakeholder'){
+            $user = Stakeholder::where('email', $request->email)->first();
+        } else {
+            return back()->withErrors(['email' => 'Invalid user type.']);
+        }
+
+        ForgotPasswordService::getOrCreateValidOtp($user, OtpTypeEnum::FORGOT_PASSWORD);
+        $isSent = true;
+
+        return back()->with('message', 'Enter the OTP sent to your email.', compact('isSent'));
+    }
+
+    public function verifyOtp($user_id, $type)
+    {
+        $user = VaUser::findOrFail($user_id);
+        $type = OtpTypeEnum::from($type);
+
+        if($type == OtpTypeEnum::SIGNUP_VERIFICATION){
+            if ($user->email_verified_at) {
+                return redirect()->route('va.login')
+                    ->with('success', 'Your email is already verified.');
+            }
+        }
+
+        $otp = OtpService::getOrCreateValidOtp($user, $type);
+
+        return view('va.pages.otp_verification', [
+            'user' => $user,
+            'otp' => $otp,
+            'expiresAt' => $otp->expires_at->timestamp,
+            'title' => 'Verify Your Email',
+            'text' => 'Enter the 6-digit OTP sent to your email to complete your registration.',
+            'isExpired' => false,
+        ]);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Otp;
 use App\Models\Zone;
 use App\Models\Field;
 use App\Models\Chapter;
@@ -100,4 +101,10 @@ class Stakeholder extends Authenticatable
         return $this->permissions()
             ->contains('slug', $permission);
     }
+
+    public function otps()
+    {
+        return $this->morphMany(Otp::class, 'userable');
+    }
+
 }

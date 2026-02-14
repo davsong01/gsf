@@ -3,6 +3,7 @@ namespace App\Services;
 
 use App\Models\CriticalEmail;
 use App\Mail\NotificationEmail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class EmailService {
@@ -169,6 +170,7 @@ class EmailService {
         }
 
         CriticalEmail::insert($insert);
+
     }
 
     /**
@@ -206,7 +208,7 @@ class EmailService {
                 'message' => 'success'
             ];
         } catch (\Exception $e) {
-            \Log::error($e->getMessage());
+            Log::error($e->getMessage());
             return [
                 'status' => false,
                 'error' => $e->getMessage(),

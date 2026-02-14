@@ -29,7 +29,7 @@ class NotificationEmail extends Mailable
             return $this->markdown('emails.notification')
             ->subject($this->data['subject']);
         }
-        
+
         if(isset($this->data['type']) && $this->data['type'] == 'payment_made'){
             return $this->markdown('emails.notification')
             ->subject($this->data['subject']);
@@ -76,7 +76,7 @@ class NotificationEmail extends Mailable
             return $this->markdown('emails.notification')
             ->subject('New Payment report from '. $this->data['chapter']);
         }
-        
+
         if(isset($this->data['type']) && $this->data['type'] == 'email'){
             return $this->markdown('emails.notification')
             ->subject($this->data['subject']);
@@ -86,7 +86,7 @@ class NotificationEmail extends Mailable
             return $this->markdown('emails.notification')
             ->subject($this->data['subject']);
         }
-        
+
         if(!isset($this->data['type']) && $this->data['type'] == 0){
             return $this->markdown('emails.notification')
             ->subject($this->data['subject']);
@@ -117,7 +117,7 @@ class NotificationEmail extends Mailable
             return $this->markdown('emails.welcomeMail')
             ->subject('New Registration');
         }
-        
+
         if (isset($this->data['type']) && $this->data['type'] == 'conference_registration_welcome_mail') {
             return $this->markdown('emails.welcomeMail')->subject('Thank you for registering');
         }
@@ -128,7 +128,7 @@ class NotificationEmail extends Mailable
 
         if (
             isset($this->data['type']) &&
-            $this->data['type'] === 'report_email'
+            in_array($this->data['type'], ['report_email', 'forgot-password'])
         ) {
             $mail = $this->markdown('emails.generic')
                 ->subject($this->data['subject']);
