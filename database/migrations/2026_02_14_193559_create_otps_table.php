@@ -7,21 +7,23 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('otps', function (Blueprint $table) {
-            $table->id();
+        if (Schema::hasTable('otps')) {
+            Schema::create('otps', function (Blueprint $table) {
+                $table->id();
 
-            $table->unsignedBigInteger('userable_id');
-            $table->string('userable_type', 100);
-            $table->index(['userable_id', 'userable_type']);
+                $table->unsignedBigInteger('userable_id');
+                $table->string('userable_type', 100);
+                $table->index(['userable_id', 'userable_type']);
 
-            $table->string('otp', 30);
-            $table->string('type', 50);
+                $table->string('otp', 30);
+                $table->string('type', 50);
 
-            $table->timestamp('expires_at')->index();
+                $table->timestamp('expires_at')->index();
 
-            $table->timestamps();
-            $table->index(['userable_id', 'userable_type', 'type']);
-        });
+                $table->timestamps();
+                $table->index(['userable_id', 'userable_type', 'type']);
+            });
+        }
     }
 
     public function down(): void
