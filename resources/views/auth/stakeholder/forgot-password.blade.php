@@ -51,8 +51,9 @@
                         </div>
 
                         {{-- Submit --}}
+                        {{-- {{dd($isSent)}} --}}
                         <button type="submit" class="btn btn-block btn-primary">
-                            Send Reset Code
+                            {{ 'Send Reset Code' }}
                         </button>
                         <input type="hidden" name="user_type" value="stakeholder">
                         {{-- Back to login --}}
@@ -62,7 +63,6 @@
                             </a>
                         </div>
                     </form>
-
                 </div>
             </div>
 

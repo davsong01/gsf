@@ -140,6 +140,50 @@ class EmailService {
 
         $insert = [];
 
+        if (!empty($data['priority']) && $data['priority'] == 1) {
+            $type = $data['type'];
+
+            $subject = $data['subject'] ?? $emailContent['subject'];
+            $content = $data['content'] ?? $emailContent['content'];
+
+            $record = CriticalEmail::create([
+                'recipient' => $data['recipient'],
+                'type' => $type,
+                'conference_edition_id' => $transaction->conference_edition_id ?? null,
+                'subject' => $subject,
+                'attachments' => !empty($data['attachments']) ? json_encode($data['attachments']) : null,
+                'content' => $content,
+            ]);
+
+            $data['settings'] = $record->settings ?? null;
+            $data['type'] = $record->type;
+            $data['recipient'] = $record->recipient;
+            $data['content'] = $record->content;
+            $data['subject'] = $record->subject;
+            $data['attachments'] = $record->attachments;
+
+            $res = EmailService::sendEmail($data);
+
+            if (isset($res['status'])) {
+                $record->update([
+                    'status' => 1,
+                    'sent_at' => now(),
+                    'errors' => NULL,
+                ]);
+            } else {
+                $record->update([
+                    'errors' => $res['error'] ?? null,
+                ]);
+            }
+
+
+            return [
+                'status' => $res['status'] ?? false,
+                'record' => $record->fresh(),
+                'response'  => $res
+            ];
+        }
+
         if(in_array($data['type'], ['conference_bulk_email'])){
             $recipients = $data['recipients'] ?? null;
             foreach($recipients as $recipient){

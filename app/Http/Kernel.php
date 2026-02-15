@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\OtpMiddleware;
 use App\Http\Middleware\StakeholderMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
@@ -68,5 +69,7 @@ class Kernel extends HttpKernel
         'isAdmin' => \App\Http\Middleware\isAdmin::class,
         'stakeholder' => StakeholderMiddleware::class,
         'SwitchUser' => \App\Http\Middleware\SwitchUser::class,
+        'otp' => OtpMiddleware::class,
+
     ];
 }

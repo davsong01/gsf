@@ -533,6 +533,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
 });
 
+// Route::get('verify-otp/{otp_id}/{type}', [StakeholderLoginController::class,'verifyOtp'])->name('stakverify.otp');
+
 Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
     // Stakeholder Login Routes
     Route::controller(StakeholderLoginController::class)->group(function () {
@@ -542,7 +544,12 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
 
         Route::get('/forgot-password', 'showForgotPasswordForm')->name('forgot-password');
         Route::post('/send-forgot-password-link', 'sendForgotPasswordLink')->name('forgot-password.send');
-        Route::post('/forgot-password', 'handleForgotPassword')->name('handle-forgot-password');
+
+        Route::post('/verify-otp', 'verifyOtp')->name('verify.otp');
+        Route::post('/resend-otp', 'resendOtp')->name('resend.otp');
+
+        Route::post('reset-password', 'resetPassword')->name('reset-password.submit');
+        Route::get('reset-password/{user}/{type}', 'showResetPasswordForm')->middleware('otp')->name('reset-password');
     });
 
     // Routes requiring stakeholder authentication

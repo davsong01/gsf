@@ -16,6 +16,7 @@ class Otp extends Model
         'expires_at' => 'datetime',
     ];
 
+
     public function userable()
     {
         return $this->morphTo();

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
 use App\Enums\OtpTypeEnum;
 use App\Models\Stakeholder;
+use App\Services\OtpService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Services\ForgotPasswordService;
+use Illuminate\Support\Facades\Auth;
 
 class StakeholderLoginController extends Controller
 {
@@ -64,23 +64,6 @@ class StakeholderLoginController extends Controller
         return $this->loginFailed();
     }
 
-    private function validator(Request $request)
-    {
-        //validation rules.
-        $rules = [
-            'email'    => 'required|email|exists:stakeholders|min:5|max:191',
-            'password' => 'required|string|min:4|max:255',
-        ];
-
-        //custom validation error messages.
-        $messages = [
-            'email.exists' => 'These credentials do not match our records.',
-        ];
-
-        //validate the request.
-        $request->validate($rules,$messages);
-    }
-
     private function loginFailed($message=null){
         return redirect()
             ->back()
@@ -90,13 +73,15 @@ class StakeholderLoginController extends Controller
 
     public function showForgotPasswordForm()
     {
-        return view('auth.stakeholder.forgot-password');
+        $isSent = false;
+        return view('auth.stakeholder.forgot-password', compact('isSent'));
     }
 
     public function sendForgotPasswordLink(Request $request)
     {
+        $table = 'stakeholders';
         $request->validate([
-            'email' => 'required|email|exists:stakeholders,email',
+            'email' => "required|email|exists:{$table},email",
         ]);
         if($request->user_type == 'stakeholder'){
             $user = Stakeholder::where('email', $request->email)->first();
@@ -104,33 +89,81 @@ class StakeholderLoginController extends Controller
             return back()->withErrors(['email' => 'Invalid user type.']);
         }
 
-        ForgotPasswordService::getOrCreateValidOtp($user, OtpTypeEnum::FORGOT_PASSWORD);
-        $isSent = true;
+        $sentOtp = OtpService::getOrCreateValidOtp($user, OtpTypeEnum::FORGOT_PASSWORD);
+        $otp = $sentOtp['otp'] ?? null;
 
-        return back()->with('message', 'Enter the OTP sent to your email.', compact('isSent'));
-    }
-
-    public function verifyOtp($user_id, $type)
-    {
-        $user = VaUser::findOrFail($user_id);
-        $type = OtpTypeEnum::from($type);
-
-        if($type == OtpTypeEnum::SIGNUP_VERIFICATION){
-            if ($user->email_verified_at) {
-                return redirect()->route('va.login')
-                    ->with('success', 'Your email is already verified.');
-            }
-        }
-
-        $otp = OtpService::getOrCreateValidOtp($user, $type);
-
-        return view('va.pages.otp_verification', [
+        return view('auth.stakeholder.otp_verification', [
             'user' => $user,
             'otp' => $otp,
-            'expiresAt' => $otp->expires_at->timestamp,
-            'title' => 'Verify Your Email',
-            'text' => 'Enter the 6-digit OTP sent to your email to complete your registration.',
+            'expiresAt' => $otp->expires_at->timestamp ?? null,
+            'title' => 'Verify OTP Code',
+            'text' => 'Enter the 6-digit OTP sent to your email to complete your password reset.',
             'isExpired' => false,
         ]);
+    }
+
+    public function resendOtp(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:stakeholders,id',
+            'type' => 'required|string'
+        ]);
+
+        $user = Stakeholder::findOrFail($request->user_id);
+
+        $sentOtp = OtpService::getOrCreateValidOtp(
+            $user,
+            OtpTypeEnum::FORGOT_PASSWORD,
+            true
+        );
+
+        $otp = $sentOtp['otp'] ?? null;
+
+        if (!$otp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to resend OTP.'
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'OTP resent successfully.',
+            'expires_at' => $otp->expires_at->timestamp,
+            'otp_id' => $otp->id
+        ]);
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $user = Stakeholder::find($request->user_id);
+        $type = $request->type;
+        $otp = $request->otp;
+
+        return OtpService::verifyOtp($user, $otp, $type);
+    }
+
+    public function showResetPasswordForm($user_id)
+    {
+        $user = Stakeholder::findOrFail($user_id);
+        return view('auth.stakeholder.reset-password', compact('user'));
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|min:6',
+        ]);
+
+        $user_id = session('user_idz')['value'] ?? null;
+
+        $user = Stakeholder::findOrFail($user_id);
+        
+        $user->password = bcrypt($request->password);
+        $user->save();
+
+        session()->forget('otpx___');
+        session()->forget('user_idz');
+        return redirect()->route('stakeholders.login')->with('message', 'Password reset successful! Please login with your new password.');
     }
 }

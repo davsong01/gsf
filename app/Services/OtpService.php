@@ -10,44 +10,62 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
 
-class ForgotPasswordService
+class OtpService
 {
     /* =========================
         PUBLIC METHODS
     ========================== */
 
-    public static function getOrCreateValidOtp(
-        Model $user,
-        OtpTypeEnum $type,
-        int $length = 6,
-        int $expiryMinutes = 15
-    ) {
-        $otp = self::otpQuery($user)
-            ->where('type', $type->value)
-            ->latest()
-            ->first();
+   public static function getOrCreateValidOtp(Model $user, OtpTypeEnum $type, bool $isResent = false, int $length = 6, int $expiryMinutes = 15): array {
 
-        if ($otp && !$otp->expires_at->isPast()) {
-            return $otp;
-        }
+    $query = self::otpQuery($user)
+        ->where('type', $type->value)
+        ->latest();
 
+    $otp = $query->first();
+
+    // If resend is requested → always generate fresh OTP
+    if ($isResent) {
         if ($otp) {
             $otp->delete();
         }
 
         $data = self::createAndSendOtp($user, $type, $length, $expiryMinutes);
 
-        self::sendOtp(
-            $user,
-            $type->value,
-            $data
-        );
+        self::sendOtp($user, $type->value, $data);
 
-        return $otp;
+        return [
+            'status' => 'resent',
+            'otp' => $data['otp'],
+        ];
     }
 
+    // If valid OTP exists → reuse it
+    if ($otp && !$otp->expires_at->isPast()) {
+        return [
+            'status' => 'existing',
+            'otp' => $otp,
+        ];
+    }
 
-    public function verifyOtp(Model $user, string $otp, string $type = 'forgot-password'): bool
+    // Expired OTP → delete
+    if ($otp) {
+        $otp->delete();
+    }
+
+    // Create new OTP
+    $data = self::createAndSendOtp($user, $type, $length, $expiryMinutes);
+
+    self::sendOtp($user, $type->value, $data);
+
+    return [
+        'status' => 'created',
+        'otp' => $data['otp'],
+    ];
+}
+
+
+    public static function verifyOtp(Model $user, string $otp, string $type = 'forgot-password'): array
     {
         $record = Otp::where('userable_id', $user->id)
             ->where('userable_type', get_class($user))
@@ -57,11 +75,47 @@ class ForgotPasswordService
             ->first();
 
         if (! $record) {
-            return false;
+            return [
+                'success' => false,
+                'errors' => ['otp' => ['Invalid OTP provided.']],
+            ];
         }
 
+        if ($record->expires_at->isPast()) {
+            $record->delete();
+            return [
+                'success' => false,
+                'errors' => ['otp' => ['OTP has expired. Please request a new one.']],
+            ];
+        }
+
+
         $record->delete();
-        return true;
+
+        $expiryMinutes = 15;
+
+        session()->put('otpx___', [
+            'value' => true,
+            'expires_at' => now()->addMinutes($expiryMinutes)
+        ]);
+
+        session()->put('user_idz', [
+            'value' => $user->id, // store just the id
+            'expires_at' => now()->addMinutes($expiryMinutes)
+        ]);
+
+        if($type == OtpTypeEnum::FORGOT_PASSWORD->value){
+            return [
+                'success' => true,
+                'redirect_url' => route('stakeholders.reset-password', ['user' => $user->id, 'type' => $type]),
+                'message' => 'Email verified successfully!',
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'OTP verified successfully!',
+        ];
     }
 
 
@@ -78,7 +132,7 @@ class ForgotPasswordService
 
         $otpCode = self::generateOtpCode($length);
 
-        $user->otps()->create([
+        $otp = $user->otps()->create([
             'otp' => $otpCode,
             'type' => $type->value,
             'expires_at' => now()->addMinutes($expiryMinutes),
@@ -87,7 +141,7 @@ class ForgotPasswordService
         $message = self::buildMessage($user, $otpCode, $type);
 
         return [
-            'otp' => $otpCode,
+            'otp' => $otp,
             'type' => $type->value,
             'message' => $message
         ];
@@ -154,19 +208,18 @@ class ForgotPasswordService
 
     public static function sendOtp($user, $type, $data)
     {
-        $emailsToQueue[] = [
+        $emailsToQueue = [
             'type' => $type,
             'recipient' => $user->email,
             'subject' => $data['message']['subject'] ?? '',
             'content' => $data['message']['content'] ?? '',
+            'type'       => 'otp',
+            'priority'       => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ];
 
-        $log = EmailService::logEmail([
-            'type'       => 'report_email',
-            'recipients' => $emailsToQueue,
-        ]);
+        $log = EmailService::logEmail($emailsToQueue);
 
         return $log;
     }
