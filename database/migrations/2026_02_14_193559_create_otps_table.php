@@ -10,11 +10,12 @@ return new class extends Migration {
         Schema::create('otps', function (Blueprint $table) {
             $table->id();
 
-            $table->morphs('userable');
-            // creates: userable_id & userable_type
+            $table->unsignedBigInteger('userable_id');
+            $table->string('userable_type', 100);
+            $table->index(['userable_id', 'userable_type']);
 
             $table->string('otp', 30);
-            $table->string('type'); // signup_verification, forgot_password, login_otp
+            $table->string('type', 50);
 
             $table->timestamp('expires_at')->index();
 
