@@ -1,132 +1,161 @@
-@props(['route' => null, 'level' => null, 'type' => null, 'allowProductCollapse' => false])
+@props(['route' => null, 'level' => null, 'type' => null])
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/simplebar@6/dist/simplebar.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
     const ctx = document.getElementById('reportGraph').getContext('2d');
     let chart = null;
     let fullGraphData = null;
+    let downloadRequested = false;
 
-    function getSelectedLegends() {
-        return Array.from(document.querySelectorAll('.product-checkbox:checked'))
-            .map(cb => cb.value);
-    }
-
-    function updateLegendColors(datasets) {
-        datasets.forEach(ds => {
-            const dot = document.querySelector(`.legend-color[data-id="${ds.legend_id}"]`);
-            if (dot) dot.style.background = ds.borderColor;
+    // Detect download button click
+    document.querySelectorAll('.graph-submit button[name="filter_type"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            downloadRequested = this.value === 'download';
         });
-    }
+    });
 
-    function formatLabels(labels) {
-        return labels.map(l => {
-            const [year, month] = l.split('-');
-            const date = new Date(year, month - 1, 1);
-            return date.toLocaleString('default', { month: 'short', year: 'numeric' });
-        });
-    }
-
-    function assignColors(datasets) {
-        const count = datasets.length;
-        datasets.forEach((ds, i) => {
-            if (!ds.borderColor) {
-                const hue = Math.round((i / count) * 360);
-                const color = `hsl(${hue}, 70%, 50%)`;
-                ds.borderColor = color;
-                ds.backgroundColor = color;
-            }
-        });
+    // Utility: generate soft color palette
+    function getColor(i, total) {
+        const hue = Math.round((i / total) * 360);
+        return `hsl(${hue}, 60%, 65%)`;
     }
 
     function renderChart() {
         if (!fullGraphData) return;
 
-        const selected = getSelectedLegends();
-        const datasets = fullGraphData.datasets.filter(ds =>
-            selected.includes(String(ds.legend_id))
-        );
+        const { labels, datasets, status_levels } = fullGraphData;
 
-        assignColors(datasets);
+        datasets.forEach((ds, i) => {
+            const color = getColor(i, datasets.length);
+            ds.borderColor = color;
+            ds.backgroundColor = color;
+        });
 
         if (chart) chart.destroy();
 
         chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: formatLabels(fullGraphData.labels),
-                datasets: datasets
+                labels: labels,
+                datasets: datasets.map(ds => ({
+                    label: ds.label,
+                    data: ds.data,
+                    borderColor: ds.borderColor,
+                    backgroundColor: ds.backgroundColor,
+                    fill: false,
+                    tension: ds.tension || 0.3,
+                    borderWidth: 1,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }))
             },
             options: {
                 responsive: true,
-                plugins: { legend: { display: false } },
-                elements: { point: { radius: 5 }, line: { tension: 0.3 } },
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const dsIndex = context.datasetIndex;
+                                const ptIndex = context.dataIndex;
+                                const tooltipLabel = datasets[dsIndex].tooltip?.[ptIndex] || context.raw;
+                                return `${context.dataset.label}: ${tooltipLabel}`;
+                            }
+                        }
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
                         ticks: {
                             stepSize: 1,
-                            callback: v => v === 1 ? 'Submitted' : 'Not'
+                            callback: function(value) {
+                                return status_levels[value] || value;
+                            }
                         },
-                        title: { display: true, text: 'Submission Status' }
+                        title: { display: true, text: 'Submission / Approval Status' }
                     },
                     x: { title: { display: true, text: 'Month' } }
-                }
+                },
+                layout: { padding: { top: 10, bottom: 10 } }
             }
         });
-
-        updateLegendColors(datasets);
     }
 
     function fetchGraph() {
-        $('#graph-loader').removeClass('d-none');
-
-        $.post("{{ route($route, $type) }}", {
+        const postData = {
             _token: "{{ csrf_token() }}",
             from_date: $('input[name="from_date"]').val(),
-            to_date: $('input[name="to_date"]').val()
-        }, function (res) {
+            to_date: $('input[name="to_date"]').val(),
+            zones: $('select[name="zones[]"]').val() || [],
+            fields: $('select[name="fields[]"]').val() || [],
+            submission_status: $('select[name="submission_status"]').val() || null,
+            filter_type: downloadRequested ? 'download' : null
+        };
+
+        if (downloadRequested) {
+            downloadRequested = false; // reset flag
+            const tempForm = document.createElement('form');
+            tempForm.method = 'POST';
+            tempForm.action = "{{ route($route, $type) }}";
+
+            // CSRF
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = "{{ csrf_token() }}";
+            tempForm.appendChild(csrfInput);
+
+            // Append filters
+            Object.entries(postData).forEach(([key, value]) => {
+                if (value !== null) {
+                    if (Array.isArray(value)) {
+                        value.forEach(v => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key + '[]';
+                            input.value = v;
+                            tempForm.appendChild(input);
+                        });
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        tempForm.appendChild(input);
+                    }
+                }
+            });
+
+            document.body.appendChild(tempForm);
+            tempForm.submit();
+            tempForm.remove();
+            return;
+        }
+
+        // AJAX for chart update
+        $('#graph-loader').removeClass('d-none');
+        $.post("{{ route($route, $type) }}", postData, function(res) {
             fullGraphData = res;
             renderChart();
             $('#graph-loader').addClass('d-none');
         });
     }
 
-    // Legend click toggles checkbox
-    document.querySelectorAll('.legend-color, .product-checkbox + label').forEach(el => {
-        el.addEventListener('click', e => {
-            const checkbox = e.target.closest('div')?.querySelector('.product-checkbox') ||
-                             e.target.previousElementSibling;
-            if (checkbox) {
-                checkbox.checked = !checkbox.checked;
-                renderChart();
-            }
-        });
-    });
-
-    // Checkbox events
-    document.querySelectorAll('.product-checkbox').forEach(cb => {
-        cb.addEventListener('change', renderChart);
-    });
-
-    // Check/uncheck all
-    document.getElementById('checkAllProducts').addEventListener('change', function () {
-        document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = this.checked);
-        renderChart();
-    });
+    // Initial load
+    fetchGraph();
 
     // Filter submit
     document.querySelector('.graph-submit').addEventListener('submit', function(e){
         e.preventDefault();
         fetchGraph();
     });
-
-    // Initial load
-    fetchGraph();
-
 });
 </script>
+
+<style>
+#reportGraph { height: 450px; } /* reduced height */
+</style>

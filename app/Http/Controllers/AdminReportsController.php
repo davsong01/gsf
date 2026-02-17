@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Chapter;
 use Illuminate\Http\Request;
+use App\Services\ExcelService;
 use App\Services\ReportService;
 use App\Models\StakeholderReport;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ReportAnalyticsService;
@@ -151,59 +153,65 @@ class AdminReportsController extends Controller
         return view('admin.reports.analytics.index', array_merge($data, compact('isAdmin')));
     }
 
-    public function reportAnalyticsType(Request $request, $type){
+
+    public function reportAnalyticsType(Request $request, $type)
+    {
+        $fields = DB::table('fields')->orderBy('name')->get();
+        $zones  = DB::table('zones')->orderBy('name')->get();
+        $chapters = DB::table('chapters')->orderBy('name')->get();
+
         $data = [
             'isAdmin' => true,
-            'collapse' => filter_var($request->get('collapse_data'), FILTER_VALIDATE_BOOL),
-            'legendName' => 'Compliance Trend',
-            'graphType' => $request->collapse ? 'single' : 'multi',
-            'allowProductCollapse' => true,
-            'legends' => Chapter::orderBy('name')->get(),
-            'allowProductCollapse' => true,
             'level' => $request->level ?? 'chapter',
-            'type' => $request->type ?? 'chapter',
+            'type'  => $type,
+            'fields'  => $fields,
+            'zones'  => $zones,
+            'chapters'  => $chapters,
+            'legends' => Chapter::orderBy('name')->get(), // for filters
         ];
+        
+        if ($request->filter_type === 'download') {
+            // Fetch full graph data
+            $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request);
 
-        if ($request->ajax()) {
-            if($request->type == 'compliance'){
-                $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request);
+            $labels = $result['labels'];       // Months
+            $datasets = $result['datasets'];   // Chapters with tooltip labels
+            $statusLevels = $result['status_levels'];
+
+            $exportData = [];
+
+            foreach ($datasets as $chapter) {
+                $row = ['Chapter' => $chapter['label']];
+
+                foreach ($labels as $index => $month) {
+                    // Use tooltip (status name) for each month
+                    $row[$month] = $chapter['tooltip'][$index] ?? 'Not Submitted';
+                }
+
+                $exportData[] = $row;
             }
-            // dd($result['labels'] );
-            // $result['labels'] = ["2026-01", "2026-02"];
-
-            // $result['datasets'] = [
-            //     [
-            //         'product_id' => 1,
-            //         'label' => 'Reports Submitted',
-            //         'data' => [12, 19, 8, 15, 22, 18],
-            //         'borderColor' => '#36A2EB',
-            //         'backgroundColor' => '#36A2EB',
-            //         'borderWidth' => 2,
-            //         'fill' => false,
-            //         'tension' => 0.4
-            //     ],
-            //     [
-            //         'product_id' => 2,
-            //         'label' => 'Approved Reports',
-            //         'data' => [10, 14, 6, 12, 18, 16],
-            //         'borderColor' => '#FF6384',
-            //         'backgroundColor' => '#FF6384',
-            //         'borderWidth' => 2,
-            //         'fill' => false,
-            //         'tension' => 0.4
-            //     ]
-            // ];
-
-            return response()->json([
-                'labels'     => $result['labels'],
-                'datasets'   => $result['datasets'],
-                'graph_type' => $data['graphType'],
-            ]);
+            // Download Excel
+            return ExcelService::download(
+                $exportData,
+                array_merge(['Chapter'], $labels),
+                'chapter_compliance_report.xlsx'
+            );
         }
 
 
+        // Handle AJAX request for graph
+        if ($request->isMethod('post')) {
+            $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request);
+            return response()->json([
+                'labels'        => $result['labels'],
+                'datasets'      => $result['datasets'],
+                'status_levels' => $result['status_levels'],
+            ]);
+        }
 
-        return view('admin.reports.analytics.compliance', array_merge($data));
+        // Normal GET request to view page
+        return view('admin.reports.analytics.compliance', $data);
     }
+
 
 }

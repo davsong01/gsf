@@ -2,167 +2,125 @@
 
 namespace App\Services;
 
+use DatePeriod;
+use DateInterval;
 use Carbon\Carbon;
 use App\Models\Zone;
 use App\Models\Field;
 use App\Models\Chapter;
 use Illuminate\Http\Request;
+use App\Models\StakeholderReport;
 use Illuminate\Support\Facades\DB;
 
 
 class ReportAnalyticsService
 {
-  public function fetchAnalyticsTypeData(Request $request)
-{
-    $levelColumn = match ($request->level) {
-        'chapter' => 'chapter_id',
-        'zone'    => 'zone_id',
-        'field'   => 'field_id',
-        default   => 'chapter_id',
-    };
 
-    // Get all legends for this level
-    $legends = DB::table(
-        $levelColumn === 'chapter_id' ? 'chapters' :
-        ($levelColumn === 'zone_id' ? 'zones' : 'fields')
-    )
-    ->select('id', 'name')
-    ->get()
-    ->keyBy('id');
 
-    $query = DB::table('stakeholder_reports');
-
-    if ($request->filled('legends')) {
-        $query->whereIn($levelColumn, $request->legends);
-    }
-
-    if ($request->filled('from_date')) {
-        $from = \Carbon\Carbon::parse($request->from_date)->format('Y-m');
-        $query->whereRaw("CONCAT(year,'-',LPAD(month,2,'0')) = ?", [$from]);
-    }
-
-    $records = $query
-        ->select(
-            "$levelColumn as legend_id",
-            DB::raw("CONCAT(year,'-',LPAD(month,2,'0')) as graph_date"),
-            DB::raw("COUNT(*) as submitted")
-        )
-        ->groupBy('legend_id', 'graph_date')
-        ->orderBy('graph_date')
-        ->get()
-        ->groupBy('legend_id');
-
-    // Collect all months
-    $allMonths = $records->flatten()->pluck('graph_date')->unique()->sort()->values();
-
-    $labels = $allMonths->map(function ($month) {
-        return \Carbon\Carbon::createFromFormat('Y-m', $month)->format('M, Y');
-    })->toArray();
-
-    $datasets = [];
-
-    foreach ($records as $legendId => $rows) {
-        $legendName = $legends[$legendId]->name ?? 'Unknown';
-
-        $data = [];
-        foreach ($allMonths as $month) {
-            $row = $rows->firstWhere('graph_date', $month);
-            $data[] = $row->submitted ?? 0;
-        }
-
-        $datasets[] = [
-            'label'     => $legendName,
-            'legend_id' => $legendId,
-            'data'      => $data,
+    public function fetchAnalyticsTypeData(Request $request)
+    {
+        // Status hierarchy
+        $statusLevels = [
+            0 => 'Not Submitted',
+            1 => 'Currently Editing',
+            2 => 'Submitted',
+            3 => 'Zone Rejected',
+            4 => 'Zone Approved',
+            5 => 'Field Rejected',
+            6 => 'Field Approved',
+            7 => 'National Rejected',
+            8 => 'National Approved',
         ];
-    }
 
-    return [
-        'labels'     => $labels,
-        'datasets'   => $datasets,
-        'graph_type' => 'multi',
-    ];
-}
+        // Determine date range
+        $from = $request->from_date
+            ? Carbon::parse($request->from_date)->startOfMonth()
+            : Carbon::now()->startOfMonth();
 
+        $to = $request->to_date
+            ? Carbon::parse($request->to_date)->endOfMonth()
+            : Carbon::now()->endOfMonth();
 
-
-    public function applyDateRangeFilter($q, $table, $period, $request, $start_date_column = 'start_date')
-    {
-        $now = Carbon::now();
-
-        $col = "$table.$start_date_column";
-        if ($period === 'daily') {
-            $from = $request->date_from
-                ? Carbon::parse($request->date_from)->startOfDay()
-                : $now->copy()->startOfDay();
-
-            $to = $request->date_to
-                ? Carbon::parse($request->date_to)->endOfDay()
-                : $now->copy()->endOfDay();
-
-            $q->whereBetween($col, [$from, $to]);
-        } elseif ($period === 'weekly') {
-            $from = $request->date_from
-                ? Carbon::parse($request->date_from)->startOfWeek()->startOfDay()
-                : $now->copy()->startOfWeek()->startOfDay();
-
-            $to = $request->date_to
-                ? Carbon::parse($request->date_to)->endOfDay()
-                : $now->copy()->endOfWeek()->endOfDay();
-
-            $q->whereBetween($col, [$from, $to]);
-        } elseif ($period === 'monthly') {
-            $start = $request->date_from
-                ? Carbon::parse($request->date_from)->startOfDay()
-                : $now->copy()->startOfMonth()->startOfDay();
-
-            $end = $request->date_to
-                ? Carbon::parse($request->date_to)->endOfDay()
-                : $now->copy()->endOfMonth()->endOfDay();
-
-            $q->whereBetween($col, [$start, $end]);
-        } elseif ($period === 'yearly') {
-            $from = $request->date_from
-                ? Carbon::createFromFormat(strlen($request->date_from) === 4 ? 'Y' : 'Y-m-d', $request->date_from)->startOfYear()
-                : $now->copy()->startOfYear()->startOfDay();
-
-            $to = $request->date_to
-                ? Carbon::createFromFormat(strlen($request->date_to) === 4 ? 'Y' : 'Y-m-d', $request->date_to)->endOfYear()
-                : $now->copy()->endOfYear()->endOfDay();
-
-            $q->whereBetween($col, [$from, $to]);
+        // Build months array
+        $months = [];
+        $cursor = $from->copy();
+        while ($cursor <= $to) {
+            $months[] = $cursor->format('Y-m');
+            $cursor->addMonth();
         }
 
-        return $q;
-    }
-
-    public function getLegendColors(array $ids, $cacheKey = 'product_colors'): array
-    {
-        if (empty($ids)) {
-            return [];
+        // Fetch chapters (optional filters)
+        $chaptersQuery = Chapter::query();
+        if ($request->filled('zones')) {
+            $chaptersQuery->whereIn('zone_id', $request->zones);
         }
-
-        $cachedColors = cache()->get($cacheKey, []);
-
-        $missingIds = array_diff($ids, array_keys($cachedColors));
-
-        if (empty($missingIds)) {
-            return $cachedColors;
+        if ($request->filled('fields')) {
+            $chaptersQuery->whereIn('field_id', $request->fields);
         }
+        $chapters = $chaptersQuery->orderBy('name')->get();
 
-        $step = 360 / max(count($ids), 1);
+        $filterStatus = $request->submission_status; // null or 0-8
+        $datasets = [];
 
-        foreach ($ids as $i => $id) {
+        foreach ($chapters as $chapter) {
+            $data = [];
+            $tooltipLabels = [];
+            $chapterMatchesFilter = false;
 
-            if (!isset($cachedColors[$id])) {
-                $hue = ($i * $step) % 360;
-                $cachedColors[$id] = "hsl($hue, 70%, 55%)";
+            foreach ($months as $month) {
+                [$year, $m] = explode('-', $month);
+
+                $report = StakeholderReport::where('chapter_id', $chapter->id)
+                    ->where('year', $year)
+                    ->where('month', $m)
+                    ->first();
+
+                // Determine status
+                if (!$report) {
+                    $status = 0;
+                } else {
+                    if ($report->national_rejected_at) { $status = 7; }
+                    elseif ($report->national_status) { $status = 8; }
+                    elseif ($report->field_rejected_at) { $status = 5; }
+                    elseif ($report->field_status) { $status = 6; }
+                    elseif ($report->zone_rejected_at) { $status = 3; }
+                    elseif ($report->zone_status) { $status = 4; }
+                    elseif ($report->edit_mode) { $status = 1; }
+                    else { $status = 2; }
+                }
+
+                // Apply filter: if filter is set, only keep chapters with at least one month matching
+                if (is_null($filterStatus) || $filterStatus == $status) {
+                    $chapterMatchesFilter = true;
+                }
+
+                $data[] = $status;
+                $tooltipLabels[] = $statusLevels[$status];
+            }
+
+            if (is_null($filterStatus) || $chapterMatchesFilter) {
+                $datasets[] = [
+                    'legend_id'   => $chapter->id,
+                    'label'       => $chapter->name,
+                    'data'        => $data,
+                    'tooltip'     => $tooltipLabels,
+                    'borderWidth' => 1.5,
+                    'tension'     => 0.3,
+                    'fill'        => false,
+                ];
             }
         }
 
-        // dd($cachedColors);
-        cache()->put($cacheKey, $cachedColors, 3600);
+        $labels = collect($months)->map(fn($m) =>
+            Carbon::createFromFormat('Y-m', $m)->format('M Y')
+        )->toArray();
 
-        return $cachedColors;
+        return [
+            'labels'        => $labels,
+            'datasets'      => $datasets,
+            'status_levels' => $statusLevels,
+        ];
     }
+
+
 }

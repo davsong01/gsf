@@ -231,6 +231,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('fix-orphan-reports', [AdminReportsController::class, 'fixOrphanReport'])->name('report.fix.orphan');
     Route::get('report-analytics', [AdminReportsController::class, 'reportAnalyticsIndex'])->name('reports.analytics');
     Route::any('report-analytics/{type}', [AdminReportsController::class, 'reportAnalyticsType'])->name('reports.analytics.type');
+    Route::get('stakeholderreports/export', [AdminReportsController::class, 'export'])->name('stakeholderreports.export');
 
     Route::get('stakeholderreports/download/{report}', [StakeholderReportsController::class, 'download'])->name('stakeholderreports.download');
     Route::get('stakeholderreports-nudge/{report}', [AdminReportsController::class, 'nudge'])->name('stakeholderreports.nudge');
