@@ -146,19 +146,23 @@ class CronController extends Controller
         $allEmailData = [];
         $sentCount = 0;
 
-        $today = Carbon::today();
+        // 1. Get window status (no chapter needed)
+        $windowCheck = reportWindowStatus();
 
-        // 1. Check if today is within report submission window
-        $windowCheck = canAddReport(Chapter::first()->id); // dummy chapterId just to get window dates
-
-        if (!$windowCheck['eligible'] && isset($windowCheck['window_close'])) {
+        if (!$windowCheck['eligible']) {
             return [
                 'status' => 'window_closed',
                 'message' => 'Reports window is currently closed.',
             ];
         }
 
-        // 2. Fetch chapters with active stakeholder of the right role that do NOT have a report for current month
+        // Eligible report month/year
+        $reportMonth = $windowCheck['month_number'];
+        $reportYear  = $windowCheck['year'];
+        $reportMonthName = $windowCheck['month'];
+        $windowClose = $windowCheck['window_close'];
+
+        // 2. Fetch chapters with active stakeholders
         $chapters = Chapter::with('stakeholder')
             ->whereHas('stakeholder', function ($q) use ($chapterRoleId) {
                 $q->where('role_id', $chapterRoleId)
@@ -166,12 +170,11 @@ class CronController extends Controller
             })
             ->whereNotNull('email')
             ->get()
-            ->filter(function ($chapter) use ($today) {
-                $reportExists = StakeholderReport::where('chapter_id', $chapter->id)
-                    ->whereYear('created_at', $today->year)
-                    ->whereMonth('created_at', $today->month)
+            ->filter(function ($chapter) use ($reportMonth, $reportYear) {
+                return !StakeholderReport::where('chapter_id', $chapter->id)
+                    ->whereYear('created_at', $reportYear)
+                    ->whereMonth('created_at', $reportMonth)
                     ->exists();
-                return !$reportExists;
             });
 
         if ($chapters->isEmpty()) {
@@ -182,30 +185,27 @@ class CronController extends Controller
         }
 
         foreach ($chapters as $chapter) {
-            $stakeholder = $chapter->stakeholder;
-
-            // Prepare email content
             $loginLink = "<a href='" . url('/stakeholders/login') . "'>Login</a>";
-            $windowClose = canAddReport($chapter->id)['window_close'] ?? null;
 
             $allEmailData[] = [
                 'recipient'  => $chapter->stakeholder->email,
                 'type'       => 'report_email',
-                'subject'    => "Reminder: Submit {$today->format('F')} Monthly Report",
+                'subject'    => "Reminder: Submit {$reportMonthName} Monthly Report",
                 'content'    => "
                     <h5>Dear Representative of {$chapter->stakeholder->name},</h5>
-                    <p>This is a friendly reminder to submit your chapter report for <strong>{$today->format('F')}</strong>.</p>
+                    <p>This is a friendly reminder to submit your chapter report for <strong>{$reportMonthName}</strong>.</p>
                     <p>The reporting window closes on <strong>{$windowClose}</strong>.</p>
-                    <p>Please log in here: {$loginLink}. <br>After login, click the Monthly Reports Menu to access the monthly report section.</p>
+                    <p>Please log in here: {$loginLink}. <br>
+                    After login, click the Monthly Reports Menu to access the monthly report section.</p>
                     <p>In His Service,<br>GSF National ICT</p>
-                    " . chapterEmailFooter(),
+                " . chapterEmailFooter(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+
             $sentCount++;
         }
 
-        // Log emails (send can be handled elsewhere)
         if ($sentCount > 0) {
             EmailService::logEmail([
                 'type'       => 'report_email',
