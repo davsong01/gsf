@@ -61,10 +61,24 @@
 </div>
 
 <div class="row">
-    <div class="col-12">
-        <canvas id="reportGraph" height="900"></canvas>
+    <div class="col-md-9">
+        <canvas id="reportGraph" height="450"></canvas>
     </div>
+
+    <div class="col-md-3">
+        <input type="text" id="legendSearch" class="form-control mb-2" placeholder="Search chapter...">
+
+        <div id="customLegend" style="
+            max-height: 450px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 8px;
+            font-size: 13px;
+        "></div>
+    </div>
+
 </div>
+
 
 @endsection
 
