@@ -224,17 +224,13 @@ class ReportAnalyticsService
 
     $datasets = [];
 
-    /** ======================
-     * GROUP BY CHAPTER
-     ====================== */
     if ($groupBy === 'chapter') {
-
         $chapters = Chapter::query()
             ->when($fieldFilter, fn($q) => $q->whereIn('field_id', $fieldFilter))
             ->when($zoneFilter, fn($q) => $q->whereIn('zone_id', $zoneFilter))
             ->orderBy('name')
             ->get();
-        
+
         foreach ($chapters as $chapter) {
 
             $data = [];
