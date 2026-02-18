@@ -68,6 +68,11 @@
     <div class="col-md-3">
         <input type="text" id="legendSearch" class="form-control mb-2" placeholder="Search chapter...">
 
+        <div class="d-flex gap-2 mb-2">
+            <button type="button" id="legendSelectAll" class="btn btn-sm btn-outline-primary">Select All</button>
+            <button type="button" id="legendClearAll" class="btn btn-sm btn-outline-danger">Clear All</button>
+        </div>
+
         <div id="customLegend" style="
             max-height: 450px;
             overflow-y: auto;
@@ -76,6 +81,7 @@
             font-size: 13px;
         "></div>
     </div>
+
 
 </div>
 

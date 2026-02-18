@@ -211,40 +211,91 @@ document.addEventListener('DOMContentLoaded', function () {
     function buildCustomLegend(chart) {
     const legendContainer = document.getElementById('customLegend');
     const searchInput = document.getElementById('legendSearch');
+    const btnSelectAll = document.getElementById('legendSelectAll');
+    const btnClearAll = document.getElementById('legendClearAll');
+
+    const STORAGE_KEY = "legendState";
+
+    // Load saved state
+    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+    // Apply saved state to chart
+    chart.data.datasets.forEach((ds, i) => {
+        if (savedState.hasOwnProperty(ds.label)) {
+            chart.getDatasetMeta(i).hidden = !savedState[ds.label];
+        }
+    });
+
+    // Sort datasets by highest point (descending)
+    function getSortedDatasets() {
+        return chart.data.datasets
+            .map((ds, i) => {
+                const maxValue = Math.max(...ds.data.filter(v => typeof v === "number"));
+                return { ds, i, maxValue };
+            })
+            .sort((a, b) => b.maxValue - a.maxValue);
+    }
+
+    function saveState() {
+        const state = {};
+        chart.data.datasets.forEach((ds, i) => {
+            const meta = chart.getDatasetMeta(i);
+            state[ds.label] = !meta.hidden;
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
 
     function renderLegend(filterText = '') {
         legendContainer.innerHTML = '';
 
-        chart.data.datasets.forEach((ds, i) => {
+        const sorted = getSortedDatasets();
+
+        sorted.forEach(({ ds, i }) => {
             if (!ds.label.toLowerCase().includes(filterText.toLowerCase())) return;
 
+            const meta = chart.getDatasetMeta(i);
+
             const item = document.createElement('div');
-            item.style.cursor = 'pointer';
             item.style.display = 'flex';
             item.style.alignItems = 'center';
             item.style.marginBottom = '6px';
+            item.style.cursor = 'pointer';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = !meta.hidden;
+            checkbox.style.marginRight = '6px';
 
             const colorBox = document.createElement('span');
-            colorBox.style.display = 'inline-block';
             colorBox.style.width = '12px';
             colorBox.style.height = '12px';
             colorBox.style.backgroundColor = ds.borderColor;
-            colorBox.style.marginRight = '8px';
+            colorBox.style.marginRight = '6px';
+            colorBox.style.display = 'inline-block';
 
-            const text = document.createElement('span');
-            text.textContent = ds.label;
+            const label = document.createElement('span');
+            label.textContent = ds.label;
 
-            item.appendChild(colorBox);
-            item.appendChild(text);
-
-            const meta = chart.getDatasetMeta(i);
-            if (meta.hidden) item.style.opacity = 0.4;
-
-            item.onclick = function () {
-                meta.hidden = meta.hidden === null ? !chart.data.datasets[i].hidden : null;
+            function toggle() {
+                checkbox.checked = !checkbox.checked;
+                meta.hidden = !checkbox.checked;
                 chart.update();
-                item.style.opacity = meta.hidden ? 0.4 : 1;
-            };
+                saveState();
+            }
+
+            checkbox.addEventListener('change', function (e) {
+                meta.hidden = !this.checked;
+                chart.update();
+                saveState();
+                e.stopPropagation();
+            });
+
+            // Clicking name or row toggles checkbox
+            item.addEventListener('click', toggle);
+
+            item.appendChild(checkbox);
+            item.appendChild(colorBox);
+            item.appendChild(label);
 
             legendContainer.appendChild(item);
         });
@@ -253,9 +304,29 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial render
     renderLegend();
 
-    // Search listener
+    // Search filter
     searchInput.addEventListener('input', function () {
         renderLegend(this.value);
+    });
+
+    // Select All
+    btnSelectAll.addEventListener('click', function () {
+        chart.data.datasets.forEach((ds, i) => {
+            chart.getDatasetMeta(i).hidden = false;
+        });
+        chart.update();
+        saveState();
+        renderLegend(searchInput.value);
+    });
+
+    // Clear All
+    btnClearAll.addEventListener('click', function () {
+        chart.data.datasets.forEach((ds, i) => {
+            chart.getDatasetMeta(i).hidden = true;
+        });
+        chart.update();
+        saveState();
+        renderLegend(searchInput.value);
     });
 }
 
