@@ -1,11 +1,13 @@
 @extends('layouts.dashboard')
 @section('title', 'Compliance Analytics')
-
+@section('item')
+<li class="breadcrumb-item"> <a href="{{ route('reports.analytics') }}">Monthly Reports</a></li>
+@endsection
 @section('content')
 <div class="row mb-4">
     <div class="col-12">
         <form method="GET" class="row g-2 align-items-end graph-submit">
-            <div class="col-md-4">
+            <div class="col-md-4 mt-1">
                 <label>Fields (Start Typing)</label>
                 <select name="fields[]" class="form-select" multiple>
                     @foreach($fields ?? [] as $field)
@@ -14,7 +16,7 @@
                 </select>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-4 mt-1">
                 <label>Zones (Start Typing)</label>
                 <select name="zones[]" class="form-select" multiple>
                     @foreach($zones ?? [] as $zone)
@@ -22,7 +24,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-4">
+            {{-- <div class="col-md-4">
                 <label class="form-label">Submission Status</label>
                 <select name="submission_status" class="form-select">
                     <option value="">All</option>
@@ -36,19 +38,19 @@
                     <option value="7" {{ request('submission_status') === '7' ? 'selected' : '' }}>National Rejected</option>
                     <option value="8" {{ request('submission_status') === '8' ? 'selected' : '' }}>National Approved</option>
                 </select>
-            </div>
-            <div class="col-md-2">
+            </div> --}}
+            <div class="col-md-2 mt-1">
                 <label>From</label>
                 <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-2 mt-1">
                 <label>To</label>
                 <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
             </div>
 
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100">Apply</button>
+            <div class="col-md-2 d-flex gap-2 mt-1">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
                 <button type="submit" name="filter_type" value="download" class="btn btn-success"
                         formmethod="post" formaction="{{ route(Route::currentRouteName(), $type) }}">
                     Download
@@ -62,16 +64,17 @@
 
 <div class="row">
     <div class="col-md-9">
-        <canvas id="reportGraph" height="450"></canvas>
+        <canvas id="reportGraph" height="1000"></canvas>
     </div>
 
     <div class="col-md-3">
         <input type="text" id="legendSearch" class="form-control mb-2" placeholder="Search chapter...">
 
-        <div class="d-flex gap-2 mb-2">
-            <button type="button" id="legendSelectAll" class="btn btn-sm btn-outline-primary">Select All</button>
-            <button type="button" id="legendClearAll" class="btn btn-sm btn-outline-danger">Clear All</button>
+        <div class="d-flex gap-2 mb-2 align-items-center">
+            <input type="checkbox" id="legendSelectAllCheckbox" />
+            <label for="legendSelectAllCheckbox" class="mb-0">Select All</label>
         </div>
+        {{-- <div id="customLegend" class="overflow-auto" style="max-height:400px;"></div> --}}
 
         <div id="customLegend" style="
             max-height: 450px;

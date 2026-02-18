@@ -22,95 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return `hsl(${hue}, 60%, 65%)`;
     }
 
-    // function renderChart() {
-    //     if (!fullGraphData) return;
 
-    //     const { labels, datasets, status_levels } = fullGraphData;
-
-    //     // Assign colors
-    //     datasets.forEach((ds, i) => {
-    //         const color = getColor(i, datasets.length);
-    //         ds.borderColor = color;
-    //         ds.backgroundColor = color;
-    //     });
-
-    //     if (chart) chart.destroy();
-
-    //     chart = new Chart(ctx, {
-    //         type: 'line',
-    //         data: {
-    //             labels: labels,
-    //             datasets: datasets.map(ds => ({
-    //                 label: ds.label,
-    //                 data: ds.data,
-    //                 borderColor: ds.borderColor,
-    //                 backgroundColor: ds.backgroundColor,
-    //                 fill: false,
-    //                 tension: ds.tension || 0.3,
-    //                 borderWidth: 1,
-    //                 pointRadius: 3,
-    //                 pointHoverRadius: 5
-    //             }))
-    //         },
-    //         options: {
-    //             responsive: true,
-    //             maintainAspectRatio: false,
-    //             plugins: {
-    //                 legend: { display: true, position: 'top' },
-    //                 tooltip: {
-    //                     mode: 'index',
-    //                     intersect: true,
-    //                     callbacks: {
-    //                         beforeBody: function(context) {
-    //                             const monthIndex = context[0].dataIndex;
-    //                             const status_levels = fullGraphData.status_levels;
-    //                             const datasets = fullGraphData.datasets;
-
-    //                             const counts = {};
-
-    //                             // Count statuses for this month
-    //                             datasets.forEach(ds => {
-    //                                 const status = ds.data[monthIndex];
-    //                                 counts[status] = (counts[status] || 0) + 1;
-    //                             });
-
-    //                             // Build summary lines
-    //                             return Object.keys(counts).map(status => {
-    //                                 return `${status_levels[status]}: ${counts[status]} chapter(s)`;
-    //                             });
-    //                         },
-    //                         label: function(context) {
-    //                             const dsIndex = context.datasetIndex;
-    //                             const ptIndex = context.dataIndex;
-    //                             const tooltipLabel =
-    //                                 fullGraphData.datasets[dsIndex].tooltip?.[ptIndex] || context.raw;
-
-    //                             return `${context.dataset.label}: ${tooltipLabel}`;
-    //                         }
-    //                     }
-    //                 }
-    //             },
-    //             scales: {
-    //                 y: {
-    //                     beginAtZero: true,
-    //                     ticks: {
-    //                         stepSize: 1,
-    //                         callback: function(value) {
-    //                             return status_levels[value] || value;
-    //                         }
-    //                     },
-    //                     title: { display: true, text: 'Submission / Approval Status' }
-    //                 },
-    //                 x: {
-    //                     title: { display: true, text: 'Month' }
-    //                 }
-    //             },
-    //             layout: {
-    //                 padding: { top: 10, bottom: 10 }
-    //             }
-    //         }
-    //     });
-    // }
     function renderChart() {
         if (!fullGraphData) return;
 
@@ -124,6 +36,24 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (chart) chart.destroy();
+
+        // Create a div for HTML tooltip (once)
+        let tooltipEl = document.getElementById('chartjs-tooltip');
+        if (!tooltipEl) {
+            tooltipEl = document.createElement('div');
+            tooltipEl.id = 'chartjs-tooltip';
+            tooltipEl.style.position = 'absolute';
+            tooltipEl.style.background = 'rgba(0,0,0,0.8)';
+            tooltipEl.style.color = 'white';
+            tooltipEl.style.borderRadius = '4px';
+            tooltipEl.style.padding = '6px';
+            tooltipEl.style.fontSize = '10px';
+            tooltipEl.style.pointerEvents = 'none';
+            tooltipEl.style.maxHeight = '1000px';
+            tooltipEl.style.overflowY = 'auto';
+            tooltipEl.style.zIndex = 1000;
+            document.body.appendChild(tooltipEl);
+        }
 
         chart = new Chart(ctx, {
             type: 'line',
@@ -145,62 +75,63 @@ document.addEventListener('DOMContentLoaded', function () {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-
-                interaction: {
-                    mode: 'nearest',
-                    intersect: true
-                },
-
+                interaction: { mode: 'nearest', intersect: true },
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
-                        mode: 'nearest',
-                        intersect: true,
-                        callbacks: {
-                            beforeBody: function(context) {
-                                const monthIndex = context[0].dataIndex;
-                                const datasets = fullGraphData.datasets;
-                                const status_levels = fullGraphData.status_levels;
+                        enabled: false, // disable default canvas tooltip
+                        external: function(context) {
+                            const tooltipModel = context.tooltip;
 
-                                const counts = {};
+                            // Hide if no tooltip
+                            if (!tooltipModel.opacity) {
+                                tooltipEl.style.opacity = 0;
+                                return;
+                            }
 
-                                datasets.forEach(ds => {
+                            const monthIndex = tooltipModel.dataPoints[0].dataIndex;
+
+                            // Count statuses for summary
+                            const counts = {};
+                            datasets.forEach(ds => {
+                                if (!context.chart.getDatasetMeta(datasets.indexOf(ds)).hidden) {
                                     const status = ds.data[monthIndex];
                                     counts[status] = (counts[status] || 0) + 1;
-                                });
+                                }
+                            });
 
-                                return Object.keys(counts).map(status => {
-                                    return `${status_levels[status]}: ${counts[status]} chapter(s)`;
-                                });
-                            },
-                            label: function(context) {
-                                const dsIndex = context.datasetIndex;
-                                const ptIndex = context.dataIndex;
-                                const tooltipLabel =
-                                    fullGraphData.datasets[dsIndex].tooltip?.[ptIndex] || context.raw;
+                            // Build HTML for summary
+                            let innerHtml = `<div style="font-weight:bold; margin-bottom:4px;">Summary:</div>`;
+                            Object.keys(counts).forEach(status => {
+                                innerHtml += `<div>${status_levels[status]}: ${counts[status]} chapter(s)</div>`;
+                            });
 
-                                return `${context.dataset.label}: ${tooltipLabel}`;
-                            }
+                            // Add individual chapters
+                            innerHtml += `<div style="margin-top:6px; font-weight:bold;">Chapters:</div>`;
+                            datasets.forEach(ds => {
+                                const meta = context.chart.getDatasetMeta(datasets.indexOf(ds));
+                                if (!meta.hidden) {
+                                    innerHtml += `<div>${ds.label}: ${ds.data[monthIndex] !== null ? status_levels[ds.data[monthIndex]] : 'Not Submitted'}</div>`;
+                                }
+                            });
+
+                            tooltipEl.innerHTML = innerHtml;
+
+                            // Position tooltip
+                            const canvasRect = context.chart.canvas.getBoundingClientRect();
+                            tooltipEl.style.opacity = 1;
+                            tooltipEl.style.left = canvasRect.left + window.pageXOffset + tooltipModel.caretX + 'px';
+                            tooltipEl.style.top = canvasRect.top + window.pageYOffset + tooltipModel.caretY + 'px';
                         }
                     }
                 },
-
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                            callback: function(value) {
-                                return status_levels[value] || value;
-                            }
-                        },
+                        ticks: { stepSize: 1, callback: v => status_levels[v] || v },
                         title: { display: true, text: 'Submission / Approval Status' }
                     },
-                    x: {
-                        title: { display: true, text: 'Month' }
-                    }
+                    x: { title: { display: true, text: 'Month' } }
                 }
             }
         });
@@ -208,129 +139,133 @@ document.addEventListener('DOMContentLoaded', function () {
         buildCustomLegend(chart);
     }
 
+
     function buildCustomLegend(chart) {
-    const legendContainer = document.getElementById('customLegend');
-    const searchInput = document.getElementById('legendSearch');
-    const btnSelectAll = document.getElementById('legendSelectAll');
-    const btnClearAll = document.getElementById('legendClearAll');
+        const legendContainer = document.getElementById('customLegend');
+        const searchInput = document.getElementById('legendSearch');
+        const selectAll = document.getElementById('legendSelectAllCheckbox');
 
-    const STORAGE_KEY = "legendState";
+        const STORAGE_KEY = "legendState";
 
-    // Load saved state
-    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        // Load saved state
+        const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 
-    // Apply saved state to chart
-    chart.data.datasets.forEach((ds, i) => {
-        if (savedState.hasOwnProperty(ds.label)) {
-            chart.getDatasetMeta(i).hidden = !savedState[ds.label];
-        }
-    });
-
-    // Sort datasets by highest point (descending)
-    function getSortedDatasets() {
-        return chart.data.datasets
-            .map((ds, i) => {
-                const maxValue = Math.max(...ds.data.filter(v => typeof v === "number"));
-                return { ds, i, maxValue };
-            })
-            .sort((a, b) => b.maxValue - a.maxValue);
-    }
-
-    function saveState() {
-        const state = {};
         chart.data.datasets.forEach((ds, i) => {
-            const meta = chart.getDatasetMeta(i);
-            state[ds.label] = !meta.hidden;
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
-    function renderLegend(filterText = '') {
-        legendContainer.innerHTML = '';
-
-        const sorted = getSortedDatasets();
-
-        sorted.forEach(({ ds, i }) => {
-            if (!ds.label.toLowerCase().includes(filterText.toLowerCase())) return;
-
-            const meta = chart.getDatasetMeta(i);
-
-            const item = document.createElement('div');
-            item.style.display = 'flex';
-            item.style.alignItems = 'center';
-            item.style.marginBottom = '6px';
-            item.style.cursor = 'pointer';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = !meta.hidden;
-            checkbox.style.marginRight = '6px';
-
-            const colorBox = document.createElement('span');
-            colorBox.style.width = '12px';
-            colorBox.style.height = '12px';
-            colorBox.style.backgroundColor = ds.borderColor;
-            colorBox.style.marginRight = '6px';
-            colorBox.style.display = 'inline-block';
-
-            const label = document.createElement('span');
-            label.textContent = ds.label;
-
-            function toggle() {
-                checkbox.checked = !checkbox.checked;
-                meta.hidden = !checkbox.checked;
-                chart.update();
-                saveState();
+            if (savedState.hasOwnProperty(ds.label)) {
+                chart.getDatasetMeta(i).hidden = !savedState[ds.label];
             }
+        });
 
-            checkbox.addEventListener('change', function (e) {
-                meta.hidden = !this.checked;
-                chart.update();
-                saveState();
-                e.stopPropagation();
+        function saveState() {
+            const state = {};
+            chart.data.datasets.forEach((ds, i) => {
+                state[ds.label] = !chart.getDatasetMeta(i).hidden;
             });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
 
-            // Clicking name or row toggles checkbox
-            item.addEventListener('click', toggle);
+        function getSortedDatasets() {
+            return chart.data.datasets
+                .map((ds, i) => {
+                    const activeMonths = ds.data.filter(v => typeof v === "number" && v > 0).length;
+                    const maxValue = Math.max(...ds.data.filter(v => typeof v === "number"));
+                    return { ds, i, activeMonths, maxValue };
+                })
+                .sort((a, b) => {
+                    if (b.activeMonths !== a.activeMonths) return b.activeMonths - a.activeMonths;
+                    return b.maxValue - a.maxValue;
+                });
+        }
 
-            item.appendChild(checkbox);
-            item.appendChild(colorBox);
-            item.appendChild(label);
+        function renderLegend(filterText = '') {
+            legendContainer.innerHTML = '';
+            const sorted = getSortedDatasets();
 
-            legendContainer.appendChild(item);
+            sorted.forEach(({ ds, i }) => {
+                if (!ds.label.toLowerCase().includes(filterText.toLowerCase())) return;
+
+                const meta = chart.getDatasetMeta(i);
+                const item = document.createElement('div');
+                item.style.display = 'flex';
+                item.style.alignItems = 'center';
+                item.style.marginBottom = '4px';
+                item.style.cursor = 'pointer';
+                item.style.fontSize = '10px';
+
+                // Checkbox for each item
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = !meta.hidden;
+                checkbox.style.marginRight = '6px';
+
+                // Color box (perfect square)
+                const colorBox = document.createElement('span');
+                colorBox.style.width = '14px';
+                colorBox.style.height = '14px';
+                colorBox.style.backgroundColor = ds.borderColor;
+                colorBox.style.display = 'inline-block';
+                colorBox.style.marginRight = '6px';
+                colorBox.style.flex = '0 0 14px';
+
+                // Chapter label
+                const label = document.createElement('span');
+                label.textContent = ds.label;
+
+                function toggle() {
+                    checkbox.checked = !checkbox.checked;
+                    meta.hidden = !checkbox.checked;
+                    chart.update();
+                    saveState();
+                    renderLegend(searchInput.value);
+                    updateSelectAllCheckbox();
+                }
+
+                checkbox.addEventListener('change', function (e) {
+                    meta.hidden = !this.checked;
+                    chart.update();
+                    saveState();
+                    renderLegend(searchInput.value);
+                    updateSelectAllCheckbox();
+                    e.stopPropagation();
+                });
+
+                item.addEventListener('click', toggle);
+
+                item.appendChild(checkbox);
+                item.appendChild(colorBox);
+                item.appendChild(label);
+                legendContainer.appendChild(item);
+            });
+        }
+
+        function updateSelectAllCheckbox() {
+            const allVisible = chart.data.datasets.every((ds, i) => !chart.getDatasetMeta(i).hidden);
+            const noneVisible = chart.data.datasets.every((ds, i) => chart.getDatasetMeta(i).hidden);
+
+            selectAll.checked = allVisible;
+            selectAll.indeterminate = !allVisible && !noneVisible;
+        }
+
+        selectAll.addEventListener('change', function () {
+            const showAll = this.checked;
+            chart.data.datasets.forEach((ds, i) => chart.getDatasetMeta(i).hidden = !showAll);
+            chart.update();
+            saveState();
+            renderLegend(searchInput.value);
+            updateSelectAllCheckbox();
         });
+
+        // Initial render
+        renderLegend();
+        updateSelectAllCheckbox();
+
+        // Search filter
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                renderLegend(this.value);
+            });
+        }
     }
-
-    // Initial render
-    renderLegend();
-
-    // Search filter
-    searchInput.addEventListener('input', function () {
-        renderLegend(this.value);
-    });
-
-    // Select All
-    btnSelectAll.addEventListener('click', function () {
-        chart.data.datasets.forEach((ds, i) => {
-            chart.getDatasetMeta(i).hidden = false;
-        });
-        chart.update();
-        saveState();
-        renderLegend(searchInput.value);
-    });
-
-    // Clear All
-    btnClearAll.addEventListener('click', function () {
-        chart.data.datasets.forEach((ds, i) => {
-            chart.getDatasetMeta(i).hidden = true;
-        });
-        chart.update();
-        saveState();
-        renderLegend(searchInput.value);
-    });
-}
-
-
 
     function fetchGraph() {
         const postData = {
@@ -400,9 +335,46 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
         fetchGraph();
     });
+
+    const selectAll = document.getElementById('legendSelectAllCheckbox');
+
+function updateSelectAllCheckbox() {
+    const allVisible = chart.data.datasets.every((ds, i) => !chart.getDatasetMeta(i).hidden);
+    const noneVisible = chart.data.datasets.every((ds, i) => chart.getDatasetMeta(i).hidden);
+
+    // Checked if all are visible, unchecked if all hidden
+    // Indeterminate if mixed
+    selectAll.checked = allVisible;
+    selectAll.indeterminate = !allVisible && !noneVisible;
+}
+
+// Checkbox toggle for Select All / Clear All
+selectAll.addEventListener('change', function() {
+    const showAll = this.checked;
+    chart.data.datasets.forEach((ds, i) => chart.getDatasetMeta(i).hidden = !showAll);
+    chart.update();
+    saveState();
+    renderLegend(searchInput.value);
+
+    // Update checkbox in case some datasets get hidden manually
+    updateSelectAllCheckbox();
+});
+
+// Call this whenever you render or toggle legend items
+function toggleLegendItem(meta) {
+    meta.hidden = !meta.hidden;
+    chart.update();
+    saveState();
+    renderLegend(searchInput.value);
+    updateSelectAllCheckbox();
+}
+
+// Initial update
+updateSelectAllCheckbox();
+
 });
 </script>
 
 <style>
-#reportGraph { height: 450px; } /* reduced height */
+#reportGraph { height: 500px; } /* reduced height */
 </style>
