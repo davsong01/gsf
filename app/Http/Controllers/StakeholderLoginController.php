@@ -158,7 +158,7 @@ class StakeholderLoginController extends Controller
         $user_id = session('user_idz')['value'] ?? null;
 
         $user = Stakeholder::findOrFail($user_id);
-        
+
         $user->password = bcrypt($request->password);
         $user->save();
 

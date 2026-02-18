@@ -97,6 +97,7 @@
                 <small class="opacity-75">
                     Welcome back, {{ Auth::guard('stakeholder')->user()->name }}
                 </small> <br>
+
                 <span class="badge bg-light text-dark mt-2">
                    {{$dashboardName}}
                 </span>

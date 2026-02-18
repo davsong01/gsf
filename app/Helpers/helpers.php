@@ -573,7 +573,7 @@ if (!function_exists('chapterEmailFooter')) {
 
 
 // }
-if (!function_exists('reportWindowStatus')) {
+if (!function_exists('secretariatStakeholders')) {
 
     function reportWindowStatus(?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
     {
@@ -775,7 +775,7 @@ if (!function_exists('fieldStakeholders')) {
 if (!function_exists('secretariatStakeholders')) {
     function secretariatStakeholders()
     {
-        $roles = StakeholderRole::whereIn('slug', ['secretariat'])->pluck('id')->toArray();
+        $roles = StakeholderRole::whereIn('slug', ['secretariat','nec-member'])->pluck('id')->toArray();
         return $roles;
     }
 }

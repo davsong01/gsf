@@ -49,7 +49,7 @@ class StakeholderMiddleware
                 ->route('stakeholders.loginpage')
                 ->with('error', 'Your account is inactive. Please contact the administrator.');
         }
-
+        
         return $next($request);
     }
 

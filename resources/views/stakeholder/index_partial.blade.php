@@ -37,7 +37,7 @@
                 secretariatStakeholders(),
                 ncpStakeholders()
             ));
-
+            
             $hierarchyCount = collect([
                 $canViewField,
                 $canViewZone,
@@ -60,8 +60,7 @@
 
                     <div class="col-md-2 mb-2">
                         <label class="form-label">To</label>
-                        <input type="date" name="to_date" class="form-control"
-                            value="{{ request('to_date') }}">
+                        <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
                     </div>
 
                     {{-- Field (highest first) --}}
