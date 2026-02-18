@@ -156,9 +156,13 @@ class AdminReportsController extends Controller
 
     public function reportAnalyticsType(Request $request, $type)
     {
+        $isAdmin = true;
+        $user = auth()->user();
+
+        $scope = app(ReportService::class)->getScopedEntitiesForUser($user, $isAdmin);
+
         $fields = DB::table('fields')->orderBy('name')->get();
         $zones  = DB::table('zones')->orderBy('name')->get();
-        $chapters = DB::table('chapters')->orderBy('name')->get();
 
         $data = [
             'isAdmin' => true,
@@ -166,22 +170,24 @@ class AdminReportsController extends Controller
             'type'  => $type,
             'fields'  => $fields,
             'zones'  => $zones,
-            'chapters'  => $chapters,
-            'legends' => Chapter::orderBy('name')->get(), // for filters
+            'legends' => Chapter::orderBy('name')->get(),
+            'isAdmin' => $isAdmin,// for filters
         ];
 
-        if ($request->filter_type === 'download') {
-            // Fetch full graph data
-            $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request);
+        $request['isAdmin'] = $isAdmin;
 
-            $labels = $result['labels'];       // Months
-            $datasets = $result['datasets'];   // Chapters with tooltip labels
+        if ($request->filter_type === 'download') {
+
+            $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
+
+            $labels = $result['labels'];
+            $datasets = $result['datasets'];
 
             $exportData = [];
 
             foreach ($datasets as $chapterData) {
-                // Get Chapter info (with Field and Zone)
-                $chapter = \App\Models\Chapter::with(['field', 'zone'])->find($chapterData['legend_id']);
+
+                $chapter = Chapter::with(['field', 'zone'])->find($chapterData['legend_id']);
 
                 $row = [
                     'Chapter' => $chapterData['label'],
@@ -208,11 +214,9 @@ class AdminReportsController extends Controller
             );
         }
 
-
-
         // Handle AJAX request for graph
         if ($request->isMethod('post')) {
-            $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request);
+            $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
             return response()->json([
                 'labels'        => $result['labels'],
                 'datasets'      => $result['datasets'],

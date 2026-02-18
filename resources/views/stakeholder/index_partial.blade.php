@@ -131,6 +131,18 @@
                         <button class="btn btn-secondary w-100">Filter</button>
                     </div>
 
+                    @if($canViewZone || $canViewChapter || $canViewField)
+                    @php
+                        if($isAdmin){
+                            $route = 'reports.analytics';
+                        }else{
+                            $route = 'stakeholders.reports.analytics';
+                        }
+                    @endphp
+                    <div class="col-md-2 mb-2">
+                        <a href="{{route($route)}}" class="btn btn-primary w-100">View Analytics</a>
+                    </div>
+                    @endif
                 </form>
             </div>
         </div>
@@ -179,7 +191,7 @@
                                         <td class="text-start">
                                             @php
                                                 $canEdit  = app(\App\Services\ReportService::class)->canEditReport($report, $user);
-                                                
+
                                                 $statuses = [
                                                     'Zone' => [
                                                         'value' => $report->zone_status,

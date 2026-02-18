@@ -1,4 +1,18 @@
+@php
+if(!$isAdmin){
+    $canViewZone = in_array($user->role_id, array_merge(
+        fieldStakeholders(),
+        secretariatStakeholders(),
+        ncpStakeholders()
+    ));
+}else{
+    $canViewZone = true;
+}
+@endphp
+
 <form method="GET" class="row g-2 align-items-end graph-submit">
+    
+    @if($canViewZone)
     <div class="col-md-4 mt-1">
         <label>Fields (Start Typing)</label>
         <select name="fields[]" class="form-select" multiple>
@@ -14,10 +28,9 @@
     <div class="col-md-4 mt-1">
         <label>Zones (Start Typing)</label>
         <select name="zones[]" class="form-select" multiple>
-            <!-- Options will be loaded via AJAX -->
         </select>
     </div>
-
+    @endif
     <div class="col-md-2 mt-1">
         <label>From</label>
         <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">

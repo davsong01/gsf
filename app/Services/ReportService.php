@@ -167,6 +167,53 @@ class ReportService
         ];
     }
 
+
+    public function getScopedEntitiesForUser($user, $isAdmin = false)
+    {
+        $role = $user->role_id ?? $user->role;
+
+        $chapterIds = collect();
+        $zoneIds    = collect();
+        $fieldIds   = collect();
+
+        /** =====================
+         * ROLE-BASED SCOPING
+         * ===================== */
+        if ($isAdmin || finStakeholders($user)) {
+            $chapterIds = Chapter::pluck('id');
+            $zoneIds    = Zone::pluck('id');
+            $fieldIds   = Field::pluck('id');
+        } else {
+            if (in_array($role, chapterStakeholders())) {
+                $chapterIds = collect([$user->chapter_id]);
+                $zoneIds    = collect([$user->zone_id]);
+                $fieldIds   = collect([$user->field_id]);
+            } elseif (in_array($role, zoneStakeholders())) {
+                $zoneIds = collect([$user->zone_id]);
+                $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
+                $fieldIds = Field::whereHas('zones', fn($q) => $q->where('id', $user->zone_id))->pluck('id');
+            } elseif (in_array($role, fieldStakeholders())) {
+                $fieldIds = collect([$user->field_id]);
+                $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
+                $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
+            } elseif (in_array($role, secretariatStakeholders())) {
+                $chapterIds = Chapter::pluck('id');
+                $zoneIds    = Zone::pluck('id');
+                $fieldIds   = Field::pluck('id');
+            }
+        }
+        
+        return [
+            'chapterIds' => $chapterIds,
+            'zoneIds'    => $zoneIds,
+            'fieldIds'   => $fieldIds,
+            'chapters'   => Chapter::whereIn('id', $chapterIds)->orderBy('name')->get(),
+            'zones'      => Zone::whereIn('id', $zoneIds)->orderBy('name')->get(),
+            'fields'     => Field::whereIn('id', $fieldIds)->orderBy('name')->get(),
+        ];
+    }
+
+
     public function prepareEditData(StakeholderReport $report, $user, bool $isAdmin = false
     ): array
     {

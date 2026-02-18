@@ -110,6 +110,8 @@ Route::controller(ChapterController::class)->group(function () {
 });
 
 Route::post('ajax-create-temp-details', [ConferenceManagementController::class, 'ajaxPayment']);
+Route::get('ajax/zones-by-fields', [ZoneController::class, 'getZonesByFields']);
+
 Auth::routes();
 Auth::routes(['verify' => false, 'register' => false] );
 
@@ -456,7 +458,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('zones', ZoneController::class);
     Route::get('ajax/field/{fieldId}/zones', [ZoneController::class, 'getZonesByField'])->name('zones.getbyfield');
-    Route::get('ajax/zones-by-fields', [ZoneController::class, 'getZonesByFields']);
 
     Route::post('ajax/designations-by-role', [StakeholderDesignationController::class, 'getDesignationsByRole'])->name('designations.getbyrole');
     Route::get('/ajax/offices/{role}', [StakeholderDesignationController::class, 'getOfficesByRole'])->name('designations.getofficesbyrole');
@@ -576,7 +577,12 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('reports/nudge/{report}', 'nudge')->name('reports.nudge');
             Route::post('reports/reject/{report}', 'rejectReport')->name('reports.reject');
             Route::get('reports/approve/{report}', 'approveReport')->name('reports.approve');
-            Route::get('reports/analysis', 'reportAnalysis')->name('reports.analysis');
+            // Route::get('reports/analysis', 'reportAnalysis')->name('reports.analysis');
+
+            Route::get('report-analytics', [StakeholderReportsController::class, 'reportAnalyticsIndex'])->name('reports.analytics');
+            Route::any('report-analytics/{type}', [StakeholderReportsController::class, 'reportAnalyticsType'])->name('reports.analytics.type');
+            Route::get('stakeholderreports/export', [StakeholderReportsController::class, 'export'])->name('report.export');
+
         });
 
         // Payments
