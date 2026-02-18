@@ -49,10 +49,10 @@
 
             <div class="col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary w-100">Apply</button>
-               <button type="submit" name="filter_type" value="download" class="btn btn-success"
-        formmethod="post" formaction="{{ route(Route::currentRouteName(), $type) }}">
-    Download
-</button>
+                <button type="submit" name="filter_type" value="download" class="btn btn-success"
+                        formmethod="post" formaction="{{ route(Route::currentRouteName(), $type) }}">
+                    Download
+                </button>
 
                 <a href="{{ url()->current() }}" class="btn btn-outline-danger w-100">Reset</a>
             </div>
@@ -62,7 +62,7 @@
 
 <div class="row">
     <div class="col-12">
-        <canvas id="reportGraph" height="400"></canvas>
+        <canvas id="reportGraph" height="900"></canvas>
     </div>
 </div>
 
