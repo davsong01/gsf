@@ -41,6 +41,17 @@ class ZoneController extends Controller
         return response()->json($zones);
     }
 
+    public function getZonesByFields(Request $request)
+    {
+        $fieldIds = $request->fields ?? [];
+        $zones = Zone::query()
+            ->when($fieldIds, fn($q) => $q->whereIn('field_id', $fieldIds))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return response()->json($zones);
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([

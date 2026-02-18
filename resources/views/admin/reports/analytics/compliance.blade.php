@@ -4,61 +4,9 @@
 <li class="breadcrumb-item"> <a href="{{ route('reports.analytics') }}">Monthly Reports</a></li>
 @endsection
 @section('content')
-<div class="row mb-4">
+<div class="row mb-2">
     <div class="col-12">
-        <form method="GET" class="row g-2 align-items-end graph-submit">
-            <div class="col-md-4 mt-1">
-                <label>Fields (Start Typing)</label>
-                <select name="fields[]" class="form-select" multiple>
-                    @foreach($fields ?? [] as $field)
-                        <option value="{{ $field->id }}">{{ $field->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="col-md-4 mt-1">
-                <label>Zones (Start Typing)</label>
-                <select name="zones[]" class="form-select" multiple>
-                    @foreach($zones ?? [] as $zone)
-                        <option value="{{ $zone->id }}">{{ $zone->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            {{-- <div class="col-md-4">
-                <label class="form-label">Submission Status</label>
-                <select name="submission_status" class="form-select">
-                    <option value="">All</option>
-                    <option value="0" {{ request('submission_status') === '0' ? 'selected' : '' }}>Not Submitted</option>
-                    <option value="1" {{ request('submission_status') === '1' ? 'selected' : '' }}>Currently Editing</option>
-                    <option value="2" {{ request('submission_status') === '2' ? 'selected' : '' }}>Submitted</option>
-                    <option value="3" {{ request('submission_status') === '3' ? 'selected' : '' }}>Zone Rejected</option>
-                    <option value="4" {{ request('submission_status') === '4' ? 'selected' : '' }}>Zone Approved</option>
-                    <option value="5" {{ request('submission_status') === '5' ? 'selected' : '' }}>Field Rejected</option>
-                    <option value="6" {{ request('submission_status') === '6' ? 'selected' : '' }}>Field Approved</option>
-                    <option value="7" {{ request('submission_status') === '7' ? 'selected' : '' }}>National Rejected</option>
-                    <option value="8" {{ request('submission_status') === '8' ? 'selected' : '' }}>National Approved</option>
-                </select>
-            </div> --}}
-            <div class="col-md-2 mt-1">
-                <label>From</label>
-                <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
-            </div>
-
-            <div class="col-md-2 mt-1">
-                <label>To</label>
-                <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
-            </div>
-
-            <div class="col-md-2 d-flex gap-2 mt-1">
-                <button type="submit" class="btn btn-primary w-100">Filter</button>
-                <button type="submit" name="filter_type" value="download" class="btn btn-success"
-                        formmethod="post" formaction="{{ route(Route::currentRouteName(), $type) }}">
-                    Download
-                </button>
-
-                <a href="{{ url()->current() }}" class="btn btn-outline-danger w-100">Reset</a>
-            </div>
-        </form>
+        @include('admin.reports.analytics.filter')
     </div>
 </div>
 
@@ -68,26 +16,51 @@
     </div>
 
     <div class="col-md-3">
-        <input type="text" id="legendSearch" class="form-control mb-2" placeholder="Search chapter...">
+        <input type="text" id="legendSearch" class="form-control mb-1" placeholder="Search chapter...">
 
-        <div class="d-flex gap-2 mb-2 align-items-center">
+        <div class="d-flex gap-2 mb-1 align-items-center">
             <input type="checkbox" id="legendSelectAllCheckbox" />
-            <label for="legendSelectAllCheckbox" class="mb-0">Select All</label>
+            <label for="legendSelectAllCheckbox" class="mb-0 pl-1"> Select All</label>
         </div>
         {{-- <div id="customLegend" class="overflow-auto" style="max-height:400px;"></div> --}}
 
         <div id="customLegend" style="
-            max-height: 450px;
+            max-height: 380px;
             overflow-y: auto;
             border: 1px solid #ddd;
             padding: 8px;
-            font-size: 13px;
+            font-size: 11px;
         "></div>
     </div>
-
-
+    <div class="col-md-9">
+        <div class="col-md-12">
+            <div class="text-center mt-1">
+                <button class="btn btn-primary btn-sm" id="compareBtn">Group <span>Current Group</span></button>
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- Compare Modal -->
+<div class="modal fade" id="compareModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <h5>Compare By</h5>
+      <div class="form-check">
+        <input class="form-check-input compare-radio" type="radio" name="compareGroup" id="compareChapter" value="chapter">
+        <label class="form-check-label" for="compareChapter">Chapter</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input compare-radio" type="radio" name="compareGroup" id="compareField" value="field">
+        <label class="form-check-label" for="compareField">Field</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input compare-radio" type="radio" name="compareGroup" id="compareZone" value="zone">
+        <label class="form-check-label" for="compareZone">Zone</label>
+      </div>
+    </div>
+  </div>
+</div>
 
 @endsection
 

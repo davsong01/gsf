@@ -3,7 +3,67 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
+    // At the top
+    let currentGroup = 'chapter'; // default
+
+    const compareBtn = document.getElementById('compareBtn');
+    const compareModalEl = document.getElementById('compareModal');
+    const compareModal = new bootstrap.Modal(compareModalEl);
+    const compareRadios = document.querySelectorAll('.compare-radio');
+
+    // Update button text
+    function updateCompareBtnText() {
+        compareBtn.querySelector('span').textContent =
+            currentGroup.charAt(0).toUpperCase() + currentGroup.slice(1);
+    }
+
+    // Show modal and check current group
+    compareBtn.addEventListener('click', () => {
+        compareRadios.forEach(r => r.checked = r.value === currentGroup);
+        compareModal.show();
+    });
+
+    // When a radio is selected, update chart immediately and close modal
+    compareRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (!this.checked) return;
+
+            currentGroup = this.value;
+            updateCompareBtnText();
+
+            const postData = {
+                _token: "{{ csrf_token() }}",
+                from_date: $('input[name="from_date"]').val(),
+                to_date: $('input[name="to_date"]').val(),
+                zones: $('select[name="zones[]"]').val() || [],
+                fields: $('select[name="fields[]"]').val() || [],
+                submission_status: $('select[name="submission_status"]').val() || null,
+                group_by: currentGroup
+            };
+
+            $('#graph-loader').removeClass('d-none');
+            $.post("{{ route($route, $type) }}", postData, function(res) {
+                fullGraphData = res;
+                renderChart();
+                $('#graph-loader').addClass('d-none');
+            });
+
+            compareModal.hide();
+        });
+    });
+
+    // Reset group to 'chapter' when filter button is clicked
+    document.querySelector('.graph-submit button[type="submit"]:not([name="filter_type"])').addEventListener('click', function(e) {
+        currentGroup = 'chapter';
+        updateCompareBtnText();
+        // Ensure radios also reflect the reset
+        compareRadios.forEach(r => r.checked = r.value === currentGroup);
+    });
+
+    // Initialize button text
+    updateCompareBtnText();
+
     const ctx = document.getElementById('reportGraph').getContext('2d');
     let chart = null;
     let fullGraphData = null;
@@ -109,9 +169,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Add individual chapters
                             innerHtml += `<div style="margin-top:6px; font-weight:bold;">Chapters:</div>`;
                             datasets.forEach(ds => {
-                                const meta = context.chart.getDatasetMeta(datasets.indexOf(ds));
+                                const meta = chart.getDatasetMeta(datasets.indexOf(ds));
                                 if (!meta.hidden) {
-                                    innerHtml += `<div>${ds.label}: ${ds.data[monthIndex] !== null ? status_levels[ds.data[monthIndex]] : 'Not Submitted'}</div>`;
+                                    const chaptersForMonth = ds.tooltip?.[monthIndex] || [];
+                                    chaptersForMonth.forEach(ch => {
+                                        innerHtml += `<div>${ch.chapter_name}: ${ch.status_label}</div>`;
+                                    });
                                 }
                             });
 
@@ -338,43 +401,43 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const selectAll = document.getElementById('legendSelectAllCheckbox');
 
-function updateSelectAllCheckbox() {
-    const allVisible = chart.data.datasets.every((ds, i) => !chart.getDatasetMeta(i).hidden);
-    const noneVisible = chart.data.datasets.every((ds, i) => chart.getDatasetMeta(i).hidden);
+    function updateSelectAllCheckbox() {
+        const allVisible = chart.data.datasets.every((ds, i) => !chart.getDatasetMeta(i).hidden);
+        const noneVisible = chart.data.datasets.every((ds, i) => chart.getDatasetMeta(i).hidden);
 
-    // Checked if all are visible, unchecked if all hidden
-    // Indeterminate if mixed
-    selectAll.checked = allVisible;
-    selectAll.indeterminate = !allVisible && !noneVisible;
-}
+        // Checked if all are visible, unchecked if all hidden
+        // Indeterminate if mixed
+        selectAll.checked = allVisible;
+        selectAll.indeterminate = !allVisible && !noneVisible;
+    }
 
-// Checkbox toggle for Select All / Clear All
-selectAll.addEventListener('change', function() {
-    const showAll = this.checked;
-    chart.data.datasets.forEach((ds, i) => chart.getDatasetMeta(i).hidden = !showAll);
-    chart.update();
-    saveState();
-    renderLegend(searchInput.value);
+    // Checkbox toggle for Select All / Clear All
+    selectAll.addEventListener('change', function() {
+        const showAll = this.checked;
+        chart.data.datasets.forEach((ds, i) => chart.getDatasetMeta(i).hidden = !showAll);
+        chart.update();
+        saveState();
+        renderLegend(searchInput.value);
 
-    // Update checkbox in case some datasets get hidden manually
+        // Update checkbox in case some datasets get hidden manually
+        updateSelectAllCheckbox();
+    });
+
+    // Call this whenever you render or toggle legend items
+    function toggleLegendItem(meta) {
+        meta.hidden = !meta.hidden;
+        chart.update();
+        saveState();
+        renderLegend(searchInput.value);
+        updateSelectAllCheckbox();
+    }
+
+    // Initial update
     updateSelectAllCheckbox();
-});
-
-// Call this whenever you render or toggle legend items
-function toggleLegendItem(meta) {
-    meta.hidden = !meta.hidden;
-    chart.update();
-    saveState();
-    renderLegend(searchInput.value);
-    updateSelectAllCheckbox();
-}
-
-// Initial update
-updateSelectAllCheckbox();
 
 });
 </script>
 
 <style>
-#reportGraph { height: 500px; } /* reduced height */
+#reportGraph { height: 450px; } /* reduced height */
 </style>

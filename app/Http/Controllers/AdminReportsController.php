@@ -169,34 +169,45 @@ class AdminReportsController extends Controller
             'chapters'  => $chapters,
             'legends' => Chapter::orderBy('name')->get(), // for filters
         ];
-        
+
         if ($request->filter_type === 'download') {
             // Fetch full graph data
             $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request);
 
             $labels = $result['labels'];       // Months
             $datasets = $result['datasets'];   // Chapters with tooltip labels
-            $statusLevels = $result['status_levels'];
 
             $exportData = [];
 
-            foreach ($datasets as $chapter) {
-                $row = ['Chapter' => $chapter['label']];
+            foreach ($datasets as $chapterData) {
+                // Get Chapter info (with Field and Zone)
+                $chapter = \App\Models\Chapter::with(['field', 'zone'])->find($chapterData['legend_id']);
+
+                $row = [
+                    'Chapter' => $chapterData['label'],
+                    'Field'   => $chapter->field->name ?? '-',
+                    'Zone'    => $chapter->zone->name ?? '-',
+                ];
 
                 foreach ($labels as $index => $month) {
-                    // Use tooltip (status name) for each month
-                    $row[$month] = $chapter['tooltip'][$index] ?? 'Not Submitted';
+                    // Use tooltip (status label) for each month
+                    $row[$month] = $chapterData['tooltip'][$index][0]['status_label'] ?? 'Not Submitted';
                 }
 
                 $exportData[] = $row;
             }
+
+            // Build headers with Field and Zone included
+            $headers = array_merge(['Chapter', 'Field', 'Zone'], $labels);
+
             // Download Excel
             return ExcelService::download(
                 $exportData,
-                array_merge(['Chapter'], $labels),
+                $headers,
                 'chapter_compliance_report.xlsx'
             );
         }
+
 
 
         // Handle AJAX request for graph
