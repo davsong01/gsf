@@ -2,30 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Food;
-use App\Models\User;
-use App\Models\Email;
-use App\Models\Hostel;
+use App\Mail\NotificationEmail;
 use App\Models\Chapter;
+use App\Models\ConferenceEdition;
+use App\Models\CriticalEmail;
+use App\Models\Email;
+use App\Models\EmailContact;
+use App\Models\Food;
+use App\Models\Hostel;
 use App\Models\Payment;
 use App\Models\Setting;
-use Illuminate\Support\Str;
-use App\Models\EmailContact;
-use Illuminate\Http\Request;
-use App\Models\CriticalEmail;
-use App\Mail\NotificationEmail;
-use App\Models\ConferenceEdition;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Intervention\Image\Facades\Image as Image;
-use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class Controller extends BaseController
 {
@@ -113,7 +113,7 @@ class Controller extends BaseController
                 'message'=>'success'
             ];
         } catch (\Exception $e) {
-            \Log::error($e->getMessage());
+            Log::error($e->getMessage());
             return [
                 'error' => $e->getMessage(),
             ];

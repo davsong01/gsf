@@ -1,13 +1,14 @@
 <?php
 
-use Carbon\Carbon;
-use App\Models\Field;
 use App\Models\Chapter;
-use Illuminate\Support\Str;
-use App\Models\GeneralSetting;
-use App\Models\StakeholderRole;
 use App\Models\ConferenceEdition;
+use App\Models\Field;
+use App\Models\GeneralSetting;
 use App\Models\StakeholderReport;
+use App\Models\StakeholderRole;
+use App\Models\StakeholderSetting;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 if (!function_exists('rootPermissions')) {
     function rootPermissions()
@@ -80,6 +81,11 @@ if (!function_exists('rootPermissions')) {
                                 'id' => 12,
                                 'slug' => 'stakeholderpersonnel.index',
                                 'name' => 'Stakeholders'
+                            ],
+                            [
+                                'id' => 90,
+                                'slug' => 'stakeholdersetting.index',
+                                'name' => 'Settings'
                             ]
                         ]
                     ]
@@ -488,98 +494,19 @@ if (!function_exists('chapterEmailFooter')) {
     }
 }
 
-
-// if (!function_exists('canAddReport')) {
-//     /**
-//      * Determine if a chapter is eligible to submit the report for the current month.
-//      *
-//      * @param int $chapterId
-//      * @param int|null $daysBeforeEnd
-//      * @param int|null $daysAfterStart
-//      * @return array ['eligible' => bool, 'month' => ?string]
-//      */
-
-
-//     function canAddReport(?int $chapterId = null, ?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
-//     {
-//         if (empty($chapterId)) {
-//             return ['eligible' => false, 'month' => null];
-//         }
-
-//         $daysBeforeEnd = $daysBeforeEnd ?? env('REPORT_WINDOW_START_OFFSET', 5);
-//         $daysAfterStart = $daysAfterStart ?? env('REPORT_WINDOW_END_OFFSET', 2);
-
-//         $chapter = Chapter::with('stakeholder')->find($chapterId);
-
-//         if (!$chapter || !$chapter->stakeholder) {
-//             return ['eligible' => false, 'month' => null];
-//         }
-
-//         $stakeholder = $chapter->stakeholder;
-//         if (!in_array($stakeholder->role_id, chapterStakeholders())) {
-//             return ['eligible' => false, 'month' => null];
-//         }
-
-//         $today = Carbon::today();
-
-//         // --- Previous month window ---
-//         $prevMonthEnd = $today->copy()->subMonth()->endOfMonth();
-//         $prevMonthStart = $today->copy()->subMonth()->startOfMonth();
-//         $lastSundayPrevMonth = $prevMonthEnd->copy()->previous(Carbon::SUNDAY);
-//         $prevWindowOpen = $lastSundayPrevMonth->lt($prevMonthEnd->copy()->subDays($daysBeforeEnd))
-//             ? $lastSundayPrevMonth
-//             : $prevMonthEnd->copy()->subDays($daysBeforeEnd);
-//         $prevWindowClose = $prevMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
-
-//         // --- Current month window ---
-//         $currMonthStart = $today->copy()->startOfMonth();
-//         $currMonthEnd = $today->copy()->endOfMonth();
-//         $lastSundayCurrMonth = $currMonthEnd->copy()->previous(Carbon::SUNDAY);
-//         $currWindowOpen = $lastSundayCurrMonth->lt($currMonthEnd->copy()->subDays($daysBeforeEnd))
-//             ? $lastSundayCurrMonth
-//             : $currMonthEnd->copy()->subDays($daysBeforeEnd);
-//         $currWindowClose = $currMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
-
-//         $reportMonthDate = null;
-
-//         // Use exclusive comparison for window close
-//         if ($today->between($prevWindowOpen, $prevWindowClose, false)) {
-//             $reportMonthDate = $prevMonthStart;
-//         } elseif ($today->between($currWindowOpen, $currWindowClose, false)) {
-//             $reportMonthDate = $currMonthStart;
-//         } else {
-//             return ['eligible' => false, 'month' => null];
-//         }
-
-//         // Check if report already exists for that month
-//         $reportExists = StakeholderReport::where('chapter_id', $chapterId)
-//             ->whereYear('created_at', $reportMonthDate->year)
-//             ->whereMonth('created_at', $reportMonthDate->month)
-//             ->exists();
-
-//         if ($reportExists) {
-//             return ['eligible' => false, 'month' => $reportMonthDate->format('F')];
-//         }
-
-//         return [
-//             'eligible' => true,
-//             'month_number' => $reportMonthDate->format('m'),
-//             'month' => $reportMonthDate->format('F'),
-//             'year' => $reportMonthDate->format('Y'),
-//             'window_open' => ($reportMonthDate->isSameMonth($prevMonthStart) ? $prevWindowOpen : $currWindowOpen)->format('Y-m-d'),
-//             'window_close' => ($reportMonthDate->isSameMonth($prevMonthStart) ? $prevWindowClose : $currWindowClose)->format('Y-m-d'),
-//         ];
-//     }
-
-
-// }
-if (!function_exists('secretariatStakeholders')) {
-
+if (!function_exists('reportWindowStatus')) {
     function reportWindowStatus(?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
     {
-        $daysBeforeEnd = $daysBeforeEnd ?? env('REPORT_WINDOW_START_OFFSET', 5);
-        $daysAfterStart = $daysAfterStart ?? env('REPORT_WINDOW_END_OFFSET', 2);
+        // $daysBeforeEnd = $daysBeforeEnd ?? env('REPORT_WINDOW_START_OFFSET', 5);
+        // $daysAfterStart = $daysAfterStart ?? env('REPORT_WINDOW_END_OFFSET', 2);
+        $daysBeforeEnd = $daysBeforeEnd
+            ?? (int) (stakeholderSetting('REPORT_WINDOW_START_OFFSET')
+                ?? env('REPORT_WINDOW_START_OFFSET', 5));
 
+        $daysAfterStart = $daysAfterStart
+            ?? (int) (stakeholderSetting('REPORT_WINDOW_END_OFFSET')
+                ?? env('REPORT_WINDOW_END_OFFSET', 5));
+        // dd($daysBeforeEnd, $daysAfterStart);
         $today = Carbon::today();
 
         // --- Previous month window ---
@@ -663,7 +590,6 @@ if (!function_exists('canAddReport')) {
             ->whereYear('created_at', $reportMonthDate->year)
             ->whereMonth('created_at', $reportMonthDate->month)
             ->exists();
-
         if ($reportExists) {
             return [
                 'eligible' => false,
@@ -950,6 +876,26 @@ if (!function_exists('generalSetting')) {
     }
 }
 
+if (!function_exists('stakeholderSetting')) {
+    function stakeholderSetting(string|array $key = '*')
+    {
+        // Return all settings as key => value
+        if ($key === '*') {
+            return StakeholderSetting::pluck('value', 'key')->toArray();
+        }
+
+        // Return multiple keys
+        if (is_array($key)) {
+            return StakeholderSetting::whereIn('key', $key)
+                ->pluck('value', 'key')
+                ->toArray();
+        }
+
+        // Return single key
+        return StakeholderSetting::where('key', $key)
+            ->value('value');
+    }
+}
 
 if (!function_exists('conferenceSpeakers')) {
     function conferenceSpeakers()

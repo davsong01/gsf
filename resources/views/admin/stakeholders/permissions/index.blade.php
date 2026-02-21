@@ -12,7 +12,7 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="card-title">All Permissions</h4>
-                        <a href="{{ route('stakeholderpermissions.create') }}" class="btn btn-primary mt-1">Add New Peermission</a>
+                        <a href="{{ route('stakeholderpermissions.create') }}" class="btn btn-primary mt-1">Add New Permission</a>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -44,7 +44,7 @@
                                                     <em>No role assigned</em>
                                                 @endif
                                             </td>
-                                            
+
                                             <td>
                                                 <a href="{{ route('stakeholderpermissions.edit', $permission->id) }}" class="btn btn-sm btn-info">Edit</a>
                                                 <form action="{{ route('stakeholderpermissions.destroy', $permission->id) }}" method="POST" style="display:inline-block">
@@ -55,7 +55,7 @@
                                             </td>
                                         </tr>
                                         @endforeach
-                                    </tbody>    
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
