@@ -13,7 +13,7 @@
         <div class="row mb-3">
             <div class="col-12 d-flex justify-content-between">
                 <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">
-                    Add {{ $eligibleMonth['month'] }}’s Report
+                    Add {{ $eligibleMonth['month']}} {{$eligibleMonth['year']}}’s Report
                 </a>
             </div>
         </div>
@@ -37,7 +37,7 @@
                 secretariatStakeholders(),
                 ncpStakeholders()
             ));
-            
+
             $hierarchyCount = collect([
                 $canViewField,
                 $canViewZone,

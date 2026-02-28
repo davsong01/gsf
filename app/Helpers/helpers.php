@@ -494,59 +494,167 @@ if (!function_exists('chapterEmailFooter')) {
     }
 }
 
+// if (!function_exists('reportWindowStatus')) {
+//     function reportWindowStatus(?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
+//     {
+//         // $daysBeforeEnd = $daysBeforeEnd ?? env('REPORT_WINDOW_START_OFFSET', 5);
+//         // $daysAfterStart = $daysAfterStart ?? env('REPORT_WINDOW_END_OFFSET', 2);
+//         $daysBeforeEnd = $daysBeforeEnd
+//             ?? (int) (stakeholderSetting('REPORT_WINDOW_START_OFFSET')
+//                 ?? env('REPORT_WINDOW_START_OFFSET', 5));
+
+//         $daysAfterStart = $daysAfterStart
+//             ?? (int) (stakeholderSetting('REPORT_WINDOW_END_OFFSET')
+//                 ?? env('REPORT_WINDOW_END_OFFSET', 5));
+//         // dd($daysBeforeEnd, $daysAfterStart);
+//         $today = Carbon::today();
+
+//         // --- Previous month window ---
+//         $prevMonthStart = $today->copy()->subMonth()->startOfMonth();
+//         $prevMonthEnd   = $today->copy()->subMonth()->endOfMonth();
+
+//         $lastSundayPrevMonth = $prevMonthEnd->copy()->previous(Carbon::SUNDAY);
+
+//         $prevWindowOpen = $lastSundayPrevMonth->lt($prevMonthEnd->copy()->subDays($daysBeforeEnd))
+//             ? $lastSundayPrevMonth
+//             : $prevMonthEnd->copy()->subDays($daysBeforeEnd);
+
+//         $prevWindowClose = $prevMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
+
+//         // --- Current month window ---
+//         $currMonthStart = $today->copy()->startOfMonth();
+//         $currMonthEnd   = $today->copy()->endOfMonth();
+
+//         $lastSundayCurrMonth = $currMonthEnd->copy()->previous(Carbon::SUNDAY);
+
+//         $currWindowOpen = $lastSundayCurrMonth->lt($currMonthEnd->copy()->subDays($daysBeforeEnd))
+//             ? $lastSundayCurrMonth
+//             : $currMonthEnd->copy()->subDays($daysBeforeEnd);
+
+//         $currWindowClose = $currMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
+
+//         if ($today->between($prevWindowOpen, $prevWindowClose, false)) {
+//             $windowOpen  = $prevWindowOpen;
+//             $windowClose = $prevWindowClose;
+//         } elseif ($today->between($currWindowOpen, $currWindowClose, false)) {
+//             $windowOpen  = $currWindowOpen;
+//             $windowClose = $currWindowClose;
+//         } else {
+//             return ['eligible' => false, 'month' => null];
+//         }
+
+//         // Report month is determined by WINDOW CLOSE
+//         $reportMonthDate = $windowClose->copy()->startOfMonth();
+//         // dd($windowOpen, $windowClose, $reportMonthDate);
+//         return [
+//             'eligible' => true,
+//             'month_number' => $reportMonthDate->format('m'),
+//             'month' => $reportMonthDate->format('F'),
+//             'year' => $reportMonthDate->format('Y'),
+//             'window_open' => $windowOpen->format('Y-m-d'),
+//             'window_close' => $windowClose->format('Y-m-d'),
+//             'reportMonthDate' => $reportMonthDate,
+//         ];
+//     }
+// }
+
+
 if (!function_exists('reportWindowStatus')) {
-    function reportWindowStatus(?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
+    function reportWindowStatus(?int $chapterId, ?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
     {
-        // $daysBeforeEnd = $daysBeforeEnd ?? env('REPORT_WINDOW_START_OFFSET', 5);
-        // $daysAfterStart = $daysAfterStart ?? env('REPORT_WINDOW_END_OFFSET', 2);
         $daysBeforeEnd = $daysBeforeEnd
-            ?? (int) (stakeholderSetting('REPORT_WINDOW_START_OFFSET')
-                ?? env('REPORT_WINDOW_START_OFFSET', 5));
+            ?? (int)(stakeholderSetting('REPORT_WINDOW_START_OFFSET') ?? env('REPORT_WINDOW_START_OFFSET', 5));
 
         $daysAfterStart = $daysAfterStart
-            ?? (int) (stakeholderSetting('REPORT_WINDOW_END_OFFSET')
-                ?? env('REPORT_WINDOW_END_OFFSET', 5));
-        // dd($daysBeforeEnd, $daysAfterStart);
-        $today = Carbon::today();
+            ?? (int)(stakeholderSetting('REPORT_WINDOW_END_OFFSET') ?? env('REPORT_WINDOW_END_OFFSET', 5));
+
+        $today = Carbon::today()->startOfDay();
+        $reportStartMonth = Carbon::parse(stakeholderSetting('REPORT_START_DATE') ?? '2025-11-01')->startOfMonth();
+
+        // Check if backlog reports are allowed
+        $allowBacklog = stakeholderSetting('ALLOW_BACKLOG_REPORT') ?? 'no';
+
+        // =================================
+        // 1️⃣ Check for missing months
+        // =================================
+
+        if ($allowBacklog === 'yes' && $chapterId) {
+            // Get all submitted months based on month + year columns
+            $submittedMonths = StakeholderReport::where('chapter_id', $chapterId)
+                ->select('month', 'year')
+                ->get()
+                ->map(fn($r) => Carbon::create($r->year, $r->month, 1)->format('Y-m'))
+                ->toArray();
+
+            $submittedSet = array_flip($submittedMonths);
+
+            $cursor = $reportStartMonth->copy();
+            $missingMonth = null;
+
+            while ($cursor->lte($today->copy()->startOfMonth())) {
+                $key = $cursor->format('Y-m'); // year + month
+
+                if (!isset($submittedSet[$key])) {
+                    $missingMonth = $cursor->copy();
+                    break; // return earliest missing month first
+                }
+
+                $cursor->addMonth();
+            }
+
+            if ($missingMonth) {
+                return [
+                    'eligible' => true,
+                    'forced' => true,
+                    'month_number' => $missingMonth->format('m'),
+                    'month' => $missingMonth->format('F'),
+                    'year' => $missingMonth->format('Y'),
+                    'window_open' => null,
+                    'window_close' => null,
+                    'reportMonthDate' => $missingMonth,
+                    'reason' => 'previous_month_pending',
+                ];
+            }
+        }
+
+        // =================================
+        // 2️⃣ Window logic if no missing months
+        // =================================
 
         // --- Previous month window ---
         $prevMonthStart = $today->copy()->subMonth()->startOfMonth();
-        $prevMonthEnd   = $today->copy()->subMonth()->endOfMonth();
-
+        $prevMonthEnd = $today->copy()->subMonth()->endOfMonth();
         $lastSundayPrevMonth = $prevMonthEnd->copy()->previous(Carbon::SUNDAY);
-
         $prevWindowOpen = $lastSundayPrevMonth->lt($prevMonthEnd->copy()->subDays($daysBeforeEnd))
             ? $lastSundayPrevMonth
             : $prevMonthEnd->copy()->subDays($daysBeforeEnd);
-
         $prevWindowClose = $prevMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
 
         // --- Current month window ---
         $currMonthStart = $today->copy()->startOfMonth();
-        $currMonthEnd   = $today->copy()->endOfMonth();
-
+        $currMonthEnd = $today->copy()->endOfMonth();
         $lastSundayCurrMonth = $currMonthEnd->copy()->previous(Carbon::SUNDAY);
-
         $currWindowOpen = $lastSundayCurrMonth->lt($currMonthEnd->copy()->subDays($daysBeforeEnd))
             ? $lastSundayCurrMonth
             : $currMonthEnd->copy()->subDays($daysBeforeEnd);
-
         $currWindowClose = $currMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
 
         if ($today->between($prevWindowOpen, $prevWindowClose, false)) {
-            $reportMonthDate = $prevMonthStart;
             $windowOpen = $prevWindowOpen;
             $windowClose = $prevWindowClose;
         } elseif ($today->between($currWindowOpen, $currWindowClose, false)) {
-            $reportMonthDate = $currMonthStart;
             $windowOpen = $currWindowOpen;
             $windowClose = $currWindowClose;
         } else {
             return ['eligible' => false, 'month' => null];
         }
 
+        // Window close determines report month
+        $reportMonthDate = $windowClose->copy()->startOfMonth();
+
         return [
             'eligible' => true,
+            'forced' => false,
             'month_number' => $reportMonthDate->format('m'),
             'month' => $reportMonthDate->format('F'),
             'year' => $reportMonthDate->format('Y'),
@@ -566,7 +674,7 @@ if (!function_exists('canAddReport')) {
         }
 
         // First: check window only
-        $window = reportWindowStatus($daysBeforeEnd, $daysAfterStart);
+        $window = reportWindowStatus($chapterId, $daysBeforeEnd, $daysAfterStart);
 
         if (!$window['eligible']) {
             return ['eligible' => false, 'month' => null];

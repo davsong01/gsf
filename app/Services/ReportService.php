@@ -35,7 +35,7 @@ class ReportService
             ];
         }
 
-        return $sessions;
+        return array_reverse($sessions);
     }
 
     public function index(Request $request, $user, bool $isAdmin = false)
@@ -202,7 +202,7 @@ class ReportService
                 $fieldIds   = Field::pluck('id');
             }
         }
-        
+
         return [
             'chapterIds' => $chapterIds,
             'zoneIds'    => $zoneIds,

@@ -88,6 +88,7 @@ class LoginController extends Controller
             ])->withInput();
         }
 
+
         // Check password
         if (!Hash::check($password, $user->password)) {
             return back()->withErrors([
