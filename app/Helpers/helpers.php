@@ -569,34 +569,37 @@ if (!function_exists('reportWindowStatus')) {
             ?? (int)(stakeholderSetting('REPORT_WINDOW_END_OFFSET') ?? env('REPORT_WINDOW_END_OFFSET', 5));
 
         $today = Carbon::today()->startOfDay();
-        $reportStartMonth = Carbon::parse(stakeholderSetting('REPORT_START_DATE') ?? '2025-11-01')->startOfMonth();
+        $reportStartMonth = Carbon::parse(
+            stakeholderSetting('REPORT_START_DATE') ?? '2025-11-01'
+        )->startOfMonth();
 
-        // Check if backlog reports are allowed
         $allowBacklog = stakeholderSetting('ALLOW_BACKLOG_REPORT') ?? 'no';
 
         // =================================
-        // 1️⃣ Check for missing months
+        // 1️⃣ BACKLOG LOGIC (month + year columns)
         // =================================
-
         if ($allowBacklog === 'yes' && $chapterId) {
-            // Get all submitted months based on month + year columns
+
             $submittedMonths = StakeholderReport::where('chapter_id', $chapterId)
                 ->select('month', 'year')
                 ->get()
-                ->map(fn($r) => Carbon::create($r->year, $r->month, 1)->format('Y-m'))
+                ->map(fn ($r) => Carbon::create($r->year, $r->month, 1)->format('Y-m'))
                 ->toArray();
 
             $submittedSet = array_flip($submittedMonths);
 
+            // only check up to last completed month
+            $lastCompletedMonth = $today->copy()->subMonth()->startOfMonth();
+
             $cursor = $reportStartMonth->copy();
             $missingMonth = null;
 
-            while ($cursor->lte($today->copy()->startOfMonth())) {
-                $key = $cursor->format('Y-m'); // year + month
+            while ($cursor->lte($lastCompletedMonth)) {
+                $key = $cursor->format('Y-m');
 
                 if (!isset($submittedSet[$key])) {
                     $missingMonth = $cursor->copy();
-                    break; // return earliest missing month first
+                    break;
                 }
 
                 $cursor->addMonth();
@@ -618,25 +621,31 @@ if (!function_exists('reportWindowStatus')) {
         }
 
         // =================================
-        // 2️⃣ Window logic if no missing months
+        // 2️⃣ WINDOW LOGIC
         // =================================
 
         // --- Previous month window ---
         $prevMonthStart = $today->copy()->subMonth()->startOfMonth();
-        $prevMonthEnd = $today->copy()->subMonth()->endOfMonth();
+        $prevMonthEnd   = $today->copy()->subMonth()->endOfMonth();
+
         $lastSundayPrevMonth = $prevMonthEnd->copy()->previous(Carbon::SUNDAY);
+
         $prevWindowOpen = $lastSundayPrevMonth->lt($prevMonthEnd->copy()->subDays($daysBeforeEnd))
             ? $lastSundayPrevMonth
             : $prevMonthEnd->copy()->subDays($daysBeforeEnd);
+
         $prevWindowClose = $prevMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
 
         // --- Current month window ---
         $currMonthStart = $today->copy()->startOfMonth();
-        $currMonthEnd = $today->copy()->endOfMonth();
+        $currMonthEnd   = $today->copy()->endOfMonth();
+
         $lastSundayCurrMonth = $currMonthEnd->copy()->previous(Carbon::SUNDAY);
+
         $currWindowOpen = $lastSundayCurrMonth->lt($currMonthEnd->copy()->subDays($daysBeforeEnd))
             ? $lastSundayCurrMonth
             : $currMonthEnd->copy()->subDays($daysBeforeEnd);
+
         $currWindowClose = $currMonthStart->copy()->addMonth()->startOfMonth()->addDays($daysAfterStart);
 
         if ($today->between($prevWindowOpen, $prevWindowClose, false)) {
@@ -649,9 +658,10 @@ if (!function_exists('reportWindowStatus')) {
             return ['eligible' => false, 'month' => null];
         }
 
-        // Window close determines report month
-        $reportMonthDate = $windowClose->copy()->startOfMonth();
-
+        // ✅ Report month comes from window OPEN
+        $reportMonthDate = $windowOpen->copy()->startOfMonth(); // we use window close because it is the report of the next month we are trying to get here
+        // $reportMonthDate = $windowOpen->copy()->startOfMonth();
+        // dd( $reportMonthDate, $windowOpen, $windowClose);
         return [
             'eligible' => true,
             'forced' => false,
@@ -695,8 +705,9 @@ if (!function_exists('canAddReport')) {
 
         // Check duplicate report
         $reportExists = StakeholderReport::where('chapter_id', $chapterId)
-            ->whereYear('created_at', $reportMonthDate->year)
-            ->whereMonth('created_at', $reportMonthDate->month)
+            // ->where('created_at', $reportMonthDate->year)
+            ->where('month', $reportMonthDate->month)
+            ->where('year', $reportMonthDate->year)
             ->exists();
         if ($reportExists) {
             return [
