@@ -659,7 +659,7 @@ if (!function_exists('reportWindowStatus')) {
         }
 
         // ✅ Report month comes from window OPEN
-        $reportMonthDate = $windowOpen->copy()->startOfMonth(); // we use window close because it is the report of the next month we are trying to get here
+        $reportMonthDate = $windowOpen->copy()->startOfMonth(); // we use window open because it is the report of the current month we are trying to get here
         // $reportMonthDate = $windowOpen->copy()->startOfMonth();
         // dd( $reportMonthDate, $windowOpen, $windowClose);
         return [

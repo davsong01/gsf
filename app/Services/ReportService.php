@@ -484,6 +484,7 @@ class ReportService
                     'question_section_id' => (int) $question->section_id,
                 ]
             );
+
         }
     }
 

@@ -52,23 +52,30 @@ class ReportNotificationService
         for ($i = $currentLevelIndex + 1; $i < count($levels); $i++) {
             $level = $levels[$i];
 
-            $query = Stakeholder::select(['name', 'email','role_id'])->where('status', 'active')->whereIn('role_id', $roleHierarchy[$level]);
-
-            // Chapter-scoped hierarchy levels
-            if (in_array($level, ['chapter'])) {
-                $query->where('chapter_id', $report->chapter_id);
+            if (!isset($roleHierarchy[$level])) {
+                continue; // no roles for this level
             }
 
-            if (in_array($level, ['zone'])) {
-                $query->where('zone_id', $report->zone_id);
-            }
+            $query = Stakeholder::select(['name', 'email', 'role_id', 'chapter_id', 'zone_id', 'field_id'])
+                ->where('status', 'active')
+                ->whereIn('role_id', $roleHierarchy[$level]);
 
-            if (in_array($level, ['field'])) {
-                $query->where('field_id', $report->field_id);
+            if ($level === 'chapter') {
+                $query->where('chapter_id', $report->chapter_id)
+                    ->whereNotNull('chapter_id');
+            } elseif ($level === 'zone') {
+                $query->where('zone_id', $report->zone_id)
+                    ->whereNotNull('zone_id');
+            } elseif ($level === 'field') {
+                $query->where('field_id', $report->field_id)
+                    ->whereNotNull('field_id');
+            } else {
+                continue;
             }
 
             $recipients = $recipients->merge($query->get());
         }
+
 
         $recipients = $recipients
             ->filter(fn($s) => !empty($s->email))
