@@ -15,7 +15,7 @@
                         <div class="">
                             <a href="{{ route('conference.participants.create', ['edition'=>$edition->id, 'type'=>$type]) }}" class="btn btn-primary mt-1">Add new</a>
                             <a class="btn btn-info mt-1" href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id,'type'=>$type]) }}">Import {{ $type }}</a>
-                            <a href="{{ route('conferenceusers.export',  ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export</a>
+                            <a href="{{ route('conferenceusers.export',  ['edition'=>$edition->id, 'plan'=>$type]) }}" class="btn btn-primary mt-1">Export</a>
                         </div>
                     </div>
                     <div class="card-content">

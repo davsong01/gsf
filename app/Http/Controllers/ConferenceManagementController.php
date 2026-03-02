@@ -822,14 +822,14 @@ class ConferenceManagementController extends Controller
 	}
 
     public function exportParticipants(Request $request){
-
         $payload = [
             'edition' => ConferenceEdition::where('id', $request->edition)->first(),
+            'plan' => $request->plan,
         ];
 
         $exportData = UserService::exportConferenceParticipantsData($payload);
         $name = $payload['edition']->conference_theme . ' participants.xlsx';
-        
+
         return ExcelService::download(
             $exportData['data']->toArray(),
             array_values($exportData['headers']),

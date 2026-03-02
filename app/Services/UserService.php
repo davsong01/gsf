@@ -88,10 +88,15 @@ class UserService
         ->where('conference_edition_id', $edition->id)
         ->where('status', 'Complete')
         ->whereHas('user')
-        ->with(['user', 'allocationFields', 'moderator','hostel', 'servicePoint'])
-        ->latest()
-        ->get();
+        ->with(['user', 'allocationFields', 'moderator','hostel', 'servicePoint']);
 
+        if(!empty($data['plan'])){
+            $transactions = $transactions->where('level', $data['plan']);
+        }
+
+        $transactions = $transactions->latest()
+        ->get();
+        
         $allocatableFields = $edition->conferenceplans
         ->flatMap(fn ($plan) => $plan->fields()->pluck('name'))
         ->unique()
