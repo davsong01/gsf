@@ -14,7 +14,7 @@
                         <h4 class="card-title">All {{ $type }}s</h4>
                         <div class="">
                             <a href="{{ route('conference.participants.create', ['edition'=>$edition->id, 'type'=>$type]) }}" class="btn btn-primary mt-1">Add new</a>
-                            <a class="btn btn-info mt-1" href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id,'type'=>$type]) }}">Import {{ $type }}</a>
+                            <a class="btn btn-info mt-1" href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id,'type'=>$type, 'import_type' => $import_type]) }}">Import {{ $type }}</a>
                             <a href="{{ route('conferenceusers.export',  ['edition'=>$edition->id, 'plan'=>$type]) }}" class="btn btn-primary mt-1">Export</a>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
                                                     <strong>Reg Plan:</strong> {{ $participant->conferenceplan->title }} <br>
                                                 </span>
                                                 <span style="color:green">
-                                                    <strong>Reg Level:</strong> {{ $participant->level }}
+                                                    <strong>Reg Level:</strong> {{ $participant->level }} <br>
                                                 </span>
                                                 @if(isset($participant->hostel_id)) <br>
                                                 <strong>Hostel:</strong> {{ $participant->hostel->name }}

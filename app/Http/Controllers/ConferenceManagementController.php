@@ -814,10 +814,11 @@ class ConferenceManagementController extends Controller
             }
 
             $participants = $participants->latest()->take(10)->get();
+            $import_type = $slug;
 
 			$edition = ConferenceEdition::find($edition);
 
-			return view('conference_management.admin.users.index', compact('participants', 'edition', 'type'));
+			return view('conference_management.admin.users.index', compact('participants', 'edition', 'type', 'import_type'));
 		}
 	}
 
@@ -919,9 +920,10 @@ class ConferenceManagementController extends Controller
 
 		if ($user->role == 1) {
 			$type = $request->type;
+			$import_type = $request->import_type;
 			$chapters = Chapter::all();
 
-			return view('conference_management.admin.users.import', compact('chapters', 'edition', 'type'));
+			return view('conference_management.admin.users.import', compact('chapters', 'edition', 'type', 'import_type'));
 		}
 
 		if (getRegistrationUserType(['moderator'], $edition)) {
