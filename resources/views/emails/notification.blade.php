@@ -44,7 +44,7 @@ Dear {{ $data['name'] }},
 {!! $data['content'] !!}<br><br>
 
 Please find details below:
-           
+
 Date Approved : {{ $data['date_approved'] }}<br>
 Value of your Post : {!! $setting->default_currency !!}{{ $data['amount'] }}<br>
 Current Amount in Wallet: {!! $setting->default_currency !!}{{ $data['wallet'] }}<br><br>
@@ -57,7 +57,7 @@ Dear {{ $data['name'] }},
 {!! $data['content'] !!}<br><br>
 
 Please find details below:
-           
+
 Current Amount in Wallet: {!! $setting->default_currency !!}{{ $data['wallet'] }}<br><br>
 
 @endif
@@ -152,7 +152,7 @@ Please login to approve!
 @if($data['type'] == 'pop')
 Dear {{ $data['addressee'] }},
 
-<strong>{{ $data['chapter'] }}'s </strong> has sent payment report of <strong> &#8358;{{ $data['amount'] }} </strong>for <strong>{{ $data['date'] }}</strong>.
+<strong>{{ $data['chapter'] }}'s </strong> has sent payment report of <strong> {!! currency_symbol() !!}{{ $data['amount'] }} </strong>for <strong>{{ $data['date'] }}</strong>.
 <hr>
 
 Please login to download report!
@@ -171,7 +171,7 @@ Dear {{ $data['name'] }},
 
 @if($data['type'] == 'emailReport')
 Dear {{ $data['name'] }},
-{{ $data['count'] }} emails have been sent, below is a copy of the mail: 
+{{ $data['count'] }} emails have been sent, below is a copy of the mail:
 
 {!! $data['content'] !!}
 @endif

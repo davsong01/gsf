@@ -148,8 +148,8 @@ class HomeController extends Controller
             $conference_year = Carbon::parse($setting->start_date)->year;
             $title = $plan->title;
             $fields = $plan->fields()->sortBy('display_order');
+            // dd( $fields, $plan);
             $registrationFields = reformatRegistrationFields($fields);
-
             return view('frontend.conference.template' . $this->conference->template_id . '.registration', compact('title', 'chapters', 'setting', 'conference_year', 'type', 'fields', 'registrationFields','plan'));
         } else {
             return abort(404);
@@ -166,7 +166,7 @@ class HomeController extends Controller
                         ->latest()
                             ->paginate(15)
                                 ->withQueryString();
-        
+
         return view('frontend.' . frontendTemplate() . '.alumni', compact('alumnis','chapters'));
     }
 

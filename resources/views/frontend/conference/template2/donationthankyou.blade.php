@@ -56,14 +56,14 @@
             </div><!-- single intro text end-->
             <div class="border-shap left"></div>
         </div><!-- col end-->
-        
+
     </div>
     <div class="row" style="margin-top:20px">
         <div class="col-lg-4">
             <div class="single-intro-text single-contact-feature">
                 <h3 class="ts-title">Amount Paid</h3>
                 <p>
-                &#8358;{{ number_format($data['amount']) }} 
+                {!! currency_symbol() !!}{{ number_format($data['amount']) }}
                 </p>
                 <p>
                 {{ $data['payment_type'] }}
@@ -73,7 +73,7 @@
             <div class="border-shap left"></div>
         </div><!-- col end-->
     </div><!-- row end-->
-    
+
     </div><!-- container end-->
     <div class="speaker-shap">
         <img class="shap2" src="images/shap/home_schedule_memphis1.png" alt="">

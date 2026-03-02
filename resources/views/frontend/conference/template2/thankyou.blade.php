@@ -62,7 +62,7 @@
             <div class="single-intro-text single-contact-feature">
                 <h3 class="ts-title">Amount Paid</h3>
                 <p>
-                &#8358;{{ number_format($data['amount']) }}
+                {!! currency_symbol() !!}{{ number_format($data['amount']) }}
                 </p>
                 <p>
                 {{ $data['payment_type'] }}

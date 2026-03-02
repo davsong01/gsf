@@ -35,9 +35,9 @@
                                                 {{ $donation->name }} <br>
                                                 {{ $donation->email }} <br>
                                                 {{ $donation->phone }}
-                                            
+
                                             </td>
-                                            <td>&#8358;{{ $donation->amount }}</td>
+                                            <td>{!! currency_symbol() !!}{{ $donation->amount }}</td>
                                             <td>{{ ucfirst($donation->type) }}</td>
                                         </tr>
                                         @endforeach
@@ -46,7 +46,7 @@
                             </div>
                         </div>
                     </div>
-                   
+
                 </div>
             </div>
         </div>

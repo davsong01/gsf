@@ -44,33 +44,33 @@
                                         <label for="conference_theme">Conference theme</label>
                                         <fieldset class="form-group ">
                                             <input type="text" class="form-control" name="conference_theme" value="{{ old('conference_theme') ?? $edition->conference_theme }}" id="conference_theme">
-                                        
+
                                         </fieldset>
                                     </div>
                                     <div class="col-sm-6 col-md-6">
                                         <label for="slug">Conference slug(Will be used on ID cards)</label>
                                         <fieldset class="form-group ">
                                             <input type="text" class="form-control" name="slug" value="{{ old('slug') ?? $edition->slug}}" id="conference_theme">
-                                        
+
                                         </fieldset>
                                     </div>
-                                    
+
                                     <div class="col-sm-6 col-md-6">
                                         <label for="official_email">Official Email</label>
                                         <fieldset class="form-group ">
                                             <input type="text" class="form-control" name="official_email" value="{{ old('official_email') ?? $edition->official_email }}" id="official_email">
-                                            
+
 
                                         </fieldset>
                                     </div>
-                                    
+
                                     {{-- {{dd($edition)}} --}}
                                     <div class="col-sm-6 col-md-6">
                                         <label for="start_date">Conference Start Date</label>
-                                    
+
                                         <fieldset class="form-group ">
                                             <input type="date" class="form-control" name="start_date" value="{{ old('start_date') ?? date('Y-m-d', strtotime($edition->start_date)) }}" id="start_date">
-                                            
+
                                         </fieldset>
                                     </div>
                                     <div class="col-sm-6 col-md-6">
@@ -92,7 +92,7 @@
                                             <input type="date" class="form-control" name="close_registration" value="{{ old('close_registration') ?? $edition->close_registration }}" id="close_registration">
                                         </fieldset>
                                     </div>
-                                    
+
                                     <div class="col-sm-6 col-md-6">
                                         <label for="ministry_id">Ministry</label>
                                         <fieldset class="form-group">
@@ -107,17 +107,22 @@
                                         </fieldset>
                                     </div>
 
+
                                     <div class="col-sm-6 col-md-6 d-none" id="hostelAssignmentWrapper">
                                         <label for="hostel_assignment_type">Hostel Assignment Type</label>
                                         <fieldset class="form-group">
-                                            <select class="form-control" name="hostel_assignment_type" id="hostel_assignment_type"></select>
+                                            <select class="form-control" name="hostel_assignment_type" id="hostel_assignment_type">
+
+                                            </select>
                                         </fieldset>
                                     </div>
 
                                     <div class="col-sm-6 col-md-6 d-none" id="servicePointWrapper">
                                         <label for="service_point_assignment_type">Service Point Assignment Type</label>
                                         <fieldset class="form-group">
-                                            <select class="form-control" name="service_point_assignment_type" id="service_point_assignment_type"></select>
+                                            <select class="form-control" name="service_point_assignment_type" id="service_point_assignment_type">
+
+                                            </select>
                                         </fieldset>
                                     </div>
 
@@ -130,7 +135,7 @@
                                                 <option value="yes" {{ $edition->mass_registration == 'yes'?'selected':'' }}>Yes</option>
                                                 <option value="no"  {{ $edition->mass_registration == 'no'?'selected':'' }}>No</option>
                                             </select>
-                                        
+
                                         </fieldset>
                                     </div> --}}
                                     <div class="col-sm-6 col-md-6">
@@ -142,7 +147,7 @@
                                             </div>
                                         </fieldset>
                                     </div>
-                                    
+
                                     @if( empty($edition->conference_logo))
                                     <div class="col-sm-6 col-md-6">
                                         <label for="conference_logo">Upload Logo</label>
@@ -188,7 +193,7 @@
                                         </fieldset>
                                     </div>
                                     @endif
-                                    
+
                                     <div class="col-sm-12 col-md-12">
                                         <label for="conference_overview">Conference Overview</label><small> You can use html tags here</small>
                                         <fieldset class="form-group ">
@@ -245,7 +250,7 @@
                                             </select>
                                         </fieldset>
                                     </div>
-                    
+
                                     <input type="hidden" name="id" value="{{ $edition->id }}">
                                 </div>
                                 <div class="row">
@@ -265,15 +270,15 @@
                                     <div class="col-12 mb-2">
                                         <label class="form-label fw-bold">Select Applicable FAQs</label>
                                         <div class="row">
-                                            
+
                                             @forelse($faqs as $faq)
                                                 <div class="col-md-6 col-sm-6">
                                                     <div class="form-check">
-                                                        <input 
-                                                            type="checkbox" 
-                                                            class="form-check-input" 
-                                                            id="faq_{{ $faq->id }}" 
-                                                            name="faq_ids[]" 
+                                                        <input
+                                                            type="checkbox"
+                                                            class="form-check-input"
+                                                            id="faq_{{ $faq->id }}"
+                                                            name="faq_ids[]"
                                                             value="{{ $faq->id }}"
                                                             {{ isset($edition) && in_array($faq->id, $edition->faq_ids ?? []) ? 'checked' : '' }}
                                                         >
@@ -310,15 +315,15 @@
                                     <div class="col-12 mb-2">
                                         <label class="form-label fw-bold">Select Applicable Speakers</label>
                                         <div class="row">
-                                            
+
                                             @forelse($speakers as $speaker)
                                                 <div class="col-md-6 col-sm-6">
                                                     <div class="form-check">
-                                                        <input 
-                                                            type="checkbox" 
-                                                            class="form-check-input" 
-                                                            id="speaker_{{ $speaker->id }}" 
-                                                            name="speaker_ids[]" 
+                                                        <input
+                                                            type="checkbox"
+                                                            class="form-check-input"
+                                                            id="speaker_{{ $speaker->id }}"
+                                                            name="speaker_ids[]"
                                                             value="{{ $speaker->id }}"
                                                             {{ isset($edition) && in_array($speaker->id, $edition->speaker_ids ?? []) ? 'checked' : '' }}
                                                         >
@@ -339,7 +344,7 @@
                                 </div>
 
                                 {{-- certificate --}}
-                                <?php 
+                                <?php
                                     $service = new App\Services\DynamicImageGeneratorService;
                                     $template_settings = $edition->template_settings ?? [];
                                 ?>
@@ -371,14 +376,14 @@
                                                         <label>Text Type</label>
                                                         <fieldset class="form-group">
                                                             {{-- {{dd($setting)}} --}}
-                                                            <select name="template_text_type[]" class="form-control" required> 
+                                                            <select name="template_text_type[]" class="form-control" required>
                                                                 @foreach ($service::textType() as $key=>$option)
                                                                     <option value="{{ $key }}" {{ $setting['template_text_type'] && $setting['template_text_type'] == $key ? 'selected' : ''}}>{{ $option }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </fieldset>
                                                     </div>
-                                            
+
                                                     <div class="col-md-4">
                                                         <label>Font Type Face</label>
                                                         <fieldset class="form-group">
@@ -389,7 +394,7 @@
                                                             </select>
                                                         </fieldset>
                                                     </div>
-                                            
+
                                                     <div class="col-md-4">
                                                         <label>Font Size</label>
                                                         <fieldset class="form-group">
@@ -454,7 +459,7 @@
         </div>
     </section>
     <!-- Basic Inputs end -->
-</div> 
+</div>
 <div class="modal" id="previewModal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -494,7 +499,7 @@
                         <label>Font Size</label>
                         <input type="number" min="0" class="form-control" name="template_font_size[]">
                     </div>
-                    
+
                     <div class="col-md-4">
                         <label>Top Offset</label>
                         <input type="number" min="0" class="form-control" name="template_top_offset[]">
@@ -565,7 +570,7 @@
                 contentType: false,
                 processData: false,
                 success: function (response) {
-                    
+
                     $('#loadingSpinner').hide();
                     if (response.preview_image_path) {
                         $('#templatePreviewImage').attr('src', response.preview_image_path);
@@ -584,8 +589,8 @@
 
         $("#template-holder").on('click', '.remove-old-template', function() {
             // Get the ID of the clicked element
-            var removeId = $(this).attr('id');  
-        
+            var removeId = $(this).attr('id');
+
             // Check if the ID is not empty
             if (removeId) {
                 // Remove the element with the corresponding ID
@@ -618,7 +623,7 @@
             serviceWrapper.addClass('d-none');
 
             if (!ministryId) return;
-
+            
             $.ajax({
                 url: `/ministry/${ministryId}/assignment-types`,
                 type: 'GET',
@@ -650,7 +655,7 @@
         // Auto-load when editing
         const selectedMinistry = $('#ministry_id').val();
         if (selectedMinistry) toggleAssignmentFields(selectedMinistry);
-            
+
     });
 
     CKEDITOR.replace( 'conference_overview' );
@@ -707,7 +712,7 @@
             currentEditor.format("bold", true);
         }
     }
-   
+
 
 </script>
 @endsection

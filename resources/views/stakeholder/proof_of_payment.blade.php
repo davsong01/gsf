@@ -25,11 +25,11 @@
                                 @csrf
                             <div class="body">
                                 <div class="row">
-                                   
+
                                     <div class="col-md-5 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="campus">Campus</label>
-                                            
+
                                             <select class="form-control" name="campus" id="campus" required>
                                             <option value="all">--All--</option>
                                             @foreach( \App\Chapter::all() as $chapter)
@@ -38,7 +38,7 @@
                                             </select>
                                         </fieldset>
                                     </div>
-                                   
+
                                     <div class="col-md-3 col-sm-12">
                                         <fieldset class="form-group">
                                             <label for="month">Month</label>
@@ -63,18 +63,18 @@
                                         </fieldset>
                                     </div>
 
-                                   
+
                                     <div class="col-md-2 col-sm-12">
                                         <fieldset class="form-group"> <br>
                                         <input class="btn btn-primary" value="Export" type="submit">
                                         </fieldset>
                                     </div>
-                                   
+
                                 </div>
                             </div>
                         </form>
                         </div>
-                        
+
                         @endif
                     </div>
                     <div class="card-content">
@@ -91,7 +91,7 @@
                                             <th>Description</th>
                                             <th>Amount</th>
                                             <th>Date Uploaded</th>
-                                            
+
                                             <th>Download File</th>
                                             @if (Auth::guard('stakeholder')->user()->role == 'Secretariat' || Auth::guard('stakeholder')->user()->role == 'President' || Auth::guard('stakeholder')->user()->role == 'Financial Secretary')
                                             <th>Actions</th>
@@ -112,21 +112,21 @@
                                                 @endif
                                             </td>
                                             <td>{{ $payment->description ?? 'N/A' }}</td>
-                                            <td>&#8358;{{ number_format($payment->amount, 2) }}</td>
-                                                                                        
+                                            <td>{!! currency_symbol() !!}{{ number_format($payment->amount, 2) }}</td>
+
                                             <td>{{ $payment->created_at->format('d-m-Y:h-m-s') }}</td>
                                             <td><a onclick="return confirm('File will be downloaded to your computer?');" href="downloadpop/{{ $payment->id }}"><i class="fa fa-download"> Download</i></a></td>
                                             @if (Auth::guard('stakeholder')->user()->role == 'Secretariat' || Auth::guard('stakeholder')->user()->role == 'President' || Auth::guard('stakeholder')->user()->role == 'Financial Secretary')
-                                            <td> 
+                                            <td>
                                                 <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Payment" href="{{ route('stakeholderpayment.delete', $payment->id) }}"> <i class="fa fa-trash actions"></i></
                                                 </a>
                                             </td>
                                             @endif
                                         </tr>
-                                      
+
                                         @endforeach
                                     </tbody>
-                                    
+
                                 </table>
                             </div>
                         </div>
@@ -135,6 +135,6 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 @endsection

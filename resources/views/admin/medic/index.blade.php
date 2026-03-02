@@ -18,7 +18,7 @@
                             <a href="{{ route('medical.export') }}" class="btn btn-primary mt-1">Export</a>
                         </div>
                         @include('includes.alerts')
-                        
+
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -37,7 +37,7 @@
                                             <th>Phone</th>
                                             <th>Amount Paid</th>
                                             <th>Uploaded by</th>
-                                            
+
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -54,15 +54,15 @@
                                                 <i class="bx bxs-circle danger font-small-1 mr-50"></i>
                                                 @endif
                                             </td>
-                                            
+
                                             <td>{{ $participant->name }}</td>
                                             <td>{{ $participant->email }}</td>
                                             <td>{{ $participant->phone }}</td>
-                                            <td>&#8358;{{ $participant->amount_paid }}</td>
+                                            <td>{!! currency_symbol() !!}{{ $participant->amount_paid }}</td>
                                             <td>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
                                                 @else N/A @endif
                                             </td>
-                                            
+
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                                 <a class="actions" data-toggle="tooltip" title="View/Edit Medic" href="{{ route('medic.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
                                                 </a>
@@ -78,7 +78,7 @@
                             </div>
                         </div>
                     </div>
-                   
+
                 </div>
             </div>
         </div>

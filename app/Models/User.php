@@ -52,69 +52,6 @@ class User extends Authenticatable implements MustVerifyEmail
 		}else return false;
 	}
 
-	public function scopeIsParticipant($edition)
-	{
-		$check = Transaction::where(['level'=>'Participant', 'conference_edition_id'=>$edition->id,'user_id'=>$this->id])->first();
-		if (isset($check) && !empty($check)) {
-			return true;
-		} else return false;
-	}
-
-	public function scopeIsAlumni($edition)
-	{
-		$check = Transaction::where(['level' => 'Alumni', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
-
-		if (isset($check) && !empty($check)) {
-			return true;
-		} else return false;
-	}
-
-	public function scopeIsNec($edition)
-	{
-		$check = Transaction::where(['level' => 'Nec', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
-
-		if (isset($check) && !empty($check)) {
-			return true;
-		} else return false;
-	}
-
-	public function scopeIsModerator($edition)
-	{
-		$check = Transaction::where(['level' => 'Moderator', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
-		if (isset($check) && !empty($check)) {
-			return true;
-		} else return false;
-	}
-
-
-	public function scopeIsChoir($edition)
-	{
-		$check = Transaction::where(['level' => 'Choir', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
-
-		if (isset($check) && !empty($check)) {
-			return true;
-		} else return false;
-	}
-
-	public function isOfficial($edition)
-	{
-		$check = Transaction::where(['level' => 'Official', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
-
-		if (isset($check) && !empty($check)) {
-			return true;
-		} else return false;
-	}
-
-
-	public function completeReg($edition)
-	{
-		$check = Transaction::where(['registration_status' => 'Complete', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
-
-		if (isset($check) && !empty($check)) {
-			return true;
-		} else return false;
-	}
-
     public function campus(){
         return $this->belongsTo(Chapter::class, 'chapter_id');
     }

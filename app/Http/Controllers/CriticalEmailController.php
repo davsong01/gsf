@@ -10,6 +10,8 @@ use App\Models\GeneralSetting;
 class CriticalEmailController extends Controller
 {
     public function getContent($data=null){
+        $currency_symbol = currency_symbol();
+
         switch ($data['type']) {
             case 'conference_registration_welcome_mail':
                 $account = "<a style='color: white;text-decoration: none;background-color: #29166f;padding: 7px;border-radius: 5px;' href='". route('conferencemanagement.index', ['edition' => $data['conference_edition_id']])."'>Login</a>";
@@ -19,7 +21,7 @@ class CriticalEmailController extends Controller
                     <strong>Name: </strong>".$data['name']."<br>
                     <strong>Email: </strong>". $data['email']."<br>
                     <strong>Phone: </strong>". $data['phone']."<br>
-                    <strong>Amount Paid: </strong> &#8358;". number_format($data['amount']) . "<br><br>
+                    <strong>Amount Paid: </strong> {$currency_symbol}". number_format($data['amount']) . "<br><br>
                     <strong>Allocation Details:</strong><br>";
 
                 if(isset($data['allocated_hostel_data']) && !empty($data['allocated_hostel_data'])){
@@ -49,7 +51,7 @@ class CriticalEmailController extends Controller
                     <strong>Phone: </strong>" . $data['phone'] . "<br>
                     <strong>Phone: </strong>" . $data[ 'family_id'] . "<br>
                     <strong>Chapter: </strong>" . $data['chapter'] . "<br>
-                    <strong>Amount Paid: </strong> &#8358;" . $data['amount'] . "<br><br>Thanks";
+                    <strong>Amount Paid: </strong> {$currency_symbol}" . $data['amount'] . "<br><br>Thanks";
 
                 break;
 
@@ -58,7 +60,7 @@ class CriticalEmailController extends Controller
                 <strong>Name: </strong> ".$data['name']. "<br>
                 <strong>Email: </strong> ".$data['email']. "<br>
                 <strong>Phone: </strong> ".$data['phone']. "<br>
-                <strong>Amount Paid: </strong> &#8358;".number_format($data['amount'])."<br>
+                <strong>Amount Paid: </strong> {$currency_symbol}".number_format($data['amount'])."<br>
                 <strong>Payment Mode: </strong>".$data['payment_type']."<br>
                 <strong>Transaction ID: </strong>".$data['transid']."<br><br>Thanks,<br>";
                 # code...
@@ -66,7 +68,7 @@ class CriticalEmailController extends Controller
 
             case 'donator_notification':
                 $content = "Dear " . $data['name'] . "<br>
-                Thank you for your donation of &#8358;" . number_format($data['amount']) . " for " . $data['conference_theme'] . " conference. <br><br>
+                Thank you for your donation of {$currency_symbol}" . number_format($data['amount']) . " for " . $data['conference_theme'] . " conference. <br><br>
                 You are much appreciated<br><br>
                 <strong>Transaction ID: </strong>" . $data['transid'] . "<br><br>Thanks,<br>";
                 # code...
@@ -120,7 +122,7 @@ class CriticalEmailController extends Controller
             break;
             case 'donation_thank_you_mail':
                 $content = "Dear " . $data['name'] . "<br>
-                Thank you for your contribution of &#8358;" . number_format($data['amount']) . " to GSF. <br><br>
+                Thank you for your contribution of {$currency_symbol}" . number_format($data['amount']) . " to GSF. <br><br>
                 You are much appreciated and God bless you<br><br>Please find transaction ID of this teansaction below: <br><br>
                 <strong>Transaction ID: </strong>" . $data['transid'] . "<br><br>Thanks,<br>";
                 # code...
@@ -132,7 +134,7 @@ class CriticalEmailController extends Controller
                 <strong>Phone: </strong> " . $data['phone'] . "<br>
                 <strong>Type: </strong> " . $data['type'] . "<br>
                 <strong>Status: </strong> " . $data['membership_status'] . "<br>
-                <strong>Amount Paid: </strong> &#8358;" . number_format($data['amount']) . "<br>
+                <strong>Amount Paid: </strong> {$currency_symbol}" . number_format($data['amount']) . "<br>
                 <strong>Date: </strong>" . $data['created_at'] . "<br>
                 <strong>Transaction ID: </strong>" . $data['transid'] . "<br><br>Thanks,<br>";
                 # code...

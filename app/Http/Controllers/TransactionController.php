@@ -59,6 +59,10 @@ class TransactionController extends Controller
             $mainQuery = $mainQuery->where('registration_status', $request->registration_status);
         }
 
+         if($request->filled('registration_user_type')){
+            $mainQuery = $mainQuery->where('registration_user_type', $request->registration_user_type);
+        }
+
         if($request->filled('field_id')){
             $mainQuery = $mainQuery->whereHas('allocationFields', function($q) use ($request){
                 $q->where('key', 'field_id')->where('value', $request->field_id);

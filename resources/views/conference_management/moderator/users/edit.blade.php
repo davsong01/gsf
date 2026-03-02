@@ -15,17 +15,39 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Update: {{ $transaction->user->name }}</h4>
-                        @if($transaction->user->completeReg($edition) && $transaction->hostel && $transaction->food)
+
+                        @php
+                            $canDownload = $transaction->registration_status === 'Complete'
+                                && !empty($transaction->hostel)
+                                && !empty($transaction->food);
+                        @endphp
+
                         <div style="padding:20px">
-                            <a href="{{ route('participants.card', ['id'=>$transaction->id, 'edition'=>$edition->id]) }}" class="btn btn-primary glow"><i class="fa fa-print" aria-hidden="true"></i> View/Download Badge</a>
-                            @if(isset($edition->material) && !empty($edition->material))
-                            <a href="{{ route('materials.index', ['edition'=>$edition->id, 'payment_id'=>$transaction->id]) }}" class="btn btn-info glow"><i class="fa fa-print" aria-hidden="true"></i> View/Donload Conference Materials</a>
+                            @if($transaction->registration_user_type != 'moderator')
+                                @if($canDownload)
+                                    <a href="{{ route('participants.card', ['id' => $transaction->id, 'edition' => $edition->id]) }}"
+                                    class="btn btn-primary glow">
+                                        <i class="fa fa-print"></i> View/Download Badge
+                                    </a>
+
+                                    @if(!empty($edition->material))
+                                        <a href="{{ route('materials.index', ['edition' => $edition->id, 'payment_id' => $transaction->id]) }}"
+                                        class="btn btn-info glow">
+                                            <i class="fa fa-print"></i> View/Download Conference Materials
+                                        </a>
+                                    @endif
+                                @else
+                                    <a href="#"
+                                    onclick="return false;"
+                                    data-toggle="tooltip"
+                                    data-placement="top"
+                                    title="You must complete registration to use this button"
+                                    class="btn btn-primary glow disabled">
+                                        <i class="fa fa-print"></i> View/Download Badge
+                                    </a>
+                                @endif
                             @endif
                         </div>
-                        @else
-                        <a href="#" onclick="return false;" data-toggle="tooltip" data-placement="top" title="You must complete registration to use this button" class="btn btn-primary glow disabled"><i class="fa fa-print" aria-hidden="true"></i>  View/Download Badge
-                        </a>
-                        @endif
                     </div>
                     <div class="card-content">
                     <div class="card-body">
@@ -65,10 +87,17 @@
                                         </fieldset>
                                     </div>
 
+
                                     <div class="col-md-6">
                                         <fieldset class="form-group">
                                             <label>Registration Status</label>
                                             <input type="text" class="form-control" value="{{ $transaction->registration_status }}" disabled>
+                                        </fieldset>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <fieldset class="form-group">
+                                            <label>Registration Type</label>
+                                            <span class="badge" style="background-color:{{$transaction->registration_user_type == 'moderator' ? 'teal' : '#f700ff'}}">{{ ucfirst($transaction->registration_user_type) }}</span>
                                         </fieldset>
                                     </div>
                                 </div>
@@ -85,7 +114,7 @@
                                     <input type="text" id="uploaded_by" name="uploaded_by" class="form-control" value="{{ ($transaction->moderator === NULL) ? 'N/A' : $transaction->moderator->name }}" disabled required>
                                 </fieldset>
                                 <fieldset class="form-group">
-                                <label for="amount" style="color:blue">Amount Paid (&#8358;)</label>
+                                <label for="amount" style="color:blue">Amount Paid ({!! currency_symbol() !!})</label>
                                 <input type="number" id="amount" class="form-control @error('amount_paid')is-invalid @enderror" value="{{ $transaction->amount_paid }}" disabled required>
 
                             </fieldset>

@@ -11,7 +11,7 @@
             <p class="banner-info wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="500ms">{{$setting->slug }}</p>
             <h1 class="banner-title wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="700ms" style="margin-bottom: 0px;">{{ $setting->conference_theme }}</h1>
             <p class="banner-info wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="500ms" style="margin-bottom: 50px;color:yellow">{{ formatDates($setting->start_date, $setting->end_date) }}</p>
-            
+
             <div class="countdown wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="800ms">
                 <div class="counter-item">
                   <i class="icon icon-ring-1Asset-1"></i>
@@ -60,7 +60,7 @@
 <!-- banner end-->
 
 <!-- ts intro start -->
-    
+
 <section id="details" class="ts-intro-item section-bg">
     <div class="container">
       <div class="row">
@@ -175,14 +175,14 @@
                         <div class="row">
                             <div class="col-lg-12">
                               <div class="speaker-session-info">
-                                
+
                                   <span>Go in this thy Might </span>
                                   <p>
                                     (Judges 6:14)
                                   </p>
                               </div>
                             </div>
-                            
+
                         </div>
                         <div class="ts-speakers-social">
                             <a target="_blank" href="#"><i class="fa fa-facebook"></i></a>
@@ -231,14 +231,14 @@
                         <div class="row">
                             <div class="col-lg-12">
                               <div class="speaker-session-info">
-                                
+
                                   <span>Go in this thy Might </span>
                                   <p>
                                     (Judges 6:14)
                                   </p>
                               </div>
                             </div>
-                            
+
                         </div>
                         <div class="ts-speakers-social">
                             <a target="_blank" href="#"><i class="fa fa-facebook"></i></a>
@@ -288,14 +288,14 @@
                         <div class="row">
                             <div class="col-lg-12">
                               <div class="speaker-session-info">
-                                
+
                                   <span>Go in this thy Might </span>
                                   <p>
                                     (Judges 6:14)
                                   </p>
                               </div>
                             </div>
-                            
+
                         </div>
                         <div class="ts-speakers-social">
                             <a target="_blank" href="#"><i class="fa fa-facebook"></i></a>
@@ -366,7 +366,7 @@
             </div>
           </div>
 
-          
+
       </div>
     </div>
 
@@ -386,7 +386,7 @@
       <div class="row">
           <div class="col-lg-6 no-padding">
             <div class="exp-img image-container">
-              <img class="img-fluid" src="{{ asset($setting->banner)}}" alt=""> 
+              <img class="img-fluid" src="{{ asset($setting->banner)}}" alt="">
             </div>
           </div><!-- col end-->
           <div class="col-lg-6 no-padding align-self-center wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="500ms">
@@ -425,7 +425,7 @@
                       </a>
                   </li>
                   <li class="nav-item">
-                      <a class="" href="#date2" title="Click Me" role="tab" data-toggle="tab">        
+                      <a class="" href="#date2" title="Click Me" role="tab" data-toggle="tab">
                         <h3>18th April</h3>
                         <span>Friday</span>
                       </a>
@@ -498,7 +498,7 @@
                         </div>
                       </div><!-- col end-->
                   </div><!-- row end-->
-                  
+
                 </div><!-- tab pane end-->
 
                 <div role="tabpanel" class="tab-pane" id="date2">
@@ -641,7 +641,7 @@
                   <div class="ts-pricing-header">
                       <h2 class="ts-pricing-name">Single Registration</h2>
                       <h3 class="ts-pricing-price">
-                        <span class="currency">&#8358;</span>{{ number_format($setting->registration_fee) }}
+                        <span class="currency">{!! currency_symbol() !!}</span>{{ number_format($setting->registration_fee) }}
                         <span class="text-900"><small><br></small><br></span>
                       </h3>
                   </div>
@@ -673,7 +673,7 @@
                   <div class="ts-pricing-header">
                       <h2 class="ts-pricing-name">Mass Registration</h2>
                       <h3 class="ts-pricing-price">
-                        <span class="currency">&#8358;</span>{{ number_format($setting->registration_fee) }}
+                        <span class="currency">{!! currency_symbol() !!}</span>{{ number_format($setting->registration_fee) }}
                         <span class="text-900"><small>/Participant</small></span>
                       </h3>
                   </div>
@@ -705,7 +705,7 @@
                   <div class="ts-pricing-header">
                       <h2 class="ts-pricing-name">Alumni Registration</h2>
                       <h3 class="ts-pricing-price">
-                        <span class="currency">&#8358;</span>{{ number_format($setting->new_alumni_registration_fee) }} - &#8358;{{ number_format($setting->alumni_registration_fee) }}
+                        <span class="currency">{!! currency_symbol() !!}</span>{{ number_format($setting->new_alumni_registration_fee) }} - {!! currency_symbol() !!}{{ number_format($setting->alumni_registration_fee) }}
                       </h3>
                   </div>
                   <div class="ts-pricing-progress">

@@ -62,6 +62,7 @@ class PaymentController extends Controller
 		}
 
 		$setting = $this->conferenceEdition();
+        // dd($setting);
 		$request['setting'] = $setting;
 
 		if(!in_array($plan->type, ['donation'])){
@@ -129,7 +130,7 @@ class PaymentController extends Controller
 		}
 
 		$verify = $this->verify($transaction);
-    
+
 		$transaction->update([
 			'api_response' => $verify['message'] ?? null,
 			'provider_reference' => $verify['provider_reference'] ?? null,

@@ -12,11 +12,11 @@
         </div>
 
         <div class="card-body">
-            <form 
-                action="{{ isset($field) 
-                    ? route('ministries.fields.update', [$ministry->id, $field->id]) 
-                    : route('ministries.fields.store', $ministry->id) 
-                }}" 
+            <form
+                action="{{ isset($field)
+                    ? route('ministries.fields.update', [$ministry->id, $field->id])
+                    : route('ministries.fields.store', $ministry->id)
+                }}"
                 method="POST"
             >
                 @csrf
@@ -26,24 +26,24 @@
 
                 <div class="form-group">
                     <label for="name">Field Key</label>
-                    <input 
-                        type="text" 
-                        name="name" 
-                        id="name" 
-                        class="form-control" 
-                        value="{{ old('name', $field->name ?? '') }}" 
+                    <input
+                        type="text"
+                        name="name"
+                        id="name"
+                        class="form-control"
+                        value="{{ old('name', $field->name ?? '') }}"
                         required
                     >
                 </div>
 
                 <div class="form-group">
                     <label for="label">Field Label</label>
-                    <input 
-                        type="text" 
-                        name="label" 
-                        id="label" 
-                        class="form-control" 
-                        value="{{ old('label', $field->label ?? '') }}" 
+                    <input
+                        type="text"
+                        name="label"
+                        id="label"
+                        class="form-control"
+                        value="{{ old('label', $field->label ?? '') }}"
                         required
                     >
                 </div>
@@ -52,7 +52,7 @@
                     <label for="type">Field Type</label>
                     <select name="type" id="type" class="form-control" required>
                         @foreach(['text','number','email','select','textarea','checkbox','radio'] as $type)
-                            <option value="{{ $type }}" 
+                            <option value="{{ $type }}"
                                 {{ old('type', $field->type ?? '') === $type ? 'selected' : '' }}>
                                 {{ ucfirst($type) }}
                             </option>
@@ -61,11 +61,11 @@
                 </div>
                 <div class="form-group">
                     <label for="onchange">Display Order</label>
-                    <input 
-                        type="number" 
-                        name="display_order" 
-                        id="display_order" 
-                        class="form-control" 
+                    <input
+                        type="number"
+                        name="display_order"
+                        id="display_order"
+                        class="form-control"
                         value="{{ old('display_order', $field->display_order ?? '') }}"
                     >
                 </div>
@@ -73,7 +73,7 @@
                     <label for="field_usage">Field Usage</label>
                     <select name="field_usage" id="field_usage" class="form-control" required>
                         @foreach(['registration','allocation','both'] as $usage)
-                            <option value="{{ $usage }}" 
+                            <option value="{{ $usage }}"
                                 {{ old('field_usage', $field->field_usage ?? '') === $usage ? 'selected' : '' }}>
                                 {{ ucfirst($usage) }}
                             </option>
@@ -90,8 +90,7 @@
                         $selectedTypes = is_array($selectedTypes) ? $selectedTypes : [];
                     @endphp
 
-                    
-                    
+
                     <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple.</small>
                 </div>
 
@@ -103,16 +102,16 @@
 
                 <div class="form-group">
                     <label for="options">Options (JSON Key–Value)</label>
-                    <textarea 
-                        name="options" 
-                        id="options" 
-                        class="form-control" 
-                        rows="5" 
+                    <textarea
+                        name="options"
+                        id="options"
+                        class="form-control"
+                        rows="5"
                         placeholder='Example: {"male":"Male","female":"Female"}'
                     >{{ old('options', $optionsValue) }}</textarea>
 
                     <small class="text-muted d-block mt-1">
-                        Enter valid JSON key–value pairs.  
+                        Enter valid JSON key–value pairs.
                         Example: <code>{"option_key": "Option Label", "another_key": "Another Label"}</code>
                     </small>
                 </div>
@@ -144,22 +143,22 @@
 
                 <div class="form-group">
                     <label for="onchange">OnChange JS (Optional)</label>
-                    <input 
-                        type="text" 
-                        name="onchange" 
-                        id="onchange" 
-                        class="form-control" 
+                    <input
+                        type="text"
+                        name="onchange"
+                        id="onchange"
+                        class="form-control"
                         value="{{ old('onchange', $field->onchange ?? '') }}"
                     >
                 </div>
 
                 <div class="form-group">
                     <label for="depends_on">Depends On (Optional JSON)</label>
-                    <input 
-                        type="text" 
-                        name="depends_on" 
-                        id="depends_on" 
-                        class="form-control" 
+                    <input
+                        type="text"
+                        name="depends_on"
+                        id="depends_on"
+                        class="form-control"
                         value="{{ old('depends_on', is_array($field->depends_on ?? null) ? json_encode($field->depends_on) : ($field->depends_on ?? '')) }}"
                         placeholder='Example: {"chapter_id":1}'
                     >

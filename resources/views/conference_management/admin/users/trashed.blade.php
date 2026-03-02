@@ -15,7 +15,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Trashed Participants</h4>                        
+                        <h4 class="card-title">Trashed Participants</h4>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -29,7 +29,7 @@
                                             <th>Details</th>
                                             <th>Level</th>
                                             <th>Amount Paid</th>
-                                            
+
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -46,18 +46,18 @@
                                                 Phone: {{ $participant->phone }} <br>
                                             </td>
                                             <td>{{ $participant->level }}</td>
-                                            <td>&#8358;{{ number_format($participant->amount_paid ?? 0 ) }}</td>
-                                            
+                                            <td>{!! currency_symbol() !!}{{ number_format($participant->amount_paid ?? 0 ) }}</td>
+
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                                 <a class="actions" data-toggle="tooltip" title="Restore" href="{{ route('users.restore', $participant->id) }}"> <i class="fa fa-undo"></i></
                                                 </a>
-                                                
+
                                                 <a class="actions" data-toggle="tooltip" title="Delete permanently" href="#" onclick="event.preventDefault(); document.getElementById('delete-form-{{ $participant->id }}').submit();"> <i class="fa fa-trash"></i></
                                                 </a>
                                                 <form id="delete-form-{{ $participant->id }}" action="{{ route('users.destroy', $participant->id) }}" method="POST" style="display: none;">
                                                     @csrf
                                                     @method('DELETE')
-                                                </form>  
+                                                </form>
                                             </td>
                                         </tr>
                                         @endforeach
@@ -66,7 +66,7 @@
                             </div>
                         </div>
                     </div>
-                   
+
                 </div>
             </div>
         </div>

@@ -78,16 +78,36 @@
                                             <td>{{ number_format($transaction->total_amount) }}</td>
                                         </tr>
                                         <tr>
-                                            <th style="color:red;">Payment Type</th>
+                                            <th style="color:red;">Plan Name</th>
                                             <td>{{ $transaction->level ?? $transaction->plan->title }}</td>
                                         </tr>
+                                        <tr>
+                                            <th style="color:red;">Reg. Type</th>
+                                            <td>
+                                                <span class="badge" style="background-color:{{$transaction->registration_user_type == 'moderator' ? 'teal' : '#f700ff'}}"> {{ ucfirst($transaction->registration_user_type) }}</span>
+                                            </td>
+                                        </tr>
+
+                                        @if($transaction->registration_user_type == 'moderator')
+                                            <tr>
+                                                <th>Slot Details</th>
+                                                <td>
+                                                    <strong style="color:blue">Slots:</strong> {{ $transaction->slot }} <br>
+                                                     <br> <br>
+                                                    <strong style="color:blue">Slots Available:</strong> {{ $transaction->slot - $transaction->slot_filled }}
+
+                                                </td>
+                                            </tr>
+
+                                        @endif
+
                                         @if(!empty($transaction->moderator?->name ))
                                         <tr>
                                             <th>Uploaded By</th>
                                             <td>{{ $transaction?->moderator?->name  }}</td>
                                         </tr>
                                         @endif
-                                        
+
                                     </tbody>
                                 </table>
                             </div>
@@ -163,31 +183,14 @@
                             </div>
                         </div>
                         <div class="row">
-                            {{-- <div class="col-md-6">
-                                <fieldset class="form-group">
-                                    <label for="name">Name</label>
-                                    <input type="text" class="form-control" id="name" name="name" value="{{ old('name') ?? $transaction->user->name }}">
-                                </fieldset>
-                            </div>
-                            <div class="col-md-6">
-                                <fieldset class="form-group">
-                                    <label for="email">Email</label>
-                                    <input type="email" id="email" name="email" class="form-control" value="{{ old('email') ?? $transaction->user->email }}" required>
-                                </fieldset>
-                            </div>
-                            <div class="col-md-6">
-                                <fieldset class="form-group">
-                                    <label for="phone">Phone</label>
-                                    <input type="phone" id="phone" name="phone" class="form-control" value="{{ old('phone') ?? $transaction->user->phone }}" required>
-                                </fieldset>
-                            </div> --}}
+
                             @include('includes.dashboard.edit_plan_fields')
-                            
+
                             <div class="col-md-6">
                                 <fieldset class="form-group @error('passport')is-invalid @enderror">
                                     <label for="passport">Change Passport</label>
-                                    <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">	
-                                </fieldset>           
+                                    <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">
+                                </fieldset>
                             </div>
                             <div class="col-md-6">
                                 <fieldset class="form-group">
@@ -221,7 +224,7 @@
                                         @foreach($foods as $food)
                                             @if($food->capacity > $food->allocation || $food->id == $transaction->food_id)
                                             <option value="{{ $food->id ?? $transaction->food_id }}" {{ $transaction->food_id == $food->id ? 'selected' : '' }}>{{ $food->name. ' ('.($food->capacity - $food->allocation). ' participant(s) left) | '.$food->level }}</option>
-                                            
+
                                             @endif
                                         @endforeach
                                         </select>
@@ -234,9 +237,7 @@
                                     <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
                                 </fieldset>
                             </div>
-                           
-                            
-                            
+
                         </div>
                         <div class="row">
                             <div class="col-md-12 col-sm-12">
@@ -249,7 +250,7 @@
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->          
+    <!-- Basic Inputs end -->
 </div>
 @endsection
 

@@ -66,7 +66,7 @@
                                         <option value="Female" {{ $user->gender == 'Female' ? 'selected' : ''}}>Female</option>
                                     </select>
                                 </fieldset>
-                            
+
                                 <fieldset class="form-group">
                                     <label for="chapter">Campus</label>
                                     <select class="form-control" name="chapter" id="chapter" required>
@@ -81,7 +81,7 @@
 
                             <div class="col-md-6 col-sm-12">
                                  <fieldset class="form-group">
-                                    <label for="amount">Amount Paid (&#8358;)</label>
+                                    <label for="amount">Amount Paid ({!! currency_symbol() !!})</label>
                                     <input type="number" id="amount" name="amount_paid" class="form-control" value="{{ old('amount_paid') ?? $user->amount_paid }}" required>
                                 </fieldset>
                                 <fieldset class="form-group">
@@ -97,14 +97,14 @@
                                     <label for="transid">Transaction ID</label>
                                     <input type="text" id="transid" name="transid" class="form-control" value="{{ old('transid') ?? $user->transid }}" required>
                                 </fieldset>
-                                
+
                                 <fieldset class="form-group">
                                     <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank except you want to reset participant's password</i></small>
                                     <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
                                 </fieldset>
 
                             </div>
-                            
+
                         </div>
                         <div class="row">
                             <div class="col-md-12 col-sm-12">
@@ -117,6 +117,6 @@
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->          
+    <!-- Basic Inputs end -->
 </div>
 @endsection

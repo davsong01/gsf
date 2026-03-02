@@ -3,6 +3,7 @@
 @section('active')
 <li class="breadcrumb-item">My Participants</li>
 @endsection
+
 @section('content')
 <div class="content-body">
     <!-- Zero configuration table -->
@@ -13,10 +14,10 @@
                     <div class="card-header">
                         <h4 class="card-title">My Participants </h4>
                         @if(auth()->user()->payment->slot >  auth()->user()->payment->slot_filled)
-                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new participant <strong>({{ (auth()->user()->slot -  (auth()->user()->slot_filled )) }} slot(s) left)</strong></a>  
-                        
+                        <a href="{{ route('users.create') }}" class="btn btn-primary mt-1">Add new participant <strong>({{ (auth()->user()->slot -  (auth()->user()->slot_filled )) }} slot(s) left)</strong></a>
+
                         @endif
-                     
+
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -33,14 +34,14 @@
                                             <th>Phone</th>
                                             <th>Amount Paid</th>
                                             <th>Uploaded by</th>
-                                            
+
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($participants as $participant)
                                         <tr>
-                                            <td>{{ $count ++}}</td>
+                                            <td>{{ $loop->iteration }}</td>
                                             <td>
                                                 <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->user->passport  ? '/'.$participant->user->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
                                             </td>
@@ -50,24 +51,24 @@
                                                 <i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Pending</small>
                                                 @endif
                                             </td>
-                                            
+
                                             <td>{{ $participant->name }}</td>
                                             <td>{{ $participant->email }}</td>
                                             <td>{{ $participant->phone }}</td>
-                                            <td>&#8358;{{ $participant->amount_paid }}</td>
+                                            <td>{!! currency_symbol() !!}{{ $participant->amount_paid }}</td>
                                             <td>@if(isset($participant->moderator->name) && ($participant->level) == 'Participant'){{ $participant->moderator->name }}
                                                 @else N/A @endif
                                             </td>
-                                            
-                                                
+
+
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Edit Participant" href="{{ route('users.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
                                             </a>
-                                            
+
                                             @if($participant->registration_status == 'Complete')
                                             <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('user.card', $participant->id) }}"> <i class="fa fa-print actions"></i></
                                             </a>
-                                           
+
                                             <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('meal.ticket', $participant->id) }}"> <i class="icon-food actions"></i></
                                             </a>
                                             @endif
@@ -76,10 +77,10 @@
                                             </a>
                                             @endif
                                         </tr>
-                                      
+
                                         @endforeach
                                     </tbody>
-                                    
+
                                 </table>
                             </div>
                         </div>
@@ -88,6 +89,6 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 @endsection

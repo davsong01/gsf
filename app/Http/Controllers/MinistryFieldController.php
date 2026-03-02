@@ -11,7 +11,7 @@ class MinistryFieldController extends Controller
     public function index(Ministry $ministry)
     {
         $fields =  $ministry->fields()->latest()->get();
-        
+
         return view('admin.ministryFields.index', compact('ministry', 'fields'));
     }
 
@@ -28,7 +28,7 @@ class MinistryFieldController extends Controller
             'display_order' => 'required|numeric',
             'type' => 'required|in:text,number,email,select,textarea,checkbox,radio',
             'field_usage' => 'required|in:registration,allocation,both',
-            'registration_types' => 'required|array',
+            'registration_types' => 'nullable|array',
             'options' => 'nullable|array',
             'depends_on' => 'nullable|array',
         ]);
@@ -87,13 +87,15 @@ class MinistryFieldController extends Controller
             ? (json_validate($request->options) ? json_decode($request->options, true) : $request->options)
             : null;
 
-        
+
         $validated['options'] = $options ?? null;
-        
+        $validated['registration_types'] = $validated['registration_types'] ?? [];
+        $validated['depends_on'] = $validated['depends_on'] ?? null;
+
         $validated['required'] = $request->required;
         $validated['status'] = $request->status;
         $validated['has_other_option'] = $request->has_other_option;
-        
+
         $field->update($validated);
 
         return redirect()

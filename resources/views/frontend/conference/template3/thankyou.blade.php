@@ -71,7 +71,7 @@
                         <strong>Password:</strong> {{ $transaction->phone ?? 'Your registered phone number' }}
                     </p>
 
-                    <a class="btn-main fx-slide w-100" href="{{ route('conferencemanagement.index') }}"><span>Access Your Account</span></a>
+                    <a class="btn-main fx-slide w-100" href="{{ route('conferencemanagement.index', ['login_status' => 'new']) }}"><span>Access Your Account</span></a>
                 </div>
             </div>
         </div>

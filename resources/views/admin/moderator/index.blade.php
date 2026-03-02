@@ -18,7 +18,7 @@
                                 <a href="{{ route('moderators.export') }}" class="btn btn-primary mt-1">Export</a>
                         </div>
                         @include('includes.alerts')
-                        
+
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -45,15 +45,15 @@
                                             <td>{{ $participant->email }}</td>
                                             <td>{{ $participant->chapter }}</td>
                                             <td>{{ $participant->phone }}</td>
-                                            <td>&#8358;{{ $participant->amount_paid }}</td>
+                                            <td>{!! currency_symbol() !!}{{ $participant->amount_paid }}</td>
                                             <td>{{ $participant->slot_filled }}</td>
                                             <td>{{ $participant->slot - $participant->slot_filled }}</td>
-                                            
-                                                
+
+
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Update Moderator details" href="{{ route('moderators.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
                                             </a>
-                                           
+
                                             <a class="actions" data-toggle="tooltip" data-placement="top" title="Switch To"
                                                 href="{{ route('switchuser', $participant->id) }}"><i
                                                     class="fa fa-unlock actions"></i>
@@ -61,10 +61,10 @@
                                             <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Moderator" href="{{ route('moderators.delete', $participant->id) }}"> <i class="fa fa-trash"></i></
                                             </a>
                                         </tr>
-                                      
+
                                         @endforeach
                                     </tbody>
-                                    
+
                                 </table>
                             </div>
                         </div>
@@ -73,6 +73,6 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 @endsection

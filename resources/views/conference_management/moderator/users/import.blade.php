@@ -5,7 +5,7 @@
     <div class="container">
 
         <div class="row justify-content-center">
-            <div class="col-lg-10 col-md-12">
+            <div class="col-lg-12 col-md-12">
 
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-white border-0 pb-0">
@@ -53,8 +53,8 @@
                                         </table>
                                     </div>
                                 @endif
-									
-                                @if(auth()->user()->isModerator($edition))
+
+                                @if(getRegistrationUserLevel(['Moderator'], $edition))
                                     <li class="text-danger mt-3">
                                         <strong>You may upload a maximum of {{ $transaction->slot - $transaction->slot_filled }} participants.</strong>
                                     </li>

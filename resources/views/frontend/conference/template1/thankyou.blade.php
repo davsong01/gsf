@@ -57,7 +57,9 @@
             @if(isset($data['family_id']) && !empty($data['family_id']))
             <div class="col-md-12">
                 <div class="contact-text">
-                    <a style="margin-bottom:20px" href="{{ route('conferencemanagement.index') }}" data-toggle="tooltip" data-placement="top" title="Click to login" class="btn btn-outline-danger rounded-pill order-0">Login to access your dashboard</a><br><br>
+                    <a style="margin-bottom:20px" href="{{ route('conferencemanagement.index', ['login_status' => 'new']) }}" data-toggle="tooltip" data-placement="top" title="Click to login" class="btn btn-outline-danger rounded-pill order-0">Login to access your dashboard</a>
+
+                    <br><br>
                     <h3> <strong> Your Login Details are</strong>
                     </h3>
                     <p>Login ID: {{ $data['family_id'] }}  <br>

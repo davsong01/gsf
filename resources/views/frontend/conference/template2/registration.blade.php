@@ -63,7 +63,7 @@
                 @endif
                 <form action="{{ route('pay') }}" method="POST">
                     @csrf
-                    
+
                     @if(isset($type))
                         @if($type == 1 or $type == 2 or $type == 3)
                         <div class="row">
@@ -121,9 +121,9 @@
                                     </select>
                                 </div>
                             </div>
-                            
+
                             @endif
-                        
+
                             @if($type == 2)
                             <div class="col-md-6">
                                 <div class="control-group">
@@ -142,8 +142,8 @@
                                         onchange="document.querySelector('#alumni_amount').value = alumnis_amount[this.value]?alumnis_amount[this.value]*100:''"
                                         required>
                                         <option value="">Select alumni type</option>
-                                        <option value="new_alumni_registration_fee">Fresh Graduate/Alumni (&#8358;{{ $setting->new_alumni_registration_fee }}) </option>
-                                        <option value="alumni_registration_fee">Old Alumni (&#8358;{{ $setting->alumni_registration_fee }})</option>
+                                        <option value="new_alumni_registration_fee">Fresh Graduate/Alumni ({!! currency_symbol() !!}{{ $setting->new_alumni_registration_fee }}) </option>
+                                        <option value="alumni_registration_fee">Old Alumni ({!! currency_symbol() !!}{{ $setting->alumni_registration_fee }})</option>
                                     </select>
                                 </div>
                             </div>
@@ -160,7 +160,7 @@
                                 </div>
                             </div>
                             @endif
-                        </div> 
+                        </div>
                         @endif
                         <input type="hidden" name="metadata" value="{{ json_encode($array = ['type' => $type]) }}">
                         <input type="hidden" name="type" value="{{ $type }}">
@@ -175,11 +175,11 @@
                         <script>
                             var participants = document.getElementById('participants');
                             var amount = document.getElementById('amount');
-                            
+
                             participants.addEventListener('input', function() {
                                 amount.value = this.value * {{ $setting->registration_fee * 100 }};
                             });
-                            
+
                             amount.addEventListener('input', function() {
                                 participants.value = this.value;
                             });
@@ -202,8 +202,8 @@
                                     <input type="amount" class="form-control form-control-name" id="amount"
                                         name="amount" placeholder="Enter amount to donate" required>
                                 </div>
-                                
-                                
+
+
                             </div>
                             <div class="col-md-6">
                                 <div class="control-group">
@@ -226,7 +226,7 @@
                                     <textarea name="remarks" class="form-control" id="" cols="30" rows="10" placeholder="Enter remarks"></textarea>
                                 </div>
                             </div>
-                            
+
                                 {{-- <div class="control-group">
                                     <label class="form-label" for="gender">Gender</label><br>
                                     <select name="gender" class="form-control" id="gender" required>
@@ -236,22 +236,22 @@
                                     </select>
                                 </div> --}}
                             </div>
-                            
-                        </div> 
+
+                        </div>
                         @endif
                     @endif
                     <br>
                     <div class="control-group" style="margin-top:30px">
                         @if($type != 5)
                         <button class="btn btn-danger hover-top btn-glow rounded-pill border-0" type="submit" style="width:100%">Make Payment</button>
-                        @else    
+                        @else
                         <button class="btn btn-danger hover-top btn-glow rounded-pill border-0" type="submit" style="width:100%">Make Donation</button>
                         @endif
                     </div>
                 </form>
             </div>
         </div>
-        
+
     </div>
     </div>
 </section>

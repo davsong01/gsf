@@ -35,8 +35,8 @@
                             onchange="document.querySelector('#alumni_amount').value = alumnis_amount[this.value]?alumnis_amount[this.value]*100:''"
                             required>
                             <option value="">Select alumni type</option>
-                            <option value="new_alumni_registration_fee">Fresh Graduate/Alumni (&#8358;{{ $setting->new_alumni_registration_fee }}) </option>
-                            <option value="alumni_registration_fee">Old Alumni (&#8358;{{ $setting->alumni_registration_fee }})</option>
+                            <option value="new_alumni_registration_fee">Fresh Graduate/Alumni ({!! currency_symbol() !!}{{ $setting->new_alumni_registration_fee }}) </option>
+                            <option value="alumni_registration_fee">Old Alumni ({!! currency_symbol() !!}{{ $setting->alumni_registration_fee }})</option>
                         </select>
                         @error('alumni_type')
                             <div class="invalid-feedback">{{ $message }}</div>

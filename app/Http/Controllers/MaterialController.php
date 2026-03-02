@@ -14,19 +14,20 @@ class MaterialController extends Controller
         $count = 1;
         $edition = ConferenceEdition::find($request->edition);
         $materials = Material::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
-    
-        if(auth()->user()->role == 1){
+        $user = auth()->user();
+
+        if($user->role == 1){
             return view('admin.materials.index', compact('materials', 'count', 'edition'));
         }
 
         $edition = $this->edition;
-        
-        if (auth()->user()->isParticipant($edition) || auth()->user()->isAlumni($edition) || auth()->user()->isModerator($edition)) {
+
+        if (getRegistrationUserLevel(['Participant','Alumni','Moderator'], $edition)){
             $payment = $request->payment_id;
             return view('conference_management.participant.materials', compact('edition','materials', 'count','payment'));
         }
 
-        if(auth()->user()->level == 'Participant' || auth()->user()->level == 'Moderator' || auth()->user()->level == 'Alumni' || auth()->user()->level == 'Nec'){
+        if($user->level == 'Participant' || $user->level == 'Moderator' || $user->level == 'Alumni' || auth()->user()->level == 'Nec'){
             return view('participant.materials', compact('materials', 'count'));
         }
     }
@@ -47,7 +48,7 @@ class MaterialController extends Controller
         if(auth()->user()->role == 1){
             foreach($request->file('file') as $file){
                 $location = $this->uploadFile($file, 'conferencematerials');
-                // $file->move('conferencematerials', $file->getClientOriginalName());  
+                // $file->move('conferencematerials', $file->getClientOriginalName());
                 Material::create([
                     'name' =>$file->getClientOriginalName(),
                     // 'location' => 'conferencematerials/' . $file->getClientOriginalName(),
@@ -61,11 +62,11 @@ class MaterialController extends Controller
 
     }
 
-   
+
     public function show(Material $material)
     {
         $realpath = $material->location;
-        
+
         if(file_exists($realpath)){
             return response()->download($realpath);
         }else{
@@ -73,7 +74,7 @@ class MaterialController extends Controller
         }
     }
 
-    
+
     public function destroy($id)
     {
         $material = Material::find($id);
@@ -81,7 +82,7 @@ class MaterialController extends Controller
         if (file_exists($material->location)) unlink( $material->location);
 
         $material->delete();
-        
+
         return back()->with('message', 'Material deleted successfully');
     }
 }

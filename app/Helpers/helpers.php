@@ -7,8 +7,67 @@ use App\Models\GeneralSetting;
 use App\Models\StakeholderReport;
 use App\Models\StakeholderRole;
 use App\Models\StakeholderSetting;
+use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+
+if (!function_exists('getRegistrationUserLevel')) {
+    function getRegistrationUserLevel(
+        string|array $levels,
+        $edition,
+        $user = null,
+        ?string $registrationStatus = null
+    ): bool {
+        $user = $user ?? auth()->user();
+
+        if (!$user || !$edition) {
+            return false;
+        }
+
+        // Normalize to array
+        $levels = is_array($levels) ? $levels : [$levels];
+
+        $query = Transaction::query()
+            ->where('conference_edition_id', $edition->id)
+            ->where('user_id', $user->id)
+            ->whereIn('level', $levels);
+
+        if ($registrationStatus) {
+            $query->where('registration_status', $registrationStatus);
+        }
+
+        return $query->exists();
+    }
+}
+
+if (!function_exists('getRegistrationUserType')) {
+    function getRegistrationUserType(
+        string|array $types,
+        $edition,
+        $user = null,
+        ?string $registrationStatus = null
+    ): bool {
+        $user = $user ?? auth()->user();
+
+        if (!$user || !$edition) {
+            return false;
+        }
+
+        // Normalize to array
+        $types = is_array($types) ? $types : [$types];
+
+        $query = Transaction::query()
+            ->where('conference_edition_id', $edition->id)
+            ->where('user_id', $user->id)
+            ->whereIn('registration_user_type', $types);
+
+        if ($registrationStatus) {
+            $query->where('registration_status', $registrationStatus);
+        }
+
+        return $query->exists();
+    }
+}
 
 if (!function_exists('rootPermissions')) {
     function rootPermissions()
@@ -893,6 +952,13 @@ if (!function_exists("currency")) {
     function currency()
     {
         return 'NGN';
+    }
+}
+
+if (!function_exists("currency_symbol")) {
+    function currency_symbol()
+    {
+        return '&#8358;';
     }
 }
 

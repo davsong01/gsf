@@ -25,7 +25,7 @@
 <section id="section-hero"
     class="section-dark no-top no-bottom text-light jarallax relative mh-800"
     style="z-index: 0;">
-    
+
     <img class="jarallax-img" src="{{asset('conference_templates/template3/images/background/stars.jpg')}}" alt="">
 
 
@@ -77,7 +77,7 @@
                     <div class="col-lg-4">
                       <div id="defaultCountdown" class="pt-2"></div>
                     </div>
-                    
+
                     <div class="col-lg-4">
                         <div class="d-flex">
                             <i class="fs-60 icofont-google-map id-color"></i>
@@ -240,9 +240,9 @@
             @foreach ($speakers as $speaker)
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="hover relative rounded-1 overflow-hidden wow fadeIn scale-in-mask">
-                        <img 
-                            src="{{ asset($speaker->image) }}" 
-                            class="w-100 hover-scale-1-1 speaker-img" 
+                        <img
+                            src="{{ asset($speaker->image) }}"
+                            class="w-100 hover-scale-1-1 speaker-img"
                             alt="{{ $speaker->name }}"
                         >
                         <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
@@ -306,9 +306,9 @@
                                             <div class="col-md-4 col-8">
                                                 @if($speaker)
                                                     <div class="d-flex align-items-center">
-                                                        <img src="{{ asset($speaker->image) }}" 
-                                                            alt="{{ $speaker->name }}" 
-                                                            class="rounded-1 me-3" 
+                                                        <img src="{{ asset($speaker->image) }}"
+                                                            alt="{{ $speaker->name }}"
+                                                            class="rounded-1 me-3"
                                                             style="height:80px; width:80px; object-fit:cover;">
                                                         <div>
                                                             <h5 class="mb-1">{{ $speaker->name }}</h5>
@@ -362,20 +362,20 @@
 
                 <div class="col-md-4">
                     <div class="d-ticket p-4 bg-dark-2 rounded-1 text-center h-100 position-relative wow fadeInUp">
-                        <img style="border-radius: 50%;" 
-                            src="{{ asset($setting->conference_logo) }}" 
-                            class="w-80px mb-4" 
+                        <img style="border-radius: 50%;"
+                            src="{{ asset($setting->conference_logo) }}"
+                            class="w-80px mb-4"
                             alt="">
 
                         <h2 class="mb-2">{{ $plan->title }}</h2>
-                        <h4 class="mb-4">&#8358;{{ number_format($plan->price, 2) }}</h4>
+                        <h4 class="mb-4">{!! currency_symbol() !!}{{ number_format($plan->price, 2) }}</h4>
 
                         <ul class="ul-check mb-4 text-start">
                             @foreach($items ?? [] as $item)
                                 <li>{{ $item }}</li>
                             @endforeach
                         </ul>
-                        
+
                         <a class="btn-main fx-slide w-100 mt-auto" href="{{ route('conference.registration', $plan->id) }}">
                             <span>Get Started</span>
                         </a>
@@ -407,7 +407,7 @@
                           {!! $faq['answer'] !!}
                       </div>
                   @endforeach
-              </div>                      
+              </div>
             </div>
         </div>
     </div>
@@ -424,12 +424,12 @@
 jQuery(document).ready(function($) {
     $('#defaultCountdown').countdown({
         until: new Date(
-            {{ $start->year }},     
+            {{ $start->year }},
             {{ $start->month - 1 }},
-            {{ $start->day }},      
-            {{ $start->hour }},     
-            {{ $start->minute }},   
-            {{ $start->second }}    
+            {{ $start->day }},
+            {{ $start->hour }},
+            {{ $start->minute }},
+            {{ $start->second }}
         ),
         onExpiry: function() {
             $('#defaultCountdown')

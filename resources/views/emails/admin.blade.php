@@ -13,7 +13,7 @@ An Alumni has just registered for the GSF National Conference, Please find detai
 <strong>Email: </strong> {{ $data['email'] }} <br>
 <strong>Phone: </strong> {{ $data['phone'] }} <br>
 <strong>Conference ID: </strong>{{ $data['family_id'] }} <br>
-<strong>Amount Paid: </strong> &#8358;{{ $data['amount'] }} <br>
+<strong>Amount Paid: </strong> {!! currency_symbol() !!}{{ $data['amount'] }} <br>
 <strong>Campus: </strong> {{ $data['chapter'] }} <br>
 
 

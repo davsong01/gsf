@@ -32,7 +32,7 @@
                                             <option value="1" {{ $setting->enable_conference == 1 ? 'selected' : '' }}>Yes</option>
                                             <option value="0" {{ $setting->enable_conference == 0 ? 'selected' : '' }}>No</option>
                                         </select>
-                                      
+
                                     </fieldset>
                                 </div>
                                 <div class="col-sm-6 col-md-6">
@@ -50,7 +50,7 @@
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <input type="number" class="form-control" name="registration_fee" value="{{ old('registration_fee') ?? $setting->registration_fee }}" id="registration_fee">
                                         <div class="form-control-position">
-                                            &#8358;
+                                            {!! currency_symbol() !!}
                                         </div>
                                     </fieldset>
                                 </div>
@@ -79,7 +79,7 @@
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <input type="number" class="form-control" name="new_alumni_registration_fee" value="{{ old('new_alumni_registration_fee') ?? $setting->new_alumni_registration_fee }}" id="new_alumni_registration_fee" required>
                                         <div class="form-control-position">
-                                            &#8358;
+                                            {!! currency_symbol() !!}
                                         </div>
                                     </fieldset>
                                 </div>
@@ -98,12 +98,12 @@
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <input type="number" class="form-control" name="alumni_registration_fee" value="{{ old('alumni_registration_fee') ?? $setting->alumni_registration_fee }}" id="alumni_registration_fee" required>
                                         <div class="form-control-position">
-                                            &#8358;
+                                            {!! currency_symbol() !!}
                                         </div>
                                     </fieldset>
                                 </div>
-                                
-                                
+
+
                                 <div class="col-sm-6 col-md-6">
                                     <label for="end_date">Conference End Date</label>
                                     <fieldset class="form-group position-relative has-icon-left">

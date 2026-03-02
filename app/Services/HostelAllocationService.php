@@ -24,14 +24,14 @@ class HostelAllocationService
 
         try {
             $setting = $transaction->edition;
-            
+
             $level = $transaction->level === 'Moderator' ? 'Participant' : $transaction->level;
             $gender = $newData['gender'] ?? $transaction->gender;
-            
+
             $conference_edition_id = $transaction->conference_edition_id;
-            
+
             DB::beginTransaction();
-            
+
             // --- CASE 1: Admin manually set hostel ---
             if (!empty($newData['new_hostel_id'])) {
                 $hostel = Hostel::where('id', $newData['new_hostel_id'])
@@ -69,13 +69,13 @@ class HostelAllocationService
                 ->first(function ($field) {
                     return in_array($field->key, ['chapter', 'chapter_id'], true);
                 });
-            
+
             $fieldField = $transaction->allocationFields->where('key', 'field_id')->first();
-            
+
             $chapter_id = $chapterField->value ?? null;
             $field_id = $fieldField->value ?? null;
             $hostel = null;
-            
+                
             if (in_array($level, ['Official', 'Medical'])) {
                 $hostel = Hostel::where([
                     'level' => $level,

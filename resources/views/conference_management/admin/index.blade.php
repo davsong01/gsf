@@ -14,7 +14,7 @@
                     <div class="card-content">
                         <div class="card-body py-1">
                             <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
-                                &#8358;{{ $total }}
+                                {!! currency_symbol() !!}{{ $total }}
                             </div>
                             <div class="text-muted line-ellipsis">Total Payments</div>
                             <h3 class="mb-0"></h3>
@@ -86,7 +86,7 @@
                     <div class="card-content">
                         <div class="card-body py-1">
                             <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">
-                                &#8358;{{ $donations }}
+                                {!! currency_symbol() !!}{{ $donations }}
                             </div>
                             <div class="text-muted line-ellipsis">Total Donations</div>
                             <h3 class="mb-0"></h3>

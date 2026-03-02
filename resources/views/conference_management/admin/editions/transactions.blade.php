@@ -27,20 +27,20 @@
     <form method="GET" class="row align-items-end" style="padding:0 25px;">
         <div class="col-md-3 mb-2">
             <label class="form-label">Transaction ID</label>
-            <input type="text" name="transid" class="form-control">
+            <input type="text" name="transid" class="form-control" value="{{old('transid')}}">
         </div>
         <div class="col-md-3 mb-2">
             <label class="form-label">Name</label>
-            <input type="text" name="name" class="form-control">
+            <input type="text" name="name" class="form-control" value="{{old('name')}}">
         </div>
         <div class="col-md-3 mb-2">
             <label class="form-label">Email</label>
-            <input type="text" name="email" class="form-control">
+            <input type="text" name="email" class="form-control" value="{{old('email')}}">
         </div>
         <!-- From Date -->
         <div class="col-md-3 mb-2">
             <label class="form-label">From</label>
-            <input type="date" name="from_date" class="form-control">
+            <input type="date" name="from_date" class="form-control" value="{{old('from_date')}}">
         </div>
 
         <!-- To Date -->
@@ -52,9 +52,9 @@
             <label class="form-label">Status</label>
             <select name="status" class="form-control">
                 <option value="">All Status</option>
-                <option value="Initiated">Initiated</option>
-                <option value="Pending">Pending</option>
-                <option value="Complete">Complete</option>
+                <option value="Initiated" {{ request()->status == 'Initiated' ? 'selected' : '' }}>Initiated</option>
+                <option value="Pending" {{ request()->status == 'Pending' ? 'selected' : '' }}>Pending</option>
+                <option value="Complete" {{ request()->status =='Complete' ? 'selected' : '' }}>Complete</option>
             </select>
         </div>
         <!-- Field -->
@@ -63,7 +63,7 @@
             <select name="conference_plan_id" class="form-control">
                 <option value="">All Plans</option>
                 @foreach ($edition->conferenceplans as $plan)
-                    <option value="{{ $plan->id }}">{{ $plan->title }}</option>
+                    <option value="{{ $plan->id }}" {{ request()->conference_plan_id == $plan->id ? 'selected' : '' }}>{{ $plan->title }}</option>
                 @endforeach
             </select>
         </div>
@@ -73,11 +73,27 @@
             <label class="form-label">Registration Status</label>
             <select name="registration_status" class="form-control">
                 <option value="">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Complete">Complete</option>
+                <option value="Pending" {{ request()->registration_status == 'Pending' ? 'selected' : '' }}>
+                    Pending
+                </option>
+                <option value="Complete" {{ request()->registration_status == 'Complete' ? 'selected' : '' }}>
+                    Complete
+                </option>
             </select>
         </div>
 
+        <div class="col-md-3 mb-2">
+            <label class="form-label">Registration User Type</label>
+            <select name="registration_user_type" class="form-control">
+                <option value="">All</option>
+                <option value="moderator" {{ request()->registration_user_type == 'moderator' ? 'selected' : '' }}>
+                    Moderator
+                </option>
+                <option value="participant" {{ request()->registration_user_type == 'participant' ? 'selected' : '' }}>
+                    Participant
+                </option>
+            </select>
+        </div>
         <!-- Chapter -->
         @if($edition->ministry->code == 'gsf')
         <div class="col-md-3 mb-2">
@@ -136,7 +152,7 @@
                                     <option value="">-- Select Action --</option>
                                     <option value="delete">Delete Selected</option>
                                     <option value="resolve">Resolve Selected</option>
-                                    
+
                                 </select>
                             </div>
 
@@ -189,9 +205,9 @@
                                                 <span style="color: red;">
                                                     <span class="badge badge-success">Resolved</span>
                                                     by: {{ $transaction->resolvedBy->fullname ?? 'CRON' }} <br>
-                                                    at: {{ $transaction->resolved_at ? $transaction->resolved_at->format('Y-m-d h:i a') : '' }}
+                                                    at: {{ $transaction->resolved_at ? $transaction->resolved_at->format('Y-m-d h:i a') : '' }}<br>
                                                 </span>
-                                                @endif <br>
+                                                @endif
                                                 @if($transaction->fix_status)
                                                 <strong>Fix Status: </strong>{{$transaction->fix_status}} <br>
                                                 @endif
@@ -221,6 +237,15 @@
                                                 <a href="{{ route('conference_plans.index', $edition->id) }}">
                                                     {{ $transaction->conferenceplan->title }}
                                                 </a><br>
+                                                <span>
+                                                    <strong>Reg. Type:</strong><span class="badge" style="background-color:{{$transaction->registration_user_type == 'moderator' ? 'teal' : '#f700ff'}}"> {{ ucfirst($transaction->registration_user_type) }} </span>
+                                                </span>
+                                                @if($transaction->registration_user_type == 'moderator') <br>
+                                                    <span>
+                                                        <strong style="color:blue">Slots:</strong> {{ $transaction->slot }} <br>
+                                                        <strong style="color:blue">Slots Available:</strong> {{ $transaction->slot - $transaction->slot_filled }}
+                                                    </span> <br>
+                                                @endif
                                                 <small>Location: {{ $transaction->location ?? 'Online' }}</small>
                                             </td>
 

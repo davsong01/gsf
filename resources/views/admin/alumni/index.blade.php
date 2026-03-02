@@ -42,7 +42,7 @@
 											<td>{{ $count }}</td>
 											<td>{{ $participant->conference_number }}</td>
 											<td>@if($participant->registration_status == 'Complete')
-												<i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small> 
+												<i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small>
 												@else
 												<i class="bx bxs-circle danger font-small-1 mr-50"></i><small>Pending</small>
 												@endif
@@ -51,9 +51,7 @@
 											<td>{{ $participant->name }}</td>
 											<td>{{ $participant->email }}</td>
 											<td>{{ $participant->phone }}</td>
-											<td>&#8358;{{ $participant->amount_paid }}</td>
-
-
+											<td>{!! currency_symbol() !!}{{ $participant->amount_paid }}</td>
 
 											<td style="padding-left: 5px;padding-right: 5px;">
 												<a class="actions" data-toggle="tooltip" title="View/Edit User"
@@ -61,20 +59,20 @@
 														</a> <a class="actions" data-toggle="tooltip" data-placement="top" title="Switch To"
 														href="{{ route('switchuser', $participant->id) }}"><i class="fa fa-unlock actions"></i>
 												</a>
-												
+
 												<a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');"
 													title="Delete User" href="{{ route('alumni.delete', $participant->id) }}"> <i
 														class="fa fa-trash"></i></a>
-											</td> 
-										</tr> 
-										@endforeach 
+											</td>
+										</tr>
+										@endforeach
 									</tbody>
-										
-								</table> 
-								</div> 
-							</div>				
-						</div> 
-					</div> 
+
+								</table>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

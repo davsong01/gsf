@@ -16,7 +16,7 @@
                             <a href="{{ route('conference.participants.create', ['edition'=>$edition->id, 'type'=>$type]) }}" class="btn btn-primary mt-1">Add new</a>
                             <a class="btn btn-info mt-1" href="{{ route('conferenceusers.import.index', ['edition'=>$edition->id,'type'=>$type]) }}">Import {{ $type }}</a>
                             <a href="{{ route('conferenceusers.export',  ['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export</a>
-                        </div>                        
+                        </div>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -25,7 +25,7 @@
                                     <thead>
                                         <tr>
                                             <th>S/N</th>
-                                            <th>Date</th>
+                                            <th>Date & Allocation Data</th>
                                             <th>Avatar</th>
                                             <th>Details</th>
                                             <th>Amount</th>
@@ -36,11 +36,15 @@
                                     <tbody>
                                         @if(isset($participants) && $participants->count() > 0)
                                         @foreach($participants as $participant)
-                                        
                                         <tr>
-                                            <td>{{ $count++ }}</td>
+                                            <td>{{ $loop->iteration }}</td>
                                             <td>{{ $participant->created_at->format('Y-m-d : h-i-a') }} <br>
-                                                <strong>Reg Plan:</strong> {{ $participant->level }}
+                                                <span style="color:blue">
+                                                    <strong>Reg Plan:</strong> {{ $participant->conferenceplan->title }} <br>
+                                                </span>
+                                                <span style="color:green">
+                                                    <strong>Reg Level:</strong> {{ $participant->level }}
+                                                </span>
                                                 @if(isset($participant->hostel_id)) <br>
                                                 <strong>Hostel:</strong> {{ $participant->hostel->name }}
                                                 @endif
@@ -48,13 +52,7 @@
                                                 <strong>Service Point:</strong> {{ $participant->food->name }} <br>
                                                 @endif
                                                 <strong>Payment Provider:</strong> {{ $participant?->paymentprovider?->name }}
-
-                                                @if($type == 'Moderator') <br>
-                                                <span>
-                                                    <strong style="color:blue">Slots:</strong> {{ $participant->slot }} <br>
-                                                    <strong style="color:blue">Slots Available:</strong> {{ $participant->slot - $participant->slot_filled }} 
-                                                </span>
-                                                @endif <br>
+                                                <br>
                                                 <span style="color:blue">Payment Location: <strong>{{ $participant->location ?? 'Online' }}</strong></span> <br>
                                                 <span id="single-{{$participant->transid}}"><span>
                                             </td>
@@ -73,17 +71,27 @@
                                                     <span>
                                                         <strong>Reg. Status:</strong><span style="color:{{$participant->registration_status == 'Complete' ? 'green' : 'red'}}"> {{ $participant->registration_status }} <br></span>
                                                     </span>
+
                                                     <strong>Name:</strong> {{ $participant->user->name }} <br>
                                                     <strong>Email:</strong> {{ $participant->user->email }} <br>
                                                     <strong>Phone:</strong> {{ $participant->user->phone }} <br>
+                                                    <span>
+                                                        <strong>Reg. Type:</strong><span class="badge" style="background-color:{{$participant->registration_user_type == 'moderator' ? 'teal' : '#f700ff'}}"> {{ ucfirst($participant->registration_user_type) }} </span>
+                                                    </span>
+                                                    @if($participant->registration_user_type == 'moderator') <br>
+                                                        <span>
+                                                            <strong style="color:blue">Slots:</strong> {{ $participant->slot }} <br>
+                                                            <strong style="color:blue">Slots Available:</strong> {{ $participant->slot - $participant->slot_filled }}
+                                                        </span>
+                                                    @endif
                                                 </small>
                                             </td>
                                             <td>
-                                                <strong>Amount: </strong>&#8358;{{ number_format($participant->amount_paid) }} <br>
-                                                <strong>Pro. Charge: </strong>&#8358;{{ number_format($participant->provider_charge) }} <br>
-                                                <strong>Total Paid: </strong>&#8358;{{ number_format($participant->total_amount ?? $participant->amount_paid) }} <br>
+                                                <strong>Amount: </strong>{!! currency_symbol() !!}{{ number_format($participant->amount_paid) }} <br>
+                                                <strong>Pro. Charge: </strong>{!! currency_symbol() !!}{{ number_format($participant->provider_charge) }} <br>
+                                                <strong>Total Paid: </strong>{!! currency_symbol() !!}{{ number_format($participant->total_amount ?? $participant->amount_paid) }} <br>
                                             </td>
-                                            
+
                                             <td></strong>@if(isset($participant?->moderator?->name) || in_array($type, ['Participant', 'Moderator'])  && ($participant->level) == 'Participant'){{ $participant?->moderator?->name }}
                                                 @else N/A @endif</td>
                                             <td style="padding-left: 5px;padding-right: 5px;">
@@ -99,7 +107,7 @@
                                                 @if($participant->registration_status == 'Complete')
                                                 <a class="actions" data-toggle="tooltip" title=" Print/download Conferene I.D" href="{{ route('participants.card', $participant->id) }}"> <i class="fa fa-print actions"></i></
                                                 </a>
-                                            
+
                                                 @endif
                                                 @if(auth()->user()->conference_role == 'superadmin')
 
@@ -111,7 +119,7 @@
                                                 </a>
                                                 @endif
                                             </td>
-                                            
+
                                         </tr>
                                         @endforeach
                                         @endif

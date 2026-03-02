@@ -11,6 +11,7 @@ class EmailService {
     {
         $subject = '';
         $content = '';
+        $currency_symbol = currency_symbol();
 
         if(!empty($transaction)){
             $conferenceTheme = $transaction->edition->conference_theme ?? 'GSF National Conference';
@@ -21,9 +22,9 @@ class EmailService {
             <strong>Name:</strong> {$transaction->name}<br>
             <strong>Email:</strong> {$transaction->email}<br>
             <strong>Phone:</strong> {$transaction->phone}<br>
-            <strong>Amount Paid:</strong> &#8358;" . number_format($transaction->amount_paid ?? $transaction->amount ?? 0) . "<br><br>
-            <strong>Service Charge:</strong> &#8358;" . number_format($transaction->provider_charge ?? 0) . "<br><br>
-            <strong>Total Amount Paid:</strong> &#8358;" . number_format($transaction->total_amount ?? (($transaction->amount_paid ?? 0) + ($transaction->provider_charge ?? 0))) . "<br><br>";
+            <strong>Amount Paid:</strong> {$currency_symbol}" . number_format($transaction->amount_paid ?? $transaction->amount ?? 0) . "<br><br>
+            <strong>Service Charge:</strong> {$currency_symbol}" . number_format($transaction->provider_charge ?? 0) . "<br><br>
+            <strong>Total Amount Paid:</strong> {$currency_symbol}" . number_format($transaction->total_amount ?? (($transaction->amount_paid ?? 0) + ($transaction->provider_charge ?? 0))) . "<br><br>";
 
             $allocationDetails = '';
             if (!empty($transaction->hostel_id)) {
@@ -84,7 +85,7 @@ class EmailService {
                 $subject = 'Thank You for Your Donation';
                 $content = "
                 Dear {$transaction->name},<br><br>
-                Thank you for your donation of &#8358;" . number_format($transaction->amount ?? 0) . " towards {$conferenceTheme}.<br><br>
+                Thank you for your donation of {$currency_symbol}" . number_format($transaction->amount ?? 0) . " towards {$conferenceTheme}.<br><br>
                 Your support is deeply appreciated.<br><br>
                 <strong>Transaction ID:</strong> {$transaction->transid}<br><br>
                 Thanks.";
@@ -94,7 +95,7 @@ class EmailService {
                 $subject = 'Thank You for Supporting GSF';
                 $content = "
                 Dear {$transaction->name},<br><br>
-                Thank you for your generous contribution of &#8358;" . number_format($transaction->amount ?? 0) . " to GSF.<br><br>
+                Thank you for your generous contribution of {$currency_symbol}" . number_format($transaction->amount ?? 0) . " to GSF.<br><br>
                 God bless you abundantly.<br><br>
                 <strong>Transaction ID:</strong> {$transaction->transid}<br><br>
                 Thanks.";

@@ -12,9 +12,9 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Trashed Participants</h4>
-                        
+
                         @include('includes.alerts')
-                        
+
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -42,16 +42,16 @@
                                             <td><img class="mr-1" style="border-radius:50%" src="{{ asset('/'.$participant->passport ? $participant->passport : '/frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40"></td>
                                             <td>{{ $participant->conference_number }}</td>
                                             <td>{{ $participant->level }}</td>
-                                            
+
                                             <td>{{ $participant->name }}</td>
                                             <td>{{ $participant->email }}</td>
                                             <td>{{ $participant->phone }}</td>
-                                            <td>&#8358;{{ $participant->amount_paid }}</td>
-                                            
+                                            <td>{!! currency_symbol() !!}{{ $participant->amount_paid }}</td>
+
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                                 <a class="actions" data-toggle="tooltip" title="Restore" href="{{ route('users.restore', $participant->id) }}"> <i class="fa fa-undo"></i></
                                                 </a>
-                                            
+
                                                 <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Permanently" href="{{ route('users.delete', $participant->id) }}"> <i class="fa fa-trash"></i></
                                                 </a>
                                             </td>
@@ -62,7 +62,7 @@
                             </div>
                         </div>
                     </div>
-                   
+
                 </div>
             </div>
         </div>

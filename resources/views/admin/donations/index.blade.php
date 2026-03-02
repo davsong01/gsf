@@ -36,7 +36,7 @@
                                             <td>{{ $donation->name }}</td>
                                             <td>{{ $donation->email }}</td>
                                             <td>{{ $donation->phone }}</td>
-                                            <td>&#8358;{{ $donation->amount }}</td>
+                                            <td>{!! currency_symbol() !!}{{ $donation->amount }}</td>
                                             <td>{{ $donation->state }}</td>
                                         </tr>
                                         @endforeach
@@ -45,7 +45,7 @@
                             </div>
                         </div>
                     </div>
-                   
+
                 </div>
             </div>
         </div>

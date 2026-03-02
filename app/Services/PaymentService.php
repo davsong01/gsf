@@ -30,19 +30,23 @@ class PaymentService {
             ];
         }
 
+        $isModerator = !empty($data['transaction_source']) && $data['transaction_source'] == 'moderator';
+
         $location =  $data['location'] ?? null;
         $amount = $data['amount'] ?? $plan->price;
 
         if ($setting->lock_online_payment == 'yes') {
             $location = 'On Site';
         } else {
-            $paymentProvider = $setting->paymentprovider;
-            $location = 'Online';
+            if(!$isModerator){
+                $paymentProvider = $setting->paymentprovider;
+                $location = 'Online';
 
-            if ($paymentProvider && $paymentProvider->customer_pays_provider_charge) {
-                $provider_charge = $paymentProvider->provider_charge;
-                $data['provider_charge'] = $provider_charge;
-                $data['total_amount'] = $provider_charge + $data['amount'];
+                if ($paymentProvider && $paymentProvider->customer_pays_provider_charge) {
+                    $provider_charge = $paymentProvider->provider_charge;
+                    $data['provider_charge'] = $provider_charge;
+                    $data['total_amount'] = $provider_charge + $data['amount'];
+                }
             }
         }
 
@@ -54,6 +58,7 @@ class PaymentService {
             $transaction = Transaction::where('transid', $data['transid'])->first();
 
             if (!$transaction) {
+
                 $transaction = Transaction::create([
                     'name' => $data['name'],
                     'email' => $data['email'],
@@ -74,12 +79,14 @@ class PaymentService {
                     'slot' => $extras['slot'],
                     'slot_filled' => $extras['slot_filled'] ?? 0,
                     'level' => $extras['level'],
+                    'uploaded_by' => $data['uploaded_by'] ?? null,
+                    'registration_user_type' => $extras['slot'] > 1 ? 'moderator' : 'participant',
                 ]);
             }
 
             $allocatableFields = $plan->fields()->pluck('name')->toArray();
             $filteredFields = [];
-
+            
             // Auto-fill field_id if missing but chapter exists
             if (in_array('field_id', $allocatableFields, true) && empty($data['field_id']) && !empty($data['chapter'])) {
                 $fieldId = DB::table('chapters')->where('id', $data['chapter'])->value('field_id');
