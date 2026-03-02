@@ -30,7 +30,7 @@ return new class extends Migration
         ->whereNull('registration_user_type')
         ->where('level', 'Participant')
         ->update(['registration_user_type' => 'participant']);
-
+        
         DB::table('transactions')
         ->whereNull('registration_user_type')
         ->whereIn('level', ['Official'])

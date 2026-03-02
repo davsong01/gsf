@@ -24,7 +24,7 @@ class ConferenceEditionController extends Controller
      */
     public function index()
     {
-      
+
     }
 
     /**
@@ -51,7 +51,7 @@ class ConferenceEditionController extends Controller
             $ministries = Ministry::where('status', 'active')->latest()->get();
             $faqs = ConferenceFaq::where('status', 1)->orderBy('display_order')->get();
             $speakers = ConferenceSpeaker::where('status', 1)->latest()->get();
-            
+
             return view('conference_management.admin.editions.edit', compact('edition', 'paymentproviders', 'ministries', 'faqs','speakers'));
         }
     }
@@ -65,10 +65,10 @@ class ConferenceEditionController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        
+
         // Check if existing active
         $active = ConferenceEdition::where('status','active')->count();
-        
+
         if(isset($active) && $active > 0){
             $data['status'] = 'inactive';
         }
@@ -88,25 +88,24 @@ class ConferenceEditionController extends Controller
         if (auth()->user()->role == 1) {
             $edition = ConferenceEdition::with(['transactions', 'donations'])->where('id', $id)->first();
             $transactions = $edition->transactions;
-            
-            $plans = ConferencePlan::with('registered')->where('conference_edition_id', $edition->id)->get();
-            
+
+            $plans = ConferencePlan::with('registered')->where('conference_edition_id', $edition->id)->where('status', 1)->get();
 
             $registered_moderators = clone $transactions;
-            $registered_moderators = $registered_moderators->where('registration_status', 'Complete')->where('level', 'Moderator');
+            $registered_moderators = $registered_moderators->where('registration_status', 'Complete')->where('registration_user_type', 'moderator');
             $moderators = $registered_moderators; // Keep original collection
-
+            
             $registered_moderators_count = $moderators->count();
             $total_slots = $moderators->sum('slot');
             $slots_filled = $moderators->sum('slot_filled');
             $unallocated_slots = $total_slots - $slots_filled;
-            
+
             $pending_registration = clone $transactions;
             $pending_registration = $pending_registration->where('registration_status', 'Pending')->count();
 
             $completed_registration = clone $transactions;
             $completed_registration = $completed_registration->where('registration_status', 'Pending')->count();
-            
+
             // allow
             $total = clone $transactions;
             $total = $total->where('registration_status', 'Complete')->where('conference_edition_id', $id)->sum('total_amount');
@@ -191,7 +190,7 @@ class ConferenceEditionController extends Controller
             $new->status = 'inactive';
             $new->conference_theme = $edition->conference_theme . '_copy';
             $new->save();
-           
+
             return back()->with('message','Copy Succesfull');
         }
     }
@@ -212,7 +211,7 @@ class ConferenceEditionController extends Controller
     public function update(Request $request, ConferenceEdition $conferenceEdition)
     {
         $edition = ConferenceEdition::find($request->id);
-        
+
         if($request->has('ban')){
 			$request['banner'] = $this->uploadImage($request->ban, 'frontend/img/site');
         }
@@ -224,9 +223,9 @@ class ConferenceEditionController extends Controller
         if ($request->has('favicon')) {
             $request['conference_favicon'] = $this->uploadImage($request->favicon, 'frontend/img/site');
         }
-        
+
         $edition->update($request->except(['ban','logo','favicon', 'template_text_type', 'template_text_type_face', 'template_font_size', 'template_left_offset', 'template_top_offset','template_color', 'template']));
-        
+
         if(!empty($request->template)){
             $generator = new DynamicImageGeneratorService();
             $generator->updateSettings($request, $edition);

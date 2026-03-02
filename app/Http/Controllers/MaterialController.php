@@ -11,7 +11,6 @@ class MaterialController extends Controller
 {
     public function index(Request $request)
     {
-        $count = 1;
         $edition = ConferenceEdition::find($request->edition);
         $materials = Material::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
         $user = auth()->user();
@@ -22,13 +21,9 @@ class MaterialController extends Controller
 
         $edition = $this->edition;
 
-        if (getRegistrationUserLevel(['Participant','Alumni','Moderator'], $edition)){
+        if (getRegistrationUserLevel(['Participant'], $edition)){
             $payment = $request->payment_id;
-            return view('conference_management.participant.materials', compact('edition','materials', 'count','payment'));
-        }
-
-        if($user->level == 'Participant' || $user->level == 'Moderator' || $user->level == 'Alumni' || auth()->user()->level == 'Nec'){
-            return view('participant.materials', compact('materials', 'count'));
+            return view('conference_management.participant.materials', compact('edition','materials','payment'));
         }
     }
 

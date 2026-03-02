@@ -1,6 +1,7 @@
 <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="fa fa-bars"></i><span class="menu-title" data-i18n="Kanban">Dashboard</span></a></li>
+
 @if(auth()->user()->conference_role == 'superadmin')
-    <li class="nav-item {{ Request::is('conferencemanagement.index*') ? 'open' : '' }}"><a href="#"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Content">Conference Mgt</span></a>
+    <li class="nav-item {{(Route::is('edit.conference.edition') || Route::is('show.conference.edition') || Route::is('conferencemanagement*') || Route::is('conference.transactions') || Route('conference.participants') || Route::is('show.conference.edition') || Route::is('ministry.index*') ) ? 'open is_shown' : '' }}"><a href="#"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Content">Conference Mgt</span></a>
         <ul class="menu-content">
             <li class="is_shown"><a href="{{ route('ministry.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Ministries</span></a>
             </li>
@@ -137,7 +138,7 @@
 
     {{-- OFFICIALS --}}
     @if(in_array('officials.index', $userPermissions))
-    <li class="nav-item {{ Request::is('conference*') ? 'active' : '' }}">
+    <li class="nav-item {{ Request::is('officials*') ? 'active' : '' }}">
         <a href="{{ route('officials.index') }}"><i class="fa fa-users"></i><span class="menu-title">Officials</span></a>
     </li>
     @endif

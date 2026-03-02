@@ -30,6 +30,7 @@ use App\Models\TransactionAllocationField;
 use App\Services\DynamicImageGeneratorService;
 use App\Services\ServicePointAllocationService;
 use App\Http\Controllers\CriticalEmailController;
+use App\Services\UserService;
 
 class ConferenceManagementController extends Controller
 {
@@ -197,7 +198,6 @@ class ConferenceManagementController extends Controller
         if (getRegistrationUserType(['Participant','Alumni', 'Nec','Choir'], $edition)){
 			return view('conference_management.participant.single_payment', compact('edition', 'payment', 'chapters'));
 		}
-
         if (getRegistrationUserType(['moderator'], $edition)) {
             $userId = $user->id;
 
@@ -354,9 +354,6 @@ class ConferenceManagementController extends Controller
 		$moderator = Transaction::where(['user_id' => auth()->user()->id, 'registration_user_type' => 'moderator', 'conference_edition_id' => $request->edition, 'registration_status' => 'Complete'])->first();
 
 		if ($moderator) {
-			// prepare the registration fields
-			// $newUserArray = $request->all();
-
 			$fields = !empty($moderator->allocationFields)
 				? $moderator->allocationFields->whereNotIn('key',['name','email','phone', 'participants','no_of_participants'])->pluck('value', 'key')->toArray()
 				: [];
@@ -809,15 +806,37 @@ class ConferenceManagementController extends Controller
 
 	public function participants($type = '', $edition = '', $slug = '')
 	{
-		$count = 1;
-
 		if (auth()->user()->role == 1) {
-			$participants = Transaction::with('user')->where('conference_edition_id', $edition)->wherehas('user')->where('level', $type)->latest()->take(10)->get();
+			$participants = Transaction::with('user')->where('conference_edition_id', $edition)->wherehas('user')->where('level', $type);
+
+            if(request()->filled('registration_user_type')){
+                $participants->where('registration_user_type', request()->registration_user_type);
+            }
+
+            $participants = $participants->latest()->take(10)->get();
+
 			$edition = ConferenceEdition::find($edition);
 
-			return view('conference_management.admin.users.index', compact('participants', 'count', 'edition', 'type'));
+			return view('conference_management.admin.users.index', compact('participants', 'edition', 'type'));
 		}
 	}
+
+    public function exportParticipants(Request $request){
+
+        $payload = [
+            'edition' => ConferenceEdition::where('id', $request->edition)->first(),
+        ];
+
+        $exportData = UserService::exportConferenceParticipantsData($payload);
+        $name = $payload['edition']->conference_theme . ' participants.xlsx';
+        
+        return ExcelService::download(
+            $exportData['data']->toArray(),
+            array_values($exportData['headers']),
+            $name
+        );
+
+    }
 
 	public function staffIndex($edition = '')
 	{
@@ -844,7 +863,7 @@ class ConferenceManagementController extends Controller
 			return back()->with('error', 'You must complete registration before viewing this resource');
 		}
 
-		if (getRegistrationUserLevel(['Moderator'], $payment->edition)) {
+		if (getRegistrationUserType(['moderator'], $payment->edition)) {
 			if ($payment->uploaded_by != $user->id) {
 				return abort(404);
 			}
@@ -954,27 +973,7 @@ class ConferenceManagementController extends Controller
 	}
 
 
-	// public function import(Request $request)
-	// {
-	// 	if (auth()->user()->role == 1 || getRegistrationUserLevel(['Moderator'], $this->edition)) {
-	// 		$data = $this->validate($request, [
-	// 			'file' => 'required|mimes:xlsx,csv',
-	// 			'import_level' => 'required',
-	// 		]);
-	// 	}
-
-	// 	$participants = ExcelService::import($request->file('file'));
-
-	// 	foreach($participants as $participant){
-	// 		request()->merge($participant);
-
-	// 		$this->store(request());
-	// 	}
-
-    //     return redirect(route('conferencemanagement.show', ['conferencemanagement' => $moderator->id, 'edition' => $edition->id ?? $setting->id]))->with('message', 'Participant successfully created, you have ' . ($moderator->slot - $moderator->slot_filled) . ' participant slot(s) left');
-	// 	return redirect(route('conferenceusers.import.index', ['type' => $request->import_level, 'edition' => $request->edition]));
-	// }
-     public function import(Request $request)
+    public function import(Request $request)
 	{
         $user = auth()->user();
         $isModerator = false;

@@ -152,9 +152,8 @@
 										required>
 								</fieldset>
 
-
 								@if(!empty($payment->allocationFields))
-									@foreach($payment->allocationFields as $field)
+									@foreach($payment->allocationFields->where('key', '!=', 'no_of_participants') as $field)
 										<fieldset class="form-group">
 											<label for="{{$field->key}}">{{ ucwords(str_replace('_id', '', $field->key)) }}</label>
 											<input type="text" id="chapter" class="form-control" value="{{ $field->value }}" disabled>

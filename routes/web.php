@@ -334,7 +334,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('conference-users-import/{type}', 'getAdminParticipantSample')->name('conference.usersexport.sample');
         Route::post('participants-import', 'import')->name('conferenceusers.import');
         Route::post('conference-users-export/{type}', 'import')->name('conferenceuser.import');
-        Route::post('admin-conference-users-export/{type}', 'adminImport')->name('admin.conferenceuser.import');
+        Route::post('admin-conference-users-import/{type}', 'adminImport')->name('admin.conferenceuser.import');
         Route::get('conferenceparticipants/{type?}/{edition?}/{slug?}', 'participants')->name('conference.participants');
         Route::get('create-conferenceparticipants/{edition?}', 'create')->name('conference.participants.create');
         Route::post('store-conferenceparticipants/{edition?}', 'store')->name('conference.participants.store');
@@ -362,10 +362,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::post('generate-template-preview/{edition_id}', 'generateTemplatePreview')->name('template.preview');
     });
 
-    Route::controller(UserController::class)->group(function () {
-        Route::get('conferenceusers/export', 'usersExport')->name('conferenceusers.export');
-        // Route::get('moderator/import/index', 'usersImportIndex')->name('moderator.conference.import.index');
-        // Route::get('participants/import/index', 'usersImportIndex')->name('conferenceusers.import.index');
+    Route::controller(ConferenceManagementController::class)->group(function () {
+        Route::get('conferenceusers/export', 'exportParticipants')->name('conferenceusers.export');
     });
 
     Route::resource('hostels', HostelController::class);

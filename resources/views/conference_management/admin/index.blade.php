@@ -46,7 +46,7 @@
         @endif
         <div class="col-md-3 col-12 dashboard-users-success">
             <div class="card text-center">
-                <a href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">
+                <a href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id, 'registration_user_type' => 'moderator']) }}">
                     <div class="card-content">
                         <div class="card-body">
                             <div class="badge-circle badge-circle-lg badge-circle-light-primary mx-auto mb-50">

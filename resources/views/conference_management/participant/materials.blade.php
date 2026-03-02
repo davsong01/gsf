@@ -30,18 +30,18 @@
                                     <tbody>
                                         @foreach($materials as $material)
                                         <tr>
-                                            <td>{{ $count++ }}</td>
-                                            
-                                            <td>{{ $material->name }}</td>                                           
+                                            <td>{{ $iteration->loop }}</td>
+
+                                            <td>{{ $material->name }}</td>
                                             <td>
                                                  <a class="actions" data-toggle="tooltip" title="Download Material" href="{{ route('materials.show', $material->id) }}"> <i class="bx bxs-download actions"></i>Download
                                                 </a>
                                             </td>
                                         </tr>
-                                      
+
                                         @endforeach
                                     </tbody>
-                                    
+
                                 </table>
                             </div>
                         </div>
@@ -50,6 +50,6 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 @endsection

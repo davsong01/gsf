@@ -74,10 +74,17 @@ class Transaction extends Model
     {
         return $this->belongsTo(Hostel::class);
     }
+
     public function food()
     {
         return $this->belongsTo(Food::class);
     }
+
+    public function servicePoint()
+    {
+        return $this->belongsTo(Food::class, 'food_id');
+    }
+
     public function foodstand()
     {
         return $this->belongsTo(Food::class);

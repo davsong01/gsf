@@ -23,7 +23,7 @@ class TransactionController extends Controller
         $fields = Field::get();
         $edition = ConferenceEdition::find($edition);
 
-        $mainQuery = Transaction::with(['user', 'allocationFields'])->where('conference_edition_id', $edition->id)->latest();
+        $mainQuery = Transaction::with(['user', 'allocationFields', 'moderator'])->where('conference_edition_id', $edition->id)->latest();
 
         if($request->filled('transid')){
             $mainQuery = $mainQuery->where('transid', $request->transid);
@@ -120,11 +120,10 @@ class TransactionController extends Controller
             ];
 
             $data = $transactions->map(function ($transaction) use ($headers) {
-
                 return collect($headers)->mapWithKeys(function ($label, $key) use ($transaction) {
+                    $moderator = $transaction->moderator->name ?? null;
 
                     return [$label => match (true) {
-
                         in_array($key, ['chapter_id', 'field_id', 'zone_id']) =>
                             optional($transaction->allocationFields
                                 ->firstWhere('key', $key))->value,
@@ -138,13 +137,16 @@ class TransactionController extends Controller
                         $key === 'created_at' =>
                             optional($transaction->created_at)->format('Y-m-d H:i'),
 
+                        $key === 'moderator' =>
+                            $moderator,
+
                         default =>
                             $transaction->{$key} ?? null,
                     }];
                 })->toArray();
 
             });
-
+      
             return ExcelService::download(
                 $data->toArray(),
                 array_values($headers),
