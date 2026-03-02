@@ -939,6 +939,7 @@ class ConferenceManagementController extends Controller
 
 	public function getAdminParticipantSample(Request $request, $type)
 	{
+        dd(request()->all());
 		$edition = ConferenceEdition::findOrFail($request->edition);
 
         $isModerator = getRegistrationUserType(['moderator'], $edition);
@@ -948,7 +949,7 @@ class ConferenceManagementController extends Controller
 			->where('conference_edition_id', $edition->id)
 			->where('level', $type)
 			->firstOrFail();
-
+        dd($currentPlan);
 		$fields = $isModerator ? $currentPlan?->fields()->where('name', '!=', 'no_of_participants')->sortBy('display_order') : $currentPlan?->fields()->sortBy('display_order');
 
 		$fields = $fields
