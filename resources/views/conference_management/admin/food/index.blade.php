@@ -28,7 +28,7 @@
                                         <tr>
                                             <th>S/N</th>
                                             <th>Name</th>
-                                            <th>Level</th>
+                                            <th>Conference Plan</th>
                                             <th>Fields</th>
                                             <th>Chapters</th>
                                             <th>Actions</th>
