@@ -42,6 +42,7 @@ class Chapter extends Model
     public function zone(){
         return $this->belongsTo(Zone::class);
     }
+    
     public function field(){
         return $this->belongsTo(Field::class);
     }

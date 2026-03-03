@@ -233,6 +233,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('stakeholderreportsection', StakeholderReportSectionController::class);
     Route::resource('stakeholderreportsubsection', StakeholderReportSubSectionController::class);
     Route::resource('stakeholderreports', AdminReportsController::class);
+    Route::post('stakeholderreports-adjust-status/{report}', [AdminReportsController::class, 'adjustReportStatus'])->name('stakeholderreports.adjust.status');
+
     Route::get('fix-orphan-reports', [AdminReportsController::class, 'fixOrphanReport'])->name('report.fix.orphan');
     Route::get('report-analytics', [AdminReportsController::class, 'reportAnalyticsIndex'])->name('reports.analytics');
     Route::any('report-analytics/{type}', [AdminReportsController::class, 'reportAnalyticsType'])->name('reports.analytics.type');
@@ -568,6 +570,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
         });
 
         Route::resource('reports', StakeholderReportsController::class);
+
         Route::get('financial-reports', [StakeholderReportsController::class, 'financialReports'])->name('financial.report');
         Route::get('download-financial-reports/{report}', [StakeholderReportsController::class, 'financialReportsDownload'])->name('financial.reports.download');
 

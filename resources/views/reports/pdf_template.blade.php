@@ -138,6 +138,7 @@
                             'National' => $report->national_status
                         ];
                     @endphp
+                    
                     <div class="status-info">
                         @foreach($statuses as $key => $status)
                             <strong>{{ $key }}:</strong>

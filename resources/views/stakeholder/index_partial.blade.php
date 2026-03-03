@@ -45,6 +45,21 @@
             ])->filter()->count();
 
             $hierarchyCol = $hierarchyCount > 1 ? intval(12 / $hierarchyCount) : 5;
+
+
+            $approval_statuses = [
+                'zone_pending'     => 'Zone Pending',
+                'zone_approved'    => 'Zone Approved',
+                'zone_rejected'    => 'Zone Rejected',
+
+                'field_pending'    => 'Field Pending',
+                'field_approved'   => 'Field Approved',
+                'field_rejected'   => 'Field Rejected',
+
+                'national_pending' => 'National Pending',
+                'national_approved'=> 'National Approved',
+                'national_rejected'=> 'National Rejected',
+            ];
         @endphp
 
         <div class="row mb-3">
@@ -113,15 +128,11 @@
                         <label class="form-label">Approval Status</label>
                         <select name="status_filter" class="form-control">
                             <option value="">All Status</option>
-                            <option value="zone_pending" @selected(request('status_filter')=='zone_pending')>Zone Pending</option>
-                            <option value="zone_approved" @selected(request('status_filter')=='zone_approved')>Zone Approved</option>
-                            <option value="zone_rejected" @selected(request('status_filter')=='zone_rejected')>Zone Rejected</option>
-                            <option value="field_pending" @selected(request('status_filter')=='field_pending')>Field Pending</option>
-                            <option value="field_approved" @selected(request('status_filter')=='field_approved')>Field Approved</option>
-                            <option value="field_rejected" @selected(request('status_filter')=='field_rejected')>Field Rejected</option>
-                            <option value="national_pending" @selected(request('status_filter')=='national_pending')>National Pending</option>
-                            <option value="national_approved" @selected(request('status_filter')=='national_approved')>National Approved</option>
-                            <option value="national_rejected" @selected(request('status_filter')=='national_rejected')>National Rejected</option>
+                            @foreach($approval_statuses as $key => $label)
+                                <option value="{{ $key }}" @selected(request('status_filter') == $key)>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -240,6 +251,16 @@
 
                                         <td class="text-center">
                                             {{-- View --}}
+                                            @if($isAdmin)
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-link text-primary mx-1"
+                                                    data-toggle="modal"
+                                                    data-target="#statusAdjustModal{{ $report->id }}"
+                                                    title="Adjust Approval Status">
+                                                    <i class="fa fa-cog"></i>
+                                                </button>
+                                            @endif
                                             <a href="{{ route($isAdmin ? 'stakeholderreports.show' : 'stakeholders.reports.show', $report->id) }}" class="text-primary mx-1" title="View Report">
                                                 <i class="fa fa-eye"></i>
                                             </a>
@@ -317,6 +338,55 @@
 
                                         </td>
                                     </tr>
+                                    <div class="modal fade" id="statusAdjustModal{{ $report->id }}" tabindex="-1" role="dialog">
+                                        <div class="modal-dialog" role="document">
+                                            <form method="POST" action="{{ route('stakeholderreports.adjust.status', $report->id) }}">
+                                                @csrf
+
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Adjust Approval Status</h5>
+                                                        <button type="button" class="close" data-dismiss="modal">
+                                                            <span>&times;</span>
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="modal-body">
+                                                        <div class="form-group">
+                                                            <label>Approval Status</label>
+                                                            <select name="approval_status" class="form-control" required>
+                                                                <option value="">-- Select Status --</option>
+                                                                @foreach($approval_statuses as $key => $label)
+                                                                    @if(!in_array($key, ['zone_pending','field_pending', 'national_pending']))
+                                                                    <option value="{{ $key }}" @selected(request('approval_status') == $key)>
+                                                                        {{ $label }}
+                                                                    </option>
+                                                                    @endif
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+
+                                                        <div class="form-group">
+                                                            <label>Reason</label>
+                                                            <textarea
+                                                                name="rejection_reason"
+                                                                class="form-control"
+                                                                rows="3"
+                                                                placeholder="Enter reason (optional)">
+                                                            </textarea>
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-success">Submit</button>
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                    </div>
+
+                                                </div>
+                                            </form>
+                                        </div>
+                                        </div>
                                     @endforeach
                                 </tbody>
                             </table>

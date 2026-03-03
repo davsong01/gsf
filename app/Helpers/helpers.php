@@ -879,7 +879,7 @@ if (!function_exists('fieldStakeholders')) {
 if (!function_exists('secretariatStakeholders')) {
     function secretariatStakeholders()
     {
-        $roles = StakeholderRole::whereIn('slug', ['secretariat','nec-member'])->pluck('id')->toArray();
+        $roles = StakeholderRole::whereIn('slug', ['secretariat'])->pluck('id')->toArray();
         return $roles;
     }
 }

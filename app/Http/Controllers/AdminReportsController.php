@@ -9,6 +9,7 @@ use App\Services\ReportService;
 use App\Models\StakeholderReport;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Stakeholder;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ReportAnalyticsService;
 
@@ -228,5 +229,39 @@ class AdminReportsController extends Controller
         return view('admin.reports.analytics.compliance', $data);
     }
 
+    public function adjustReportStatus(Request $request, StakeholderReport $report){
+        $status = $request->approval_status;
+
+        $statusMap = [
+            'zone_approved'     => fn () => $report->chapter?->zone?->zonalCord,
+            'zone_rejected'     => fn () => $report->chapter?->zone?->zonalCord,
+
+            'field_approved'    => fn () => $report->chapter?->field?->fieldCord,
+            'field_rejected'    => fn () => $report->chapter?->field?->fieldCord,
+
+            'national_approved' => fn () => Stakeholder::whereIn('role_id', secretariatStakeholders())->first(),
+            'national_rejected' => fn () => Stakeholder::whereIn('role_id', secretariatStakeholders())->first(),
+        ];
+
+        if (!isset($statusMap[$status])) {
+            abort(400, 'Invalid approval status');
+        }
+
+        $user = $statusMap[$status]();
+    
+        if (!$user) {
+            abort(404, 'Approver not found');
+        }
+
+        $service = app(ReportService::class);
+
+        if (str_contains($status, 'approved')) {
+            $service->approve($user, $report);
+        } else {
+            $service->reject($user, $report);
+        }
+
+        return back()->with('success', 'Report status updated successfully');
+    }
 
 }

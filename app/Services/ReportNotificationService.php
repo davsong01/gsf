@@ -118,171 +118,406 @@ class ReportNotificationService
         return;
     }
 
-    public static function handleReportAction(StakeholderReport $report, $stakeholder,  string $action)
-    {
+    // public static function handleReportAction(StakeholderReport $report, $stakeholder,  string $action)
+    // {
+    //     $pdfFilePath = $report->file_location;
+    //     $loginLink = "<a href='" . url('/stakeholders/login') . "'>Login</a>";
+
+    //     if($action != 'nudge'){
+    //         /**
+    //          * ROLE HIERARCHY (LOW → HIGH)
+    //          */
+    //         $roleHierarchy = [
+    //             'chapter'     => chapterStakeholders(),
+    //             'zone'        => zoneStakeholders(),
+    //             'field'       => fieldStakeholders(),
+    //             'secretariat' => secretariatStakeholders(),
+    //             'ncp'         => ncpStakeholders(),
+    //         ];
+
+    //         $levels = array_keys($roleHierarchy);
+
+    //         // Determine current stakeholder level
+    //         $currentLevelIndex = null;
+    //         foreach ($levels as $index => $level) {
+    //             if (in_array($stakeholder->role_id, $roleHierarchy[$level], true)) {
+    //                 $currentLevelIndex = $index;
+    //                 break;
+    //             }
+    //         }
+
+    //         if ($currentLevelIndex === null) return;
+
+    //         /**
+    //          * Determine level label and comment
+    //          */
+    //         $levelLabel = '';
+    //         $comment = '';
+
+    //         switch ($stakeholder->role->slug) {
+    //             case 'zonal-pastor':
+    //                 $levelLabel = 'Zonal Level';
+    //                 $comment = $report->zone_comment;
+    //                 break;
+    //             case 'field-pastor':
+    //                 $levelLabel = 'Field Level';
+    //                 $comment = $report->field_comment;
+    //                 break;
+    //             case 'secretariat':
+    //             case 'ncp':
+    //                 $levelLabel = 'National Level';
+    //                 $comment = $report->national_comment;
+    //                 break;
+    //         }
+
+    //         /**
+    //          * NOTIFY NEXT LEVEL (approval only)
+    //          */
+    //         if ($action === 'approve') {
+    //             dd($currentLevelIndex, $levels, $roleHierarchy);
+    //             $nextLevelIndex = $currentLevelIndex + 1;
+    //             if (isset($levels[$nextLevelIndex])) {
+    //                 $nextLevel = $levels[$nextLevelIndex];
+
+    //                 $query = Stakeholder::select(['name', 'email', 'role_id'])
+    //                     ->where('status', 'active')
+    //                     ->whereIn('role_id', $roleHierarchy[$nextLevel]);
+
+    //                 // Scope based on report location
+    //                 if ($nextLevel === 'chapter') $query->where('chapter_id', $report->chapter_id);
+    //                 if ($nextLevel === 'zone')    $query->where('zone_id', $report->zone_id);
+    //                 if ($nextLevel === 'field')   $query->where('field_id', $report->field_id);
+
+    //                 $nextLevelRecipients = $query->get()
+    //                     ->filter(fn($s) => !empty($s->email))
+    //                     ->unique('email')
+    //                     ->values()
+    //                     ->toArray();
+    //                     dd($nextLevelRecipients);
+    //                 if(!empty($nextLevelRecipients)){
+    //                     foreach($nextLevelRecipients as $recipient){
+    //                         $generatedEmail = self::generateReportEmailSummary($report, $stakeholder, $recipient, $action, $levelLabel);
+
+    //                         $allEmailData[] = [
+    //                             'recipient' => $recipient['email'],
+    //                             'type'      => 'report_email',
+    //                             'subject'   => $generatedEmail['subject'],
+    //                             'content'   => $generatedEmail['content'].  "<p>Kindly {$loginLink} to review the report and perform the necessary actions.</p>",
+    //                             'attachments' => json_encode([
+    //                                 $pdfFilePath
+    //                             ]),
+    //                             'created_at' => now(),
+    //                             'updated_at' => now(),
+    //                         ];
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         /**
+    //          * NOTIFY ALL LOWER LEVELS
+    //          */
+    //         if ($action === 'reject') {
+    //             if ($currentLevelIndex > 0) {
+    //                 $recipientsBelow = collect();
+    //                 for ($i = 0; $i < $currentLevelIndex; $i++) {
+    //                     $level = $levels[$i];
+
+    //                     $query = Stakeholder::select(['name', 'email', 'role_id'])
+    //                         ->where('status', 'active')
+    //                         ->whereIn('role_id', $roleHierarchy[$level]);
+
+    //                     // Scope based on report location
+    //                     if ($level === 'chapter') $query->where('chapter_id', $report->chapter_id);
+    //                     if ($level === 'zone')    $query->where('zone_id', $report->zone_id);
+    //                     if ($level === 'field')   $query->where('field_id', $report->field_id);
+
+    //                     $recipientsBelow = $recipientsBelow->merge($query->get());
+    //                 }
+
+    //                 $recipientsBelow = $recipientsBelow
+    //                     ->filter(fn($s) => !empty($s->email))
+    //                     ->unique('email')
+    //                     ->values()
+    //                     ->toArray();
+
+    //                 if (!empty($recipientsBelow)) {
+    //                     if ($levelLabel == 'Zonal Level') {
+    //                         $rejectionReason = $report->zone_comment;
+    //                     } elseif ($levelLabel == 'Field Level') {
+    //                         $rejectionReason = $report->field_comment;
+    //                     } elseif ($levelLabel == 'National Level') {
+    //                         $rejectionReason = $report->zone_comment;
+    //                     }
+
+    //                     $reason = '';
+
+    //                     if (!empty($rejectionReason)) {
+    //                         $reason = "<h4>Rejection Reason</h4>" . $rejectionReason;
+    //                     }
+
+    //                     foreach($recipientsBelow as $recipient){
+    //                         $generatedEmail = self::generateReportEmailSummary($report, $stakeholder, $recipient, $action, $levelLabel);
+
+    //                         $allEmailData[] = [
+    //                             'recipient' => $recipient['email'],
+    //                             'type'      => 'report_email',
+    //                             'subject'   => $generatedEmail['subject'],
+    //                             'content'   => $generatedEmail['content']. $reason,
+    //                             'attachments' => json_encode([
+    //                                 $pdfFilePath
+    //                             ]),
+    //                             'created_at' => now(),
+    //                             'updated_at' => now(),
+    //                         ];
+
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }else {
+    //         // Pending levels in order of responsibility
+    //         $pendingLevels = [
+    //             'zone'     => $report->zone_status,
+    //             'field'    => $report->field_status,
+    //             'national' => $report->national_status,
+    //         ];
+
+    //         // Map levels to roles
+    //         $levelRoleMap = [
+    //             'zone'     => zoneStakeholders(),
+    //             'field'    => fieldStakeholders(),
+    //             'national' => array_merge(secretariatStakeholders(), ncpStakeholders()),
+    //         ];
+
+    //         foreach ($pendingLevels as $level => $status) {
+    //             if ($status === 0) { // first pending level found
+    //                 $roles = $levelRoleMap[$level];
+
+    //                 $recipients = Stakeholder::select(['name', 'email', 'role_id','zone_id','field_id'])
+    //                     ->where('status', 'active')
+    //                     ->whereIn('role_id', $roles);
+
+    //                 // Scope by location
+    //                 if ($level === 'zone')  $recipients->where('zone_id', $report->zone_id);
+    //                 if ($level === 'field') $recipients->where('field_id', $report->field_id);
+
+    //                 $recipients = $recipients->get()
+    //                     ->filter(fn($s) => !empty($s->email))
+    //                     ->unique('email')
+    //                     ->values()
+    //                     ->toArray();
+    //                 dd($recipients);
+    //                 foreach ($recipients as $recipient) {
+    //                     $generatedEmail = self::generateReportEmailSummary(
+    //                         $report,
+    //                         null, // ignore actor for nudge
+    //                         $recipient,
+    //                         'nudge',
+    //                         ucfirst($level).' Level'
+    //                     );
+
+    //                     $allEmailData[] = [
+    //                         'recipient'   => $recipient['email'],
+    //                         'type'        => 'report_email',
+    //                         'subject'     => $generatedEmail['subject'],
+    //                         'content'     => $generatedEmail['content'] . "<p>Kindly {$loginLink} to complete your section of the report.</p>",
+    //                         'attachments' => json_encode([$pdfFilePath]),
+    //                         'created_at'  => now(),
+    //                         'updated_at'  => now(),
+    //                     ];
+    //                 }
+
+    //                 // Stop after sending to the first pending level
+    //                 break;
+    //             }
+    //         }
+
+
+    //     }
+
+    //     $emailData = [
+    //         'type'        => 'report_email',
+    //         'recipients' => $allEmailData,
+    //     ];
+
+    //     EmailService::logEmail($emailData);
+
+    //     return 'All sent';
+    // }
+    public static function handleReportAction(StakeholderReport $report, $stakeholder, string $action){
         $pdfFilePath = $report->file_location;
         $loginLink = "<a href='" . url('/stakeholders/login') . "'>Login</a>";
+        $allEmailData = [];
 
-        if($action != 'nudge'){
-            /**
-             * ROLE HIERARCHY (LOW → HIGH)
-             */
-            $roleHierarchy = [
-                'chapter'     => chapterStakeholders(),
-                'zone'        => zoneStakeholders(),
-                'field'       => fieldStakeholders(),
-                'secretariat' => secretariatStakeholders(),
-                'ncp'         => ncpStakeholders(),
-            ];
+        /**
+         * ROLE HIERARCHY (LOW → HIGH)
+         */
+        $roleHierarchy = [
+            'chapter'     => chapterStakeholders(),
+            'zone'        => zoneStakeholders(),
+            'field'       => fieldStakeholders(),
+            'secretariat' => secretariatStakeholders(),
+            'ncp'         => ncpStakeholders(),
+        ];
 
-            $levels = array_keys($roleHierarchy);
+        $levels = array_keys($roleHierarchy);
 
-            // Determine current stakeholder level
-            $currentLevelIndex = null;
-            foreach ($levels as $index => $level) {
-                if (in_array($stakeholder->role_id, $roleHierarchy[$level], true)) {
-                    $currentLevelIndex = $index;
-                    break;
-                }
+        /**
+         * Resolve stakeholder current level safely (not by role_id order)
+         */
+        $currentLevel = null;
+        foreach ($roleHierarchy as $level => $roles) {
+            if (in_array($stakeholder->role_id, $roles, true)) {
+                $currentLevel = $level;
+                break;
+            }
+        }
+
+        if (!$currentLevel && $action !== 'nudge') {
+            return;
+        }
+
+        $currentLevelIndex = array_search($currentLevel, $levels, true);
+
+        /**
+         * Determine label & comment
+         */
+        $levelLabel = match ($stakeholder->role->slug) {
+            'zonal-pastor'  => 'Zonal Level',
+            'field-pastor'  => 'Field Level',
+            'secretariat',
+            'ncp'           => 'National Level',
+            default         => '',
+        };
+
+        $comment = match ($levelLabel) {
+            'Zonal Level'    => $report->zone_comment,
+            'Field Level'    => $report->field_comment,
+            'National Level' => $report->national_comment,
+            default          => null,
+        };
+
+        /**
+         * ======================
+         * APPROVE ACTION
+         * ======================
+         */
+        if ($action === 'approve') {
+
+            $nextLevelIndex = $currentLevelIndex + 1;
+
+            if (!isset($levels[$nextLevelIndex])) {
+                return;
             }
 
-            if ($currentLevelIndex === null) return;
+            $nextLevel = $levels[$nextLevelIndex];
 
-            /**
-             * Determine level label and comment
-             */
-            $levelLabel = '';
-            $comment = '';
+            $query = Stakeholder::query()
+                ->select(['name', 'email', 'role_id'])
+                ->where('status', 'active')
+                ->whereIn('role_id', $roleHierarchy[$nextLevel]);
 
-            switch ($stakeholder->role->slug) {
-                case 'zonal-pastor':
-                    $levelLabel = 'Zonal Level';
-                    $comment = $report->zone_comment;
-                    break;
-                case 'field-pastor':
-                    $levelLabel = 'Field Level';
-                    $comment = $report->field_comment;
-                    break;
-                case 'secretariat':
-                case 'ncp':
-                    $levelLabel = 'National Level';
-                    $comment = $report->national_comment;
-                    break;
+            match ($nextLevel) {
+                'chapter' => $query->where('chapter_id', $report->chapter_id),
+                'zone'    => $query->where('zone_id', $report->zone_id),
+                'field'   => $query->where('field_id', $report->field_id),
+                default   => null,
+            };
+
+            $recipients = $query->get()
+                ->filter(fn($s) => filled($s->email))
+                ->unique('email');
+
+            foreach ($recipients as $recipient) {
+                $generatedEmail = self::generateReportEmailSummary(
+                    $report,
+                    $stakeholder,
+                    $recipient,
+                    $action,
+                    $levelLabel
+                );
+
+                $allEmailData[] = [
+                    'recipient'   => $recipient->email,
+                    'type'        => 'report_email',
+                    'subject'     => $generatedEmail['subject'],
+                    'content'     => $generatedEmail['content']
+                        . "<p>Kindly {$loginLink} to review the report.</p>",
+                    'attachments' => json_encode([$pdfFilePath]),
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ];
+            }
+        }
+
+        /**
+         * ======================
+         * REJECT ACTION
+         * ======================
+         */
+        if ($action === 'reject' && $currentLevelIndex > 0) {
+
+            $recipientsBelow = collect();
+
+            for ($i = 0; $i < $currentLevelIndex; $i++) {
+                $level = $levels[$i];
+
+                $query = Stakeholder::query()
+                    ->where('status', 'active')
+                    ->whereIn('role_id', $roleHierarchy[$level]);
+
+                match ($level) {
+                    'chapter' => $query->where('chapter_id', $report->chapter_id),
+                    'zone'    => $query->where('zone_id', $report->zone_id),
+                    'field'   => $query->where('field_id', $report->field_id),
+                    default   => null,
+                };
+
+                $recipientsBelow = $recipientsBelow->merge($query->get());
             }
 
-            /**
-             * NOTIFY NEXT LEVEL (approval only)
-             */
-            if ($action === 'approve') {
-                $nextLevelIndex = $currentLevelIndex + 1;
-                if (isset($levels[$nextLevelIndex])) {
-                    $nextLevel = $levels[$nextLevelIndex];
+            $recipientsBelow = $recipientsBelow
+                ->filter(fn($s) => filled($s->email))
+                ->unique('email');
 
-                    $query = Stakeholder::select(['name', 'email', 'role_id'])
-                        ->where('status', 'active')
-                        ->whereIn('role_id', $roleHierarchy[$nextLevel]);
+            $reason = $comment ? "<h4>Rejection Reason</h4>{$comment}" : '';
 
-                    // Scope based on report location
-                    if ($nextLevel === 'chapter') $query->where('chapter_id', $report->chapter_id);
-                    if ($nextLevel === 'zone')    $query->where('zone_id', $report->zone_id);
-                    if ($nextLevel === 'field')   $query->where('field_id', $report->field_id);
+            foreach ($recipientsBelow as $recipient) {
+                $generatedEmail = self::generateReportEmailSummary(
+                    $report,
+                    $stakeholder,
+                    $recipient,
+                    $action,
+                    $levelLabel
+                );
 
-                    $nextLevelRecipients = $query->get()
-                        ->filter(fn($s) => !empty($s->email))
-                        ->unique('email')
-                        ->values()
-                        ->toArray();
+                $allEmailData[] = [
+                    'recipient'   => $recipient->email,
+                    'type'        => 'report_email',
+                    'subject'     => $generatedEmail['subject'],
+                    'content'     => $generatedEmail['content'] . $reason,
+                    'attachments' => json_encode([$pdfFilePath]),
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ];
 
-                    if(!empty($nextLevelRecipients)){
-                        foreach($nextLevelRecipients as $recipient){
-                            $generatedEmail = self::generateReportEmailSummary($report, $stakeholder, $recipient, $action, $levelLabel);
-
-                            $allEmailData[] = [
-                                'recipient' => $recipient['email'],
-                                'type'      => 'report_email',
-                                'subject'   => $generatedEmail['subject'],
-                                'content'   => $generatedEmail['content'].  "<p>Kindly {$loginLink} to review the report and perform the necessary actions.</p>",
-                                'attachments' => json_encode([
-                                    $pdfFilePath
-                                ]),
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ];
-                        }
-                    }
-                }
             }
+        }
 
-            /**
-             * NOTIFY ALL LOWER LEVELS
-             */
-            if ($action === 'reject') {
-                if ($currentLevelIndex > 0) {
-                    $recipientsBelow = collect();
-                    for ($i = 0; $i < $currentLevelIndex; $i++) {
-                        $level = $levels[$i];
+        /**
+         * ======================
+         * NUDGE ACTION
+         * ======================
+         */
+        if ($action === 'nudge') {
 
-                        $query = Stakeholder::select(['name', 'email', 'role_id'])
-                            ->where('status', 'active')
-                            ->whereIn('role_id', $roleHierarchy[$level]);
-
-                        // Scope based on report location
-                        if ($level === 'chapter') $query->where('chapter_id', $report->chapter_id);
-                        if ($level === 'zone')    $query->where('zone_id', $report->zone_id);
-                        if ($level === 'field')   $query->where('field_id', $report->field_id);
-
-                        $recipientsBelow = $recipientsBelow->merge($query->get());
-                    }
-
-                    $recipientsBelow = $recipientsBelow
-                        ->filter(fn($s) => !empty($s->email))
-                        ->unique('email')
-                        ->values()
-                        ->toArray();
-
-                    if (!empty($recipientsBelow)) {
-                        if ($levelLabel == 'Zonal Level') {
-                            $rejectionReason = $report->zone_comment;
-                        } elseif ($levelLabel == 'Field Level') {
-                            $rejectionReason = $report->field_comment;
-                        } elseif ($levelLabel == 'National Level') {
-                            $rejectionReason = $report->zone_comment;
-                        }
-
-                        $reason = '';
-
-                        if (!empty($rejectionReason)) {
-                            $reason = "<h4>Rejection Reason</h4>" . $rejectionReason;
-                        }
-
-                        foreach($recipientsBelow as $recipient){
-                            $generatedEmail = self::generateReportEmailSummary($report, $stakeholder, $recipient, $action, $levelLabel);
-
-                            $allEmailData[] = [
-                                'recipient' => $recipient['email'],
-                                'type'      => 'report_email',
-                                'subject'   => $generatedEmail['subject'],
-                                'content'   => $generatedEmail['content']. $reason,
-                                'attachments' => json_encode([
-                                    $pdfFilePath
-                                ]),
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ];
-
-                        }
-                    }
-                }
-            }
-        }else {
-            // Pending levels in order of responsibility
             $pendingLevels = [
                 'zone'     => $report->zone_status,
                 'field'    => $report->field_status,
                 'national' => $report->national_status,
             ];
 
-            // Map levels to roles
             $levelRoleMap = [
                 'zone'     => zoneStakeholders(),
                 'field'    => fieldStakeholders(),
@@ -290,57 +525,53 @@ class ReportNotificationService
             ];
 
             foreach ($pendingLevels as $level => $status) {
-                if ($status === 0) { // first pending level found
-                    $roles = $levelRoleMap[$level];
+                if ($status === 0) {
 
-                    $recipients = Stakeholder::select(['name', 'email', 'role_id','zone_id','field_id'])
+                    $query = Stakeholder::query()
                         ->where('status', 'active')
-                        ->whereIn('role_id', $roles);
+                        ->whereIn('role_id', $levelRoleMap[$level]);
 
-                    // Scope by location
-                    if ($level === 'zone')  $recipients->where('zone_id', $report->zone_id);
-                    if ($level === 'field') $recipients->where('field_id', $report->field_id);
+                    if ($level === 'zone')  $query->where('zone_id', $report->zone_id);
+                    if ($level === 'field') $query->where('field_id', $report->field_id);
 
-                    $recipients = $recipients->get()
-                        ->filter(fn($s) => !empty($s->email))
-                        ->unique('email')
-                        ->values()
-                        ->toArray();
+                    $recipients = $query->get()
+                        ->filter(fn($s) => filled($s->email))
+                        ->unique('email');
 
                     foreach ($recipients as $recipient) {
                         $generatedEmail = self::generateReportEmailSummary(
                             $report,
-                            null, // ignore actor for nudge
+                            null,
                             $recipient,
                             'nudge',
-                            ucfirst($level).' Level'
+                            ucfirst($level) . ' Level'
                         );
 
                         $allEmailData[] = [
-                            'recipient'   => $recipient['email'],
+                            'recipient'   => $recipient->email,
                             'type'        => 'report_email',
                             'subject'     => $generatedEmail['subject'],
-                            'content'     => $generatedEmail['content'] . "<p>Kindly {$loginLink} to complete your section of the report.</p>",
+                            'content'     => $generatedEmail['content']
+                                . "<p>Kindly {$loginLink} to complete your section of the report.</p>",
                             'attachments' => json_encode([$pdfFilePath]),
                             'created_at'  => now(),
                             'updated_at'  => now(),
                         ];
                     }
 
-                    // Stop after sending to the first pending level
-                    break;
+                    break; // only first pending level
                 }
             }
-
-
         }
 
-        $emailData = [
-            'type'        => 'report_email',
-            'recipients' => $allEmailData,
-        ];
+        if (empty($allEmailData)) {
+            return 'No recipients found';
+        }
 
-        EmailService::logEmail($emailData);
+        EmailService::logEmail([
+            'type'       => 'report_email',
+            'recipients' => $allEmailData,
+        ]);
 
         return 'All sent';
     }

@@ -274,24 +274,10 @@ class StakeholderReportsController extends Controller
         //
     }
 
-    // public function delete($id){
-    //     if(Auth::guard('stakeholder')->user()->role != 'Secretariat') return abort(404);
-    //     $report =  StakeholderReport::find($id);
-    //     if($report->stakeholderpayment){
-    //         if (file_exists(base_path() . '/uploads/paymentproof' . '/' . $report->stakeholderpayment->image ))
-    //             unlink( base_path() . '/uploads/paymentproof' . '/' . $report->stakeholderpayment->image );
-
-    //             $report->stakeholderpayment->delete();
-    //     }
-    //     $report->delete();
-
-    //     return back()->with('message', 'Report has been deleted forever!');
-    // }
-
     public function download(StakeholderReport $report): BinaryFileResponse
     {
         $path = $report->file_location;
-
+        
         abort_unless(file_exists($path), 404, 'Report file not found');
 
         return response()->download(
