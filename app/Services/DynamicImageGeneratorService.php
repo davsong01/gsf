@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Payment;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\Facades\Image;
@@ -14,11 +14,11 @@ class DynamicImageGeneratorService
         $texts = self::textType();
 
         if (empty($user)) {
-            $payment = Payment::with('user','hostel')->where('conference_edition_id', $request['edition_id'])->inRandomOrder()->first();
+            $payment = Transaction::with('user','hostel')->where('conference_edition_id', $request['edition_id'])->inRandomOrder()->first();
         }
 
         $textAndReplacements = [];
-        
+
         foreach($texts as $key=>$text){
             if ($key == 'name') $textAndReplacements[$key] = strtoupper($payment->user->name ?? 'N/A');
             if ($key == 'reg_number') $textAndReplacements[$key] = $payment->transid ?? 'N/A';
@@ -65,7 +65,7 @@ class DynamicImageGeneratorService
         // }
 
         $image = Image::make($inputImagePath);
-        
+
         if (!empty($request['template_font_size'])) {
             $counter = count($request['template_font_size']);
         } else {
@@ -89,7 +89,7 @@ class DynamicImageGeneratorService
             $template_text_type = !empty($request['template_text_type'][$i]) ? $request['template_text_type'][$i] : $settings['settings'][$i]['template_text_type'];
             // Get text
             $text = $textAndReplaceMents[$template_text_type] ?? 'N/A';
-        
+
             // End text
             $image->text($text, $template_left_offset, $template_top_offset, function ($font) use ($size, $template_color, $template_text_type_face) {
                 $font->file(public_path('template_fonts/' . $template_text_type_face));
@@ -99,7 +99,7 @@ class DynamicImageGeneratorService
         }
 
         $name = uniqid(9) . '.jpg';
- 
+
         $outputImagePath = $request['location'] . '/' . $name;
         $image->save($outputImagePath);
 
@@ -143,11 +143,11 @@ class DynamicImageGeneratorService
 
         $data['template_settings'] = self::buildCertificateSettings($request);
         // dd($request->all());
-       
+
         $data['template_settings']['template'] = $request['path'];
-        $settings->template_settings = $data['template_settings'];  
+        $settings->template_settings = $data['template_settings'];
         $settings->save();
-        
+
         return;
 
     }
@@ -181,7 +181,7 @@ class DynamicImageGeneratorService
             "template" => $request->path,
             "settings" => $final_array
         ];
-        
+
         return $template_settings;
     }
 

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ConferenceEdition;
 use App\Models\Hostel;
 use App\Models\Payment;
+use App\Models\Transaction;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -113,7 +114,7 @@ class HostelAllocationService
                             ->whereRaw('allocation < capacity')
                             ->inRandomOrder()
                             ->first();
-                           
+
                         break;
 
                     case 'based_on_chapter':
@@ -271,7 +272,7 @@ class HostelAllocationService
             $amountToReassign = (int) $request->amount;
 
             // Fetch only the number of payments we intend to reassign
-            $payments = Payment::where('hostel_id', $hostel->id)
+            $payments = Transaction::where('hostel_id', $hostel->id)
                 ->where('conference_edition_id', $request->edition)
                 ->limit($amountToReassign)
                 ->get();

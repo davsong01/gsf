@@ -17,12 +17,17 @@ class Hostel extends Model
         'field_ids' => 'array',
         'chapter_ids' => 'array',
     ];
-    
+
     public function user(){
         return $this->hasMany(User::class);
     }
 
     public function payments()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function transactions()
     {
         return $this->hasMany(Transaction::class);
     }

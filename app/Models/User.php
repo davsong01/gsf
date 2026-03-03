@@ -86,11 +86,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	public function scopeAlumni()
 	{
-		// $check = Payment::where(['level' => 'Alumni', 'conference_edition_id' => $edition->id, 'user_id' => $this->id])->first();
-
-		// if (isset($check) && !empty($check)) {
-		// 	return true;
-		// } else return false;
+		
 	}
 
 	public function stakeholder(){

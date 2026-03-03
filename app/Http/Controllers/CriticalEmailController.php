@@ -225,7 +225,7 @@ class CriticalEmailController extends Controller
     public function show(CriticalEmail $criticalEmail)
     {
         // Resend Email
-        // $payment = Payment::with('user')->findOrFail($id);
+        // $payment = Transaction::with('user')->findOrFail($id);
         // $user = $payment->user;
 
         // $data['family_id'] = $user->family_id;

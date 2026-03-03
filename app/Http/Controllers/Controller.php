@@ -233,7 +233,7 @@ class Controller extends BaseController
 
     // public function createPayment($data, $user)
     // {
-    //     $payment = Payment::UpdateOrCreate(['user_id' => $user->id, 'conference_edition_id' => $data['conference_edition_id']], [
+    //     $payment = Transaction::UpdateOrCreate(['user_id' => $user->id, 'conference_edition_id' => $data['conference_edition_id']], [
     //         'user_id' => $user->id,
     //         'registration_status' => 'Complete',
     //         'slot' => $data['slot'],

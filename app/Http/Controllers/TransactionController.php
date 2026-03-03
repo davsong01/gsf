@@ -146,7 +146,7 @@ class TransactionController extends Controller
                 })->toArray();
 
             });
-      
+
             return ExcelService::download(
                 $data->toArray(),
                 array_values($headers),
@@ -210,19 +210,7 @@ class TransactionController extends Controller
         return back()->with('message', $message);
     }
 
-    // public function update(Request $request, TempUser $tempuser){
-    //     $exists = Payment::where('conference_edition_id', $tempuser->conference_edition_id)->where('transid', $request->transid)->exists();
 
-    //     if ($exists) {
-    //         return back()->with('error', 'Transaction ID already exists.');
-    //     }
-
-    //     $tempuser->update([
-    //         'transid'=>$request->transid,
-    //     ]);
-
-    //     return back()->with('message','Update Successful');
-    // }
     public function resolveTransaction($transaction, $isCron){
         $request = request(); // get the current request
         $request->merge([

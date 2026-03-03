@@ -12,7 +12,7 @@ class TestController extends Controller
 {
     public function index(){
         $users = User::all();
-   
+
 
         foreach($users as $user){
             // $user->update(['slug' => Str::slug($user->name)]);
@@ -30,7 +30,7 @@ class TestController extends Controller
             //         'level' => NULL
             //     ]);
             // }
-            Payment::Create([
+            Transaction::Create([
                'user_id' => $user->id,
                 'purpose' => '2021Conference',
                 'hostel_id' => $user->hostel_id,
@@ -38,7 +38,7 @@ class TestController extends Controller
                 'slot' => $user->slot,
                'slot_filled' => $user->slot_filled,
                'type' => $user->type,//individual:1, fellowship:2,alumni:3,Nec:4,Donations:5,
-               'level' => $user->level,//Admin 
+               'level' => $user->level,//Admin
                'official' => $user->official,
                 'level'=> 'Participant',
                'amount_paid' => $user->amount,

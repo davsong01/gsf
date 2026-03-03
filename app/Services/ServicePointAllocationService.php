@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ConferenceEdition;
 use App\Models\Food;
 use App\Models\Payment;
+use App\Models\Transaction;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -223,7 +224,7 @@ class ServicePointAllocationService
 
     static function autoAllocateServicePoint($edition_id)
     {
-        $payments = Payment::with('user')->whereNull('food_id')->where('conference_edition_id', $edition_id)->get();
+        $payments = Transaction::with('user')->whereNull('food_id')->where('conference_edition_id', $edition_id)->get();
         $setting = ConferenceEdition::where('id', $edition_id)->first();
         $data = [];
         $count = 0;
@@ -264,7 +265,7 @@ class ServicePointAllocationService
             $amountToReassign = (int) $request->amount;
 
             // Fetch only the number of payments we intend to reassign
-            $payments = Payment::where('food_id', $food->id)
+            $payments = Transaction::where('food_id', $food->id)
                 ->where('conference_edition_id', $request->edition)
                 ->limit($amountToReassign)
                 ->get();

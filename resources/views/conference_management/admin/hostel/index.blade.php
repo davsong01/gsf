@@ -162,10 +162,9 @@ $(document).ready(function () {
             success: function (response) {
 
                 if (response.status && response.hostels.length > 0) {
-
                     let options = '<option value="">-- Select Hostel to Allocate --</option>';
                     response.hostels.forEach(function (hostel) {
-                        let remaining = hostel.capacity - hostel.payments_count;
+                        let remaining = hostel.capacity - hostel.allocation;
                         options += `<option value="${hostel.id}" data-remaining="${remaining}">
                                         ${hostel.name} (${hostel.allocation} Allocated | ${remaining} Remaining)
                                     </option>`;

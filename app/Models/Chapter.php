@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\User;
-use App\Models\Zone;
 use App\Models\Event;
 use App\Models\Field;
 use App\Models\Payment;
 use App\Models\Stakeholder;
 use App\Models\StakeholderDesignation;
+use App\Models\Transaction;
+use App\Models\User;
+use App\Models\Zone;
 use Illuminate\Database\Eloquent\Model;
 
 class Chapter extends Model
@@ -51,12 +52,12 @@ class Chapter extends Model
 
     public function payments()
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Transaction::class);
     }
 
     public function registerdParticipants()
     {
-        return $this->hasManyThrough(Payment::class, User::class);
+        return $this->hasManyThrough(Transaction::class, User::class);
     }
 
     public function chapterPresident()
