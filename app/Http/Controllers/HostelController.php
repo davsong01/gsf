@@ -21,11 +21,11 @@ class HostelController extends Controller
     {
         $edition = ConferenceEdition::find($request->edition);
         $count = 1;
-        
+
         if(auth()->user()->role == 1){
             $hostels = Hostel::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
             $hostelsToMerge = Hostel::where('conference_edition_id', $edition->id)->where('allocation', '>',0)->orderBy('created_at', 'desc')->get();
-            
+
             $hostels->each(function ($hostel) {
                 $hostel->fields = Field::whereIn('id', $hostel->field_ids)->get();
                 $hostel->chapters = Chapter::whereIn('id', $hostel->chapter_ids)->get();
@@ -44,13 +44,13 @@ class HostelController extends Controller
         $edition = ConferenceEdition::find($request->edition);
         $conferenceplans = $edition->conferenceplans;
 
-        return view('conference_management.admin.hostel.create',compact('edition','fields','chapters', 'conferenceplans'));
+        return view('conference_management.admin.hostel.edit',compact('edition','fields','chapters', 'conferenceplans'));
     }
 
     public function participantExport(Request $request, $id){
         $hostel = Hostel::find($id);
         $count = 1;
-        
+
         if (auth()->user()->role != 1) {
             return abort(404);
         }
@@ -58,9 +58,9 @@ class HostelController extends Controller
         $data = [
             'hostel_id' => $hostel->id,
         ];
-        
+
         return Excel::download(new HostelParticipantExport($data), $hostel->name."'s participants.xlsx");
-    
+
     }
 
     public function store(Request $request)
@@ -100,7 +100,7 @@ class HostelController extends Controller
         $chapters = Chapter::all();
         $edition = ConferenceEdition::find($request->edition);
         $conferenceplans = $edition->conferenceplans;
-        
+
         return view('conference_management.admin.hostel.edit', compact('hostel','edition','chapters','fields', 'conferenceplans'));
     }
 
@@ -117,15 +117,15 @@ class HostelController extends Controller
 
         // check if hostel has any participant
         $hasPayment = Transaction::where('hostel_id', $id)->where('conference_edition_id', $request->edition)->count();
-        
+
         if($hasPayment > 0){
             return back()->with('error','Hostel has participants, cannot delete!');
         }
         if(auth()->user()->role == 1){
-            $hostel->delete();          
-            
+            $hostel->delete();
+
             return back()->with('message',' Delete succesful!');
-            
+
         }return abort(404);
     }
 
@@ -146,7 +146,7 @@ class HostelController extends Controller
 
     public function getAvailableHostels(Request $request){
         $toDeallocate = Hostel::where('conference_edition_id', $request->edition_id)->where('id', $request->deallocated_hostel_id)->first();
-        
+
         $hostels = Hostel::withCount('transactions')->where('conference_edition_id', $toDeallocate->conference_edition_id)->where('type', $toDeallocate->type)->where('level', $toDeallocate->level)->where('id', '!=', $toDeallocate->id)->where('allocation', '>', 0)->where('capacity', '>', 0)
         // ->where('field_ids', $toDeallocate->field_ids)->where('chapter_ids', $toDeallocate->chapter_ids)
         ->get(['id','name','allocation']);

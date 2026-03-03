@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ministry;
+use App\Models\MinistryField;
 use App\Models\User;
 use App\Models\Setting;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ class MinistryController extends Controller
     public function index()
     {
         $ministries = Ministry::latest()->get();
-        
+
         return view('admin.ministries.index', compact('ministries'));
     }
 
@@ -64,15 +65,15 @@ class MinistryController extends Controller
 
     public function assignmentTypes(Ministry $ministry)
     {
-        $fields = $ministry->fields()
+        $fields = MinistryField::where('ministry_id', $ministry->id)
             ->where('field_usage', 'allocation')
             ->where('status', 1)
             ->get(['id', 'name', 'label', 'type', 'options','status']);
 
         $fields->each(function ($field) {
-            $field->options = $field->options ?? [];
+            $field->formatted_options = (array) $field->options ?? [];
         });
-        
+
         return response()->json($fields);
     }
 }

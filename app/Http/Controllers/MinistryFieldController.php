@@ -25,11 +25,16 @@ class MinistryFieldController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'label' => 'required|string|max:255',
-            'display_order' => 'required|numeric',
-            'type' => 'required|in:text,number,email,select,textarea,checkbox,radio',
-            'field_usage' => 'required|in:registration,allocation,both',
+            'type' => 'required|string|in:text,number,email,select,textarea,checkbox,radio',
+            'display_order' => 'nullable|numeric',
+            'field_usage' => 'required|string|in:registration,allocation,both',
             'registration_types' => 'nullable|array',
-            'options' => 'nullable|array',
+            'registration_types.*' => 'integer',
+            'options' => 'nullable|string',
+            'required' => 'nullable|boolean',
+            'status' => 'nullable|boolean',
+            'has_other_option' => 'nullable|boolean',
+            'onchange' => 'nullable|string|max:255',
             'depends_on' => 'nullable|array',
         ]);
 
@@ -48,7 +53,13 @@ class MinistryFieldController extends Controller
             'display_order'
         ]);
 
-        $data['options'] = $data['options'] ?? null;
+        $options = $request->options;
+        $options = !empty($request->options)
+            ? (json_validate($request->options) ? json_decode($request->options, true) : $request->options)
+            : null;
+
+        $validated['options'] = $options ?? null;
+        
         $data['registration_types'] = $data['registration_types'] ?? [];
         $data['depends_on'] = $data['depends_on'] ?? null;
 
@@ -70,7 +81,7 @@ class MinistryFieldController extends Controller
             'name' => 'required|string|max:255',
             'label' => 'required|string|max:255',
             'type' => 'required|string|in:text,number,email,select,textarea,checkbox,radio',
-            'display_order' => 'required|numeric',
+            'display_order' => 'nullable|numeric',
             'field_usage' => 'required|string|in:registration,allocation,both',
             'registration_types' => 'nullable|array',
             'registration_types.*' => 'integer',
@@ -86,7 +97,6 @@ class MinistryFieldController extends Controller
         $options = !empty($request->options)
             ? (json_validate($request->options) ? json_decode($request->options, true) : $request->options)
             : null;
-
 
         $validated['options'] = $options ?? null;
         $validated['registration_types'] = $validated['registration_types'] ?? [];

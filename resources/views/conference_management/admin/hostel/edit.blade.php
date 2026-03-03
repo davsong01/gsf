@@ -15,15 +15,15 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Update: {{ $hostel->name }}</h4>
-                        <a href="{{ route('hostelusers.export',['id'=>$hostel->id, 'edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export Hostel Participants</a>                        
-                        
+                        <a href="{{ route('hostelusers.export',['id'=>$hostel->id, 'edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export Hostel Participants</a>
+
                     </div>
                     <div class="card-content">
                         <div class="card-body">
                             <form action="{{ route('hostels.update', [$hostel->id, 'edition_id'=>$edition->id]) }}" method="POST">
                             @csrf
                             @method('PATCH')
-                   
+
                             <div class="row">
                                 <div class="col-md-12 col-sm-12">
                                     <fieldset class="form-group">
@@ -39,10 +39,10 @@
                                         </select>
                                     </fieldset>
                                     <fieldset class="form-group">
-                                        <label for="level">Level</label>
+                                        <label for="level">Conference Plan</label>
                                         <select class="form-control" name="level" id="level" required>
-                                            @foreach($conferenceplans as $plan)
-                                            <option value="{{$plan->level}}" {{ $hostel->level == $plan->level ? 'selected' : ''}}>{{ $plan->level }}</option>
+                                            @foreach($conferenceplans->where('status', 1) as $plan)
+                                            <option value="{{$plan->level}}" {{ $hostel->level == $plan->level ? 'selected' : ''}}>{{ $plan->title }}</option>
                                             @endforeach
                                         </select>
                                     </fieldset>
@@ -73,12 +73,12 @@
                                         <label for="allocation">Allocation</label>
                                         <input type="numer" id="allocation" name="allocation" class="form-control" disabled value="{{ old('allocation') ?? $hostel->allocation }}" required>
                                     </fieldset>
-                                
-                                
+
+
                                 </div>
 
-                            
-                                
+
+
                             </div>
                             <div class="row">
                                 <div class="col-md-12 col-sm-12">
@@ -87,11 +87,11 @@
                                 </div>
                             </div>
                     </div>
-                   
+
                 </div>
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->          
+    <!-- Basic Inputs end -->
 </div>
 @endsection

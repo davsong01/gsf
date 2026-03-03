@@ -162,10 +162,10 @@ class PaymentController extends Controller
 		$data = [];
 
 		// Hostel and service point allocations
-		if (in_array($transaction->level, ['Participant', 'Alumni', 'Nec', 'Moderator'])) {
+		// if (in_array($transaction->level, ['Participant', 'Alumni', 'Nec', 'Moderator'])) {
 			$data['allocated_hostel_data'] = HostelAllocationService::assignHostel($transaction);
 			$data['allocated_service_point_data'] = ServicePointAllocationService::assignFoodStand($transaction);
-
+            
 			$transaction->update([
 				'hostel_allocation_number' => $data['allocated_hostel_data']['hostel_allocation_number'] ?? null,
 				'hostel_allocation_type' => $data['allocated_hostel_data']['hostel_allocation_type'] ?? null,
@@ -174,7 +174,7 @@ class PaymentController extends Controller
 				'hostel_id' => $data['allocated_hostel_data']['hostel_id'] ?? null,
 				'food_id' => $data['allocated_service_point_data']['service_point_allocation_id'] ?? null,
 			]);
-		}
+		// }
 
 		// Generate Family ID
 		$familyId = PaymentService::generateFamilyId($user, $setting);

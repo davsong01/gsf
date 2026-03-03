@@ -621,9 +621,9 @@
         function toggleAssignmentFields(ministryId) {
             hostelWrapper.addClass('d-none');
             serviceWrapper.addClass('d-none');
-
-            if (!ministryId) return;
             
+            if (!ministryId) return;
+
             $.ajax({
                 url: `/ministry/${ministryId}/assignment-types`,
                 type: 'GET',
