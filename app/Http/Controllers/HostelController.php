@@ -20,7 +20,6 @@ class HostelController extends Controller
     public function index(Request $request)
     {
         $edition = ConferenceEdition::find($request->edition);
-        $count = 1;
 
         if(auth()->user()->role == 1){
             $hostels = Hostel::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
@@ -33,7 +32,7 @@ class HostelController extends Controller
 
             $unallocatedHostels = Transaction::whereNull('hostel_id')->where('conference_edition_id', $edition->id)->count();
 
-            return view('conference_management.admin.hostel.index', compact('hostels', 'count','edition','hostelsToMerge', 'unallocatedHostels'));
+            return view('conference_management.admin.hostel.index', compact('hostels', 'edition','hostelsToMerge', 'unallocatedHostels'));
         }return abort(404);
     }
 
@@ -70,7 +69,7 @@ class HostelController extends Controller
             'type' => 'required',
             'level' => 'required',
             'capacity' => 'required',
-            'edition' => 'required',
+            'conference_edition_id' => 'required',
             'field_ids' => 'nullable',
             'chapter_ids' => 'nullable'
         ]);
@@ -80,12 +79,12 @@ class HostelController extends Controller
             'type' => $data['type'],
             'level' => $data['level'],
             'capacity' => $data['capacity'],
-            'conference_edition_id' => $data['edition'],
+            'conference_edition_id' => $data['conference_edition_id'],
             'field_ids' => $data['field_ids'] ?? NULL,
             'chapter_ids' => $data['chapter_ids'] ?? NULL,
         ]);
 
-        return redirect(route('hostels.index',['edition'=>$request->edition]))->with('message', 'Hostel succesfully created');
+        return redirect(route('hostels.index',['edition'=>$request->conference_edition_id]))->with('message', 'Hostel succesfully created');
     }
 
     public function show(Hostel $hostel)
@@ -112,7 +111,6 @@ class HostelController extends Controller
 
     public function destroy($id, Request $request)
     {
-        $edition = ConferenceEdition::find($request->edition);
         $hostel = Hostel::findOrFail($id);
 
         // check if hostel has any participant

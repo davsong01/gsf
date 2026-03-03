@@ -13,9 +13,9 @@
                     <div class="card-header">
                         <h4 class="card-title">All Hostels for {{ $edition->conference_theme }}</h4>
                         @if(auth()->user()->conference_role == 'superadmin')
-                            <a href="{{ route('hostels.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Hostel</a>        
+                            <a href="{{ route('hostels.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Hostel</a>
                             <button style="" class="btn btn-dark mt-1" data-toggle="modal"  data-target="#hostel-merger">Hostel Merger</button>
-                        @endif                
+                        @endif
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -35,7 +35,7 @@
                                     <tbody>
                                         @foreach($hostels as $hostel)
                                         <tr>
-                                            <td>{{ $count++ }}</td>
+                                            <td>{{ $loop->iteration }}</td>
                                            <td>
                                                 {{ $hostel->name }} <br>
                                                <strong>Capacity: </strong>{{$hostel->capacity}} <br>
@@ -67,12 +67,12 @@
                                                 <a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');" title="Delete Hostel" href="{{ route('hostels.delete', ['id'=>$hostel->id,'edition'=>$edition->id]) }}"> <i style="padding: 5px;" class="fa fa-trash"></i></a>
                                                 @endif
                                             </td>
-                                           
+
                                         </tr>
-                                      
+
                                         @endforeach
                                     </tbody>
-                                    
+
                                 </table>
                             </div>
                         </div>
@@ -81,7 +81,7 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 <div class="modal" id="hostel-merger">
     <div class="modal-dialog">
@@ -119,7 +119,7 @@
                                         </select>
                                     </fieldset>
                                 </div>
-                                
+
                                 <div class="col-md-12 col-sm-12" id="number" style="display: none;">
                                     <fieldset class="form-group">
                                         <label for="amount">Amount</label>
