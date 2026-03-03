@@ -15,15 +15,15 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Update: {{ $food->name }}</h4>
-                        <a href="{{ route('foodusers.export',['id'=>$food->id, 'edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export Service Point Participants</a>                        
-                        
+                        <a href="{{ route('foodusers.export',['id'=>$food->id, 'edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export Service Point Participants</a>
+
                     </div>
                     <div class="card-content">
                         <div class="card-body">
                         <form action="{{ route('foods.update',['food'=>$food->id, 'edition'=>$edition->id]) }}" method="POST">
                         @csrf
                         @method('PATCH')
-                        
+
                         <div class="row">
                             <div class="col-md-12 col-sm-12">
                                 <fieldset class="form-group">
@@ -32,14 +32,14 @@
                                 </fieldset>
 
                                 <fieldset class="form-group">
-                                    <label for="level">Level</label>
+                                    <label for="level">Conference Plan</label>
                                     <select class="form-control" name="level" id="level" required>
                                         @foreach($conferenceplans as $plan)
-                                        <option value="{{$plan->level}}" {{ $food->level == $plan->level ? 'selected' : ''}}>{{ $plan->level }}</option>
+                                        <option value="{{$plan->level}}" {{ $food->level == $plan->level ? 'selected' : ''}}>{{ $plan->title }}</option>
                                         @endforeach
                                     </select>
                                 </fieldset>
-                            
+
                                 <fieldset class="form-group">
                                     <label for="field_ids">Fields (Optional)</label>
                                     <select class="form-control" name="field_ids[]" id="field_ids" multiple>
@@ -67,7 +67,7 @@
                             <fieldset class="form-group">
                                 <label for="allocation">Allocation</label>
                                 <input type="numer" id="allocation" name="allocation" class="form-control" disabled value="{{ old('allocation') ?? $food->allocation }}" required>
-                            </fieldset>   
+                            </fieldset>
                             </div>
                         </div>
                         <div class="row">
@@ -81,6 +81,6 @@
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->          
+    <!-- Basic Inputs end -->
 </div>
 @endsection

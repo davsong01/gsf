@@ -14,8 +14,8 @@
                         <h4 class="card-title">All Service Points for {{ $edition->conference_theme }}</h4>
                         @if(auth()->user()->conference_role == 'superadmin')
                             <a href="{{ route('foods.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Service Point</a>
-                            <a href="{{ route('sp.auto.allocate',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-success mt-1">Auto Allocate ({{ $unallocatedSp }})</a> 
-                            <a href="{{ route('servicepoint.repair.allocation',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-info mt-1">Repair Service Point Allocation</a>        
+                            <a href="{{ route('sp.auto.allocate',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-success mt-1">Auto Allocate ({{ $unallocatedSp }})</a>
+                            <a href="{{ route('servicepoint.repair.allocation',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-info mt-1">Repair Service Point Allocation</a>
                             <button style="" class="btn btn-dark mt-1" data-toggle="modal"  data-target="#sp-merger">Service Point Merger</button>
 
                         @endif
@@ -28,7 +28,6 @@
                                         <tr>
                                             <th>S/N</th>
                                             <th>Name</th>
-                                            <th>Gender</th>
                                             <th>Level</th>
                                             <th>Fields</th>
                                             <th>Chapters</th>
@@ -38,14 +37,13 @@
                                     <tbody>
                                         @foreach($foods as $food)
                                         <tr>
-                                            <td>{{ $count++ }}</td>
+                                            <td>{{ $loop->iteration }}</td>
                                             <td>
                                                 {{ $food->name }} <br>
                                                <strong>Capacity: </strong>{{$food->capacity}} <br>
                                                <strong>Allocation: </strong>{{$food->allocation}} <br>
                                                <strong>Allotted: </strong>{{$food->payments->count()}}
                                             </td>
-                                            <td>{{ $food->type }}</td>
 
                                             <td>{{$food->level}}</td>
                                             <td>
@@ -65,8 +63,8 @@
                                                 <br>
                                                 @endif
                                             </td>
-                                            
-                                            
+
+
                                             <td style="padding-left: 5px;padding-right: 5px;">
                                             <a class="actions" data-toggle="tooltip" title="View/Update food details" href="{{ route('foods.edit', ['food'=>$food->id,'edition'=>$edition->id]) }}"> <i class="bx bxs-edit actions"></i>
                                             </a>
@@ -75,10 +73,10 @@
                                             </a>
                                             @endif
                                         </tr>
-                                      
+
                                         @endforeach
                                     </tbody>
-                                    
+
                                 </table>
                             </div>
                         </div>
@@ -87,7 +85,7 @@
             </div>
         </div>
     </section>
-    <!--/ Zero configuration table -->         
+    <!--/ Zero configuration table -->
 </div>
 <div class="modal" id="sp-merger">
     <div class="modal-dialog">
@@ -125,7 +123,7 @@
                                         </select>
                                     </fieldset>
                                 </div>
-                                
+
                                 <div class="col-md-12 col-sm-12" id="number" style="display: none;">
                                     <fieldset class="form-group">
                                         <label for="amount">Amount</label>
@@ -156,7 +154,7 @@ $(document).ready(function () {
     $('#deallocate').on('change', function () {
         var servicePointId = $(this).val();
         var remaining = $('option:selected', this).data('remaining');
-        
+
         if (servicePointId) {
             $.ajax({
                 url: '{{ route("get.available.service_point") }}',

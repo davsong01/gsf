@@ -24,12 +24,12 @@ class FoodController extends Controller
             $foods = Food::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
 
             $servicePointsToMerge = Food::where('conference_edition_id', $edition->id)->where('allocation', '>', 0)->orderBy('created_at', 'desc')->get();
-            
+
             $foods->each(function ($food) {
                 $food->fields = Field::whereIn('id', $food->field_ids)->get();
                 $food->chapters = Chapter::whereIn('id', $food->chapter_ids)->get();
             });
-            
+
             $unallocatedSp = Transaction::whereNull('food_id')->where('conference_edition_id', $edition->id)->count();
 
             return view('conference_management.admin.food.index', compact('foods', 'count','edition', 'servicePointsToMerge', 'unallocatedSp'));
@@ -87,13 +87,12 @@ class FoodController extends Controller
     public function update(Request $request, Food $food)
     {
         $food->update($request->except('edition'));
-        return back()->with('message', 'Update successful!');        
+        return back()->with('message', 'Update successful!');
     }
 
     public function participantExport(Request $request, $id)
     {
         $food = Food::find($id);
-        $count = 1;
 
         if (auth()->user()->role != 1) {
             return abort(404);
@@ -112,7 +111,7 @@ class FoodController extends Controller
         $food = Food::findOrFail($id);
 
         if(auth()->user()->role == 1){
-            $food->delete();          
+            $food->delete();
             return back()->with('message',' Delete succesful!');
         }return abort(404);
     }
@@ -148,7 +147,7 @@ class FoodController extends Controller
         ]);
     }
 
-    
+
     public function servicePointMerger(Request $request)
     {
         ServicePointAllocationService::servicePointMerger($request);

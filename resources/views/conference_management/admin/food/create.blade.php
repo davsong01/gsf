@@ -21,7 +21,7 @@
                         <div class="card-body">
                             <form action="{{ route('foods.store',['edition'=>$edition->id]) }}" method="POST">
                             @csrf
-                            
+
                             <div class="row">
                                 <div class="col-md-12 col-sm-12">
                                     <fieldset class="form-group">
@@ -30,10 +30,10 @@
                                     </fieldset>
 
                                     <fieldset class="form-group">
-                                        <label for="level">Level</label>
+                                        <label for="level">Conference Plan</label>
                                         <select class="form-control" name="level" id="level" required>
                                             @foreach($conferenceplans as $plan)
-                                            <option value="{{$plan->level}}">{{ $plan->level }}</option>
+                                            <option value="{{$plan->level}}">{{ $plan->title }}</option>
                                             @endforeach
                                         </select>
                                     </fieldset>
@@ -54,12 +54,12 @@
                                             @endforeach
                                         </select>
                                     </fieldset>
-                                    
+
                                     <fieldset class="form-group">
                                         <label for="capacity">Capacity</label>
                                         <input type="number" id="capacity" min="1" name="capacity" class="form-control" value="{{ old('capacity') }}" required>
                                     </fieldset>
-                                
+
                                 </div>
 
                             </div>
@@ -70,11 +70,11 @@
                                 </div>
                             </div>
                     </div>
-                   
+
                 </div>
             </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->          
+    <!-- Basic Inputs end -->
 </div>
 @endsection
