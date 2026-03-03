@@ -1,97 +1,136 @@
 @extends('layouts.conference')
-@section('title', 'Update hostel')
+
+@section('title', isset($hostel) ? 'Update Hostel' : 'Create Hostel')
+
 @section('item')
-<li class="breadcrumb-item"> <a href="{{ route('hostels.index',['edition'=>$edition->id]) }}">Hostels</a></li>
+<li class="breadcrumb-item">
+    <a href="{{ route('hostels.index',['edition'=>$edition->id]) }}">Hostels</a>
+</li>
 @endsection
+
 @section('active')
-<li class="breadcrumb-item">Update hostel</li>
+<li class="breadcrumb-item">
+    {{ isset($hostel) ? 'Update Hostel' : 'Create Hostel' }}
+</li>
 @endsection
+
 @section('content2')
 <div class="content-body">
-    <!-- Basic Inputs start -->
-    <section id="basic-input">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4 class="card-title">Update: {{ $hostel->name }}</h4>
-                        <a href="{{ route('hostelusers.export',['id'=>$hostel->id, 'edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Export Hostel Participants</a>
+<section id="basic-input">
+<div class="row">
+<div class="col-md-12">
+<div class="card">
 
-                    </div>
-                    <div class="card-content">
-                        <div class="card-body">
-                            <form action="{{ route('hostels.update', [$hostel->id, 'edition_id'=>$edition->id]) }}" method="POST">
-                            @csrf
-                            @method('PATCH')
+<div class="card-header">
+    <h4 class="card-title">
+        {{ isset($hostel) ? 'Update: '.$hostel->name : 'Create Hostel' }}
+    </h4>
 
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <fieldset class="form-group">
-                                        <label for="name">Name</label>
-                                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name') ?? $hostel->name }}" placeholder="Enter name">
-                                    </fieldset>
+    @if(isset($hostel))
+        <a href="{{ route('hostelusers.export',['id'=>$hostel->id, 'edition'=>$edition->id]) }}"
+           class="btn btn-primary mt-1">
+           Export Hostel Participants
+        </a>
+    @endif
+</div>
 
-                                    <fieldset class="form-group">
-                                        <label for="type">Type</label>
-                                        <select class="form-control" name="type" id="type" required>
-                                            <option value="Male" {{ $hostel->type == 'Male' ? 'selected' : ''}}>Male</option>
-                                            <option value="Female" {{ $hostel->type == 'Female' ? 'selected' : ''}}>Female</option>
-                                        </select>
-                                    </fieldset>
-                                    <fieldset class="form-group">
-                                        <label for="level">Conference Plan</label>
-                                        <select class="form-control" name="level" id="level" required>
-                                            @foreach($conferenceplans->where('status', 1) as $plan)
-                                            <option value="{{$plan->level}}" {{ $hostel->level == $plan->level ? 'selected' : ''}}>{{ $plan->title }}</option>
-                                            @endforeach
-                                        </select>
-                                    </fieldset>
-                                    <fieldset class="form-group">
-                                    <label for="field_ids">Fields (Optional)</label>
-                                    <select class="form-control" name="field_ids[]" id="field_ids" multiple>
-                                        <option value="">Select</option>
-                                        @foreach($fields as $field)
-                                        <option value="{{ $field->id }}" {{ in_array($field->id, $hostel->fields->pluck('id')->toArray()) ? 'selected':'' }}>{{ $field->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </fieldset>
-                                <fieldset class="form-group">
-                                    <label for="chapter_ids">Chapters (Optional)</label>
-                                    <select class="form-control" name="chapter_ids[]" id="chapter_ids" multiple>
-                                        <option value="">Select</option>
-                                        @foreach($chapters as $chapter)
-                                        <option value="{{ $chapter->id }}" {{ in_array($chapter->id, $hostel->chapters->pluck('id')->toArray()) ? 'selected':'' }}>{{ $chapter->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </fieldset>
-                                    <fieldset class="form-group">
-                                        <label for="capacity">Capacity</label>
-                                        <input type="number" id="capacity" name="capacity" class="form-control" value="{{ old('capacity') ?? $hostel->capacity }}" required>
-                                    </fieldset>
+<div class="card-body">
 
-                                <fieldset class="form-group">
-                                        <label for="allocation">Allocation</label>
-                                        <input type="numer" id="allocation" name="allocation" class="form-control" disabled value="{{ old('allocation') ?? $hostel->allocation }}" required>
-                                    </fieldset>
+<form
+    action="{{ isset($hostel)
+        ? route('hostels.update', [$hostel->id, 'edition_id'=>$edition->id])
+        : route('hostels.store', ['edition_id'=>$edition->id]) }}"
+    method="POST">
 
+    @csrf
+    @if(isset($hostel))
+        @method('PATCH')
+    @endif
 
-                                </div>
+<div class="row">
+<div class="col-md-12">
 
+<fieldset class="form-group">
+    <label>Name</label>
+    <input type="text" class="form-control" name="name"
+        value="{{ old('name', $hostel->name ?? '') }}" required>
+</fieldset>
 
+<fieldset class="form-group">
+    <label>Type</label>
+    <select class="form-control" name="type" required>
+        <option value="Male" {{ old('type', $hostel->type ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
+        <option value="Female" {{ old('type', $hostel->type ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
+    </select>
+</fieldset>
 
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12">
-                                    <button class="btn btn-primary" style="width:100%" type="submit">Update</button>
-                                    </form>
-                                </div>
-                            </div>
-                    </div>
+<fieldset class="form-group">
+    <label>Conference Plan</label>
+    <select class="form-control" name="level" required>
+        @foreach($conferenceplans as $plan)
+            <option value="{{ $plan->level }}"
+                {{ old('level', $hostel->level ?? '') == $plan->level ? 'selected' : '' }}>
+                {{ $plan->title }}
+            </option>
+        @endforeach
+    </select>
+</fieldset>
 
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- Basic Inputs end -->
+<fieldset class="form-group">
+<label>Fields (Optional)</label>
+<select class="form-control" name="field_ids[]" multiple>
+    @foreach($fields as $field)
+        <option value="{{ $field->id }}"
+            {{ isset($hostel) && in_array($field->id, $hostel->fields->pluck('id')->toArray()) ? 'selected' : '' }}>
+            {{ $field->name }}
+        </option>
+    @endforeach
+</select>
+</fieldset>
+
+<fieldset class="form-group">
+<label>Chapters (Optional)</label>
+<select class="form-control" name="chapter_ids[]" multiple>
+    @foreach($chapters as $chapter)
+        <option value="{{ $chapter->id }}"
+            {{ isset($hostel) && in_array($chapter->id, $hostel->chapters->pluck('id')->toArray()) ? 'selected' : '' }}>
+            {{ $chapter->name }}
+        </option>
+    @endforeach
+</select>
+</fieldset>
+
+<fieldset class="form-group">
+    <label>Capacity</label>
+    <input type="number" name="capacity" class="form-control"
+        value="{{ old('capacity', $hostel->capacity ?? '') }}" required>
+</fieldset>
+
+@if(isset($hostel))
+<fieldset class="form-group">
+    <label>Allocation</label>
+    <input type="number" class="form-control" disabled
+        value="{{ $hostel->allocation }}">
+</fieldset>
+@endif
+
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-12">
+    <button class="btn btn-primary w-100" type="submit">
+        {{ isset($hostel) ? 'Update Hostel' : 'Create Hostel' }}
+    </button>
+</div>
+</div>
+
+</form>
+</div>
+
+</div>
+</div>
+</div>
+</section>
 </div>
 @endsection
