@@ -113,6 +113,7 @@ class HostelAllocationService
                             ->whereRaw('allocation < capacity')
                             ->inRandomOrder()
                             ->first();
+                           
                         break;
 
                     case 'based_on_chapter':

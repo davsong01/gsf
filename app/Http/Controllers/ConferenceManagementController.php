@@ -513,7 +513,7 @@ class ConferenceManagementController extends Controller
 			$update['gender'] = $paymentupdate['gender'] = $data['registration_fields']['gender'] ?? $user->gender;
 
 			// handle gender change, automatic hostel
-			if ($update['gender'] != $user->gender || ($isAdmin && $update['gender'] != $user->gender )) {
+			if ($update['gender'] != $user->gender || ($isAdmin && $request->hostel_id != $transaction->hostel_id )) {
 				$paymentArray = array_merge($data, $transaction->ToArray());
 				$paymentArray['gender'] = $update['gender'];
 
@@ -843,7 +843,7 @@ class ConferenceManagementController extends Controller
 		foreach($participants as $participant){
 			request()->merge($participant);
 			$store = $this->store(request(), 'import');
-            
+
             if(!$store['status']) continue;
 		}
 
