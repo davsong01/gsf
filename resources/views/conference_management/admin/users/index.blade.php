@@ -46,10 +46,10 @@
                                                     <strong>Reg Level:</strong> {{ $participant->level }} <br>
                                                 </span>
                                                 @if(isset($participant->hostel_id)) <br>
-                                                <strong>Hostel:</strong> {{ $participant->hostel->name }}
+                                                <strong>Hostel:</strong> {{ $participant->hostel->name ?? 'N/A'}}
                                                 @endif
                                                 @if(isset($participant->food_id)) <br>
-                                                <strong>Service Point:</strong> {{ $participant->food->name }} <br>
+                                                <strong>Service Point:</strong> {{ $participant->food->name ?? 'N/A'}} <br>
                                                 @endif
                                                 <strong>Payment Provider:</strong> {{ $participant?->paymentprovider?->name }}
                                                 <br>

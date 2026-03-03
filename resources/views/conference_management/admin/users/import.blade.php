@@ -4,84 +4,99 @@
 <li class="breadcrumb-item"> <a href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">Participants</a></li>
 @endsection
 @section('active')
-<li class="breadcrumb-item">Add Participant</li>
+<li class="breadcrumb-item">Import Participant</li>
 @endsection
 @section('content2')
 <!-- Transitions Start-->
 
 <div class="content-body">
-	<div class="container">
-		<div class="row">
-            <div class="col-lg-12">
-                <h3>Import {{ $type ?? '' }}</h3>
-                @include('includes.alerts')
-                <div class="row mb-3 px-1">
-                    <a href="{{ route('conference.usersexport.sample', ['type' => $type]) }}" class="btn btn-primary mb-3">
-                        <i class="fa fa-download"></i> Download Sample
-                    </a>
+    <div class="container">
 
-                    <div class="card-header">
+        <div class="row">
+
+            <!-- LEFT COLUMN: Guidelines + Download -->
+            <div class="col-md-6">
+                <h3 class="ml-2">Import {{ $type ?? '' }}</h3>
+
+                <div class="card">
+                    <div class="card-body">
                         <p>Please select an Excel file to upload. Make sure to follow these rules:</p>
                         <ul>
-                            <li>Only Excel formats (.csv, .xls, .xlsx) are accepted.</li>
-                            <li><strong>Name</strong> and <strong>Email</strong> must be present in the file.</li>
-                            <li>Ensure there are no extra blank rows at the end of the file.</li>
+                            <li>Only Excel formats are supported: <strong>.csv, .xls, .xlsx</strong>.</li>
+                            <li>Do not include empty rows at the bottom of the file.</li>
                         </ul>
-                    </div>
 
-                    <form action="{{ route('admin.conferenceuser.import', ['type' => $type, 'edition' => $edition->id]) }}"
-                    method="POST"
-                    enctype="multipart/form-data"
-                    class="@if($errors->any()) has-error @endif px-1">
-                    @csrf
+                        <h6 class="font-weight-bold">Required Excel Headers</h6>
+                        <p class="text-muted mb-2">Your file must contain the following:</p>
 
-                    @if(auth()->user()->role == 1)
-                        {{-- <div class="form-group">
-                            <label for="type">Type</label>
-                            <select name="type" id="type" class="form-control">
-                                <option value="">-- Select Type --</option>
-                                <option value="0">Participant</option>
-                                <option value="1">Alumni</option>
-                            </select>
-                        </div> --}}
-
-                        <div class="form-group">
-                            <label for="chapter_id">Campus</label>
-                            <select name="chapter_id" id="chapter_id" class="form-control">
-                                <option value="">-- Select Campus --</option>
-                                @foreach($chapters as $chapter)
-                                    <option value="{{ $chapter->id }}"
-                                            {{ old('chapter_id') == $chapter->id ? 'selected' : '' }}>
-                                        {{ $chapter->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm mb-3">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Field</th>
+                                        <th>Description</th>
+                                        <th>Requirement</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($fields as $plan)
+                                        <tr>
+                                            <td>{{ $plan->name }}</td>
+                                            <td>{{ $plan->label }}</td>
+                                            <td>{{ $plan->required ? 'Mandatory' : 'Optional' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                    @endif
 
-                    <div class="form-group">
-                        <label for="file">Upload Excel File</label>
-                        <input type="file" name="file" class="form-control" accept=".csv, .xls, .xlsx" required>
+                        <a href="{{ route('conference.usersexport.sample', ['type' => $type, 'import_type' => $import_type, 'edition' => $edition->id]) }}"
+                           class="btn btn-primary">
+                            <i class="fa fa-download"></i> Download Sample
+                        </a>
                     </div>
-
-                    <input type="hidden" name="import_level" value="{{ $type }}">
-                    <input type="hidden" name="import_type" value="{{ $import_type }}">
-
-                    @error('file')
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            {{ $message }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    @enderror
-
-                    <button type="submit" class="btn btn-success">Import File</button>
-                </form>
                 </div>
             </div>
+
+
+            <!-- RIGHT COLUMN: Form -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+
+                        <form action="{{ route('conferenceusers.import', ['type' => $type, 'edition' => $edition->id]) }}"
+
+                              method="POST"
+                              enctype="multipart/form-data"
+                              class="@if($errors->any()) has-error @endif">
+                            @csrf
+
+                            <div class="form-group">
+                                <label for="file">Upload Excel File</label>
+                                <input type="file" name="file" class="form-control" accept=".csv, .xls, .xlsx" required>
+                            </div>
+
+                            <input type="hidden" name="import_level" value="{{ $type }}">
+                            <input type="hidden" name="import_type" value="{{ $import_type }}">
+
+                            @error('file')
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    {{ $message }}
+                                    <button type="button" class="close" data-dismiss="alert">
+                                        <span>&times;</span>
+                                    </button>
+                                </div>
+                            @enderror
+
+                            <button type="submit" class="btn btn-success">Import File</button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
-	</div>
+    </div>
 </div>
 <!-- Transitions End-->
 @endsection

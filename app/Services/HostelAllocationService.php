@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\ConferenceEdition;
 use App\Models\Hostel;
 use App\Models\Payment;
-use App\Models\ConferenceEdition;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Rap2hpoutre\FastExcel\FastExcel;
 
 class HostelAllocationService
@@ -33,7 +34,7 @@ class HostelAllocationService
             DB::beginTransaction();
 
             // --- CASE 1: Admin manually set hostel ---
-            if (!empty($newData['new_hostel_id'])) {
+            if (!empty($newData['new_hostel_id']) && $newData['new_hostel_id'] != $transaction->hostel_id) {
                 $hostel = Hostel::where('id', $newData['new_hostel_id'])
                     ->where('conference_edition_id', $conference_edition_id)
                     ->where('type', $gender)
@@ -44,11 +45,12 @@ class HostelAllocationService
                     DB::rollBack();
                     return [
                         ...$defaultResponse,
-                        'message' => 'Selected hostel not available or already full.',
+                        'message' => 'The selected hostel does not match the gender or it has reached full capacity.',
                     ];
                 }
 
                 $allocationNumber = $hostel->allocation + 1;
+
                 $hostel->update(['allocation' => $allocationNumber]);
 
                 DB::commit();
@@ -75,7 +77,7 @@ class HostelAllocationService
             $chapter_id = $chapterField->value ?? null;
             $field_id = $fieldField->value ?? null;
             $hostel = null;
-                
+
             if (in_array($level, ['Official', 'Medical'])) {
                 $hostel = Hostel::where([
                     'level' => $level,
@@ -179,6 +181,17 @@ class HostelAllocationService
                 }
             }
 
+            if($hostel->id == $transaction->hostel_id){
+                return [
+                    'status' => true,
+                    'message' => 'Hostel already assigned.',
+                    'reason' => 'Hostel already assigned.',
+                    'hostel_id' => $hostel->id,
+                    'hostel_name' => $hostel->name,
+                    'hostel_allocation_type' => $allocationType,
+                ];
+            }
+
             // --- Assign hostel ---
             $allocationNumber = $hostel->allocation + 1;
             $hostel->update(['allocation' => $allocationNumber]);
@@ -198,7 +211,7 @@ class HostelAllocationService
         } catch (\Throwable $e) {
             DB::rollBack();
             // dd($e->getMessage(), ' Line:'. $e->getLine());
-            \Log::error('Hostel assignment failed', [
+            Log::error('Hostel assignment failed', [
                 'transaction_id' => $transaction->id ?? null,
                 'error' => $e->getMessage(),
             ]);
@@ -233,19 +246,19 @@ class HostelAllocationService
         return $number;
     }
 
+    public static function reduceHostelAllocation($hostel){
 
-    public static function reduceHostelAllocation($transaction)
-    {
-        if (isset($transaction->hostel->id) && !empty($transaction->hostel->id)) {
-            $current_hostel = Hostel::find($transaction->hostel->id);
-
-            if ($current_hostel->allocation == 0) {
-                return;
-            } else {
-                $transaction->hostel->update(['allocation' => $transaction->hostel->allocation - 1]);
-                return $transaction->hostel;
-            }
+        if (!$hostel) {
+            return null;
         }
+
+        if ($hostel->allocation <= 0) {
+            return $hostel;
+        }
+
+        $hostel->decrement('allocation');
+
+        return $hostel;
     }
 
     static function hostelMerger($request)

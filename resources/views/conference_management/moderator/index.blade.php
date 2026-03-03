@@ -156,11 +156,11 @@
 
                                         </td>
                                         <td>
-                                            <strong>Hostel:</strong> {{ $participant->hostel->name }} <br>
-                                            <strong>Hostel Number:</strong> {{ $participant->hostel_allocation_number }} <hr style="margin-top: 4px; margin-bottom: 4px;">
+                                            <strong>Hostel:</strong> {{ $participant->hostel->name ?? 'N/A'}} <br>
+                                            <strong>Hostel Number:</strong> {{ $participant->hostel_allocation_number ?? 'N/A' }} <hr style="margin-top: 4px; margin-bottom: 4px;">
 
-                                            <strong>Service Stand:</strong> {{ $participant->food->name }} <br>
-                                            <strong>Service Stand No.:</strong> {{ $participant->service_point_allocation_number }}
+                                            <strong>Service Stand:</strong> {{ $participant->food->name ?? 'N/A' }} <br>
+                                            <strong>Service Stand No.:</strong> {{ $participant->service_point_allocation_number ?? 'N/A'}}
                                         </td>
                                         <td>@if($participant->registration_status == 'Complete')
                                             <i class="bx bxs-circle success font-small-1 mr-50"></i><small>Complete</small> @else

@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\ConferenceEdition;
 use App\Models\Food;
 use App\Models\Payment;
-use App\Models\ConferenceEdition;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Rap2hpoutre\FastExcel\FastExcel;
 
 class ServicePointAllocationService
@@ -25,14 +26,12 @@ class ServicePointAllocationService
         try {
             $setting = $transaction->edition;
             $level = $transaction->level === 'Moderator' ? 'Participant' : $transaction->level;
-            $gender = $transaction->gender;
             $conference_edition_id = $transaction->conference_edition_id;
-
 
             DB::beginTransaction();
 
             // --- CASE 1: Admin manually sets food stand ---
-            if (!empty($newData['new_food_id'])) {
+            if (!empty($newData['new_food_id']) && $newData['new_food_id'] != $transaction->food_id) {
                 $food = Food::where('id', $newData['new_food_id'])
                     ->where('conference_edition_id', $conference_edition_id)
                     ->whereRaw('allocation < capacity')
@@ -42,7 +41,7 @@ class ServicePointAllocationService
                     DB::rollBack();
                     return [
                         ...$defaultResponse,
-                        'message' => 'Selected service point not available or already full.',
+                        'message' => 'Selected service point not available or it has reached full capacity.',
                     ];
                 }
 
@@ -173,13 +172,13 @@ class ServicePointAllocationService
             ];
         } catch (\Throwable $e) {
             DB::rollBack();
-            \Log::error('Service point allocation failed', [
+            Log::error('Service point allocation failed', [
                 'error' => $e->getMessage(),
             ]);
 
             return [
                 'status' => false,
-                'message' => 'Error: ' . $e->getMessage(),
+                'message' => 'Error: ' . $e->getMessage().'File: '.$e->getFile() . ' Line: '.$e->getLine(),
                 'service_point_allocation_id' => null,
                 'service_point_allocation_number' => null,
                 'service_point_allocation_type' => null,
@@ -228,7 +227,7 @@ class ServicePointAllocationService
         $setting = ConferenceEdition::where('id', $edition_id)->first();
         $data = [];
         $count = 0;
-        
+
         if (!empty($payments)) {
             foreach ($payments as $payment) {
                 $count += 1;
@@ -236,9 +235,9 @@ class ServicePointAllocationService
                 $user = $payment->user;
                 $data['field_id'] = $user->campus->field->id ?? null;
                 $data = array_merge($data, $user->toArray(), $payment->toArray());
-                
+
                 $service_point = ServicePointAllocationService::assignFoodStand($data);
-                
+
                 if (!empty($service_point)) {
                     $payment->update([
                         'service_point_allocation_number' => $service_point['service_point_allocation_number'],
@@ -291,17 +290,17 @@ class ServicePointAllocationService
         });
     }
 
-    public static function reduceFoodStandAllocation($transaction)
-    {
-        if (isset($transaction->food->id) && !empty($transaction->food->id)) {
-            $current_food = Food::find($transaction->food->id);
-
-            if ($current_food->allocation == 0) {
-                return;
-            } else {
-                $transaction->food->update(['allocation' => $transaction->food->allocation - 1]);
-                return $transaction->food;
-            }
+    public static function reduceFoodStandAllocation($food){
+        if (!$food) {
+            return null;
         }
+
+        if ($food->allocation <= 0) {
+            return $food;
+        }
+
+        $food->decrement('allocation');
+
+        return $food;
     }
 }

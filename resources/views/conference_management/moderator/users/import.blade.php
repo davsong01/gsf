@@ -1,5 +1,10 @@
 @extends('layouts.dashboard')
-
+@section('item')
+<li class="breadcrumb-item"> <a href="{{ route('conference.participants',['type'=>'Participant', 'edition'=>$edition->id]) }}">Participants</a></li>
+@endsection
+@section('active')
+<li class="breadcrumb-item">Import Participant</li>
+@endsection
 @section('content')
 <div class="content-body">
     <div class="container">

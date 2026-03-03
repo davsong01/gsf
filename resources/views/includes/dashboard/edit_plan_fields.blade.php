@@ -61,7 +61,7 @@
                     {{ !in_array($name, $participantAllowed) ? $isDisabled : '' }}
                     value="{{ $value }}"
                     placeholder="{{ $label }}"
-                    @if($required) required @endif>
+                    @if($required) required @endif @if($name == 'no_of_participants' && $transaction->registration_user_type != 'moderator') disabled @endif >
             @endif
         </fieldset>
     </div>

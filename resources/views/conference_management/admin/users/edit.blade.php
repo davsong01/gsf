@@ -208,7 +208,8 @@
                             <div class="col-md-6">
                                 <fieldset class="form-group">
                                     <label for="hostel_id">Hostel</label>
-                                    <select class="form-control" name="hostel_id" id="hostel_id" required>
+                                    <select class="form-control" name="hostel_id" id="hostel_id">
+                                        <option value="">Select</option>
                                         @foreach($hostels as $hostel)
                                         @if($hostel->capacity > $hostel->allocation || $hostel->id == $transaction->hostel_id)
                                         <option value="{{ $hostel->id ?? $transaction->hostel_id }}" {{ $transaction->hostel_id == $hostel->id ? 'selected' : '' }}>{{ $hostel->name. ' ('.($hostel->capacity - $hostel->allocation). ' participant(s) left) | '.$hostel->type. ' | '.$hostel->level}}</option>
@@ -220,7 +221,8 @@
                             <div class="col-md-6">
                                 <fieldset class="form-group">
                                     <label for="hostel">Service Point</label>
-                                    <select class="form-control" name="food_id" id="food_id" required>
+                                    <select class="form-control" name="food_id" id="food_id">
+                                        <option value="">Select</option>
                                         @foreach($foods as $food)
                                             @if($food->capacity > $food->allocation || $food->id == $transaction->food_id)
                                             <option value="{{ $food->id ?? $transaction->food_id }}" {{ $transaction->food_id == $food->id ? 'selected' : '' }}>{{ $food->name. ' ('.($food->capacity - $food->allocation). ' participant(s) left) | '.$food->level }}</option>
@@ -233,7 +235,7 @@
                             </div>
                             <div class="col-md-6">
                                 <fieldset class="form-group">
-                                    <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank except you want to reset participant's password</i></small>
+                                    <label for="password">Password</label><small class="text-muted"><i style="color:red"> (Leave blank except you want to reset participant's password)</i></small>
                                     <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
                                 </fieldset>
                             </div>
