@@ -128,15 +128,24 @@ class ZoneController extends Controller
             }
 
             Stakeholder::whereIn('id', $selectedStakeholders)
-                ->update([
-                    'status'     => 'active',
-                    'zone_id'    => $zone->id,
-                    'field_id'   => $zone->field_id,
-                    'chapter_id' => null,
-                    'role_id'    => 4,
-                    'designation_id' => $designation_id
-                ]);
+            ->update([
+                'status'     => 'active',
+                'zone_id'    => $zone->id,
+                'field_id'   => $zone->field_id,
+                'chapter_id' => null,
+                'role_id'    => 4,
+                'designation_id' => $designation_id
+            ]);
         }
+        
+        // Update dependencies
+        $zone->chapters()->update([
+            'field_id' => $request->field_id,
+        ]);
+
+        $zone->reports()->update([
+            'field_id' => $request->field_id,
+        ]);
 
         return redirect()
             ->route('zones.index')

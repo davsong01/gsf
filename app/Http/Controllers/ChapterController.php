@@ -220,12 +220,30 @@ class ChapterController extends Controller
         if($request->has('chapter_banner')){
             $request['banner'] = $this->uploadImage($request->chapter_banner, 'main/images/chapters');
         }
-        
+
         if($chapter->stakeholder && $request->email != $chapter->email){
             $chapter->stakeholder->update([
                 'email' => $request->email,
             ]);
         }
+
+        $chapter->stakeholders()->update([
+            'chapter_id' => $chapter->id,
+            'zone_id'    => $chapter->zone->id,
+            'field_id'   => $chapter->zone->field->id,
+        ]);
+
+        $chapter->stakeholders()->update([
+            'chapter_id' => $chapter->id,
+            'zone_id'    => $chapter->zone->id,
+            'field_id'   => $chapter->zone->field->id,
+        ]);
+
+        $chapter->reports()->update([
+            'zone_id'    => $chapter->zone->id,
+            'field_id'   => $chapter->zone->field->id,
+        ]);
+
         $chapter->update($request->except('chapter_banner'));
 
         return redirect(route('chapters.index'))->with('message', 'Update successful');

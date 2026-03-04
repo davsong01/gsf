@@ -332,8 +332,8 @@ class ReportService
                 }
 
                 $report->chapter_id = (int) $stakeholder->chapter_id;
-                $report->zone_id    = (int) (($stakeholder->zone_id) ?? $chapter?->zone_id);
-                $report->field_id   = (int) (($stakeholder->field_id) ?? $chapter?->field_id);
+                $report->zone_id    = (int) (($chapter?->zone_id ?? $stakeholder->zone_id));
+                $report->field_id   = (int) (($chapter?->field_id ?? $stakeholder->field_id));
             }
 
             /** =====================

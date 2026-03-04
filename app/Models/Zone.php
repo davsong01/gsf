@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use App\Models\Field;
 use App\Models\Chapter;
+use App\Models\Field;
 use App\Models\Stakeholder;
+use App\Models\StakeholderReport;
 use Illuminate\Database\Eloquent\Model;
 
 class Zone extends Model
@@ -21,6 +22,10 @@ class Zone extends Model
 
     public function stakeholder(){
         return $this->hasOne(Stakeholder::class);
+    }
+
+    public function reports(){
+        return $this->hasMany(StakeholderReport::class, 'zone_id');
     }
 
     public function zonalCord(){

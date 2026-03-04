@@ -199,7 +199,7 @@ class StakeholderReportsController extends Controller
         $validated = app(ReportService::class)->validateRequest($request);
         $validated['month_number'] = $eligibleMonth['month_number'];
         $validated['year'] = $eligibleMonth['year'];
-
+        
         $result = app(ReportService::class)->saveReport($stakeholder, null, $validated);
 
         return $result['status']
@@ -277,7 +277,7 @@ class StakeholderReportsController extends Controller
     public function download(StakeholderReport $report): BinaryFileResponse
     {
         $path = $report->file_location;
-        
+
         abort_unless(file_exists($path), 404, 'Report file not found');
 
         return response()->download(

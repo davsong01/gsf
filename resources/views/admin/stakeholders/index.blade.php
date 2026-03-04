@@ -67,6 +67,14 @@
                                                     <small><strong>Status: </strong>{{ ucfirst($stakeholder->status) }}</small>
                                                     @if($stakeholder->credentials_sent)
                                                     <br>
+                                                    <small>
+                                                        @if(!empty($stakeholder->zone_id))
+                                                        <strong>Zone:</strong> {{ $stakeholder->zone->name }} <br>
+                                                        @endif
+                                                        @if(!empty($stakeholder->field_id))
+                                                        <strong>Field:</strong> {{ $stakeholder->field->name }} <br>
+                                                        @endif
+                                                    </small>
                                                     <small style="color:green">Login Credentials sent</small>
                                                     @endif
                                                     @if($stakeholder->last_login)

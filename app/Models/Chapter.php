@@ -7,6 +7,7 @@ use App\Models\Field;
 use App\Models\Payment;
 use App\Models\Stakeholder;
 use App\Models\StakeholderDesignation;
+use App\Models\StakeholderReport;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Zone;
@@ -34,6 +35,10 @@ class Chapter extends Model
         return $this->hasOne(Stakeholder::class);
     }
 
+    public function reports(){
+        return $this->hasMany(StakeholderReport::class);
+    }
+
     public function stakeholders()
     {
         return $this->hasMany(Stakeholder::class);
@@ -42,7 +47,7 @@ class Chapter extends Model
     public function zone(){
         return $this->belongsTo(Zone::class);
     }
-    
+
     public function field(){
         return $this->belongsTo(Field::class);
     }
