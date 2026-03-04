@@ -1315,7 +1315,7 @@ class CronController extends Controller
             ]);
         }
 
-        return back()->with('message', "{$stakeholders->count()} zonal pastor credential emails queued successfully.");
+        return back()->with('message', "{$stakeholders->count()} field pastor credential emails queued successfully.");
     }
 
 }

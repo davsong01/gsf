@@ -186,7 +186,12 @@
 
                                         @if(in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
                                             <td>
-                                                {{ $report->chapter->name ?? '—' }}
+                                                {{ $report->chapter->name ?? '—' }} <br>
+                                                <small>
+                                                    <strong>Zone:</strong> {{ $report->zone->name ?? 'N/A' }}<br>
+                                                    <strong>Field:</strong> {{ $report->field->name ?? 'N/A' }}<br>
+                                                </small>
+
                                             </td>
                                         @endif
                                         <td>
