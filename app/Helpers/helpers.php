@@ -1291,3 +1291,14 @@ if (!function_exists('conferencePlans')) {
     }
 }
 
+if (!function_exists('paginationIndex')) {
+    function paginationIndex($paginator, $loop)
+    {
+        if (!$paginator || !method_exists($paginator, 'firstItem')) {
+            return $loop->iteration;
+        }
+
+        return $paginator->firstItem() + $loop->index;
+    }
+}
+

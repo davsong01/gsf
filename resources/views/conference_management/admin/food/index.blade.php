@@ -42,7 +42,7 @@
                                                 {{ $food->name }} <br>
                                                <strong>Capacity: </strong>{{$food->capacity}} <br>
                                                <strong>Allocation: </strong>{{$food->allocation}} <br>
-                                               <strong>Allotted: </strong>{{$food->payments->count()}}
+                                               <strong>Allotted to Payment: </strong>{{$food->payments->count()}}
                                             </td>
 
                                             <td>{{$food->level}}</td>

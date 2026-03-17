@@ -34,8 +34,8 @@
                                 <fieldset class="form-group">
                                     <label for="level">Conference Plan</label>
                                     <select class="form-control" name="level" id="level" required>
-                                        @foreach($conferenceplans as $plan)
-                                        <option value="{{$plan->level}}" {{ $food->level == $plan->level ? 'selected' : ''}}>{{ $plan->title }}</option>
+                                        @foreach($conferenceplans->where('status', 1) as $plan)
+                                        <option value="{{$plan->level}}" {{ $food->level == $plan->level ? 'selected' : ''}}>{{ $plan->title }} ({{$plan->level}})</option>
                                         @endforeach
                                     </select>
                                 </fieldset>
