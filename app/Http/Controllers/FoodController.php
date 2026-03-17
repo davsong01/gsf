@@ -30,8 +30,13 @@ class FoodController extends Controller
                 $food->chapters = Chapter::whereIn('id', $food->chapter_ids)->get();
             });
 
-            $unallocatedSp = Transaction::whereNull('food_id')->where('conference_edition_id', $edition->id)->count();
-
+            $unallocatedSp = Transaction::query()
+                ->whereNull('food_id')
+                ->where('conference_edition_id', $edition->id)
+                ->where('status', 'Complete')
+                ->whereHas('user')
+                ->count();
+        
             return view('conference_management.admin.food.index', compact('foods', 'count','edition', 'servicePointsToMerge', 'unallocatedSp'));
         }return abort(404);
     }

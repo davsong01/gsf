@@ -139641,3 +139641,333 @@
 #51 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/Applications/M...')
 #52 {main}
 "} 
+[2026-03-17 10:08:51] local.ERROR: Call to a member function toArray() on null {"userId":1929,"exception":"[object] (Error(code: 0): Call to a member function toArray() on null at /Applications/MAMP/htdocs/gsf/app/Services/ServicePointAllocationService.php:238)
+[stacktrace]
+#0 /Applications/MAMP/htdocs/gsf/app/Http/Controllers/FoodController.php(127): App\\Services\\ServicePointAllocationService::autoAllocateServicePoint('5')
+#1 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): App\\Http\\Controllers\\FoodController->autoAllocateServicePoint('5')
+#2 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('autoAllocateSer...', Array)
+#3 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\FoodController), 'autoAllocateSer...')
+#4 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Route.php(205): Illuminate\\Routing\\Route->runController()
+#5 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(806): Illuminate\\Routing\\Route->run()
+#6 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#7 /Applications/MAMP/htdocs/gsf/app/Http/Middleware/SwitchUser.php(24): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#8 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): App\\Http\\Middleware\\SwitchUser->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#9 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#10 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#11 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#12 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#16 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(121): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#18 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#19 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#26 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#27 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#28 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#29 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#30 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#31 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#42 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 /Applications/MAMP/htdocs/gsf/public/index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/Applications/M...')
+#50 {main}
+"} 
+[2026-03-17 10:10:39] local.ERROR: Call to a member function toArray() on null {"userId":1929,"exception":"[object] (Error(code: 0): Call to a member function toArray() on null at /Applications/MAMP/htdocs/gsf/app/Services/ServicePointAllocationService.php:238)
+[stacktrace]
+#0 /Applications/MAMP/htdocs/gsf/app/Http/Controllers/FoodController.php(127): App\\Services\\ServicePointAllocationService::autoAllocateServicePoint('5')
+#1 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): App\\Http\\Controllers\\FoodController->autoAllocateServicePoint('5')
+#2 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('autoAllocateSer...', Array)
+#3 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\FoodController), 'autoAllocateSer...')
+#4 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Route.php(205): Illuminate\\Routing\\Route->runController()
+#5 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(806): Illuminate\\Routing\\Route->run()
+#6 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#7 /Applications/MAMP/htdocs/gsf/app/Http/Middleware/SwitchUser.php(24): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#8 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): App\\Http\\Middleware\\SwitchUser->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#9 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#10 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#11 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#12 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#16 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(121): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#18 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#19 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#26 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#27 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#28 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#29 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#30 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#31 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#42 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 /Applications/MAMP/htdocs/gsf/public/index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/Applications/M...')
+#50 {main}
+"} 
+[2026-03-17 10:10:41] local.ERROR: Call to a member function toArray() on null {"userId":1929,"exception":"[object] (Error(code: 0): Call to a member function toArray() on null at /Applications/MAMP/htdocs/gsf/app/Services/ServicePointAllocationService.php:238)
+[stacktrace]
+#0 /Applications/MAMP/htdocs/gsf/app/Http/Controllers/FoodController.php(127): App\\Services\\ServicePointAllocationService::autoAllocateServicePoint('5')
+#1 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): App\\Http\\Controllers\\FoodController->autoAllocateServicePoint('5')
+#2 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('autoAllocateSer...', Array)
+#3 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\FoodController), 'autoAllocateSer...')
+#4 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Route.php(205): Illuminate\\Routing\\Route->runController()
+#5 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(806): Illuminate\\Routing\\Route->run()
+#6 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#7 /Applications/MAMP/htdocs/gsf/app/Http/Middleware/SwitchUser.php(24): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#8 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): App\\Http\\Middleware\\SwitchUser->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#9 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#10 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#11 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#12 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#16 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(121): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#18 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#19 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#26 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#27 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#28 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#29 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#30 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#31 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#42 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 /Applications/MAMP/htdocs/gsf/public/index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/Applications/M...')
+#50 {main}
+"} 
+[2026-03-17 10:12:32] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:12:32] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:12:32] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:12:32] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:12:32] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:12:57] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:12:57] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:12:57] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:12:57] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:12:57] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:14:07] local.ERROR: Too few arguments to function Illuminate\Database\Eloquent\Builder::whereHas(), 0 passed in /Applications/MAMP/htdocs/gsf/app/Http/Controllers/FoodController.php on line 33 and at least 1 expected {"userId":1929,"exception":"[object] (ArgumentCountError(code: 0): Too few arguments to function Illuminate\\Database\\Eloquent\\Builder::whereHas(), 0 passed in /Applications/MAMP/htdocs/gsf/app/Http/Controllers/FoodController.php on line 33 and at least 1 expected at /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Concerns/QueriesRelationships.php:150)
+[stacktrace]
+#0 /Applications/MAMP/htdocs/gsf/app/Http/Controllers/FoodController.php(33): Illuminate\\Database\\Eloquent\\Builder->whereHas()
+#1 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): App\\Http\\Controllers\\FoodController->index(Object(Illuminate\\Http\\Request))
+#2 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('index', Array)
+#3 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\FoodController), 'index')
+#4 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Route.php(205): Illuminate\\Routing\\Route->runController()
+#5 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(806): Illuminate\\Routing\\Route->run()
+#6 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#7 /Applications/MAMP/htdocs/gsf/app/Http/Middleware/SwitchUser.php(24): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#8 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): App\\Http\\Middleware\\SwitchUser->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#9 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#10 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#11 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#12 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#16 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(121): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#18 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#19 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#26 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#27 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#28 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#29 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#30 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#31 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#42 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 /Applications/MAMP/htdocs/gsf/public/index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/Applications/M...')
+#50 {main}
+"} 
+[2026-03-17 10:14:08] local.ERROR: Too few arguments to function Illuminate\Database\Eloquent\Builder::whereHas(), 0 passed in /Applications/MAMP/htdocs/gsf/app/Http/Controllers/FoodController.php on line 33 and at least 1 expected {"userId":1929,"exception":"[object] (ArgumentCountError(code: 0): Too few arguments to function Illuminate\\Database\\Eloquent\\Builder::whereHas(), 0 passed in /Applications/MAMP/htdocs/gsf/app/Http/Controllers/FoodController.php on line 33 and at least 1 expected at /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Concerns/QueriesRelationships.php:150)
+[stacktrace]
+#0 /Applications/MAMP/htdocs/gsf/app/Http/Controllers/FoodController.php(33): Illuminate\\Database\\Eloquent\\Builder->whereHas()
+#1 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): App\\Http\\Controllers\\FoodController->index(Object(Illuminate\\Http\\Request))
+#2 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('index', Array)
+#3 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\FoodController), 'index')
+#4 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Route.php(205): Illuminate\\Routing\\Route->runController()
+#5 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(806): Illuminate\\Routing\\Route->run()
+#6 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#7 /Applications/MAMP/htdocs/gsf/app/Http/Middleware/SwitchUser.php(24): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#8 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): App\\Http\\Middleware\\SwitchUser->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#9 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#10 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#11 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#12 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#16 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(121): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#18 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#19 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#26 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#27 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#28 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#29 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#30 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#31 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#42 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 /Applications/MAMP/htdocs/gsf/public/index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 /Applications/MAMP/htdocs/gsf/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/Applications/M...')
+#50 {main}
+"} 
+[2026-03-17 10:15:08] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:15:08] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:15:08] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:15:08] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:15:08] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:16:28] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:16:53] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:16:54] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:16:55] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:16:55] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:16:55] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:16:55] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:16:55] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:16:55] local.ERROR: Service point allocation failed {"error":"Attempt to read property \"edition\" on array"} 
+[2026-03-17 10:17:06] local.ERROR: Service point allocation failed {"error":"Undefined variable $setting"} 
+[2026-03-17 10:17:07] local.ERROR: Service point allocation failed {"error":"Undefined variable $setting"} 
+[2026-03-17 10:19:39] local.ERROR: Service point allocation failed {"error":"Property [edition] does not exist on this collection instance."} 
+[2026-03-17 10:20:54] local.INFO: array (
+  'Attempted Fixing Started' => 'ojekoyadaniel@gmail.com',
+)  
+[2026-03-17 10:20:56] local.WARNING: No valid transaction for: ojekoyadaniel@gmail.com  
+[2026-03-17 10:20:56] local.WARNING: Transaction: {"id":27,"status":"Initiated","resolved_by":1929,"resolved_at":"2026-03-17T09:20:56.000000Z","payment_provider_id":1,"user_id":null,"phone":"09073992131","email":"ojekoyadaniel@gmail.com","gender":"Male","conference_edition_id":5,"conference_plan_id":1,"purpose":"conference","hostel_id":null,"hostel_allocation_type":null,"hostel_allocation_number":null,"food_id":null,"service_point_allocation_type":null,"service_point_allocation_number":null,"slot":1,"slot_filled":1,"type":"1","level":"Participant","registration_user_type":"participant","official":null,"amount_paid":"2000.00","provider_charge":"50.00","total_amount":"2050.00","remarks":null,"fix_status":"closed","name":"Ojekoya Daniel oluwafemi","payment_type":null,"transid":"GYF-20260118-PWOIJ6","old_transid":"0","provider_reference":null,"uploaded_by":null,"registration_status":"Pending","location":"Online","api_response":null,"deleted_at":null,"created_at":"2026-01-18T19:47:28.000000Z","updated_at":"2026-03-17T09:20:56.000000Z","badge_location":null}  
+[2026-03-17 10:20:56] local.INFO: array (
+  'Attempted Fixing Started' => 'kodjohfunmilayo0@gmail.com',
+)  
+[2026-03-17 10:20:57] local.WARNING: No valid transaction for: kodjohfunmilayo0@gmail.com  
+[2026-03-17 10:20:57] local.WARNING: Transaction: {"id":40,"status":"Initiated","resolved_by":1929,"resolved_at":"2026-03-17T09:20:57.000000Z","payment_provider_id":1,"user_id":null,"phone":"07025047611","email":"kodjohfunmilayo0@gmail.com","gender":"Female","conference_edition_id":5,"conference_plan_id":1,"purpose":"conference","hostel_id":null,"hostel_allocation_type":null,"hostel_allocation_number":null,"food_id":null,"service_point_allocation_type":null,"service_point_allocation_number":null,"slot":1,"slot_filled":1,"type":"1","level":"Participant","registration_user_type":"participant","official":null,"amount_paid":"2000.00","provider_charge":"50.00","total_amount":"2050.00","remarks":null,"fix_status":"closed","name":"Kodjoh Funmilayo","payment_type":null,"transid":"GYF-20260128-MDVGR1","old_transid":"0","provider_reference":null,"uploaded_by":null,"registration_status":"Pending","location":"Online","api_response":null,"deleted_at":null,"created_at":"2026-01-28T07:12:30.000000Z","updated_at":"2026-03-17T09:20:57.000000Z","badge_location":null}  
+[2026-03-17 10:20:57] local.INFO: array (
+  'Attempted Fixing Started' => 'oyinadenekan84@gmail.com',
+)  
+[2026-03-17 10:20:58] local.WARNING: No valid transaction for: oyinadenekan84@gmail.com  
+[2026-03-17 10:20:58] local.WARNING: Transaction: {"id":43,"status":"Initiated","resolved_by":1929,"resolved_at":"2026-03-17T09:20:58.000000Z","payment_provider_id":1,"user_id":null,"phone":"08162010310","email":"oyinadenekan84@gmail.com","gender":"Female","conference_edition_id":5,"conference_plan_id":1,"purpose":"conference","hostel_id":null,"hostel_allocation_type":null,"hostel_allocation_number":null,"food_id":null,"service_point_allocation_type":null,"service_point_allocation_number":null,"slot":1,"slot_filled":1,"type":"1","level":"Participant","registration_user_type":"participant","official":null,"amount_paid":"2000.00","provider_charge":"50.00","total_amount":"2050.00","remarks":null,"fix_status":"closed","name":"Adenekan Oyindamola","payment_type":null,"transid":"GYF-20260130-PVQ8ZH","old_transid":"0","provider_reference":null,"uploaded_by":null,"registration_status":"Pending","location":"Online","api_response":null,"deleted_at":null,"created_at":"2026-01-30T12:40:27.000000Z","updated_at":"2026-03-17T09:20:58.000000Z","badge_location":null}  
+[2026-03-17 10:20:58] local.INFO: array (
+  'Attempted Fixing Started' => 'vinioluwa86@gmail.com',
+)  
+[2026-03-17 10:21:00] local.WARNING: No valid transaction for: vinioluwa86@gmail.com  
+[2026-03-17 10:21:00] local.WARNING: Transaction: {"id":60,"status":"Initiated","resolved_by":1929,"resolved_at":"2026-03-17T09:21:00.000000Z","payment_provider_id":1,"user_id":null,"phone":"07045153080","email":"vinioluwa86@gmail.com","gender":"Female","conference_edition_id":5,"conference_plan_id":1,"purpose":"conference","hostel_id":null,"hostel_allocation_type":null,"hostel_allocation_number":null,"food_id":null,"service_point_allocation_type":null,"service_point_allocation_number":null,"slot":1,"slot_filled":1,"type":"1","level":"Participant","registration_user_type":"participant","official":null,"amount_paid":"2000.00","provider_charge":"50.00","total_amount":"2050.00","remarks":null,"fix_status":"closed","name":"Ogboye Victoria omoninioluwa","payment_type":null,"transid":"GYF-20260211-TMQB1L","old_transid":"0","provider_reference":null,"uploaded_by":null,"registration_status":"Pending","location":"Online","api_response":null,"deleted_at":null,"created_at":"2026-02-11T21:03:50.000000Z","updated_at":"2026-03-17T09:21:00.000000Z","badge_location":null}  
+[2026-03-17 10:21:00] local.INFO: array (
+  'Attempted Fixing Started' => 'davs@gmail.com',
+)  
+[2026-03-17 10:21:01] local.WARNING: No valid transaction for: davs@gmail.com  
+[2026-03-17 10:21:01] local.WARNING: Transaction: {"id":71,"status":"Initiated","resolved_by":1929,"resolved_at":"2026-03-17T09:21:01.000000Z","payment_provider_id":1,"user_id":null,"phone":"081234567890","email":"davs@gmail.com","gender":"Male","conference_edition_id":5,"conference_plan_id":1,"purpose":"conference","hostel_id":null,"hostel_allocation_type":null,"hostel_allocation_number":null,"food_id":null,"service_point_allocation_type":null,"service_point_allocation_number":null,"slot":5,"slot_filled":1,"type":"1","level":"Participant","registration_user_type":"participant","official":null,"amount_paid":"10000","provider_charge":"50.00","total_amount":"10050.00","remarks":null,"fix_status":"closed","name":"Davido","payment_type":null,"transid":"GYF-20260302-BREARK","old_transid":null,"provider_reference":null,"uploaded_by":null,"registration_status":"Pending","location":"Online","api_response":null,"deleted_at":null,"created_at":"2026-03-02T09:07:26.000000Z","updated_at":"2026-03-17T09:21:01.000000Z","badge_location":null}  
+[2026-03-17 10:21:01] local.INFO: array (
+  'Attempted Fixing Started' => 'davsong01@gmail.coma',
+)  
+[2026-03-17 10:21:02] local.WARNING: No valid transaction for: davsong01@gmail.coma  
+[2026-03-17 10:21:02] local.WARNING: Transaction: {"id":107,"status":"Initiated","resolved_by":1929,"resolved_at":"2026-03-17T09:21:02.000000Z","payment_provider_id":3,"user_id":null,"phone":"0909093223","email":"davsong01@gmail.coma","gender":"Female","conference_edition_id":5,"conference_plan_id":1,"purpose":"conference","hostel_id":null,"hostel_allocation_type":null,"hostel_allocation_number":null,"food_id":null,"service_point_allocation_type":null,"service_point_allocation_number":null,"slot":1,"slot_filled":1,"type":"1","level":"Participant","registration_user_type":"participant","official":null,"amount_paid":"2000","provider_charge":"50.00","total_amount":"2050.00","remarks":null,"fix_status":"closed","name":"tdsjsds sdsds","payment_type":null,"transid":"GYF-20260302-TUIKCD","old_transid":null,"provider_reference":null,"uploaded_by":null,"registration_status":"Pending","location":"Online","api_response":null,"deleted_at":null,"created_at":"2026-03-02T22:01:59.000000Z","updated_at":"2026-03-17T09:21:02.000000Z","badge_location":null}  
+[2026-03-17 10:21:02] local.INFO: array (
+  'Attempted Fixing Started' => 'ssde@gmail.com',
+)  

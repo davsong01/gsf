@@ -25,6 +25,7 @@ class ServicePointAllocationService
         ];
 
         try {
+
             $setting = $transaction->edition;
             $level = $transaction->level === 'Moderator' ? 'Participant' : $transaction->level;
             $conference_edition_id = $transaction->conference_edition_id;
@@ -224,7 +225,7 @@ class ServicePointAllocationService
 
     static function autoAllocateServicePoint($edition_id)
     {
-        $payments = Transaction::with('user')->whereNull('food_id')->where('conference_edition_id', $edition_id)->get();
+        $payments = Transaction::with('user')->whereNull('food_id')->where('status', 'Complete')->where('conference_edition_id', $edition_id)->get();
         $setting = ConferenceEdition::where('id', $edition_id)->first();
         $data = [];
         $count = 0;
@@ -234,10 +235,13 @@ class ServicePointAllocationService
                 $count += 1;
                 $data['setting'] = $setting;
                 $user = $payment->user;
-                $data['field_id'] = $user->campus->field->id ?? null;
-                $data = array_merge($data, $user->toArray(), $payment->toArray());
 
-                $service_point = ServicePointAllocationService::assignFoodStand($data);
+                if(!$user){
+                    continue;
+                }
+
+                $data['field_id'] = $user->campus->field->id ?? null;
+                $service_point = ServicePointAllocationService::assignFoodStand($payment);
 
                 if (!empty($service_point)) {
                     $payment->update([
