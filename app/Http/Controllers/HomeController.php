@@ -2,25 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Nec;
-use App\Models\User;
-use App\Models\Event;
-use App\Models\Field;
+use App\Imports\GeneralUsersImport;
 use App\Models\Chapter;
-use App\Models\NewListing;
-use App\Models\TempMember;
-use App\Models\Stakeholder;
-use Illuminate\Http\Request;
 use App\Models\ConferenceFaq;
 use App\Models\ConferencePlan;
-use App\Models\GeneralSetting;
-use App\Models\ConferenceSpeaker;
 use App\Models\ConferenceSchedule;
-use App\Imports\GeneralUsersImport;
+use App\Models\ConferenceSpeaker;
+use App\Models\Event;
+use App\Models\Field;
+use App\Models\GeneralSetting;
+use App\Models\Nec;
+use App\Models\NewListing;
+use App\Models\Stakeholder;
+use App\Models\StakeholderDesignation;
+use App\Models\TempMember;
+use App\Models\Transaction;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Models\StakeholderDesignation;
 
 class HomeController extends Controller
 {
@@ -163,7 +164,7 @@ class HomeController extends Controller
 
     public function verifyConferenceRegistration(Request $request)
     {
-        $query = $request->input('q');
+        $query = trim($request->input('q'));
 
         if (!$query) {
             return response()->json([
@@ -171,35 +172,36 @@ class HomeController extends Controller
             ], 422);
         }
 
-        $transactions = \App\Models\Transaction::query()
-            ->with(['conferenceEdition', 'conferencePlan']) // Make sure these relationships exist
-            ->where(function ($q) use ($query) {
-                $q->where('transid', $query)
-                ->orWhere('email', $query)
-                ->orWhere('id', $query);
-            })
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(function ($tx) {
-                return [
-                    'id' => $tx->id,
-                    'transid' => $tx->transid,
-                    'name' => $tx->name,
-                    'email' => $tx->email,
-                    'phone' => $tx->phone,
-                    'registration_status' => $tx->registration_status,
-                    'created_at' => $tx->created_at->format('d M, Y H:i'),
-                    'conference_name' => $tx->conferenceEdition?->name ?? 'N/A',
-                    'plan_name' => $tx->conferencePlan?->name ?? 'N/A',
-                    'hostel_allocation' => $tx->hostel_allocation_number ?? '-',
-                    'slot_filled' => $tx->slot_filled,
-                    'amount_paid' => $tx->amount_paid ?? '-',
-                ];
-            });
+
+        $transactions = Transaction::query()
+        ->with(['conferenceEdition', 'conferencePlan'])
+        ->where(function ($q) use ($query) {
+            $q->where('transid', $query)
+            ->orWhere('email', $query);
+        })
+        ->orderByDesc('created_at')
+        ->get()
+        ->map(function ($tx) {
+            $mask = fn($str) => strlen($str) > 4
+                ? substr($str, 0, 2) . str_repeat('*', strlen($str) - 4) . substr($str, -2)
+                : $str;
+
+            return [
+                'id' => $tx->id,
+                'transid' => $mask($tx->transid),
+                'email' => $mask($tx->email),
+                'name' => $tx->name,
+                'status' => $tx->status,
+                'registration_status' => $tx->registration_status,
+                'conference_name' => $tx->conferenceEdition?->conference_theme ?? 'N/A',
+                'plan_name' => $tx->conferencePlan?->level ?? 'N/A',
+                'created_at' => optional($tx->created_at)->format('d M, Y H:i'),
+            ];
+        });
+
 
         return response()->json($transactions);
     }
-
     public function alumni() {
         $chapters = Chapter::orderBy('name')->get();
 

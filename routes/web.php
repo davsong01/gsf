@@ -69,7 +69,7 @@ Route::get('/queue', function () {
 });
 
 Route::get('verify-registration', [HomeController::class, 'showVerifyConferenceRegistration'])->name('verify.registration.show');
-Route::post('verify-registration', [HomeController::class, 'verifyConferenceRegistration'])->name('registration.search');
+Route::post('process-verify-registration', [HomeController::class, 'verifyConferenceRegistration'])->name('registration.search');
 
 
 // Route::get('/fix-stakeholder', function () {

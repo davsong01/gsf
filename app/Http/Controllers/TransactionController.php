@@ -374,18 +374,4 @@ class TransactionController extends Controller
 
         return back()->with('message','Transaction updated successfully');
     }
-
-    public function verifyConferenceRegistration(Request $request){
-        $edition = activeConferenceEdition();
-
-        if (!$edition) {
-            abort(404, 'Edition not found.');
-        }
-
-        $count = Transaction::where('conference_edition_id', $edition->id)
-            ->where('registration_status', 'Complete');
-            // ->whereHas('user', function($query) use ($edition){
-            //     $query->whereHas('payments', function($query) use ($edition){
-            //         $query->where('registration_status', 'Complete')
-    }
 }
