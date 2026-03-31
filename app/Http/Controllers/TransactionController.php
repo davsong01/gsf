@@ -221,7 +221,7 @@ class TransactionController extends Controller
 
         $req = new PaymentController();
         $response = $req->handleGatewayCallback($request, $transaction->transid);
-
+        // dd($response );
         if(isset($response->verification_response) && $response->verification_response->status == true){
             $transaction->update([
                 'resolved_at' => now(),
@@ -356,6 +356,36 @@ class TransactionController extends Controller
         }
     }
 
+    public function updateTransaction(Request $request, $id)
+    {
+        $transaction = Transaction::findOrFail($id);
 
+        $transaction->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'transid' => $request->transid,
+            'amount_paid' => $request->amount_paid,
+            'total_amount' => $request->total_amount,
+            'provider_charge' => $request->provider_charge,
+            'slot' => $request->slot,
+            'registration_user_type' => $request->registration_user_type,
+        ]);
 
+        return back()->with('message','Transaction updated successfully');
+    }
+
+    public function verifyConferenceRegistration(Request $request){
+        $edition = activeConferenceEdition();
+
+        if (!$edition) {
+            abort(404, 'Edition not found.');
+        }
+
+        $count = Transaction::where('conference_edition_id', $edition->id)
+            ->where('registration_status', 'Complete');
+            // ->whereHas('user', function($query) use ($edition){
+            //     $query->whereHas('payments', function($query) use ($edition){
+            //         $query->where('registration_status', 'Complete')
+    }
 }

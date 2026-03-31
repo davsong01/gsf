@@ -48,7 +48,7 @@ class PaymentProviderController extends Controller
         if ($request->hasFile('logo')) {
             $validated['logo'] = $this->uploadFile($request->file('logo'), 'images/paymentproviders/' . $validated['slug']);
         }
-        
+
         PaymentProvider::create($validated);
         return redirect(route('payment-providers.index'))->with('message', 'Operation successful');
     }
@@ -76,7 +76,7 @@ class PaymentProviderController extends Controller
     public function update(PaymentProviderRequest $request, PaymentProvider $paymentprovider)
     {
         $validated = $request->validated();
-        
+
         if ($request->hasFile('logo')) {
             $validated['logo'] = $this->uploadFile(
                 $request->file('logo'),

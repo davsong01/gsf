@@ -52,7 +52,7 @@ class ConferenceUtilityToolsController extends Controller
             ->whereNull('fix_status')
             ->get()
             ->unique('email');
-        
+
         if(!$tempusers){
             return back()->with([
                 'warning' => 'No Attempted user match'

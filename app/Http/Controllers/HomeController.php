@@ -156,6 +156,50 @@ class HomeController extends Controller
         }
     }
 
+    public function showVerifyConferenceRegistration()
+    {
+        return view('frontend.conference.template' . $this->conference->template_id . '.verify-registration');
+    }
+
+    public function verifyConferenceRegistration(Request $request)
+    {
+        $query = $request->input('q');
+
+        if (!$query) {
+            return response()->json([
+                'error' => 'Please provide a Transaction ID, Email, or Registration ID.'
+            ], 422);
+        }
+
+        $transactions = \App\Models\Transaction::query()
+            ->with(['conferenceEdition', 'conferencePlan']) // Make sure these relationships exist
+            ->where(function ($q) use ($query) {
+                $q->where('transid', $query)
+                ->orWhere('email', $query)
+                ->orWhere('id', $query);
+            })
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($tx) {
+                return [
+                    'id' => $tx->id,
+                    'transid' => $tx->transid,
+                    'name' => $tx->name,
+                    'email' => $tx->email,
+                    'phone' => $tx->phone,
+                    'registration_status' => $tx->registration_status,
+                    'created_at' => $tx->created_at->format('d M, Y H:i'),
+                    'conference_name' => $tx->conferenceEdition?->name ?? 'N/A',
+                    'plan_name' => $tx->conferencePlan?->name ?? 'N/A',
+                    'hostel_allocation' => $tx->hostel_allocation_number ?? '-',
+                    'slot_filled' => $tx->slot_filled,
+                    'amount_paid' => $tx->amount_paid ?? '-',
+                ];
+            });
+
+        return response()->json($transactions);
+    }
+
     public function alumni() {
         $chapters = Chapter::orderBy('name')->get();
 

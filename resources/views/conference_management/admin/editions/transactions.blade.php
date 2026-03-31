@@ -244,8 +244,9 @@
                                                     <span>
                                                         <strong style="color:blue">Slots:</strong> {{ $transaction->slot }} <br>
                                                         <strong style="color:blue">Slots Available:</strong> {{ $transaction->slot - $transaction->slot_filled }}
-                                                    </span> <br>
+                                                    </span>
                                                 @endif
+                                                <br>
                                                 <small>Location: {{ $transaction->location ?? 'Online' }}</small>
                                             </td>
 
@@ -267,6 +268,13 @@
                                             <td>
                                                 @if(auth()->user()->conference_role == 'superadmin')
                                                 @if($transaction->status != 'Complete')
+                                                    <button
+                                                        style="margin-bottom: 5px;"
+                                                        class="btn btn-info btn-sm"
+                                                        data-toggle="modal"
+                                                        data-target="#editModal{{ $transaction->id }}">
+                                                        Update
+                                                    </button>
                                                     <a style="margin-bottom: 5px;" onclick="return confirm('Are you sure you want to resolve this transaction')" href="{{ route('conference.transactions.bulkAction', ['transactions'=>[$transaction->id],'edition'=>$edition->id, 'action'=>'resolve']) }}"
                                                     class="btn btn-success btn-sm">
                                                         Resolve
@@ -312,6 +320,114 @@
                                     @endforeach
                                     </tbody>
                                 </table>
+                                {{-- Edit Transaction Modals --}}
+                                @foreach($transactions as $transaction)
+                                <div class="modal fade" id="editModal{{ $transaction->id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                        <div class="modal-content">
+
+                                            <form method="POST" action="{{ route('conference.transactions.update', $transaction->id) }}">
+                                                @csrf
+
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">
+                                                        Update Transaction - {{ $transaction->transid }}
+                                                    </h5>
+                                                    <button type="button" class="close" data-dismiss="modal">
+                                                        <span>&times;</span>
+                                                    </button>
+                                                </div>
+
+                                                <div class="modal-body">
+
+                                                    <div class="row">
+
+                                                        <div class="col-md-6 mb-2">
+                                                            <label>Name</label>
+                                                            <input type="text" name="name"
+                                                                value="{{ $transaction->name }}"
+                                                                class="form-control">
+                                                        </div>
+
+                                                        <div class="col-md-6 mb-2">
+                                                            <label>Email</label>
+                                                            <input type="email" name="email"
+                                                                value="{{ $transaction->email }}"
+                                                                class="form-control">
+                                                        </div>
+
+                                                        <div class="col-md-6 mb-2">
+                                                            <label>Phone</label>
+                                                            <input type="text" name="phone"
+                                                                value="{{ $transaction->phone }}"
+                                                                class="form-control">
+                                                        </div>
+
+                                                        <div class="col-md-6 mb-2">
+                                                            <label>Transaction ID</label>
+                                                            <input type="text" name="transid"
+                                                                value="{{ $transaction->transid }}"
+                                                                class="form-control">
+                                                        </div>
+
+                                                        <div class="col-md-6 mb-2">
+                                                            <label>Amount Paid</label>
+                                                            <input type="number" step="0.01"
+                                                                name="amount_paid"
+                                                                value="{{ $transaction->amount_paid }}"
+                                                                class="form-control">
+                                                        </div>
+                                                        <div class="col-md-6 mb-2">
+                                                            <label>Total Amount</label>
+                                                            <input type="number" step="0.01"
+                                                                name="total_amount"
+                                                                value="{{ $transaction->total_amount }}"
+                                                                class="form-control">
+                                                        </div>
+
+                                                        <div class="col-md-6 mb-2">
+                                                            <label>Provider Charge</label>
+                                                            <input type="number" step="0.01"
+                                                                name="provider_charge"
+                                                                value="{{ $transaction->provider_charge }}"
+                                                                class="form-control">
+                                                        </div>
+                                                        <div class="col-md-6 mb-2">
+                                                            <label>Slot</label>
+                                                            <input type="number"
+                                                                name="slot"
+                                                                value="{{ $transaction->slot }}"
+                                                                class="form-control">
+                                                        </div>
+                                                        <div class="col-md-6 mb-2">
+                                                            <label>Registration User Type</label>
+                                                            <select name="registration_user_type" class="form-control">
+                                                                <option value="">-- Select --</option>
+                                                                <option value="participant" {{ $transaction->registration_user_type == 'participant' ? 'selected' : '' }}>Participant</option>
+                                                                <option value="moderator" {{ $transaction->registration_user_type == 'moderator' ? 'selected' : '' }}>Moderator</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="modal-footer">
+                                                    <button class="btn btn-primary">
+                                                        Update Transaction
+                                                    </button>
+
+                                                    <button type="button"
+                                                            class="btn btn-secondary"
+                                                            data-dismiss="modal">
+                                                        Cancel
+                                                    </button>
+                                                </div>
+
+                                            </form>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
                             </div>
 
                             {{ $transactions->links() }}

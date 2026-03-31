@@ -68,6 +68,10 @@ Route::get('/queue', function () {
     Artisan::call('queue:work --tries=2');
 });
 
+Route::get('verify-registration', [HomeController::class, 'showVerifyConferenceRegistration'])->name('verify.registration.show');
+Route::post('verify-registration', [HomeController::class, 'verifyConferenceRegistration'])->name('registration.search');
+
+
 // Route::get('/fix-stakeholder', function () {
 //     $stakeholders = Stakeholder::with('chapter')
 //         ->where('role_id', 5)
@@ -317,6 +321,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('requery/{id}', 'requery')->name('tempusers.requery');
         Route::post('verify-multiple-payments', 'requeryMultiple')->name('tempusers.requery-multiple');
         Route::get('set-and-verify-reference/{reference}/{temp_id}', 'setAndVerifyReference')->name('set-and-verify-reference');
+
+        Route::post('update-transaction/{id}', 'updateTransaction')->name('conference.transactions.update');
     });
 
     // Participant management
