@@ -399,7 +399,7 @@ class ConferenceManagementController extends Controller
                 ];
             }
 
-            return redirect(route('conferencemanagement.show', ['conferencemanagement' => $moderator->id, 'edition' => $edition->id ?? $setting->id]))->with('message', 'Participant successfully created, you have ' . ($moderator->slot - $moderator->slot_filled) . ' participant slot(s) left');
+            return redirect(route('conferencemanagement.show', ['conferencemanagement' => $moderator->id, 'edition' => $edition->id ?? $setting->id]))->with('message', '1 Participant successfully added, you have ' . ($moderator->slot - $moderator->slot_filled) . ' participant slot(s) left');
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -857,7 +857,7 @@ class ConferenceManagementController extends Controller
 
         $moderator = $moderator->fresh();
 
-        return redirect(route('conferencemanagement.show', ['conferencemanagement' => $moderator->id, 'edition' => $this->edition->id]))->with('message', 'Participant successfully created, you have ' . ($moderator->slot - $moderator->slot_filled) . ' participant slot(s) left');
+        return redirect(route('conferencemanagement.show', ['conferencemanagement' => $moderator->id, 'edition' => $this->edition->id]))->with('message', 'Participant successfully imported, you have ' . ($moderator->slot - $moderator->slot_filled) . ' participant slot(s) left');
 	}
 
 	// public function adminImport(Request $request)
