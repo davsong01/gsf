@@ -14,6 +14,8 @@
                         <h4 class="card-title">All Hostels for {{ $edition->conference_theme }}</h4>
                         @if(auth()->user()->conference_role == 'superadmin')
                             <a href="{{ route('hostels.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Hostel</a>
+                            <a href="{{ route('hostel.repair.allocation',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-info mt-1">Repair Hostel Allocation</a>
+
                             <button style="" class="btn btn-dark mt-1" data-toggle="modal"  data-target="#hostel-merger">Hostel Merger</button>
                         @endif
                     </div>
@@ -43,7 +45,9 @@
                                                <strong>Allotted: </strong>{{$hostel->payments->count()}}
                                             </td>
                                             <td>{{ $hostel->type }}</td>
-                                            <td>{{ $hostel->level }}</td>
+                                            <td>
+                                                {{ $hostel?->conferencePlan?->title }} ({{ $hostel?->conferencePlan?->level }})
+                                            </td>
                                             <td>
                                                 @if($hostel->fields)
                                                 @foreach ($hostel->fields as $field)

@@ -105,6 +105,8 @@ Route::get('test/{data?}', [CriticalEmailController::class, 'getContent']);
 
 Route::controller(ConferenceUtilityToolsController::class)->group(function () {
     Route::get('cron-fix-attempted-registration', 'fixAttemptedRegistration')->name('cron.edition.fix.attempted');
+    Route::get('cron-fix-no-hostel', 'fixNoHostel')->name('cron.edition.fix.no_hostel');
+    Route::get('cron-fix-no-food', 'fixNoFood')->name('cron.edition.fix.no_food');
 });
 
 // Campus Tracker routes
@@ -378,7 +380,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::controller(HostelController::class)->group(function () {
         Route::get('hostels/delete/{id}', 'destroy')->name('hostels.delete');
         Route::get('hostel-export/{id}', 'participantExport')->name('hostelusers.export');
-        Route::get('hostels-repair-allocation', 'repairHostelAllocation')->name('hostels.repair.allocation');
+        Route::get('hostels-repair-allocation', 'repairHostelAllocation')->name('hostel.repair.allocation');
         Route::get('hostels-auto-allocate/{edition}', 'autoAllocateHostel')->name('hostels.auto.allocate');
 
         Route::post('hostels-merger', 'hostelMerger')->name('hostels.merge');

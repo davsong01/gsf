@@ -61,19 +61,30 @@
                                             <option value="Female" {{ old('type', $hostel->type ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
                                         </select>
                                     </fieldset>
+
                                     <input type="hidden" name="conference_edition_id" value="{{$edition->id}}">
-                                    <fieldset class="form-group">
+                                    {{-- <fieldset class="form-group">
                                         <label>Conference Plan</label>
                                         <select class="form-control" name="level" required>
                                             @foreach($conferenceplans as $plan)
                                                 <option value="{{ $plan->level }}"
                                                     {{ old('level', $hostel->level ?? '') == $plan->level ? 'selected' : '' }}>
+                                                    {{ $plan->title }} ({{ $hostel->conferenceplan->level }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </fieldset> --}}
+                                    <fieldset class="form-group">
+                                        <label>Conference Plan</label>
+                                        <select class="form-control" name="conference_plan_id" required>
+                                            @foreach($conferenceplans as $plan)
+                                                <option value="{{ $plan->id }}"
+                                                    {{ old('conference_plan_id', $hostel->conference_plan_id ?? '') == $plan->id ? 'selected' : '' }}>
                                                     {{ $plan->title }} ({{ $plan->level }})
                                                 </option>
                                             @endforeach
                                         </select>
                                     </fieldset>
-
                                     <fieldset class="form-group">
                                         <label>Fields (Optional)</label>
                                         <select class="form-control" name="field_ids[]" multiple>

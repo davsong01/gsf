@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use App\Models\User;
-use App\Models\Field;
 use App\Models\Chapter;
+use App\Models\ConferencePlan;
+use App\Models\Field;
 use App\Models\Payment;
 use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class Hostel extends Model
@@ -50,5 +51,10 @@ class Hostel extends Model
     public function getChaptersAttribute()
     {
         return Chapter::whereIn('id', $this->chapter_ids)->get();
+    }
+
+    public function conferencePlan()
+    {
+        return $this->belongsTo(ConferencePlan::class, 'conference_plan_id');
     }
 }

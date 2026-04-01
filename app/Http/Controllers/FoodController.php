@@ -34,9 +34,10 @@ class FoodController extends Controller
                 ->whereNull('food_id')
                 ->where('conference_edition_id', $edition->id)
                 ->where('status', 'Complete')
+                ->where('registration_status', 'Complete')
                 ->whereHas('user')
                 ->count();
-        
+
             return view('conference_management.admin.food.index', compact('foods', 'count','edition', 'servicePointsToMerge', 'unallocatedSp'));
         }return abort(404);
     }
@@ -46,9 +47,10 @@ class FoodController extends Controller
         $fields = Field::all();
         $chapters = Chapter::all();
         $edition = ConferenceEdition::find($request->edition);
-        $conferenceplans = $edition->conferenceplans;
+        $conferenceplans = $edition->conferenceplans->where('status', 1);
 
-        return view('conference_management.admin.food.create',compact('edition', 'fields','chapters', 'conferenceplans'));
+
+        return view('conference_management.admin.food.edit',compact('edition', 'fields','chapters', 'conferenceplans'));
     }
 
     public function store(Request $request)
@@ -84,7 +86,7 @@ class FoodController extends Controller
         $edition = ConferenceEdition::find($request->edition);
         $fields = Field::all();
         $chapters = Chapter::all();
-        $conferenceplans = $edition->conferenceplans;
+        $conferenceplans = $edition->conferenceplans->where('status', 1);
 
         return view('conference_management.admin.food.edit', compact('food','edition','fields','chapters', 'conferenceplans'));
     }
