@@ -43,27 +43,42 @@ class HomeController extends Controller
         $events = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', '<>', 0)->limit(6)->get();
         $national = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', 0)->limit(3)->get();
 
-        if($this->conference || env('MINISTRY') == 'gyf'){
-            $chapters = Chapter::orderBy('name')->get();
+        if ($this->conference) {
             $setting = $this->conference;
 
-            $conference_year = Carbon::parse($setting->start_date)->year;
+            $chapters = Chapter::orderBy('name')->get();
+
+            $conference_year = optional($setting->start_date)
+                ? Carbon::parse($setting->start_date)->year
+                : null;
+
             $alumnis_amount = [
-                'alumni_registration_fee' => $setting->alumni_registration_fee,
-                'new_alumni_registration_fee' => $setting->new_alumni_registration_fee
+                'alumni_registration_fee' => $setting->alumni_registration_fee ?? 0,
+                'new_alumni_registration_fee' => $setting->new_alumni_registration_fee ?? 0
             ];
 
-            $faqs = ConferenceFaq::where('status', 1)->whereIn('id', $setting->faq_ids ?? [])->orderBy('display_order')->get();
-            $speakers = ConferenceSpeaker::where('status', 1)->whereIn('id', $setting->speaker_ids ?? [])->get();
-            $schedule = ConferenceSchedule::where('status', 1)->where('conference_edition_id', $setting->id)->get();
-            $plans = ConferencePlan::where('status', 1)->where('conference_edition_id', $setting->id)->get();
-            // conferencePlans($setting);
+            $faqs = ConferenceFaq::where('status', 1)
+                ->whereIn('id', $setting->faq_ids ?? [])
+                ->orderBy('display_order')
+                ->get();
 
-            return view('frontend.conference.template'. $this->conference->template_id.'.welcome')
-                ->with('events',$events)
-                ->with('setting',$setting)
-                ->with('national',$national)
-                ->with('conference', $this->conference)
+            $speakers = ConferenceSpeaker::where('status', 1)
+                ->whereIn('id', $setting->speaker_ids ?? [])
+                ->get();
+
+            $schedule = ConferenceSchedule::where('status', 1)
+                ->where('conference_edition_id', $setting->id)
+                ->get();
+
+            $plans = ConferencePlan::where('status', 1)
+                ->where('conference_edition_id', $setting->id)
+                ->get();
+
+            return view('frontend.conference.template'.$setting->template_id.'.welcome')
+                ->with('events', $events)
+                ->with('setting', $setting)
+                ->with('national', $national)
+                ->with('conference', $setting)
                 ->with('conference_year', $conference_year)
                 ->with('alumnis_amount', $alumnis_amount)
                 ->with('chapters', $chapters)
@@ -71,26 +86,40 @@ class HomeController extends Controller
                 ->with('schedule', $schedule)
                 ->with('plans', $plans)
                 ->with('speakers', $speakers);
-        }else{
+
+        } elseif (env('MINISTRY') == 'gyf') {
+
+            // gyf ministry fallback (no conference loaded)
+            return view('frontend.conference.default.welcome')
+                ->with('events', $events)
+                ->with('national', $national);
+
+        } else {
+
             $used = array_merge(zoneStakeholders(), fieldStakeholders(), portfolioStakeholders());
-            $officials = Stakeholder::whereIn('role_id', $used)->where('status', 'active')->get();
 
-            foreach($officials as $user){
+            $officials = Stakeholder::whereIn('role_id', $used)
+                ->where('status', 'active')
+                ->get();
+
+            foreach ($officials as $user) {
+
                 $role = $user->role_id;
-                if(in_array($role, zoneStakeholders()) && !is_null($user->zone_id)){
-                    $user->office = 'Zonal Pastor, ' .$user->zone->name ?? 'N/A' ;
+
+                if (in_array($role, zoneStakeholders()) && !is_null($user->zone_id)) {
+                    $user->office = 'Zonal Pastor, '. ($user->zone->name ?? 'N/A');
                 }
 
-                if (in_array($role, fieldStakeholders()) &&  !is_null($user->field_id)){
-                    $user->office = "Field Pastor, ". $user->field->name ?? 'N/A';
+                if (in_array($role, fieldStakeholders()) && !is_null($user->field_id)) {
+                    $user->office = 'Field Pastor, '. ($user->field->name ?? 'N/A');
                 }
 
-                if (in_array($role, portfolioStakeholders())){
-                    $user->office = "GSF National ".$user->portfolio;
+                if (in_array($role, portfolioStakeholders())) {
+                    $user->office = 'GSF National '.$user->portfolio;
                 }
             }
 
-            return view('frontend.'. frontendTemplate().'.index', compact('events', 'national', 'officials'));
+            return view('frontend.'.frontendTemplate().'.index', compact('events', 'national', 'officials'));
         }
     }
 
