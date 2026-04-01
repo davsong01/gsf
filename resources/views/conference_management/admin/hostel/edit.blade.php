@@ -68,7 +68,7 @@
                                             @foreach($conferenceplans as $plan)
                                                 <option value="{{ $plan->level }}"
                                                     {{ old('level', $hostel->level ?? '') == $plan->level ? 'selected' : '' }}>
-                                                    {{ $plan->title }}
+                                                    {{ $plan->title }} ({{ $plan->level }})
                                                 </option>
                                             @endforeach
                                         </select>
