@@ -100,11 +100,14 @@ class UserService
             'family_id'                 => 'Family ID',
             'name'                      => 'Name',
             'email'                     => 'Email',
+            'registration_user_type'    => 'Registration User Type',
+            'slot'                      => 'Slot Bought',
+            'allocated'                 => 'Slots Used',
+            'remaining'                 => 'Slot Remaining',
             'phone'                     => 'Phone',
             'provider_reference'        => 'Provider Reference',
             'amount_paid'               => 'Amount',
             'status'                    => 'Payment Status',
-            'registration_user_type'    => 'Registration User Type',
             'registration_status'       => 'Registration Status',
 
             'moderator'                 => 'Moderator',
@@ -115,9 +118,6 @@ class UserService
 
             'hostel'                    => 'Hostel Allocation',
             'servicePoint'              => 'Service Point Allocation',
-            'slot'                      => 'Slot Bought',
-            'allocated'                 => 'Slots Used',
-            'remaining'                 => 'Slot Remaining',
 
             'level'                     => 'Registration Plan',
             'hostel_allocation_type'    => 'Hostel Allocation Type',
