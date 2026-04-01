@@ -175,7 +175,6 @@ class ConferenceUtilityToolsController extends Controller
 
 
             } catch (\Throwable $e) {
-                dd($e->getMessage());
                 Log::error('Hostel allocation failed', [
                     'transaction_id' => $transaction->id,
                     'email' => $transaction->email,
@@ -211,25 +210,23 @@ class ConferenceUtilityToolsController extends Controller
             try {
 
                 $allocate = ServicePointAllocationService::assignFoodStand($transaction);
-                dd($allocate);
                 if ($allocate['status']) {
                     $transaction->update([
-                        'hostel_allocation_number' => $allocate['hostel_allocation_number'] ?? null,
-                        'hostel_allocation_type' => $allocate['hostel_allocation_type'] ?? null,
-                        'hostel_id' => $allocate['hostel_id'] ?? null,
+                        'food_id' => $allocate['service_point_allocation_id'] ?? null,
+                        'service_point_allocation_type' => $allocate['service_point_allocation_type'] ?? null,
+                        'service_point_allocation_number' => $allocate['service_point_allocation_number'] ?? null,
                     ]);
 
-                    Log::info('Hostel fixed', [
-                        'transaction_id' => $transaction->id,
-                        'hostel_allocation_number' => $allocate['hostel_allocation_number'] ?? null,
-                        'hostel_allocation_type' => $allocate['hostel_allocation_type'] ?? null,
-                        'hostel_id' => $allocate['hostel_id'] ?? null,
+                    Log::info('Service Point fixed', [
+                        'food_id' => $allocate['service_point_allocation_id'] ?? null,
+                        'service_point_allocation_type' => $allocate['service_point_allocation_type'] ?? null,
+                        'service_point_allocation_number' => $allocate['service_point_allocation_number'] ?? null,
                     ]);
 
                     $count++;
 
                 } else {
-                    Log::warning('No hostel available', [
+                    Log::warning('No service point available', [
                         'transaction_id' => $transaction->id,
                         'email' => $transaction->email
                     ]);
@@ -237,8 +234,7 @@ class ConferenceUtilityToolsController extends Controller
 
 
             } catch (\Throwable $e) {
-                dd($e->getMessage());
-                Log::error('Hostel allocation failed', [
+                Log::error('Service Point allocation failed', [
                     'transaction_id' => $transaction->id,
                     'email' => $transaction->email,
                     'error' => $e->getMessage(),
@@ -248,7 +244,7 @@ class ConferenceUtilityToolsController extends Controller
             }
         }
 
-        dd($count . ' participants hostel fixed.');
+        dd($count . ' participants service point fixed.');
     }
 
 
