@@ -90,7 +90,7 @@ class HomeController extends Controller
         } elseif (env('MINISTRY') == 'gyf') {
 
             // gyf ministry fallback (no conference loaded)
-            return view('frontend.conference.default.welcome')
+            return view('frontend.conference.conference_closed')
                 ->with('events', $events)
                 ->with('national', $national);
 
