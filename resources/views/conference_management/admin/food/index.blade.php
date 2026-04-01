@@ -14,7 +14,6 @@
                         <h4 class="card-title">All Service Points for {{ $edition->conference_theme }}</h4>
                         @if(auth()->user()->conference_role == 'superadmin')
                             <a href="{{ route('foods.create',['edition'=>$edition->id]) }}" class="btn btn-primary mt-1">Add new Service Point</a>
-                            <a href="{{ route('sp.auto.allocate',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-success mt-1">Auto Allocate ({{ $unallocatedSp }})</a>
                             <a href="{{ route('servicepoint.repair.allocation',['edition'=>$edition->id]) }}" onclick="return confirm('Are you sure?')" class="btn btn-info mt-1">Repair Service Point Allocation</a>
                             <button style="" class="btn btn-dark mt-1" data-toggle="modal"  data-target="#sp-merger">Service Point Merger</button>
 
@@ -44,8 +43,9 @@
                                                <strong>Allocation: </strong>{{$food->allocation}} <br>
                                                <strong>Allotted to Payment: </strong>{{$food->payments->count()}}
                                             </td>
-
-                                            <td>{{$food->level}}</td>
+                                            <td>
+                                                {{ $food?->conferencePlan?->title }} ({{ $food?->conferencePlan?->level }})
+                                            </td>
                                             <td>
                                                 @if($food->fields)
                                                 @foreach ($food->fields as $field)

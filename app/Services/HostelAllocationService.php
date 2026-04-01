@@ -25,40 +25,56 @@ class HostelAllocationService
         ];
 
         try {
-            $setting = $transaction->edition;
 
-            $level = $transaction->level === 'Moderator' ? 'Participant' : $transaction->level;
             $gender = $newData['gender'] ?? $transaction->gender;
 
             $conference_edition_id = $transaction->conference_edition_id;
+            $conference_plan_id = $transaction->conference_plan_id;
+
+            $setting = $transaction->edition;
+            $allocationType = $setting->hostel_assignment_type ?? 'random';
 
             DB::beginTransaction();
 
-            // --- CASE 1: Admin manually set hostel ---
+            /*
+            |--------------------------------------------------------------------------
+            | ADMIN OVERRIDE
+            |--------------------------------------------------------------------------
+            */
+
             if (!empty($newData['new_hostel_id']) && $newData['new_hostel_id'] != $transaction->hostel_id) {
-                $hostel = Hostel::where('id', $newData['new_hostel_id'])
-                    ->where('conference_edition_id', $conference_edition_id)
-                    ->where('type', $gender)
-                    ->whereRaw('allocation < capacity')
-                    ->first();
+
+                $hostel = Hostel::where([
+                    'id' => $newData['new_hostel_id'],
+                    'conference_edition_id' => $conference_edition_id,
+                    'conference_plan_id' => $conference_plan_id,
+                    'type' => $gender
+                ])
+                ->whereColumn('allocation', '<', 'capacity')
+                ->lockForUpdate()
+                ->first();
 
                 if (!$hostel) {
                     DB::rollBack();
+
                     return [
                         ...$defaultResponse,
-                        'message' => 'The selected hostel does not match the gender or it has reached full capacity.',
+                        'message' => 'Selected hostel invalid or full.'
                     ];
                 }
 
                 $allocationNumber = $hostel->allocation + 1;
 
-                $hostel->update(['allocation' => $allocationNumber]);
+                $hostel->update([
+                    'allocation' => $allocationNumber
+                ]);
 
                 DB::commit();
+
                 return [
                     ...$defaultResponse,
                     'status' => true,
-                    'message' => 'Hostel allocated successfully (admin).',
+                    'message' => 'Hostel assigned by admin.',
                     'hostel_id' => $hostel->id,
                     'hostel_name' => $hostel->name,
                     'hostel_allocation_number' => $allocationNumber,
@@ -66,141 +82,193 @@ class HostelAllocationService
                 ];
             }
 
-            // --- CASE 2: Automatic allocation ---
-            $allocationType = $setting->hostel_assignment_type ?? null;
-            $chapterField = $transaction->allocationFields
-                ->first(function ($field) {
-                    return in_array($field->key, ['chapter', 'chapter_id'], true);
-                });
+            /*
+            |--------------------------------------------------------------------------
+            | FETCH OPTIONAL ALLOCATION DATA
+            |--------------------------------------------------------------------------
+            */
 
-            $fieldField = $transaction->allocationFields->where('key', 'field_id')->first();
+            $chapterField = $transaction->allocationFields
+                ->first(fn ($f) => in_array($f->key, ['chapter', 'chapter_id'], true));
+
+            $fieldField = $transaction->allocationFields
+                ->first(fn ($f) => $f->key === 'field_id');
 
             $chapter_id = $chapterField->value ?? null;
             $field_id = $fieldField->value ?? null;
+
+            /*
+            |--------------------------------------------------------------------------
+            | BASE QUERY
+            |--------------------------------------------------------------------------
+            */
+
+            $baseQuery = Hostel::where([
+                'conference_edition_id' => $conference_edition_id,
+                'conference_plan_id' => $conference_plan_id,
+                'type' => $gender
+            ])
+            ->whereColumn('allocation', '<', 'capacity');
+
             $hostel = null;
 
-            if (in_array($level, ['Official', 'Medical'])) {
-                $hostel = Hostel::where([
-                    'level' => $level,
-                    'conference_edition_id' => $conference_edition_id,
-                ])->first();
+            /*
+            |--------------------------------------------------------------------------
+            | ALLOCATION STRATEGY
+            |--------------------------------------------------------------------------
+            */
 
-                if (!$hostel) {
-                    DB::rollBack();
-                    return [
-                        ...$defaultResponse,
-                        'message' => "No hostel found for {$level}.",
-                    ];
-                }
-            } else {
-                switch ($allocationType) {
-                    case 'full-random':
-                        $hostel = Hostel::where([
-                            'type' => $gender,
-                            'conference_edition_id' => $conference_edition_id,
-                        ])
-                            ->whereRaw('allocation < capacity')
-                            ->inRandomOrder()
-                            ->first();
+            switch ($allocationType) {
 
-                        break;
+                case 'full-random':
 
-                    case 'random':
-                        $hostel = Hostel::where([
-                            'type' => $gender,
-                            'level' => $level,
-                            'conference_edition_id' => $conference_edition_id,
-                        ])
-                            ->whereRaw('allocation < capacity')
-                            ->inRandomOrder()
-                            ->first();
-
-                        break;
-
-                    case 'based_on_chapter':
-                        $hostel = Hostel::where([
-                            'type' => $gender,
-                            'conference_edition_id' => $conference_edition_id,
-                        ])
-                            ->whereRaw('JSON_CONTAINS(chapter_ids, ?)', [json_encode((string) $chapter_id)])
-                            ->whereRaw('allocation < capacity')
-                            ->first();
-                        break;
-
-                    case 'based_on_field':
-                        $hostel = Hostel::where([
-                            'type' => $gender,
-                            'conference_edition_id' => $conference_edition_id,
-                        ])
-                            ->whereRaw('JSON_CONTAINS(field_ids, ?)', [json_encode((string) $field_id)])
-                            ->whereRaw('allocation < capacity')
-                            ->first();
-                        break;
-
-                    case 'based_on_chapter_with_category':
-                        $hostel = Hostel::where([
-                            'type' => $gender,
-                            'conference_edition_id' => $conference_edition_id,
-                        ])
-                            ->where('level', $level)
-                            ->whereRaw('JSON_CONTAINS(chapter_ids, ?)', [json_encode((string) $chapter_id)])
-                            ->whereRaw('allocation < capacity')
-                            ->first();
-                        break;
-
-                    case 'based_on_field_with_category':
-                        $hostel = Hostel::where([
-                            'type' => $gender,
-                            'conference_edition_id' => $conference_edition_id,
-                        ])
-                            ->where('level', $level)
-                            ->whereRaw('JSON_CONTAINS(field_ids, ?)', [json_encode((string) $field_id)])
-                            ->whereRaw('allocation < capacity')
-                            ->first();
-                        break;
-                }
-
-                // --- fallback: random allocation ---
-                if (!$hostel) {
-                    $hostel = Hostel::where([
-                        'type' => $gender,
-                        'level' => $level,
-                        'conference_edition_id' => $conference_edition_id,
-                    ])
-                        ->whereRaw('allocation < capacity')
+                    $hostel = (clone $baseQuery)
                         ->inRandomOrder()
+                        ->lockForUpdate()
                         ->first();
 
-                    if (!$hostel) {
-                        DB::rollBack();
-                        return [
-                            ...$defaultResponse,
-                            'message' => 'No available hostel found for your category or fallback type.',
-                        ];
+                break;
+
+
+                case 'random': // Balanced distribution
+
+                    $hostel = (clone $baseQuery)
+                        ->orderByRaw('(allocation / NULLIF(capacity,0)) ASC')
+                        ->lockForUpdate()
+                        ->first();
+
+                break;
+
+
+                case 'based_on_chapter':
+
+                    if ($chapter_id) {
+
+                        $hostel = (clone $baseQuery)
+                            ->whereRaw(
+                                'JSON_CONTAINS(chapter_ids, ?)',
+                                [json_encode((string)$chapter_id)]
+                            )
+                            ->orderByRaw('(allocation / NULLIF(capacity,0)) ASC')
+                            ->lockForUpdate()
+                            ->first();
                     }
 
-                    $allocationType = 'fallback-random';
-                }
+                break;
+
+
+                case 'based_on_field':
+
+                    if ($field_id) {
+
+                        $hostel = (clone $baseQuery)
+                            ->whereRaw(
+                                'JSON_CONTAINS(field_ids, ?)',
+                                [json_encode((string)$field_id)]
+                            )
+                            ->orderByRaw('(allocation / NULLIF(capacity,0)) ASC')
+                            ->lockForUpdate()
+                            ->first();
+                    }
+
+                break;
+
+
+                case 'based_on_chapter_with_category':
+
+                    if ($chapter_id) {
+
+                        $hostel = (clone $baseQuery)
+                            ->whereRaw(
+                                'JSON_CONTAINS(chapter_ids, ?)',
+                                [json_encode((string)$chapter_id)]
+                            )
+                            ->orderByRaw('(allocation / NULLIF(capacity,0)) ASC')
+                            ->lockForUpdate()
+                            ->first();
+                    }
+
+                break;
+
+
+                case 'based_on_field_with_category':
+
+                    if ($field_id) {
+
+                        $hostel = (clone $baseQuery)
+                            ->whereRaw(
+                                'JSON_CONTAINS(field_ids, ?)',
+                                [json_encode((string)$field_id)]
+                            )
+                            ->orderByRaw('(allocation / NULLIF(capacity,0)) ASC')
+                            ->lockForUpdate()
+                            ->first();
+                    }
+
+                break;
             }
 
-            if($hostel->id == $transaction->hostel_id){
+            /*
+            |--------------------------------------------------------------------------
+            | FALLBACK RANDOM
+            |--------------------------------------------------------------------------
+            */
+
+            if (!$hostel) {
+
+                $hostel = (clone $baseQuery)
+                    ->inRandomOrder()
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$hostel) {
+
+                    DB::rollBack();
+
+                    return [
+                        ...$defaultResponse,
+                        'message' => 'No hostel available for this plan.'
+                    ];
+                }
+
+                $allocationType = 'fallback-random';
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | PREVENT DUPLICATE ASSIGNMENT
+            |--------------------------------------------------------------------------
+            */
+
+            if ($hostel->id == $transaction->hostel_id) {
+
+                DB::commit();
+
                 return [
                     'status' => true,
                     'message' => 'Hostel already assigned.',
-                    'reason' => 'Hostel already assigned.',
                     'hostel_id' => $hostel->id,
                     'hostel_name' => $hostel->name,
                     'hostel_allocation_type' => $allocationType,
                 ];
             }
 
-            // --- Assign hostel ---
+            /*
+            |--------------------------------------------------------------------------
+            | ASSIGN HOSTEL
+            |--------------------------------------------------------------------------
+            */
+
             $allocationNumber = $hostel->allocation + 1;
-            $hostel->update(['allocation' => $allocationNumber]);
+
+            $hostel->update([
+                'allocation' => $allocationNumber
+            ]);
 
             $hostelNumber = self::generateHostelNumber($hostel);
 
             DB::commit();
+
             return [
                 ...$defaultResponse,
                 'status' => true,
@@ -210,17 +278,20 @@ class HostelAllocationService
                 'hostel_allocation_number' => $hostelNumber,
                 'hostel_allocation_type' => $allocationType,
             ];
+
         } catch (\Throwable $e) {
+
             DB::rollBack();
-            // dd($e->getMessage(), ' Line:'. $e->getLine());
-            Log::error('Hostel assignment failed', [
+
+            Log::error('Hostel allocation failed', [
                 'transaction_id' => $transaction->id ?? null,
                 'error' => $e->getMessage(),
+                'line' => $e->getLine()
             ]);
 
             return [
                 'status' => false,
-                'message' => 'Error: ' . $e->getMessage(),
+                'message' => $e->getMessage(),
                 'hostel_id' => null,
                 'hostel_allocation_number' => null,
                 'hostel_allocation_type' => null,
@@ -261,6 +332,29 @@ class HostelAllocationService
         $hostel->decrement('allocation');
 
         return $hostel;
+    }
+
+
+    public static function repairHostelAllocation($edition_id)
+    {
+        // Fetch all hostels for the conference edition
+        $hostels = Hostel::where('conference_edition_id', $edition_id)->get();
+
+        foreach ($hostels as $hostel) {
+            // Count transactions assigned to this hostel
+            $assignedCount = Transaction::where('conference_edition_id', $edition_id)
+                ->where('hostel_id', $hostel->id)
+                ->where('status', 'Complete')
+                ->where('registration_status', 'Complete')
+                ->count();
+
+            // Update the hostel allocation to match the actual assigned participants
+            if ($hostel->allocation !== $assignedCount) {
+                $hostel->update(['allocation' => $assignedCount]);
+            }
+        }
+
+        return true;
     }
 
     static function hostelMerger($request)

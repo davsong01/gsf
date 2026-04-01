@@ -22,8 +22,8 @@ class HostelController extends Controller
         $edition = ConferenceEdition::find($request->edition);
 
         if(auth()->user()->role == 1){
-            $hostels = Hostel::where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
-            $hostelsToMerge = Hostel::where('conference_edition_id', $edition->id)->where('allocation', '>',0)->orderBy('created_at', 'desc')->get();
+            $hostels = Hostel::with('conferenceplan')->where('conference_edition_id', $edition->id)->orderBy('created_at', 'desc')->get();
+            $hostelsToMerge = Hostel::with('conferenceplan')->where('conference_edition_id', $edition->id)->where('allocation', '>',0)->orderBy('created_at', 'desc')->get();
 
             $hostels->each(function ($hostel) {
                 $hostel->fields = Field::whereIn('id', $hostel->field_ids)->get();
@@ -67,7 +67,7 @@ class HostelController extends Controller
         $data = $this->validate($request, [
             'name' => 'required|min:2',
             'type' => 'required',
-            'level' => 'required',
+            'conference_plan_id' => 'required',
             'capacity' => 'required',
             'conference_edition_id' => 'required',
             'field_ids' => 'nullable',
@@ -77,7 +77,7 @@ class HostelController extends Controller
         Hostel::create([
             'name' => $data['name'],
             'type' => $data['type'],
-            'level' => $data['level'],
+            'conference_plan_id' => $data['conference_plan_id'],
             'capacity' => $data['capacity'],
             'conference_edition_id' => $data['conference_edition_id'],
             'field_ids' => $data['field_ids'] ?? NULL,
@@ -98,7 +98,7 @@ class HostelController extends Controller
         $fields = Field::all();
         $chapters = Chapter::all();
         $edition = ConferenceEdition::find($request->edition);
-        $conferenceplans = $edition->conferenceplans;
+        $conferenceplans = $edition->conferenceplans->where('status', 1);
 
         return view('conference_management.admin.hostel.edit', compact('hostel','edition','chapters','fields', 'conferenceplans'));
     }

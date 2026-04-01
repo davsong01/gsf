@@ -212,9 +212,10 @@
                                         <option value="">Select</option>
                                         @foreach($hostels as $hostel)
                                         @if($hostel->capacity > $hostel->allocation || $hostel->id == $transaction->hostel_id)
-                                        <option value="{{ $hostel->id ?? $transaction->hostel_id }}" {{ $transaction->hostel_id == $hostel->id ? 'selected' : '' }}>{{ $hostel->name. ' ('.($hostel->capacity - $hostel->allocation). ' participant(s) left) | '.$hostel->type. ' | '.$hostel->level}}</option>
+                                        <option value="{{ $hostel->id ?? $transaction->hostel_id }}" {{ $transaction->hostel_id == $hostel->id ? 'selected' : '' }}>{{ $hostel->name. ' ('.($hostel->capacity - $hostel->allocation). ' participant(s) left) | '.$hostel->type. ' | '. $hostel?->conferencePlan?->title }} ({{ $hostel?->conferencePlan?->level }})</option>
                                         @endif
                                         @endforeach
+
                                     </select>
                                 </fieldset>
                             </div>

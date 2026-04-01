@@ -28,9 +28,18 @@ class ConferenceUtilityToolsController extends Controller
             //         ->where('conference_edition_id', $edition->id);
             // })
             ->count();
+        $no_hostel_count = Transaction::where('conference_edition_id', $edition->id)
+            ->where(['status' => 'Complete', 'registration_status' => 'Complete'])
+            ->whereNull('hostel_id')
+            ->count();
+
+        $no_food_count = Transaction::where('conference_edition_id', $edition->id)
+            ->where(['status' => 'Complete', 'registration_status' => 'Complete'])
+            ->whereNull('food_id')
+            ->count();
 
         if(auth()->user()->conference_role == 'superadmin'){
-            return view('conference_management.admin.editions.utility_index', compact('edition','count'));
+            return view('conference_management.admin.editions.utility_index', compact('edition','count','no_hostel_count', 'no_food_count'));
         }
     }
 
@@ -116,6 +125,130 @@ class ConferenceUtilityToolsController extends Controller
         }
 
         dd('Done processing attempted registrations.');
+    }
+
+    public function fixNoHostel(Request $request)
+    {
+        ini_set('max_execution_time', 600);
+
+        $edition = ConferenceEdition::findOrFail($request->edition);
+
+        $transactions = Transaction::where('conference_edition_id', $edition->id)
+            ->where('status', 'Complete')
+            ->where('registration_status', 'Complete')
+            ->whereNull('hostel_id')
+            ->get();
+
+        if($transactions->isEmpty()) {
+            dd('No transactions found without hostel allocation.');
+        }
+        $count = 0;
+
+        foreach ($transactions as $transaction) {
+
+            try {
+
+                $allocate = HostelAllocationService::assignHostel($transaction);
+
+                if ($allocate['status']) {
+                    $transaction->update([
+                        'hostel_allocation_number' => $allocate['hostel_allocation_number'] ?? null,
+                        'hostel_allocation_type' => $allocate['hostel_allocation_type'] ?? null,
+                        'hostel_id' => $allocate['hostel_id'] ?? null,
+                    ]);
+
+                    Log::info('Hostel fixed', [
+                        'transaction_id' => $transaction->id,
+                        'hostel_allocation_number' => $allocate['hostel_allocation_number'] ?? null,
+                        'hostel_allocation_type' => $allocate['hostel_allocation_type'] ?? null,
+                        'hostel_id' => $allocate['hostel_id'] ?? null,
+                    ]);
+
+                    $count++;
+
+                } else {
+                    Log::warning('No hostel available', [
+                        'transaction_id' => $transaction->id,
+                        'email' => $transaction->email
+                    ]);
+                }
+
+
+            } catch (\Throwable $e) {
+                dd($e->getMessage());
+                Log::error('Hostel allocation failed', [
+                    'transaction_id' => $transaction->id,
+                    'email' => $transaction->email,
+                    'error' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile()
+                ]);
+            }
+        }
+
+        dd($count . ' participants hostel fixed.');
+    }
+
+    public function fixNoFood(Request $request)
+    {
+        ini_set('max_execution_time', 600);
+
+        $edition = ConferenceEdition::findOrFail($request->edition);
+
+        $transactions = Transaction::where('conference_edition_id', $edition->id)
+            ->where('status', 'Complete')
+            ->where('registration_status', 'Complete')
+            ->whereNull('food_id')
+            ->get();
+
+        if($transactions->isEmpty()) {
+            dd('No transactions found without food allocation.');
+        }
+        $count = 0;
+
+        foreach ($transactions as $transaction) {
+
+            try {
+
+                $allocate = ServicePointAllocationService::assignFoodStand($transaction);
+                dd($allocate);
+                if ($allocate['status']) {
+                    $transaction->update([
+                        'hostel_allocation_number' => $allocate['hostel_allocation_number'] ?? null,
+                        'hostel_allocation_type' => $allocate['hostel_allocation_type'] ?? null,
+                        'hostel_id' => $allocate['hostel_id'] ?? null,
+                    ]);
+
+                    Log::info('Hostel fixed', [
+                        'transaction_id' => $transaction->id,
+                        'hostel_allocation_number' => $allocate['hostel_allocation_number'] ?? null,
+                        'hostel_allocation_type' => $allocate['hostel_allocation_type'] ?? null,
+                        'hostel_id' => $allocate['hostel_id'] ?? null,
+                    ]);
+
+                    $count++;
+
+                } else {
+                    Log::warning('No hostel available', [
+                        'transaction_id' => $transaction->id,
+                        'email' => $transaction->email
+                    ]);
+                }
+
+
+            } catch (\Throwable $e) {
+                dd($e->getMessage());
+                Log::error('Hostel allocation failed', [
+                    'transaction_id' => $transaction->id,
+                    'email' => $transaction->email,
+                    'error' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile()
+                ]);
+            }
+        }
+
+        dd($count . ' participants hostel fixed.');
     }
 
 
