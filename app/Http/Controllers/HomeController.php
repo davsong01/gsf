@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Imports\GeneralUsersImport;
 use App\Models\Chapter;
+use App\Models\ConferenceEdition;
 use App\Models\ConferenceFaq;
 use App\Models\ConferencePlan;
 use App\Models\ConferenceSchedule;
@@ -88,11 +89,15 @@ class HomeController extends Controller
                 ->with('speakers', $speakers);
 
         } elseif (env('MINISTRY') == 'gyf') {
+            $setting = ConferenceEdition::whereHas('ministry', function ($query) {
+                $query->where('code', env('MINISTRY'));
+            })->first();
 
             // gyf ministry fallback (no conference loaded)
             return view('frontend.conference.conference_closed')
                 ->with('events', $events)
-                ->with('national', $national);
+                ->with('national', $national)
+                ->with('setting', $setting);
 
         } else {
 

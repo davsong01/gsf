@@ -1,14 +1,18 @@
-<?php 
-    $setting = activeConferenceEdition();
+<?php
+    $setting = activeConferenceEdition() ?? ($setting ?? null);
+
+    $isActive = $setting
+        && $setting->status === 'active'
+        && $setting->close_registration > now()->toDateString();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta property="og:url" content="{{ env('APP_URL') }}">
-    <meta property="og:title" content="{{ env('APP_NAME') }}"> 
-    <meta property="og:image" content="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}"/> 
-    <meta property="og:description" content="{{ $setting->conference_theme }}"/>
+    <meta property="og:title" content="{{ env('APP_NAME') }}">
+    <meta property="og:image" content="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}"/>
+    <meta property="og:description" content="{{ $setting->conference_theme ?? null }}"/>
     <meta property="og:site_name" content="{{ env('APP_NAME') }}" />
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -21,7 +25,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}">
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset($setting->conference_favicon ?? 'frontend/img/favicon.png') }}">
-    
+
     <!-- CSS Files
     ================================================== -->
     <link href="{{asset('conference_templates/template3/css/bootstrap.min.css')}}" rel="stylesheet" type="text/css" id="bootstrap">
@@ -52,9 +56,9 @@
                                 <!-- logo begin -->
                                 <div id="logo">
                                     <a href="/">
-                                        <img class="logo-main" src="{{ asset($setting->conference_logo) }}" alt="" >
-                                        <img class="logo-scroll" src="{{ asset($setting->conference_logo) }}" alt="" >
-                                        <img class="logo-mobile" src="{{ asset($setting->conference_logo) }}" alt="" >
+                                        <img class="logo-main" src="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}" alt="" >
+                                        <img class="logo-scroll" src="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}" alt="" >
+                                        <img class="logo-mobile" src="{{ asset($setting->conference_logo ?? 'frontend/img/logo.png') }}" alt="" >
                                     </a>
                                 </div>
                                 <!-- logo close -->
@@ -64,14 +68,14 @@
                                 <div class="de-flex-col header-col-mid">
                                     <ul id="mainmenu">
                                         <li><a class="menu-item" href="{{ url('/').'#section-about' }}">Details</a></li>
-                                        @if($setting->speaker_section_status)
+                                        @if($setting?->speaker_section_status)
                                         <li><a class="menu-item" href="{{ url('/').'#section-speakers' }}">Speakers</a></li>
                                         @endif
-                                        @if($setting->schedules)
+                                        @if($setting?->schedules)
                                         <li><a class="menu-item" href="{{ url('/').'#section-schedule' }}">Schedule</a></li>
                                         @endif
                                         {{-- <li><a class="menu-item" href="{{ url('/').'#section-venue' }}">Venue</a></li> --}}
-                                        @if($setting->faq_section_status)
+                                        @if($setting?->faq_section_status)
                                         <li><a class="menu-item" href="{{ url('/').'#section-faq' }}">FAQ</a></li>
                                         @endif
                                         {{-- <li><a class="menu-item" href="news.html">Donate</a></li> --}}
@@ -84,7 +88,7 @@
                                         </li>
                                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                                             @csrf
-                                        </form>  
+                                        </form>
                                         @endauth
                                         @guest
                                         <li class="menu-item">
@@ -96,8 +100,9 @@
                             </div>
 
                             <div class="de-flex-col">
+                                @if($isActive)
                                 <a class="btn-main fx-slide w-100" href="{{ url('/').'#section-tickets' }}"><span>Save your seat</span></a>
-
+                                @endif
                                 <div class="menu_side_area">
                                     <span id="menu-btn"></span>
                                 </div>
@@ -155,10 +160,10 @@
 
                         </div>
                         <div>
-                        
+
                         </div>
                     </div>
-                </div>                    
+                </div>
             </div>
         </div>
         <div class="subfooter">
@@ -172,7 +177,7 @@
         </div>
     </footer>
     <!-- footer end -->
-    
+
     <!-- Javascript Files
     <-- ================================================== -->
     <script src="{{ asset('conference_templates/template3/js/vendors.js')}}"></script>
