@@ -663,21 +663,43 @@ class ConferenceManagementController extends Controller
 		}
 	}
 
-    public function exportParticipants(Request $request){
-        $payload = [
-            'edition' => ConferenceEdition::where('id', $request->edition)->first(),
-            'plan' => $request->plan,
-        ];
-        dd($payload);
-        $exportData = UserService::exportConferenceParticipantsData($payload);
-        $name = $payload['edition']->conference_theme . ' participants.xlsx';
+    public function exportParticipants(Request $request)
+    {
+        // Fetch the conference edition
+        $edition = ConferenceEdition::findOrFail($request->edition);
 
+        // Start the query for transactions
+        $transactions = Transaction::query()
+            ->where('conference_edition_id', $edition->id)
+            ->where('status', 'Complete')
+            ->where('registration_status', 'Complete')
+            ->whereHas('user')
+            ->with(['user', 'allocationFields', 'moderator', 'hostel', 'servicePoint']);
+
+        // Filter by conference_plan_id if provided
+        if ($request->filled('plan_id')) {
+            $transactions = $transactions->where('conference_plan_id', $request->plan_id);
+        }
+
+        if(!empty($data['plan'])){
+            $transactions = $transactions->where('level', $data['plan']);
+        }
+
+        // Get the latest transactions
+        $transactions = $transactions->latest()->get();
+        
+        // Prepare export data
+        $exportData = UserService::exportConferenceParticipantsData($transactions, $edition);
+
+        // File name
+        $name = $edition->conference_theme . ' participants.xlsx';
+
+        // Download the Excel file
         return ExcelService::download(
             $exportData['data']->toArray(),
             array_values($exportData['headers']),
             $name
         );
-
     }
 
 	public function staffIndex($edition = '')

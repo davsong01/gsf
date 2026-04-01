@@ -187,22 +187,7 @@ class UserService
     //     ];
     // }
 
-    public static function exportConferenceParticipantsData($data){
-        $edition = $data['edition'];
-
-        $transactions = Transaction::query()
-        ->where('conference_edition_id', $edition->id)
-        ->where('status', 'Complete')
-        ->whereHas('user')
-        ->with(['user', 'allocationFields', 'moderator','hostel', 'servicePoint']);
-
-        if(!empty($data['plan'])){
-            $transactions = $transactions->where('level', $data['plan']);
-        }
-
-        $transactions = $transactions->latest()
-        ->get();
-
+    public static function exportConferenceParticipantsData($transactions, $edition){
         $allocatableFields = $edition->conferenceplans
         ->flatMap(fn ($plan) => $plan->fields()->pluck('name'))
         ->unique()
@@ -215,11 +200,13 @@ class UserService
         ->toArray();
 
         $headers = [
+            'conference'                => 'Conference Title',
+            'conference_plan_id'        => 'Registration Plan',
+            'transid'                   => 'Transaction ID',
             'family_id'                 => 'Family ID',
             'name'                      => 'Name',
             'email'                     => 'Email',
             'phone'                     => 'Phone',
-            'transid'                   => 'Transaction ID',
             'provider_reference'        => 'Provider Reference',
             'amount_paid'               => 'Amount',
             'status'                    => 'Payment Status',
@@ -232,12 +219,16 @@ class UserService
             'zone_id'                   => 'Zone',
             'gender'                    => 'Gender',
 
+            'hostel'                    => 'Hostel Allocation',
+            'servicePoint'              => 'Service Point Allocation',
+            'slot'                      => 'Slot Bought',
+            'allocated'                 => 'Slots Used',
+            'remaining'                 => 'Slot Remaining',
+
             'level'                     => 'Registration Plan',
             'hostel_allocation_type'    => 'Hostel Allocation Type',
             'hostel_allocation_number'  => 'Hostel Allocation Number',
-            'hostel'                    => 'Hostel Allocation',
 
-            'servicePoint'              => 'Service Point Allocation',
             'service_point_allocation_type'   => 'Service Point Allocation Type',
             'service_point_allocation_number' => 'Service Point Allocation Number',
 
@@ -278,6 +269,11 @@ class UserService
                     $key === 'moderator' =>
                         $moderator,
 
+                    $key === 'slot' => $transaction->slot,
+                    $key === 'allocated' => $transaction->slot_filled,
+                    $key === 'remaining' => $transaction->slot - $transaction->slot_filled,
+                    $key === 'conference' => $transaction->conferenceEdition->conference_theme ?? null,
+                    $key === 'conference_plan_id' => $transaction->conferenceplan->title ?? null,
                     // Default field
                     default =>
                         $transaction->{$key} ?? null,
