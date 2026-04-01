@@ -81,6 +81,112 @@ class UserService
         return;
     }
 
+    // public static function exportConferenceParticipantsData($data){
+    //     $edition = $data['edition'];
+
+    //     $transactions = Transaction::query()
+    //     ->where('conference_edition_id', $edition->id)
+    //     ->where('status', 'Complete')
+    //     ->whereHas('user')
+    //     ->with(['user', 'allocationFields', 'moderator','hostel', 'servicePoint']);
+
+    //     if(!empty($data['plan'])){
+    //         $transactions = $transactions->where('level', $data['plan']);
+    //     }
+
+    //     $transactions = $transactions->latest()
+    //     ->get();
+
+    //     $allocatableFields = $edition->conferenceplans
+    //     ->flatMap(fn ($plan) => $plan->fields()->pluck('name'))
+    //     ->unique()
+    //     ->reject(fn ($field) => $field === 'no_of_participants')
+    //     ->mapWithKeys(function ($field) {
+    //         return [
+    //             $field => ucfirst(strtolower(explode('_', $field)[0]))
+    //         ];
+    //     })
+    //     ->toArray();
+
+    //     $headers = [
+    //         'family_id'                 => 'Family ID',
+    //         'name'                      => 'Name',
+    //         'email'                     => 'Email',
+    //         'phone'                     => 'Phone',
+    //         'transid'                   => 'Transaction ID',
+    //         'provider_reference'        => 'Provider Reference',
+    //         'amount_paid'               => 'Amount',
+    //         'status'                    => 'Payment Status',
+    //         'registration_user_type'    => 'Registration User Type',
+    //         'registration_status'       => 'Registration Status',
+
+    //         'moderator'                 => 'Moderator',
+    //         'chapter_id'                => 'Chapter',
+    //         'field_id'                  => 'Field',
+    //         'zone_id'                   => 'Zone',
+    //         'gender'                    => 'Gender',
+
+    //         'level'                     => 'Registration Plan',
+    //         'hostel_allocation_type'    => 'Hostel Allocation Type',
+    //         'hostel_allocation_number'  => 'Hostel Allocation Number',
+    //         'hostel'                    => 'Hostel Allocation',
+
+    //         'servicePoint'              => 'Service Point Allocation',
+    //         'service_point_allocation_type'   => 'Service Point Allocation Type',
+    //         'service_point_allocation_number' => 'Service Point Allocation Number',
+
+    //         'created_at'                => 'Registration Date',
+    //     ];
+
+    //     $headers = array_merge($headers, $allocatableFields);
+
+    //     $data = $transactions->map(function ($transaction) use ($headers, $allocatableFields) {
+
+    //         // build allocation keys once
+    //         $allocationKeys = array_unique(
+    //             array_merge(['chapter_id', 'field_id', 'zone_id'], array_keys($allocatableFields))
+    //         );
+
+    //         return collect($headers)->mapWithKeys(function ($label, $key) use ($transaction, $allocationKeys) {
+    //             $moderator = $transaction->moderator->name ?? null;
+
+    //             $value = match (true) {
+    //                 // Allocation fields (dynamic + fixed)
+    //                 in_array($key, $allocationKeys) =>
+    //                     optional($transaction->allocationFields
+    //                         ->firstWhere('key', $key))->value,
+
+    //                 // Relations
+    //                 in_array($key, ['hostel', 'servicePoint']) =>
+    //                     optional($transaction->{$key})->name,
+
+    //                 // User family id
+    //                 $key === 'family_id' =>
+    //                     optional($transaction->user)->family_id,
+
+    //                 // Date formatting
+    //                 $key === 'created_at' =>
+    //                     optional($transaction->created_at)->format('Y-m-d H:i'),
+
+    //                 // Moderator name
+    //                 $key === 'moderator' =>
+    //                     $moderator,
+
+    //                 // Default field
+    //                 default =>
+    //                     $transaction->{$key} ?? null,
+    //             };
+
+    //             return [$label => $value];
+    //         })->toArray();
+    //     });
+
+    //     return [
+    //         'headers' => $headers,
+    //         'data' => $data
+    //     ];
+    // }
+
     public static function exportConferenceParticipantsData($data){
         $edition = $data['edition'];
 
@@ -96,7 +202,7 @@ class UserService
 
         $transactions = $transactions->latest()
         ->get();
-        
+
         $allocatableFields = $edition->conferenceplans
         ->flatMap(fn ($plan) => $plan->fields()->pluck('name'))
         ->unique()

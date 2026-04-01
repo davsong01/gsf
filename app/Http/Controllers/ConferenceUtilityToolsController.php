@@ -175,7 +175,6 @@ class ConferenceUtilityToolsController extends Controller
 
 
             } catch (\Throwable $e) {
-                dd($e->getMessage());
                 Log::error('Hostel allocation failed', [
                     'transaction_id' => $transaction->id,
                     'email' => $transaction->email,

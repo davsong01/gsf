@@ -654,7 +654,7 @@ class ConferenceManagementController extends Controller
                 $participants->where('registration_user_type', request()->registration_user_type);
             }
 
-            $participants = $participants->latest()->take(10)->get();
+            $participants = $participants->latest()->get();
             $import_type = $slug;
 
 			$edition = ConferenceEdition::find($edition);
@@ -668,7 +668,7 @@ class ConferenceManagementController extends Controller
             'edition' => ConferenceEdition::where('id', $request->edition)->first(),
             'plan' => $request->plan,
         ];
-
+        dd($payload);
         $exportData = UserService::exportConferenceParticipantsData($payload);
         $name = $payload['edition']->conference_theme . ' participants.xlsx';
 
