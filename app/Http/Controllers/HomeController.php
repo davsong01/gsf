@@ -43,7 +43,7 @@ class HomeController extends Controller
     public function index() {
         $events = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', '<>', 0)->limit(6)->get();
         $national = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', 0)->limit(3)->get();
-
+        
         if ($this->conference) {
             $setting = $this->conference;
 
