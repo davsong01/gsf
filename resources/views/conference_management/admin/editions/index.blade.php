@@ -65,7 +65,7 @@
                                                 @if(auth()->user()->conference_role == 'superadmin')
                                                 <br>
                                                 <a style="margin-bottom: 3px;" href="{{ route('clone.conference.edition', $edition->id) }}" class="btn btn-info btn-sm"><i class="fa fa-copy"></i> Clone</a> <br>
-                                                {{-- <a style="margin-bottom: 3px;" href="{{ route('delete.conference.edition', $edition->id) }}" class="btn btn-danger btn-sm"><i class="fa fa-edit"></i> Delete</a> --}}
+                                                {{-- <a onclick="return confirm('Are you sure you want to delete?')" style="margin-bottom: 3px;" href="{{ route('delete.conference.edition', $edition->id) }}" class="btn btn-danger btn-sm"><i class="fa fa-edit"></i> Delete</a> --}}
                                                 @endif
                                             </td>
                                         </tr>
