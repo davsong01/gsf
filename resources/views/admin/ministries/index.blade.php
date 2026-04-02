@@ -29,11 +29,11 @@
                             <td>
                                 <a href="{{ route('ministry.edit', $ministry->id) }}" class="btn btn-sm btn-warning">Edit</a>
                                 <a href="{{ route('ministryfield.index', $ministry->id) }}" class="btn btn-sm btn-info">Reg. Fields</a>
-                                <form action="{{ route('ministry.destroy', $ministry->id) }}" method="POST" style="display:inline-block">
+                                {{-- <form action="{{ route('ministry.destroy', $ministry->id) }}" method="POST" style="display:inline-block">
                                     @csrf
                                     @method('DELETE')
                                     <button onclick="return confirm('Are you sure?')" class="btn btn-sm btn-danger">Delete</button>
-                                </form>
+                                </form> --}}
                             </td>
                         </tr>
                         @endforeach
