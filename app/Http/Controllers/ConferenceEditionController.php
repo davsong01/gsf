@@ -113,7 +113,10 @@ class ConferenceEditionController extends Controller
         $completed_registration = $complete->count();
 
         // Financials
-        $total = $complete->sum('total_amount');
+        $total = $complete
+            ->filter(fn ($t) => $t->isSystemPayment())
+            ->sum('total_amount');
+        
         $donations = $edition->donations->sum('amount');
 
         // Materials

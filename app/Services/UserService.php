@@ -116,7 +116,6 @@ class UserService
             'total_amount'              => 'Total Amount Paid',
             'status'                    => 'Payment Status',
             'registration_status'       => 'Registration Status',
-
             'moderator'                 => 'Moderator',
             'chapter_id'                => 'Chapter',
             'field_id'                  => 'Field',

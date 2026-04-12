@@ -93,4 +93,9 @@ class Transaction extends Model
     {
         return $this->belongsTo(User::class, 'resolved_by');
     }
+
+    public function isSystemPayment()
+    {
+        return empty($this->uploaded_by);
+    }
 }
