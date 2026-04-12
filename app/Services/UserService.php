@@ -87,7 +87,7 @@ class UserService
             return $t->provider_reference ?? 'null_' . $t->id;
         })
         ->values();
-        
+
         $allocatableFields = $edition->conferenceplans
         ->flatMap(fn ($plan) => $plan->fields()->pluck('name'))
         ->unique()
@@ -113,6 +113,7 @@ class UserService
             'phone'                     => 'Phone',
             'provider_reference'        => 'Provider Reference',
             'amount_paid'               => 'Amount',
+            'total_amount'              => 'Total Amount Paid',
             'status'                    => 'Payment Status',
             'registration_status'       => 'Registration Status',
 
