@@ -82,6 +82,12 @@ class UserService
     }
 
     public static function exportConferenceParticipantsData($transactions, $edition){
+        $transactions = $transactions
+        ->unique(function ($t) {
+            return $t->provider_reference ?? 'null_' . $t->id;
+        })
+        ->values();
+        
         $allocatableFields = $edition->conferenceplans
         ->flatMap(fn ($plan) => $plan->fields()->pluck('name'))
         ->unique()

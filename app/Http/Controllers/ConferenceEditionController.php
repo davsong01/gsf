@@ -85,36 +85,58 @@ class ConferenceEditionController extends Controller
      */
     public function show(ConferenceEdition $conferenceEdition, $id)
     {
-        if (auth()->user()->role == 1) {
-            $edition = ConferenceEdition::with(['transactions', 'donations'])->where('id', $id)->first();
-            $transactions = $edition->transactions;
-
-            $plans = ConferencePlan::with('registered')->where('conference_edition_id', $edition->id)->where('status', 1)->get();
-
-            $registered_moderators = clone $transactions;
-            $registered_moderators = $registered_moderators->where('registration_status', 'Complete')->where('registration_user_type', 'moderator');
-            $moderators = $registered_moderators; // Keep original collection
-            
-            $registered_moderators_count = $moderators->count();
-            $total_slots = $moderators->sum('slot');
-            $slots_filled = $moderators->sum('slot_filled');
-            $unallocated_slots = $total_slots - $slots_filled;
-
-            $pending_registration = clone $transactions;
-            $pending_registration = $pending_registration->where('registration_status', 'Pending')->count();
-
-            $completed_registration = clone $transactions;
-            $completed_registration = $completed_registration->where('registration_status', 'Pending')->count();
-
-            // allow
-            $total = clone $transactions;
-            $total = $total->where('registration_status', 'Complete')->where('conference_edition_id', $id)->sum('total_amount');
-
-            $donations = $edition->donations->sum('amount');
-            $materials = Material::where('conference_edition_id', $id)->count();
-            // end allow
-            return view('conference_management.admin.index', compact('plans', 'pending_registration', 'completed_registration', 'total', 'donations', 'materials', 'edition', 'registered_moderators_count', 'total_slots', 'unallocated_slots','slots_filled'));
+        if (auth()->user()->role != 1) {
+            abort(403);
         }
+
+        $edition = ConferenceEdition::with(['transactions', 'donations'])
+            ->findOrFail($id);
+
+
+        $transactions = $edition->transactions
+            ->unique(fn ($t) => $t->provider_reference ?? 'null_' . $t->id)
+            ->values();
+
+        $complete = $transactions->where('registration_status', 'Complete');
+        $pending = $transactions->where('registration_status', 'Pending');
+
+        // Moderators
+        $moderators = $complete->where('registration_user_type', 'moderator');
+
+        $registered_moderators_count = $moderators->count();
+        $total_slots = $moderators->sum('slot');
+        $slots_filled = $moderators->sum('slot_filled');
+        $unallocated_slots = $total_slots - $slots_filled;
+
+        // Registrations
+        $pending_registration = $pending->count();
+        $completed_registration = $complete->count();
+
+        // Financials
+        $total = $complete->sum('total_amount');
+        $donations = $edition->donations->sum('amount');
+
+        // Materials
+        $materials = Material::where('conference_edition_id', $id)->count();
+
+        $plans = ConferencePlan::with('registered')
+            ->where('conference_edition_id', $edition->id)
+            ->where('status', 1)
+            ->get();
+
+        return view('conference_management.admin.index', compact(
+            'plans',
+            'pending_registration',
+            'completed_registration',
+            'total',
+            'donations',
+            'materials',
+            'edition',
+            'registered_moderators_count',
+            'total_slots',
+            'unallocated_slots',
+            'slots_filled'
+        ));
     }
 
     public function chart(ConferenceEdition $id)
