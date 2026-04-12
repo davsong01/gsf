@@ -100,7 +100,6 @@ class TransactionController extends Controller
             $transactions = $mainQuery->paginate(50);
         }
 
-
         return view('conference_management.admin.editions.transactions', compact('transactions', 'edition', 'count', 'chapters', 'zones', 'fields'));
 	}
 

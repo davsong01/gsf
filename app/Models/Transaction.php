@@ -96,6 +96,7 @@ class Transaction extends Model
 
     public function isSystemPayment()
     {
-        return empty($this->uploaded_by);
+        return $this->registration_user_type === 'moderator'
+            || empty($this->uploaded_by);
     }
 }
