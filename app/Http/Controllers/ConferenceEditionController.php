@@ -94,7 +94,7 @@ class ConferenceEditionController extends Controller
 
 
         $transactions = $edition->transactions
-            // ->unique(fn ($t) => $t->provider_reference ?? 'null_' . $t->id)
+            ->unique(fn ($t) => $t->provider_reference ?? 'null_' . $t->id)
             ->values();
 
         $complete = $transactions->where('registration_status', 'Complete');
