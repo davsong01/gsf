@@ -115,8 +115,10 @@ class ConferenceEditionController extends Controller
         // Financials
         $total = $complete
             ->filter(fn ($t) => $t->isSystemPayment())
+            ->where('status', 'Complete')
+            // ->where('purpose', 'conference')
             ->sum('total_amount');
-        
+
         $donations = $edition->donations->sum('amount');
 
         // Materials
