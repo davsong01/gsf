@@ -39,6 +39,7 @@ class AdminReportsController extends Controller
         return view('admin.reports.index', array_merge($data, compact('user', 'isAdmin')));
     }
 
+    
     public function create()
     {
     }
@@ -248,7 +249,7 @@ class AdminReportsController extends Controller
         }
 
         $user = $statusMap[$status]();
-    
+
         if (!$user) {
             abort(404, 'Approver not found');
         }

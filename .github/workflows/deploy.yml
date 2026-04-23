@@ -24,7 +24,6 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             cd directory.gsfnational.org/MF
-            git stash
             git pull origin development
             php artisan migrate --force
             php artisan cache:clear
