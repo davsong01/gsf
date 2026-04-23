@@ -25,6 +25,7 @@ jobs:
           script: |
             cd directory.gsfnational.org/MF
             git pull origin development
+            git stash
             php artisan migrate --force
             php artisan cache:clear
             php artisan config:clear
