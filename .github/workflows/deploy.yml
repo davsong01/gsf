@@ -1,39 +1,37 @@
-name: Deploy to GSF & GYF Servers
+name: Deploy to Development
 
 on:
   push:
-    branches: ["development"]
+    branches:
+      - development
   pull_request:
-    branches: ["development"]
+    branches:
+      - development
+    types: [closed]
 
 jobs:
-  deploy-gsf:
-    name: Deploy to GSF
+  deploy:
+    # This logic ensures the job only runs on a push OR a successful merge
+    if: github.event_name == 'push' || (github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Deploy to GSF server
-        uses: appleboy/ssh-action@v0.1.8
+      - name: Executing remote ssh commands
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 162.0.232.109
+          host: 66.29.146.99
           username: shinliih
-          key: ${{ secrets.DEPLOY_KEY_GSF }}
           port: 21098
-          script_stop: true
+          password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            echo "Deploying to GSF..."
-            cd /home/shinliih/directory.gsfnational.org/MF
-            git fetch --all
-            git reset --hard origin/development
+            cd public_html/apps
+            git pull origin development
             php artisan migrate --force
             php artisan cache:clear
             php artisan config:clear
             php artisan route:clear
             php artisan view:clear
-            echo "Deployment to GSF completed!"
+            echo "Deployment to Server completed!"
+
 
   # deploy-gyf:
   #   name: Deploy to GYF
