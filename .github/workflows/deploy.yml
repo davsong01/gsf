@@ -23,7 +23,7 @@ jobs:
           port: 21098
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd public_html/apps
+            cd directory.gsfnational.org/MF
             git pull origin development
             php artisan migrate --force
             php artisan cache:clear
