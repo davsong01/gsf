@@ -37,13 +37,14 @@ class LoginController extends Controller
         // $this->conference = ConferenceEdition::whereHas('ministry', function ($query) {
         //     $query->where('code', env('MINISTRY'));
         // })->latest()->first();
+
         $this->conference = ConferenceEdition::whereHas('ministry', function ($query) {
             $query->where('code', env('MINISTRY'));
         })
         ->whereDate('end_date', '>=', now())
         ->latest()
         ->first();
-        
+
         $this->middleware('guest')->except('logout');
     }
 
@@ -54,7 +55,6 @@ class LoginController extends Controller
 
     public function showLoginForm()
     {
-
       if ($this->conference) {
         $setting = $this->conference;
         $conference_year = Carbon::parse($setting->start_date)->year;
