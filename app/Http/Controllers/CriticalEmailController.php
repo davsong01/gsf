@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
-use Illuminate\Http\Request;
 use App\Models\CriticalEmail;
 use App\Models\GeneralSetting;
+use App\Models\Setting;
+use App\Services\EmailService;
+use Illuminate\Http\Request;
 
 class CriticalEmailController extends Controller
 {
@@ -238,8 +239,8 @@ class CriticalEmailController extends Controller
         $data['content'] = $criticalEmail->content;
         $data['subject'] = $criticalEmail->subject;
         $data['attachments'] = $criticalEmail->attachments;
-
-        $res = $this->sendEmail($data);
+                
+        $res = EmailService::sendEmail($data);
 
         if (isset($res['message']) && $res['message'] == 'success') {
             $criticalEmail->update(['status'=>1,'sent_at'=>now()]);

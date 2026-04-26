@@ -728,8 +728,8 @@ class ReportNotificationService
          * Folder: public/reports/{year}/{Month}
          */
         $relativeDir  = "reports/{$report->year}/{$monthName}";
-        $absoluteDir  = public_path($relativeDir);
-
+        $absoluteDir  = env('IMAGE_UPLOAD_PATH').'/'.($relativeDir);
+        
         if (!is_dir($absoluteDir)) {
             mkdir($absoluteDir, 0755, true);
         }

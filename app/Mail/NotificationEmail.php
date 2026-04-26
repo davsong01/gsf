@@ -132,7 +132,7 @@ class NotificationEmail extends Mailable
         ) {
             $mail = $this->markdown('emails.generic')
                 ->subject($this->data['subject']);
-
+            
             foreach ((array) ($this->data['attachments'] ?? []) as $file) {
                 if (is_string($file)) {
                     $mail->attach($file);
