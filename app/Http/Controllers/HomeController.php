@@ -28,6 +28,7 @@ class HomeController extends Controller
 {
     private $conference;
     private $frontend;
+
     public function __construct()
     {
         $this->conference = activeConferenceEdition();
@@ -39,7 +40,7 @@ class HomeController extends Controller
             return false;
         }
     }
-
+    
     public function index() {
         $events = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', '<>', 0)->limit(6)->get();
         $national = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', 0)->limit(3)->get();
@@ -52,7 +53,7 @@ class HomeController extends Controller
             $conference_year = optional($setting->start_date)
                 ? Carbon::parse($setting->start_date)->year
                 : null;
-        
+
             $alumnis_amount = [
                 'alumni_registration_fee' => $setting->alumni_registration_fee ?? 0,
                 'new_alumni_registration_fee' => $setting->new_alumni_registration_fee ?? 0
