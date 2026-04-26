@@ -297,7 +297,7 @@ class StakeholderController extends Controller
             'role_id'  => $request->role_id,
             'designation_id'  => $request->designation_id,
         ])->save();
-
+        
         return redirect()
             ->route('stakeholderpersonnel.index')
             ->with('message', 'Update Successful');

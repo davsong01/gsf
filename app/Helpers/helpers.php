@@ -554,7 +554,7 @@ if (!function_exists('chapterEmailFooter')) {
 }
 
 if (!function_exists('reportWindowStatus')) {
-    function reportWindowStatus(?int $chapterId, ?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
+    function reportWindowStatus(?int $chapterId = null, ?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
     {
         // --- End Offset ---
         $rawEndOffset = stakeholderSetting('REPORT_WINDOW_START_OFFSET')

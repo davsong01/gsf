@@ -57,7 +57,7 @@ class StakeholderLoginController extends Controller
             $user->update([
                 'last_login' => now(),
             ]);
-
+            
             return redirect()->intended('/stakeholders/dashboard');
         }
 

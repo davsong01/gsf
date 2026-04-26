@@ -29,7 +29,8 @@ class StakeholderAccountController extends Controller
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
-        $this->user = auth()->guard('stakeholder')->user();
+        $this->user = auth::guard('stakeholder')->user();
+        // $this->user = auth()->guard('stakeholder')->user();
     }
 
     /**
@@ -59,6 +60,7 @@ class StakeholderAccountController extends Controller
         }
 
         $reports = collect([]);
+        
         return view('stakeholder.dashboard', compact('reports', 'chapter', 'user'));
     }
 
