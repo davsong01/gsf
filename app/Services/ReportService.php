@@ -793,7 +793,7 @@ class ReportService
          * ------------------------- */
         if (empty($headers)) {
             $headers = array_merge(
-                ['Chapter Name', 'Date Updated'],
+                ['Chapter Name', 'Zone', 'Field', 'Date Updated'],
                 array_keys($sumColumns),
                 array_values($questionMap)
             );
@@ -812,6 +812,8 @@ class ReportService
              * STATIC COLUMNS
              * ------------------------- */
             $row['Chapter Name'] = $report->chapter?->name;
+            $row['Zone'] = $report->zone?->name;
+            $row['Field'] = $report->field?->name;
             $row['Date Updated'] = optional($report->updated_at)->format('Y-m-d');
 
             /** -------------------------
