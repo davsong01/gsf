@@ -192,7 +192,7 @@ class CronController extends Controller
                 'type'       => 'report_email',
                 'subject'    => "Reminder: Submit {$reportMonthName} Monthly Report",
                 'content'    => "
-                    <h5>Dear Representative of {$chapter->stakeholder->name},</h5>
+                    <h5>Dear {$chapter->stakeholder->name},</h5>
                     <p>This is a friendly reminder to submit your chapter report for <strong>{$reportMonthName}</strong>.</p>
                     <p>The reporting window closes on <strong>{$windowClose}</strong>.</p>
                     <p>Please log in here: {$loginLink}. <br>
@@ -281,7 +281,7 @@ class CronController extends Controller
                 'type'       => 'report_email',
                 'subject'    => 'Welcome to GSF Digital Portal',
                 'content'    => "
-                    <h5>Dear Representative of {$chapter->name},</h5>
+                    <h5>Dear {$chapter->name},</h5>
                     <p>Your fellowship representative account has been created or updated.</p>
                     <p><strong>Email:</strong> {$stakeholder->email}<br>
                     <strong>Password:</strong> {$passwordPlain}</p>
