@@ -654,3 +654,13 @@ Route::get('/protected-files/{file}', fn ($file) =>
 Route::get('/admin-protected-files/{file}', fn ($file) =>
     app(FileUploadService::class)->serveProtectedFile($file)
 )->middleware('auth')->name('admin.protected.download');
+
+
+Route::get('/test-403', function () {
+    abort(403);
+});
+
+// Test for the stakeholder redirection logic
+Route::get('/stakeholders/test-403', function () {
+    abort(403);
+});
