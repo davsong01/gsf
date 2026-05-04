@@ -21,7 +21,7 @@
             <div class="col-md-12">
                 <div class="error-template">
                     <h1>Oops!</h1>
-                    <h2>500 - Server Error</h2>
+                    <h2>Our Error</h2>
                     <div class="error-details">
                         Something went wrong on our end. We are working to fix it!
                     </div>
@@ -35,9 +35,6 @@
                             <span class="glyphicon glyphicon-home"></span>
                             Take Me Home
                         </a>
-                        <button onclick="location.reload();" class="btn btn-default btn-lg">
-                            <span class="glyphicon glyphicon-refresh"></span> Try Again
-                        </button>
                     </div>
                 </div>
             </div>
