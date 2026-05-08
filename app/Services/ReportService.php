@@ -882,7 +882,7 @@ class ReportService
                 break;
 
             case 'field-pastor':
-                if ($report->zone_status !== 1) {
+                if ($report->zone_status != 1) {
                     abort(403, 'Cannot approve before zone approval');
                 }
                 // $report->field_comment = $comment;
@@ -893,7 +893,7 @@ class ReportService
 
             case 'secretariat':
             case 'ncp':
-                if ($report->zone_status !== 1 || $report->field_status !== 1) {
+                if ($report->zone_status != 1 || $report->field_status != 1) {
                     abort(403, 'Cannot approve before zone and field approval');
                 }
                 // $report->national_comment = $comment;
