@@ -199,7 +199,7 @@ class StakeholderReportsController extends Controller
         $validated = app(ReportService::class)->validateRequest($request);
         $validated['month_number'] = $eligibleMonth['month_number'];
         $validated['year'] = $eligibleMonth['year'];
-        
+
         $result = app(ReportService::class)->saveReport($stakeholder, null, $validated);
 
         return $result['status']
@@ -250,22 +250,34 @@ class StakeholderReportsController extends Controller
     public function rejectReport(Request $request, StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
-        app(ReportService::class)->reject($user, $report);
+        $reject = app(ReportService::class)->reject($user, $report);
 
-        return redirect()
-            ->route('stakeholders.reports.index')
-            ->with('message', 'Report rejection recorded successfully!');
+        if($reject['status']){
+            return redirect()
+                ->route('stakeholders.reports.index')
+                ->with('message', $reject['message'] ?? 'Report rejection recorded successfully!');
+        }else{
+            return redirect()
+                ->route('stakeholders.reports.index')
+                ->with('error', $approval['message'] ?? 'Report rejection could not be completed!');
+        }
     }
 
     public function approveReport(StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
 
-        app(ReportService::class)->approve($user,$report);
+        $approval = app(ReportService::class)->approve($user,$report);
 
-        return redirect()
-            ->route('stakeholders.reports.index')
-            ->with('message', 'Report approved successfully!');
+        if($approval['status']){
+            return redirect()
+                ->route('stakeholders.reports.index')
+                ->with('message', $approval['message'] ?? 'Report approved successfully!');
+        }else{
+            return redirect()
+                ->route('stakeholders.reports.index')
+                ->with('error', $approval['message'] ?? 'Report approval could not be completed!');
+        }
     }
 
 

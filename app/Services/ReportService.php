@@ -871,6 +871,11 @@ class ReportService
 
 
     public function approve($user, $report){
+        $returnPayload = [
+            'status' => false,
+            'message' => null
+        ];
+
         $roleSlug = $user->role->slug;
 
         switch ($roleSlug) {
@@ -883,7 +888,7 @@ class ReportService
 
             case 'field-pastor':
                 if ($report->zone_status != 1) {
-                    abort(403, 'Cannot approve before zone approval');
+                    $returnPayload['message'] = 'Cannot approve before zone approval';
                 }
                 // $report->field_comment = $comment;
                 $report->field_status = 1;
@@ -894,7 +899,7 @@ class ReportService
             case 'secretariat':
             case 'ncp':
                 if ($report->zone_status != 1 || $report->field_status != 1) {
-                    abort(403, 'Cannot approve before zone and field approval');
+                    $returnPayload['message'] = 'Cannot approve before zone and field approval';
                 }
                 // $report->national_comment = $comment;
                 $report->national_status = 1;
@@ -903,16 +908,25 @@ class ReportService
                 break;
 
             default:
-                abort(403, 'Unauthorized action');
+                $returnPayload['message'] = 'Unauthorized action';
         }
+
         $report->save();
 
         ReportNotificationService::handleReportAction($report, $user, 'approve');
 
-        return;
+        $returnPayload['status'] = true;
+        $returnPayload['message'] = 'Approval Successful and notification sent to the next approval';
+
+        return $returnPayload;
     }
 
     public function reject($user, $report){
+        $returnPayload = [
+            'status' => false,
+            'message' => null
+        ];
+
         $comment = request()->rejection_reason;
 
         $role = $user->role->slug;
@@ -926,8 +940,8 @@ class ReportService
                 break;
 
             case 'field-pastor':
-                if ($report->zone_status !== 1) {
-                    abort(403, 'Cannot reject before zone approval');
+                if ($report->zone_status != 1) {
+                    $returnPayload['message'] = 'Cannot reject before zone approval';
                 }
                 $report->field_comment = $comment;
                 $report->field_status = 2;
@@ -938,8 +952,8 @@ class ReportService
 
             case 'secretariat':
             case 'ncp':
-                if ($report->zone_status !== 1 || $report->field_status !== 1) {
-                    abort(403, 'Cannot reject before zone and field approval');
+                if ($report->zone_status != 1 || $report->field_status != 1) {
+                    $returnPayload['message'] = 'Cannot reject before zone and field approval';
                 }
                 $report->national_comment = $comment;
                 $report->national_status = 2;
@@ -951,14 +965,18 @@ class ReportService
                 break;
 
             default:
-                abort(403, 'Unauthorized action');
+                $returnPayload['message'] = 'Unauthorized action';
         }
 
         $report->save();
 
         ReportNotificationService::handleReportAction($report, $user, 'reject');
 
-        return;
+        $returnPayload['status'] = true;
+        $returnPayload['message'] = 'Report rejection recorded successfully';
+
+        return $returnPayload;
+
     }
 
     public function nudgeReportActors($stakeholder, $report){
