@@ -57,7 +57,7 @@ class StakeholderLoginController extends Controller
             $user->update([
                 'last_login' => now(),
             ]);
-            
+
             return redirect()->intended('/stakeholders/dashboard');
         }
 
@@ -65,8 +65,7 @@ class StakeholderLoginController extends Controller
     }
 
     private function loginFailed($message=null){
-        return redirect()
-            ->back()
+        return redirect(route('stakeholders.loginpage'))
             ->withInput()
             ->with('error', $message ?? 'Login failed, please try again with the right credentials!');
     }
