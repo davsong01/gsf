@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('award_id');
             $table->string('key');
             $table->string('name');
-            $table->string('value');
+            $table->text('value');
             $table->timestamps();
         });
     }
