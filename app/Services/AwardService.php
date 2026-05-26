@@ -46,6 +46,24 @@ class AwardService{
                         continue;
                     }
 
+                    if ($key === 'select_institution') {
+                        // Look up the database to instantly grab the matching ID record
+                        $chapter = DB::table('chapters')
+                                        ->where('name', $value)
+                                        ->first();
+
+                        if ($chapter) {
+                            $value = $chapter->id;
+                            $key = 'chapter_id';
+
+                            $award->update([
+                                'chapter_id' => $chapter->id,
+                                'zone_id' => $chapter->zone_id,
+                                'field_id' => $chapter->field_id
+                            ]);
+                        }
+                    }
+
                     // Handle file processing dynamically via the key string flag
                     if (str_ends_with($key, '_file_id')) {
                         try {
