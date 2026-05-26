@@ -76,25 +76,39 @@ class AwardService{
                         continue;
                     }
 
+                    Log::info([
+                        'key' => $key
+                    ]);
                     // Handle file processing dynamically via the key string flag
-                    if (str_ends_with($key, '_file_id') || in_array($key, ['upload_a_clear_and_recent_picture_of_yourself', 'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature'])) {
+                    if (str_ends_with($key, '_file_id') || in_array($key, ['upload_a_clear_and_recent_picture_of_yourself', 'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature', 'picturesave_picture_as_your_name'])) {
                         try {
                             if (filter_var($value, FILTER_VALIDATE_URL)) {
 
-                                // This regex matches all common Google Drive URL structures:
-                                // - drive.google.com/file/d/{ID}/view
-                                // - drive.google.com/uc?id={ID}
-                                // - docs.google.com/open?id={ID}
-                                preg_match('/(?:id=|\/d\/)([a-zA-Z0-9-_]{25,})/', $value, $matches);
+                                // Upgraded regex to cleanly extract exactly 28-57 characters of a standard Google Drive ID
+                                // without picking up trailing parameters like /view, ?usp=sharing, etc.
+                                preg_match('/(?:id=|\/d\/)([a-zA-Z0-9-_]{28,57})/', $value, $matches);
 
                                 if (!empty($matches[1])) {
-                                    // Transform the full URL string into just the clean alphanumeric Drive ID
                                     $value = $matches[1];
                                 } else {
-                                    throw new \Exception("Could not extract a valid Google Drive File ID from URL: {$value}");
+                                    // If it's a URL but NOT a Google Drive link, skip the API entirely
+                                    // and just keep the URL as the text value so data isn't lost.
+                                    $key = str_replace('_file_id', '', $key);
+                                    continue;
                                 }
-
                             }
+
+                            // if (filter_var($value, FILTER_VALIDATE_URL)) {
+                            //     preg_match('/(?:id=|\/d\/)([a-zA-Z0-9-_]{25,})/', $value, $matches);
+
+                            //     if (!empty($matches[1])) {
+                            //         // Transform the full URL string into just the clean alphanumeric Drive ID
+                            //         $value = $matches[1];
+                            //     } else {
+                            //         throw new \Exception("Could not extract a valid Google Drive File ID from URL: {$value}");
+                            //     }
+
+                            // }
                             // ==========================================
                             // LIVE GOOGLE FORMS: GOOGLE DRIVE API ACCESS
                             // ==========================================
@@ -129,7 +143,7 @@ class AwardService{
                                 $uploadedFile,
                                 'award-files'
                             );
-
+                            
                             if (file_exists($tmpFilePath)) {
                                 @unlink($tmpFilePath);
                             }

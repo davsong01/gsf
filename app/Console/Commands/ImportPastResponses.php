@@ -29,7 +29,7 @@ class ImportPastResponses extends Command
 
         $file = fopen($csvPath, 'r');
         $headers = fgetcsv($file);
-
+        
         $keys = array_map(function($header) {
             return Str::of($header)->lower()->replaceMatches('/[^a-z0-9\s]/', '')->slug('_')->__toString();
         }, $headers);

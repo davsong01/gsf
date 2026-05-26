@@ -28,5 +28,4 @@ jobs:
             git pull origin development
             php artisan migrate --force
             php artisan optimize:clear
-            php artisan import:responses etf
             echo "Deployment to Server completed!"
