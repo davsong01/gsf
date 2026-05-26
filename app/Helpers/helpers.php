@@ -93,6 +93,24 @@ if (!function_exists('rootPermissions')) {
                         ]
                     ],
                     [
+                        'id' => 2,
+                        'slug' => 'awards.etf',
+                        'name' => 'Award Entries',
+                        'icon' => 'bx bx-award',
+                        'children' => [
+                            [
+                                'id' => 21,
+                                'slug' => 'stakeholderreports.award.etf',
+                                'name' => 'ETF Entries'
+                            ],
+                            [
+                                'id' => 22,
+                                'slug' => 'stakeholderreports.award.go',
+                                'name' => 'GO Award Entries'
+                            ]
+                        ]
+                    ],
+                    [
                         'id' => 4,
                         'slug' => 'report-structure',
                         'name' => 'Report Structure',

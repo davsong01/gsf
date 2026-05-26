@@ -13,6 +13,7 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'generate-template-preview/*',
-        'ajax/designations-by-role'
+        'ajax/designations-by-role',
+        'google-form-webhook'
     ];
 }

@@ -30,7 +30,9 @@
         in_array('stakeholderroles.index', $userPermissions) ||
         in_array('stakeholderpermissions.index', $userPermissions) ||
         in_array('designation.index', $userPermissions) ||
-        in_array('stakeholderpersonnel.index', $userPermissions)
+        in_array('stakeholderpersonnel.index', $userPermissions)  ||
+        in_array('award.go', $userPermissions)  ||
+        in_array('award.etf', $userPermissions)
     )
         <li class="nav-item has-sub {{ Request::is('stakeholder*') ? 'open is_shown' : '' }}">
             <a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Portal Mgt</span></a>
@@ -52,6 +54,36 @@
                         </li>
                     </ul>
                 </li>
+                @endif
+                @if(in_array('stakeholderreports.award.etf', $userPermissions) || in_array('stakeholderreports.award.go', $userPermissions))
+                    <li class="has-sub {{ Request::is('stakeholderreports.award.etf*') || Request::is('stakeholderreports.award.go*') ? 'open is_shown' : '' }}">
+                        <a href="#">
+                            <i class="bx bx-file"></i>
+                            <span class="menu-item">Awards</span>
+                        </a>
+
+                        <ul class="menu-content">
+
+                            @if(in_array('stakeholderreports.award.etf', $userPermissions))
+                                <li>
+                                    <a href="{{ route('stakeholderreports.award.etf') }}">
+                                        <i class="bx bx-right-arrow-alt"></i>
+                                        <span class="menu-item">Etf Awards</span>
+                                    </a>
+                                </li>
+                            @endif
+
+                            @if(in_array('stakeholderreports.award.go', $userPermissions))
+                                <li>
+                                    <a href="{{ route('stakeholderreports.award.go') }}">
+                                        <i class="bx bx-right-arrow-alt"></i>
+                                        <span class="menu-item">G.O. Awards</span>
+                                    </a>
+                                </li>
+                            @endif
+
+                        </ul>
+                    </li>
                 @endif
 
                 {{-- REPORT STRUCTURE --}}

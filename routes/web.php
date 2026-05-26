@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AlumniController;
+use App\Http\Controllers\AwardController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\ConferenceEditionController;
@@ -53,6 +54,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserEmailsController;
 use App\Http\Controllers\UtilityToolsController;
 use App\Http\Controllers\ZoneController;
+use App\Models\Chapter;
 use App\Models\CriticalEmail;
 use App\Models\Stakeholder;
 use App\Services\DynamicImageGenerator;
@@ -60,6 +62,7 @@ use App\Services\EmailService;
 use App\Services\FileUploadService;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -96,7 +99,13 @@ Route::post('process-verify-registration', [HomeController::class, 'verifyConfer
 //     ]);
 // });
 
+Route::post('google-form-webhook', [AwardController::class, 'webhook']);
+// routes/api.php
+Route::get('form-chapters', function() {
+    $chapters = Chapter::where('name', '!=', 'Other')->select('id', 'name')->orderBy('name')->get();
 
+    return response()->json($chapters);
+});
 Route::get('/retry', function () {
     Artisan::call('queue:retry all');
 });
@@ -239,6 +248,12 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('stakeholderreportsection', StakeholderReportSectionController::class);
     Route::resource('stakeholderreportsubsection', StakeholderReportSubSectionController::class);
     Route::resource('stakeholderreports', AdminReportsController::class);
+
+    Route::controller(AwardController::class)->group(function () {
+        Route::get('go-award-enties', 'goAwardEntries')->name('stakeholderreports.award.go');
+        Route::get('etf-award-enties', 'etfAwardEntries')->name('stakeholderreports.award.etf');
+    });
+
     Route::post('stakeholderreports-adjust-status/{report}', [AdminReportsController::class, 'adjustReportStatus'])->name('stakeholderreports.adjust.status');
 
     Route::get('fix-orphan-reports', [AdminReportsController::class, 'fixOrphanReport'])->name('report.fix.orphan');
@@ -578,6 +593,12 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
         });
 
         Route::resource('reports', StakeholderReportsController::class);
+
+
+        Route::controller(AwardController::class)->group(function () {
+            Route::get('go-award-enties', 'goAwardEntries')->name('award.go');
+            Route::get('etf-award-enties', 'etfAwardEntries')->name('award.etf');
+        });
 
         Route::get('financial-reports', [StakeholderReportsController::class, 'financialReports'])->name('financial.report');
         Route::get('download-financial-reports/{report}', [StakeholderReportsController::class, 'financialReportsDownload'])->name('financial.reports.download');

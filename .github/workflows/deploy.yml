@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Executing remote ssh commands
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: 66.29.146.99
           username: shinliih
@@ -27,37 +27,5 @@ jobs:
             git stash
             git pull origin development
             php artisan migrate --force
-            php artisan cache:clear
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
+            php artisan optimize:clear
             echo "Deployment to Server completed!"
-
-
-  # deploy-gyf:
-  #   name: Deploy to GYF
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
-
-  #     - name: Deploy to GYF server
-  #       uses: appleboy/ssh-action@v0.1.8
-  #       with:
-  #         host: 198.54.115.222
-  #         username: gyfnbpbo
-  #         key: ${{ secrets.DEPLOY_KEY_GYF }}
-  #         port: 21098
-  #         script_stop: true
-  #         script: |
-  #           echo "Deploying to GYF..."
-  #           cd /home/gyfnbpbo/registration.gyfnational.org/apps
-  #           git fetch --all
-  #           git reset --hard origin/development
-  #           php artisan migrate --force
-  #           php artisan cache:clear
-  #           php artisan config:clear
-  #           php artisan route:clear
-  #           php artisan view:clear
-  #           echo "Deployment to GYF completed!"
