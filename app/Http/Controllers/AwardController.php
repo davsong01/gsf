@@ -17,8 +17,8 @@ class AwardController extends Controller
 
     public function webhook(Request $request){
         Log::info('Raw Incoming Google Webhook Data:', $request->all());
-       
-        $this->awardService->storeFromGoogle($request);
+
+        $this->awardService->storeFromGoogle($request->all());
 
         return response()->json([], 200);
     }

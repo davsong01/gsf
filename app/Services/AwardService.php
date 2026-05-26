@@ -15,14 +15,13 @@ use Illuminate\Support\Facades\Log;
 // web app url: https://script.google.com/macros/s/AKfycbyn8X8DoQzNh4i0je5U6rN4F1YJ673wemqtMlAnqJkNq11-sGfhvD5ZxGXHNPLkIhRruw/exec
 
 class AwardService{
-    public function storeFromGoogle(Request $request)
+   public function storeFromGoogle(array $data)
     {
-        Log::info('Structured Incoming Google Webhook Data:', $request->all());
 
-        $type = $request->input('type') ?? 'Default Google Form';
+        $type = $data['type'] ?? 'Default Google Form';
 
-        // Grab our structured fields array from the request
-        $formFields = $request->input('fields', []);
+        // Grab our structured fields array from the data array input
+        $formFields = $data['fields'] ?? [];
 
         try {
             DB::transaction(function () use ($formFields, $type) {
@@ -46,10 +45,10 @@ class AwardService{
                         continue;
                     }
 
-                    if(in_array($key, ['column_38'])){
+                    if (in_array($key, ['column_38'])) {
                         continue;
                     }
-                    
+
                     if ($key === 'select_institution') {
                         // Look up the database to instantly grab the matching ID record
                         $chapter = DB::table('chapters')
@@ -62,43 +61,70 @@ class AwardService{
 
                             $award->update([
                                 'chapter_id' => $chapter->id,
-                                'zone_id' => $chapter->zone_id,
-                                'field_id' => $chapter->field_id
+                                'zone_id'    => $chapter->zone_id,
+                                'field_id'   => $chapter->field_id
                             ]);
                         }
                     }
 
+                    if ($key === 'timestamp') {
+                        $award->update([
+                            'created_at' => \Carbon\Carbon::parse($value),
+                            'updated_at' => \Carbon\Carbon::parse($value)
+                        ]);
+
+                        continue;
+                    }
+
                     // Handle file processing dynamically via the key string flag
-                    if (str_ends_with($key, '_file_id')) {
+                    if (str_ends_with($key, '_file_id') || in_array($key, ['upload_a_clear_and_recent_picture_of_yourself', 'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature'])) {
                         try {
+                            if (filter_var($value, FILTER_VALIDATE_URL)) {
+
+                                // This regex matches all common Google Drive URL structures:
+                                // - drive.google.com/file/d/{ID}/view
+                                // - drive.google.com/uc?id={ID}
+                                // - docs.google.com/open?id={ID}
+                                preg_match('/(?:id=|\/d\/)([a-zA-Z0-9-_]{25,})/', $value, $matches);
+
+                                if (!empty($matches[1])) {
+                                    // Transform the full URL string into just the clean alphanumeric Drive ID
+                                    $value = $matches[1];
+                                } else {
+                                    throw new \Exception("Could not extract a valid Google Drive File ID from URL: {$value}");
+                                }
+
+                            }
+                            // ==========================================
+                            // LIVE GOOGLE FORMS: GOOGLE DRIVE API ACCESS
+                            // ==========================================
                             $client = new Client();
                             $client->setAuthConfig(storage_path('app/google-credentials.json'));
                             $client->addScope(Drive::DRIVE_READONLY);
                             $driveService = new Drive($client);
 
-                            // 1. Fetch metadata first so we can grab the REAL file name and mime type
+                            // 1. Fetch metadata first to get original name & mimeType
                             $fileMetadata = $driveService->files->get($value, ['fields' => 'name, mimeType']);
                             $originalName = $fileMetadata->getName();
                             $mimeType = $fileMetadata->getMimeType();
 
-                            // 2. Download the file stream bytes
+                            // 2. Stream download the file bytes from Drive
                             $response = $driveService->files->get($value, ['alt' => 'media']);
                             $fileContents = $response->getBody()->getContents();
 
-                            // 3. Create a temporary file path on your server
+                            // 3. Keep memory clean by saving to a temp file path
                             $tmpFilePath = tempnam(sys_get_temp_dir(), 'gdrive_');
                             file_put_contents($tmpFilePath, $fileContents);
 
-                            // 4. Construct a legitimate UploadedFile instance out of the temp file
+                            // 4. Instantiate object for FileUploadService validation parameters
                             $uploadedFile = new \Illuminate\Http\UploadedFile(
                                 $tmpFilePath,
                                 $originalName,
                                 $mimeType,
                                 UPLOAD_ERR_OK,
-                                true // Set test mode to true so it skips PHP's internal is_uploaded_file() check
+                                true
                             );
 
-                            // 5. This will now work perfectly with your existing service!
                             $uploadedUrl = app(FileUploadService::class)->secureUpload(
                                 $uploadedFile,
                                 'award-files'
@@ -112,16 +138,11 @@ class AwardService{
                             $value = $uploadedUrl;
 
                         } catch (\Exception $e) {
-                            // Make sure to clean up the temp file if something crashes mid-download
                             if (isset($tmpFilePath) && file_exists($tmpFilePath)) {
                                 @unlink($tmpFilePath);
                             }
 
-                            Log::error("Google File Download Failed for key [{$key}]: " . $e->getMessage());
-                            $key = str_replace('_file_id', '', $key);
-                            $value = 'Download Failed: ' . $e->getMessage();
-                        } catch (\Exception $e) {
-                            Log::error("Google File Download Failed for key [{$key}]: " . $e->getMessage());
+                            Log::error("File Ingestion processing failed for key [{$key}]: " . $e->getMessage());
                             $key = str_replace('_file_id', '', $key);
                             $value = 'Download Failed: ' . $e->getMessage();
                         }
@@ -137,11 +158,11 @@ class AwardService{
                 }
             });
 
-            return response()->json(['status' => 'success', 'message' => 'Structured entry items processed!'], 201);
+            return ['status' => 'success', 'message' => 'Structured entry items processed!', 'code' => 201];
 
         } catch (\Exception $e) {
             Log::error("Google Webhook Transaction Failed: " . $e->getMessage());
-            return response()->json(['status' => 'error', 'error' => $e->getMessage()], 500);
+            return ['status' => 'error', 'message' => $e->getMessage(), 'code' => 500];
         }
     }
 }

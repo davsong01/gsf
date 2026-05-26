@@ -19,7 +19,7 @@ class FileUploadService
         $disk = 'protected_uploads';
         $filename = $filename ?: $this->generateFilename($file);
         $folder = trim('uploads/'.$folder, '/');
-        
+
         $path = "{$folder}/{$filename}";
 
         // Delete old file if exists (expects relative path)
@@ -31,7 +31,7 @@ class FileUploadService
         if (!Storage::disk($disk)->exists($folder)) {
             Storage::disk($disk)->makeDirectory($folder);
         }
-
+        
         Storage::disk($disk)->putFileAs($folder, $file, $filename);
 
         return base64_encode($path);
