@@ -46,6 +46,10 @@ class AwardService{
                         continue;
                     }
 
+                    if(in_array($key, ['column_38'])){
+                        continue;
+                    }
+                    
                     if ($key === 'select_institution') {
                         // Look up the database to instantly grab the matching ID record
                         $chapter = DB::table('chapters')

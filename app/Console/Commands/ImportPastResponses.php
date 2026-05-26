@@ -62,6 +62,10 @@ class ImportPastResponses extends Command
                         continue;
                     }
 
+                    if(in_array($key, ['column_38'])){
+                        continue;
+                    }
+
                     // Reconstruct the human-readable label back from our slug key
                     $humanName = ucwords(str_replace('_', ' ', $key));
 
@@ -82,6 +86,13 @@ class ImportPastResponses extends Command
                                 'field_id' => $chapter->field_id
                             ]);
                         }
+
+                    }
+
+                    if($key == 'timestamp'){
+                        $award->update([
+                            'created_at' => $value
+                        ]);
                     }
 
                     // Insert right into your EAV entries mapping table
