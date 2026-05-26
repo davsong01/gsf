@@ -793,7 +793,7 @@ class ReportService
          * ------------------------- */
         if (empty($headers)) {
             $headers = array_merge(
-                ['Chapter Name', 'Zone', 'Field', 'Date Updated'],
+                ['Period', 'Chapter Name', 'Zone', 'Field', 'Date Updated'],
                 array_keys($sumColumns),
                 array_values($questionMap)
             );
@@ -811,6 +811,7 @@ class ReportService
             /** -------------------------
              * STATIC COLUMNS
              * ------------------------- */
+            $row['Period'] = date('F', mktime(0, 0, 0, $report->month, 10)) .', '. $report->year;
             $row['Chapter Name'] = $report->chapter?->name;
             $row['Zone'] = $report->zone?->name;
             $row['Field'] = $report->field?->name;
@@ -865,7 +866,7 @@ class ReportService
 
             $rows[] = $row;
         }
-
+        
         return ExcelService::download($rows, $headers, $fileName);
     }
 

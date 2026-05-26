@@ -91,8 +91,7 @@ class ConferenceEditionController extends Controller
 
         $edition = ConferenceEdition::with(['transactions', 'donations'])
             ->findOrFail($id);
-
-
+        
         $transactions = $edition->transactions
             ->unique(fn ($t) => $t->provider_reference ?? 'null_' . $t->id)
             ->values();
