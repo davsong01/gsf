@@ -72,7 +72,7 @@ class AwardService{
         }
 
         // Fixed initialization syntax order: Model::query()->with(...)
-        $awards = Award::query()->with('entries')
+        $awards = Award::query()->with('entries', 'chapter', 'field', 'zone')
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type))
             ->when($chapterIds->isNotEmpty(), fn ($q) => $q->whereIn('chapter_id', $chapterIds))
             ->when($zoneIds->isNotEmpty(), fn ($q) => $q->whereIn('zone_id', $zoneIds))

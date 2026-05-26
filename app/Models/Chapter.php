@@ -11,6 +11,7 @@ use App\Models\StakeholderReport;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Zone;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Chapter extends Model
@@ -81,5 +82,43 @@ class Chapter extends Model
     {
         return Chapter::where('field_id', $this->field_id)
                     ->where('id', '!=', $this->id);
+    }
+
+    public function reportCompliance()
+    {
+        // 1. Establish boundaries from January 2026 to the current time context
+        $startDate = Carbon::parse('2026-01-01')->startOfMonth();
+        $currentDate = Carbon::now()->startOfMonth();
+
+        if ($currentDate->isBefore($startDate)) {
+            return 100;
+        }
+
+        // 3. Count total expected operational reporting months (inclusive of current month)
+        $expectedMonthsCount = $startDate->diffInMonths($currentDate) + 1;
+
+        // 4. Count unique reports submitted by this chapter from Jan 2026 onwards
+        // Assumes your StakeholderReport records rely on a standard 'created_at' timestamp
+        // $submittedReportsCount = $this->reports()
+        //     ->where('created_at', '>=', $startDate)
+        //     ->count();
+
+        // Alternative if your system maps submissions strictly by legacy integer columns 'year' & 'month':
+        $submittedReportsCount = $this->reports()
+            ->where(function ($query) {
+                $query->where('year', '>', 2026)
+                      ->orWhere(function ($q) {
+                          $q->where('year', 2026)
+                            ->where('month', '>=', 1);
+                      });
+            })->count();
+
+        if ($expectedMonthsCount === 0) {
+            return 100;
+        }
+
+        $percentage = ($submittedReportsCount / $expectedMonthsCount) * 100;
+
+        return round(min($percentage, 100), 1);
     }
 }
