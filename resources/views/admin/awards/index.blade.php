@@ -1,5 +1,8 @@
 @php
-$awards = $entries['awards'];
+    $awards = $entries['awards'];
+    $chapters = $entries['chapters'];
+    $fields = $entries['fields'];
+    $zones = $entries['zones'];
 @endphp
 @extends('layouts.dashboard')
 @section('title', 'Award Entries')
@@ -11,7 +14,7 @@ $awards = $entries['awards'];
 <div class="content-body">
     <section id="awards-dashboard">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="card-title mb-0">All Award Submissions</h4>
+            <h4 class="card-title mb-0">All Award Entries</h4>
         </div>
 
         <!-- Filters -->
@@ -73,7 +76,7 @@ $awards = $entries['awards'];
                     </div>
 
                     {{-- Field --}}
-                    @if($canViewField)
+                    @if($canViewField || $isAdmin)
                         <div class="col-md-{{ $hierarchyCol }} mb-2">
                             <label class="form-label">Field</label>
                             <select name="field_filter" class="form-control">
@@ -88,7 +91,7 @@ $awards = $entries['awards'];
                     @endif
 
                     {{-- Zone --}}
-                    @if($canViewZone)
+                    @if($canViewZone || $isAdmin)
                         <div class="col-md-{{ $hierarchyCol }} mb-2">
                             <label class="form-label">Zone</label>
                             <select name="zone_filter" class="form-control">
@@ -103,7 +106,7 @@ $awards = $entries['awards'];
                     @endif
 
                     {{-- Chapter --}}
-                    @if($canViewChapter)
+                    @if($canViewChapter || $isAdmin)
                         <div class="col-md-{{ $hierarchyCol }} mb-2">
                             <label class="form-label">Chapter</label>
                             <select name="chapter_filter" class="form-control">
