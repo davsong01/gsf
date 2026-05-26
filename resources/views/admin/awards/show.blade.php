@@ -194,7 +194,7 @@
                                                                                 <th class="text-uppercase text-muted tracking-wider">Nominee & Ref</th>
                                                                                 <th class="text-uppercase text-muted tracking-wider">Award Type</th>
                                                                                 @if($isAdmin || in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
-                                                                                    <th class="text-uppercase text-muted tracking-wider">Location & Report Compliance</th>
+                                                                                    <th class="text-uppercase text-muted tracking-wider">Origin Location</th>
                                                                                 @endif
                                                                                 <th class="text-uppercase text-muted tracking-wider">Approval Progress</th>
                                                                                 <th class="text-uppercase text-muted tracking-wider">Submitted On</th>
@@ -231,63 +231,14 @@
                                                                                 </td>
 
                                                                                 @if($isAdmin || in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
-                                                                                   
-
                                                                                     <td>
-                                                                                        <div class="compliance-wrapper py-1">
-                                                                                            @php
-                                                                                                // 1. Define the compliance value safely inside the block loop instance
-                                                                                                $chapterCompliance = $award->chapter ? $award->chapter->reportCompliance() : 0;
-                                                                                                
-                                                                                                // 2. Set the progress bar colors dynamically
-                                                                                                if ($chapterCompliance >= 80) {
-                                                                                                    $progressBarColor = 'bg-success';
-                                                                                                    $textColor = 'text-success';
-                                                                                                    $badgeColor = 'bg-soft-success text-success';
-                                                                                                } elseif ($chapterCompliance >= 50) {
-                                                                                                    $progressBarColor = 'bg-warning text-dark';
-                                                                                                    $textColor = 'text-warning';
-                                                                                                    $badgeColor = 'bg-soft-warning text-warning';
-                                                                                                } else {
-                                                                                                    $progressBarColor = 'bg-danger';
-                                                                                                    $textColor = 'text-danger';
-                                                                                                    $badgeColor = 'bg-soft-danger text-danger';
-                                                                                                }
-                                                                                            @endphp
-
-                                                                                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                                                                                <div class="d-flex flex-column">
-                                                                                                    <span class="text-dark fw-semibold font-base mb-0">
-                                                                                                        {{ $award->chapter->name ?? '—' }}
-                                                                                                    </span>
-                                                                                                    <span class="text-muted font-xs">
-                                                                                                        {{ $award->zone->name ?? 'N/A' }} &bull; {{ $award->field->name ?? 'N/A' }}
-                                                                                                    </span>
-                                                                                                </div>
-                                                                                                
-                                                                                                <span class="badge badge-status {{ $badgeColor }}">
-                                                                                                    {{ $chapterCompliance }}% Compliance
-                                                                                                </span>
-                                                                                            </div>
-
-                                                                                            <div class="progress rounded-pill" style="height: 6px; background-color: #f1f5f9;">
-                                                                                                <div class="progress-bar {{ $progressBarColor }} rounded-pill" 
-                                                                                                    role="progressbar" 
-                                                                                                    style="width: {{ $chapterCompliance }}%;" 
-                                                                                                    aria-valuenow="{{ $chapterCompliance }}" 
-                                                                                                    aria-valuemin="0" 
-                                                                                                    aria-valuemax="100">
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        {{-- <div class="d-flex flex-column font-sm">
+                                                                                        <div class="d-flex flex-column font-sm">
                                                                                             <span class="text-dark fw-medium">{{ $award->chapter->name ?? '—' }}<br>
                                                                                                 <strong style="color:{{$award->chapter->reportCompliance() < 100 ? 'red' : 'green'}}">({{$award->chapter->reportCompliance() . '% Report Compliance'}})<strong></span>
                                                                                             <span class="text-muted font-xs">
                                                                                                 {{ $award->zone->name ?? 'N/A' }} &bull; {{ $award->field->name ?? 'N/A' }}
                                                                                             </span>
-                                                                                        </div> --}}
-                                                                                        
+                                                                                        </div>
                                                                                     </td>
                                                                                 @endif
 

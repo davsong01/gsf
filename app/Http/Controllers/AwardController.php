@@ -30,14 +30,27 @@ class AwardController extends Controller
         $user = auth()->user() ?? auth()->guard('stakeholder')->user();
     
         $isAdmin = (!empty($user->role) && $user->role == 1);
+        $request->merge([
+            'type' => 'go'
+        ]);
 
         $entries = $this->awardService->index($request, $user, 'go', $isAdmin);
-        
-        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user')));
+        $title = 'General Overseer (G.O.) Award Submissions';
+        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title')));
     }
 
-    public function etfAwardEntries(){
+    public function etfAwardEntries(Request $request){
+        $user = auth()->user() ?? auth()->guard('stakeholder')->user();
+    
+        $isAdmin = (!empty($user->role) && $user->role == 1);
+        $request->merge([
+            'type' => 'etf'
+        ]);
 
+        $entries = $this->awardService->index($request, $user, 'etf', $isAdmin);
+        $title = 'EducationTrust Fund (E.T.F.) Award Submissions';
+        
+        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title')));
     }
 
     /**
@@ -61,7 +74,8 @@ class AwardController extends Controller
      */
     public function show(Award $award)
     {
-        //
+        $award->load('entries');
+        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title')));
     }
 
     /**
