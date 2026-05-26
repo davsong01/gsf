@@ -98,7 +98,7 @@ class LoginController extends Controller
             ])->withInput();
         }
 
-
+        // dd(Hash::make('has23#Password'));
         // Check password
         if (!Hash::check($password, $user->password)) {
             return back()->withErrors([

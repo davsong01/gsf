@@ -4,7 +4,11 @@ namespace App\Services;
 
 use App\Models\Award;
 use App\Models\AwardEntries;
+use App\Models\Chapter;
+use App\Models\Field;
+use App\Models\Zone;
 use App\Services\FileUploadService; // Assuming this is the correct namespace
+use Carbon\Carbon;
 use Google\Client;
 use Google\Service\Drive;
 use Illuminate\Http\Request;
@@ -15,7 +19,124 @@ use Illuminate\Support\Facades\Log;
 // web app url: https://script.google.com/macros/s/AKfycbyn8X8DoQzNh4i0je5U6rN4F1YJ673wemqtMlAnqJkNq11-sGfhvD5ZxGXHNPLkIhRruw/exec
 
 class AwardService{
-   public function storeFromGoogle(array $data)
+    public function index(Request $request, $user, $type, $isAdmin)
+    {
+        $role = $user->role_id ?? $user->role;
+        
+        /** =====================
+         * BASE MODELS
+         * ===================== */
+        $chaptersQuery = Chapter::query();
+        $zonesQuery = Zone::query();
+        $fieldsQuery = Field::query();
+
+        $chapterIds = collect();
+        $zoneIds = collect();
+        $fieldIds = collect();
+
+        /** =====================
+         * ROLE-BASED SCOPING
+         * ===================== */
+        if ($isAdmin || finStakeholders($user)) {
+            // Admin → full access
+            $chapterIds = Chapter::pluck('id');
+            $zoneIds    = Zone::pluck('id');
+            $fieldIds   = Field::pluck('id');
+        } else {
+            if (in_array($role, chapterStakeholders())) {
+                $chapterIds = collect([$user->chapter_id]);
+                $zoneIds    = collect([$user->zone_id]);
+                $fieldIds   = collect([$user->field_id]);
+            }
+            elseif (in_array($role, zoneStakeholders())) {
+                $zoneIds = collect([$user->zone_id]);
+
+                $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
+
+                $fieldIds = Field::whereHas('zones', fn ($q) =>
+                    $q->where('id', $user->zone_id)
+                )->pluck('id');
+            }
+            elseif (in_array($role, fieldStakeholders())) {
+                $fieldIds = collect([$user->field_id]);
+
+                $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
+
+                $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
+            }
+            elseif (in_array($role, secretariatStakeholders())) {
+                $chapterIds = Chapter::pluck('id');
+                $zoneIds    = Zone::pluck('id');
+                $fieldIds   = Field::pluck('id');
+            }
+        }
+
+        // Fixed initialization syntax order: Model::query()->with(...)
+        $awards = Award::query()->with('entries')
+            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type))
+            ->when($chapterIds->isNotEmpty(), fn ($q) => $q->whereIn('chapter_id', $chapterIds))
+            ->when($zoneIds->isNotEmpty(), fn ($q) => $q->whereIn('zone_id', $zoneIds))
+            ->when($fieldIds->isNotEmpty(), fn ($q) => $q->whereIn('field_id', $fieldIds));
+
+        /** =====================
+         * DATE RANGE FILTERS
+         * ===================== */
+        if ($request->filled('from_date') || $request->filled('to_date')) {
+            // Fallback boundaries if only one input is present
+            $from = $request->filled('from_date')
+                ? Carbon::parse($request->from_date)->startOfDay()
+                : Carbon::parse('1970-01-01')->startOfDay();
+
+            $to = $request->filled('to_date')
+                ? Carbon::parse($request->to_date)->endOfDay()
+                : Carbon::now()->endOfDay();
+
+            // Standard Laravel whereBetween query implementation
+            $awards->whereBetween('created_at', [$from, $to]);
+        }
+
+        /** =====================
+         * SCOPE FILTERS
+         * ===================== */
+        foreach (['chapter', 'zone', 'field'] as $scope) {
+            if ($request->filled("{$scope}_filter")) {
+                $awards->where("{$scope}_id", $request->input("{$scope}_filter"));
+            }
+        }
+
+        /** =====================
+         * STATUS FILTERS
+         * ===================== */
+        if ($request->filled('status_filter')) {
+            $statusMap = [
+                'field_pending'      => ['field_status', 0],
+                'field_approved'     => ['field_status', 1],
+                'field_rejected'     => ['field_status', 2],
+                'zone_pending'       => ['zone_status', 0],
+                'zone_approved'      => ['zone_status', 1],
+                'zone_rejected'      => ['zone_status', 2],
+                'national_pending'   => ['national_status', 0],
+                'national_approved'  => ['national_status', 1],
+                'national_rejected'  => ['national_status', 2],
+            ];
+
+            if (isset($statusMap[$request->status_filter])) {
+                [$column, $value] = $statusMap[$request->status_filter];
+                $awards->where($column, $value);
+            }
+        }
+
+        return [
+            'awards'   => $awards->with(['chapter', 'zone', 'field'])
+                                ->orderByDesc('created_at') // Organized chronological timeline sorting
+                                ->paginate(20),
+            'chapters' => $chaptersQuery->whereIn('id', $chapterIds)->orderBy('name')->get(),
+            'zones'    => $zonesQuery->whereIn('id', $zoneIds)->orderBy('name')->get(),
+            'fields'   => $fieldsQuery->whereIn('id', $fieldIds)->orderBy('name')->get(),
+        ];
+    }
+
+    public function storeFromGoogle(array $data)
     {
 
         $type = $data['type'] ?? 'Default Google Form';
@@ -143,7 +264,7 @@ class AwardService{
                                 $uploadedFile,
                                 'award-files'
                             );
-                            
+
                             if (file_exists($tmpFilePath)) {
                                 @unlink($tmpFilePath);
                             }

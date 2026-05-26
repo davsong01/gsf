@@ -26,16 +26,14 @@ class AwardController extends Controller
      * Display a listing of the resource.
      */
 
+    public function goAwardEntries(Request $request){
+        $user = auth()->user() ?? auth()->guard('stakeholder')->user();
+    
+        $isAdmin = (!empty($user->role) && $user->role == 1);
 
-    public function index()
-    {
-        //
-    }
-
-
-
-    public function goAwardEntries(){
-
+        $entries = $this->awardService->index($request, $user, 'go', $isAdmin);
+        
+        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user')));
     }
 
     public function etfAwardEntries(){

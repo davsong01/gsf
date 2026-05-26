@@ -38,134 +38,7 @@ class ReportService
         return array_reverse($sessions);
     }
 
-    // public function index(Request $request, $user, bool $isAdmin = false)
-    // {
-    //     $role = $user->role_id ?? $user->role;
-
-    //     /** =====================
-    //      * BASE MODELS
-    //      * ===================== */
-    //     $chaptersQuery = Chapter::query();
-    //     $zonesQuery = Zone::query();
-    //     $fieldsQuery = Field::query();
-
-    //     $chapterIds = collect();
-    //     $zoneIds = collect();
-    //     $fieldIds = collect();
-
-    //     /** =====================
-    //      * ROLE-BASED SCOPING
-    //      * ===================== */
-    //     if ($isAdmin || finStakeholders($user)) {
-    //         // Admin → full access
-    //         $chapterIds = Chapter::pluck('id');
-    //         $zoneIds    = Zone::pluck('id');
-    //         $fieldIds   = Field::pluck('id');
-    //     } else {
-    //         if (in_array($role, chapterStakeholders())) {
-    //             $chapterIds = collect([$user->chapter_id]);
-    //             $zoneIds    = collect([$user->zone_id]);
-    //             $fieldIds   = collect([$user->field_id]);
-    //         }
-    //         elseif (in_array($role, zoneStakeholders())) {
-    //             $zoneIds = collect([$user->zone_id]);
-
-    //             $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
-
-    //             $fieldIds = Field::whereHas('zones', fn ($q) =>
-    //                 $q->where('id', $user->zone_id)
-    //             )->pluck('id');
-    //         }
-    //         elseif (in_array($role, fieldStakeholders())) {
-    //             $fieldIds = collect([$user->field_id]);
-
-    //             $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
-
-    //             $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
-    //         }
-    //         elseif (in_array($role, secretariatStakeholders())) {
-    //             $chapterIds = Chapter::pluck('id');
-    //             $zoneIds    = Zone::pluck('id');
-    //             $fieldIds   = Field::pluck('id');
-    //         }
-    //     }
-
-    //     /** =====================
-    //      * REPORT QUERY
-    //      * ===================== */
-
-    //     if(finStakeholders($user)) {
-    //         $finIds = finSubSectionIds();
-
-    //         $reports = StakeholderReport::whereHas('answers', function ($query) use ($finIds) {
-    //             $query->whereHas('question', function ($q) use ($finIds) {
-    //                 $q->whereHas('subsection', function ($q) use ($finIds) {
-    //                     $q->whereIn('id', $finIds);
-    //                     });
-    //             });
-    //         });
-    //     }else{
-    //         $reports = StakeholderReport::query()
-    //             ->when($chapterIds->isNotEmpty(), fn ($q) => $q->whereIn('chapter_id', $chapterIds))
-    //             ->when($zoneIds->isNotEmpty(), fn ($q) => $q->whereIn('zone_id', $zoneIds))
-    //             ->when($fieldIds->isNotEmpty(), fn ($q) => $q->whereIn('field_id', $fieldIds));
-    //     }
-    //     // dd($reports->get(), $chapterIds, $zoneIds, $fieldIds);
-    //     if ($request->filled('from_date')) {
-    //         $reports->whereDate('created_at', '>=', $request->from_date);
-    //     }
-
-    //     if ($request->filled('to_date')) {
-    //         $reports->whereDate('created_at', '<=', $request->to_date);
-    //     }
-
-    //     /** =====================
-    //      * MANUAL FILTERS
-    //      * ===================== */
-    //     foreach (['chapter', 'zone', 'field'] as $scope) {
-    //         if ($request->filled("{$scope}_filter")) {
-    //             $reports->where("{$scope}_id", $request->input("{$scope}_filter"));
-    //         }
-    //     }
-
-    //     /** =====================
-    //      * STATUS FILTERS
-    //      * ===================== */
-    //     if ($request->filled('status_filter')) {
-    //         $statusMap = [
-    //             'field_pending'      => ['field_status', 0],
-    //             'field_approved'     => ['field_status', 1],
-    //             'field_rejected'     => ['field_status', 2],
-    //             'zone_pending'       => ['zone_status', 0],
-    //             'zone_approved'      => ['zone_status', 1],
-    //             'zone_rejected'      => ['zone_status', 2],
-    //             'national_pending'   => ['national_status', 0],
-    //             'national_approved'  => ['national_status', 1],
-    //             'national_rejected'  => ['national_status', 2],
-    //         ];
-
-    //         if (isset($statusMap[$request->status_filter])) {
-    //             [$column, $value] = $statusMap[$request->status_filter];
-    //             $reports->where($column, $value);
-    //         }
-    //     }
-
-    //     if ($request->action === 'download') {
-    //         $reportsCollection = $reports->get();
-
-    //         return $this->downloadFinancialReport($reportsCollection);
-    //     }
-
-    //     return [
-    //         'reports'  => $reports->with(['chapter', 'zone', 'field'])
-    //                               ->orderByDesc('created_at')
-    //                               ->paginate(20),
-
-    //         'chapters' => $chaptersQuery->whereIn('id', $chapterIds)->orderBy('name')->get(),
-    //         'zones'    => $zonesQuery->whereIn('id', $zoneIds)->orderBy('name')->get(),
-    //         'fields'   => $fieldsQuery->whereIn('id', $fieldIds)->orderBy('name')->get(),
-    //     ];
-    // }
+    
     public function index(Request $request, $user, bool $isAdmin = false)
     {
         $role = $user->role_id ?? $user->role;
@@ -866,7 +739,7 @@ class ReportService
 
             $rows[] = $row;
         }
-        
+
         return ExcelService::download($rows, $headers, $fileName);
     }
 

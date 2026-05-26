@@ -250,9 +250,15 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('stakeholderreports', AdminReportsController::class);
 
     Route::controller(AwardController::class)->group(function () {
-        Route::get('go-award-enties', 'goAwardEntries')->name('stakeholderreports.award.go');
-        Route::get('etf-award-enties', 'etfAwardEntries')->name('stakeholderreports.award.etf');
+        Route::get('award-enties/go', 'goAwardEntries')->name('stakeholderreports.award.go');
+        Route::get('award-enties/etf', 'etfAwardEntries')->name('stakeholderreports.award.etf');
+        Route::get('award-enties/{award}', 'edit')->name('stakeholderreports.awards.edit');
+        Route::get('award-enties-single/{award}', 'show')->name('stakeholderreports.awards.show');
+        Route::get('award-enties-download/{award}', 'download')->name('stakeholderreports.awards.download');
+        Route::delete('delete/{award}', 'destroy')->name('stakeholderreports.awards.delete');
+        Route::post('bulkdelete-download', 'bulkDelete')->name('stakeholderreports.awards.bulk-delete');
     });
+    Route::post('adjust-award-status/{report}', [AdminReportsController::class, 'adjustAwardStatus'])->name('awards.adjust.status');
 
     Route::post('stakeholderreports-adjust-status/{report}', [AdminReportsController::class, 'adjustReportStatus'])->name('stakeholderreports.adjust.status');
 
