@@ -216,7 +216,7 @@
                                                                                 <td>
                                                                                     <div class="d-flex flex-column">
                                                                                         <span class="text-dark fw-semibold font-base mb-0">
-                                                                                            {{ $award?->entries?->firstWhere('key', 'name_surname_first')?->value ?? 'Unnamed Nominee' }}
+                                                                                            {{ $award?->entries?->firstWhere('key', 'name_surname_first')?->value ?? $award?->entries?->firstWhere('key', 'first_name')?->value ?? 'Unnamed Nominee' }}
                                                                                         </span>
                                                                                         <span class="text-muted tracking-tight font-xs">
                                                                                             {{ $award->reference }}
