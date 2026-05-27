@@ -1378,7 +1378,7 @@ if (!function_exists('resolveAwardPermissions')) {
                     && in_array((int)$award->national_status, [0, 2])) {
                 
                 $canAct         = true;
-                $canEdit        = (bool)($settings['allow_field_edit'] ?? false);
+                $canEdit        = true;
                 $approveRoute   = route('award.approve', $award->id);
                 $rejectRoute    = route('award.reject', $award->id);
                 $tooltipApprove = 'Approve for National';
