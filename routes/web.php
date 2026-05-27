@@ -280,7 +280,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     // Official
     Route::resource('nec', NecController::class);
+    Route::get('award-settings', [AwardController::class, 'awardSettings'])->name('award.settings');
+    Route::post('award-settings', [AwardController::class, 'updateAwardSettings'])->name('award.settings');
 
+    
     Route::get('archived-nec', [NecController::class, 'archivedNec'])->name('archive.nec.index');
     Route::post('process-archive-nec', [NecController::class, 'archiveNec'])->name('nec.archive');
 

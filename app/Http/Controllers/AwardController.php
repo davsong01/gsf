@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Award;
+use App\Models\AwardSetting;
 use App\Models\Chapter;
 use App\Services\AwardService;
 use Illuminate\Http\Request;
@@ -108,5 +109,11 @@ class AwardController extends Controller
     public function destroy(Award $award)
     {
         //
+    }
+
+
+    public function awardSettings(){
+        $settings = AwardSetting::first();
+        return view('admin.awards.settings', compact('settings'));
     }
 }

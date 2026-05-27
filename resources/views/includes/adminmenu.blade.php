@@ -32,7 +32,9 @@
         in_array('designation.index', $userPermissions) ||
         in_array('stakeholderpersonnel.index', $userPermissions)  ||
         in_array('award.go', $userPermissions)  ||
-        in_array('award.etf', $userPermissions)
+        in_array('award.etf', $userPermissions) ||
+        in_array('award.settings', $userPermissions)
+        
     )
         <li class="nav-item has-sub {{ Request::is('stakeholder*') ? 'open is_shown' : '' }}">
             <a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Portal Mgt</span></a>
@@ -55,7 +57,7 @@
                     </ul>
                 </li>
                 @endif
-                @if(in_array('stakeholderreports.award.etf', $userPermissions) || in_array('stakeholderreports.award.go', $userPermissions))
+                @if(in_array('stakeholderreports.award.etf', $userPermissions) || in_array('stakeholderreports.award.go', $userPermissions) || in_array('award.settings', $userPermissions))
                     <li class="has-sub {{ Request::is('stakeholderreports.award.etf*') || Request::is('stakeholderreports.award.go*') ? 'open is_shown' : '' }}">
                         <a href="#">
                             <i class="bx bx-file"></i>
@@ -81,6 +83,17 @@
                                     </a>
                                 </li>
                             @endif
+
+                            @if(in_array('award.settings', $userPermissions))
+                                <li>
+                                    <a href="{{ route('award.settings') }}">
+                                        <i class="bx bx-right-arrow-alt"></i>
+                                        <span class="menu-item">Award Settings</span>
+                                    </a>
+                                </li>
+                            @endif
+
+                            
 
                         </ul>
                     </li>

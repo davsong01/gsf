@@ -172,6 +172,8 @@
         $headerImageEntry = $award->entries->first(function($entry) use ($fileFields) {
             return in_array(strtolower($entry->key), $fileFields) && !empty($entry->value);
         });
+
+        // $isEditable = 
     @endphp
 
     <!-- Top Profile Banner Block with Header Image Positioned Legibly -->
@@ -404,7 +406,7 @@
 @php
     $canAct = false;
     $userRole = $user->role_id;
-
+    
     if(in_array($userRole, zoneStakeholders()) && in_array($award->zone_status, [0,2])) {
         $canAct = true;
         $approveRoute = route('stakeholders.reports.approve', $award->id);

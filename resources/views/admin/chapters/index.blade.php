@@ -28,7 +28,7 @@
                     <div class="card-content">
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-align-middle mb-0 custom-modern-table">
+                                <table class="table zero-configuration table table-align-middle mb-0 custom-modern-table">
                                     <thead>
                                         <tr>
                                             <th class="ps-4" style="width: 60px;">S/N</th>

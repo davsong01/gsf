@@ -107,6 +107,11 @@ if (!function_exists('rootPermissions')) {
                                 'id' => 22,
                                 'slug' => 'stakeholderreports.award.go',
                                 'name' => 'GO Award Entries'
+                            ],
+                            [
+                                'id' => 23,
+                                'slug' => 'award.settings',
+                                'name' => 'Award Settings'
                             ]
                         ]
                     ],
@@ -1264,6 +1269,19 @@ if (!function_exists('paginationIndex')) {
 
 if (!function_exists('isAdmin')){
     function isAdmin($user = null) : array
+    {
+        $user = $user ? $user : (auth()->user() ?? auth()->guard('stakeholder')->user());
+        $isAdmin = (!empty($user->role) && $user->role == 1);
+        
+        return [
+            'status' => $isAdmin,
+            'user' => $user
+        ];
+    }
+}
+
+if (!function_exists('awardSettings')){
+    function awardSettings() : array
     {
         $user = $user ? $user : (auth()->user() ?? auth()->guard('stakeholder')->user());
         $isAdmin = (!empty($user->role) && $user->role == 1);
