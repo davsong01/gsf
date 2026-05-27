@@ -11,6 +11,7 @@ use App\Services\AwardService;
 use App\Services\EmailService;
 use App\Services\FileUploadService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AwardController extends Controller
@@ -269,7 +270,23 @@ class AwardController extends Controller
      */
     public function destroy(Award $award)
     {
-        //
+        try {
+            DB::transaction(function () use ($award) {
+                // 1. Delete all associated form input entries first
+                $award->entries()->delete();
+
+                // 2. Delete the parent award record
+                $award->delete();
+            });
+
+            return redirect()->back()->with('message', 'Delete Successful')->with('success', 'Award nomination and all associated entries deleted successfully.');
+
+        } catch (\Exception $e) {
+            Log::error("Failed to delete Award ID [{$award->id}]: " . $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', 'An error occurred while trying to delete the award nomination.');
+        }
     }
 
 

@@ -191,6 +191,7 @@
                                                                 <i class="fa fa-check font-xs pr-1"></i> Approve Selected (<span class="selected-count-placeholder">0</span>)
                                                             </button>
                                                             @endif
+                                                            @if($user->email == 'davsong@gmail.com')
                                                             <!-- Action 2: Bulk Delete -->
                                                             <button type="button" 
                                                                     class="dropdown-item text-danger d-flex align-items-center gap-2 py-1.5 fw-medium bulk-action-trigger" 
@@ -199,6 +200,7 @@
                                                                     data-confirm="Are you absolutely sure you want to DELETE and purge all (<span class='selected-count-placeholder'>0</span>) selected entries? This cannot be undone.">
                                                                 <i class="fa fa-trash font-xs pr-1"></i> Delete Selected (<span class="selected-count-placeholder">0</span>)
                                                             </button>
+                                                            @endif
                                                         </div>
                                                     </div>
                                                 </div>
@@ -349,7 +351,7 @@
                                                         
                                                         <a href="{{ route($isAdmin ? 'awards.show' : 'stakeholders.awards.show', $award->id) }}" class="btn btn-action-icon text-warning p-1" title="Edit Entry" onclick="return confirm('Modify this record?');"><i class="fa fa-edit font-sm"></i></a>
                                                         
-                                                        @if($isAdmin)
+                                                        @if($isAdmin && $user->email == 'davsong@gmail.com')
                                                         <a href="#" class="btn btn-action-icon text-danger p-1" title="Delete Submission" onclick="event.preventDefault(); if (confirm('Remove this submission record?')) { document.getElementById('delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-trash font-sm"></i></a>
                                                         @endif
                                                     </div>
