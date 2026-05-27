@@ -209,7 +209,6 @@ class OtpService
     public static function sendOtp($user, $type, $data)
     {
         $emailsToQueue = [
-            'type' => $type,
             'recipient' => $user->email,
             'subject' => $data['message']['subject'] ?? '',
             'content' => $data['message']['content'] ?? '',

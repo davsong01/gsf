@@ -47,4 +47,13 @@ class Award extends Model
         });
     }
 
+    protected function email(): Attribute
+    {
+        return Attribute::get(function () {         
+            return $this->entries?->firstWhere('key', 'email')?->value 
+                ?? $this->entries?->firstWhere('key', 'email_address')?->value 
+                ?? 'Unnamed Nominee';
+        });
+    }
+
 }

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Award;
+use App\Models\AwardSetting;
 use App\Models\Chapter;
 use App\Models\ConferenceEdition;
 use App\Models\Field;
@@ -100,12 +102,12 @@ if (!function_exists('rootPermissions')) {
                         'children' => [
                             [
                                 'id' => 21,
-                                'slug' => 'stakeholderreports.award.etf',
+                                'slug' => 'award.etf',
                                 'name' => 'ETF Entries'
                             ],
                             [
                                 'id' => 22,
-                                'slug' => 'stakeholderreports.award.go',
+                                'slug' => 'award.go',
                                 'name' => 'GO Award Entries'
                             ],
                             [
@@ -1270,9 +1272,33 @@ if (!function_exists('paginationIndex')) {
 if (!function_exists('isAdmin')){
     function isAdmin($user = null) : array
     {
-        $user = $user ? $user : (auth()->user() ?? auth()->guard('stakeholder')->user());
-        $isAdmin = (!empty($user->role) && $user->role == 1);
-        
+        if (!$user) {
+            $user = auth()->user() 
+                ?? auth()->guard('stakeholder')->user() 
+                ?? auth()->guard('web')->user();
+        }
+
+        if (!$user) {
+            return [
+                'status' => false,
+                'user' => null
+            ];
+        }
+
+        $roleValue = null;
+
+        if (is_object($user)) {
+            if (isset($user->role_id)) {
+                $roleValue = $user->role_id;
+            } elseif (isset($user->role)) {
+                $roleValue = is_object($user->role) ? ($user->role->id ?? null) : $user->role;
+            }
+        } elseif (is_array($user)) {
+            $roleValue = $user['role_id'] ?? ($user['role'] ?? null);
+        }
+
+        $isAdmin = (!is_null($roleValue) && (int)$roleValue === 1);
+                    
         return [
             'status' => $isAdmin,
             'user' => $user
@@ -1281,15 +1307,284 @@ if (!function_exists('isAdmin')){
 }
 
 if (!function_exists('awardSettings')){
-    function awardSettings() : array
+    function awardSettings() : AwardSetting
     {
-        $user = $user ? $user : (auth()->user() ?? auth()->guard('stakeholder')->user());
-        $isAdmin = (!empty($user->role) && $user->role == 1);
+        return AwardSetting::first();
+    }
+}
+
+if (!function_exists('resolveAwardPermissions')) {
+    function resolveAwardPermissions(Award $award, $user = null): object
+    {
+        // Resolve user session context defensively
+        if (!$user) {
+            $user = auth()->user() ?? auth()->guard('stakeholder')->user();
+        }
+
+        // Fail-secure fallback if parameters are completely missing
+        if (!$user || !$award) {
+            return (object) [
+                'canAct'          => false,
+                'canEdit'         => false,
+                'approveRoute'    => '#',
+                'rejectRoute'     => '#',
+                'tooltipApprove'  => '',
+                'tooltipReject'   => ''
+            ];
+        }
+
+        $userRole       = (int)($user->role_id ?? $user->role ?? 0);
+        $isAdmin        = ($userRole === 1);
+        $settings       = awardSettings(); // Leverage dynamic settings helper array
         
-        return [
-            'status' => $isAdmin,
-            'user' => $user
+        $canAct         = false;
+        $canEdit        = $isAdmin; // Admins bypass permission clamps natively
+        $approveRoute   = '#';
+        $rejectRoute    = '#';
+        $tooltipApprove = '';
+        $tooltipReject  = '';
+
+        try {
+            if (in_array($userRole, chapterStakeholders()) && in_array((int)$award->chapter_status, [0, 2])) {
+                $canAct         = $settings->allow_chapter_approval ?? true;
+                $canEdit        = (bool)($settings['allow_chapter_edit'] ?? false);
+                $approveRoute   = route('stakeholders.award.approve', $award->id);
+                $rejectRoute    = route('stakeholders.award.reject', $award->id);
+                $tooltipApprove = 'Approve for Chapter';
+                $tooltipReject  = 'Reject for Chapter';
+            }
+            // ZONE TIER EVALUATION
+            elseif (in_array($userRole, zoneStakeholders()) && in_array((int)$award->zone_status, [0, 2])) {
+                $canAct         = $settings->allow_zone_approval ?? true;
+                $canEdit        = (bool)($settings['allow_zone_edit'] ?? false);
+                $approveRoute   = route('stakeholders.award.approve', $award->id);
+                $rejectRoute    = route('stakeholders.award.reject', $award->id);
+                $tooltipApprove = 'Approve for Zone';
+                $tooltipReject  = 'Reject for Zone';
+            }
+            // FIELD TIER EVALUATION (Requires Zone Approval)
+            elseif (in_array($userRole, fieldStakeholders()) && (int)$award->zone_status === 1 && in_array((int)$award->field_status, [0, 2])) {
+                $canAct         = $settings->allow_field_approval ?? true;
+                $canEdit        = (bool)($settings['allow_field_edit'] ?? false);
+                $approveRoute   = route('stakeholders.award.approve', $award->id);
+                $rejectRoute    = route('stakeholders.award.reject', $award->id);
+                $tooltipApprove = 'Approve for Field';
+                $tooltipReject  = 'Reject for Field';
+            }
+            // NATIONAL SECRETARIAT & NCP TIER EVALUATION (Requires Zone & Field Approval)
+            elseif (in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders())) 
+                    && (int)$award->zone_status === 1 
+                    && (int)$award->field_status === 1 
+                    && in_array((int)$award->national_status, [0, 2])) {
+                
+                $canAct         = true;
+                $canEdit        = (bool)($settings['allow_field_edit'] ?? false);
+                $approveRoute   = route('award.approve', $award->id);
+                $rejectRoute    = route('award.reject', $award->id);
+                $tooltipApprove = 'Approve for National';
+                $tooltipReject  = 'Reject for National';
+            }
+        } catch (\Throwable $e) {
+            // dd($e->getMessage());
+            report($e); // Fail-secure log capture
+        }
+
+        return (object) [
+            'canAct'          => $canAct,
+            'canEdit'         => $canEdit,
+            'approveRoute'    => $approveRoute,
+            'rejectRoute'     => $rejectRoute,
+            'tooltipApprove'  => $tooltipApprove,
+            'tooltipReject'   => $tooltipReject
         ];
+    }
+}
+
+// if (!function_exists('resolveAwardIndexContext')) {
+//     /**
+//      * Resolves layout grid architecture, structural visibility rules,
+//      * and static translation maps for the collection list/index view.
+//      *
+//      * @param mixed|null $user Optional user context override
+//      * @return object Clean fluent property object map
+//      */
+//     function resolveAwardIndexContext($user = null): object
+//     {
+//         if (!$user) {
+//             $user = auth()->user() ?? auth()->guard('stakeholder')->user();
+//         }
+
+//         if (!$user) {
+//             return (object) [
+//                 'canViewChapter' => false,
+//                 'canEditChapter' => false,
+//                 'canViewZone'    => false,
+//                 'canEditZone' => false,
+
+//                 'canViewField'   => false,
+//                 'canEditField' => false,
+
+//                 'hierarchyCount' => 0,
+//                 'hierarchyCol'   => 12,
+//                 'statuses'       => []
+//             ];
+//         }
+
+//         $userRole = (int)($user->role_id ?? $user->role ?? 0);
+//         $isAdmin  = ($userRole === 1);
+
+//         // Compute Visibility rules (Admins automatically view all steps)
+//         $canViewChapter = $isAdmin || in_array($userRole, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders()));
+//         $canViewZone    = $isAdmin || in_array($userRole, array_merge(fieldStakeholders(), secretariatStakeholders(), ncpStakeholders()));
+//         $canViewField   = $isAdmin || in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders()));
+
+//         // Process Responsive Grid System Math
+//         $hierarchyCount = collect([$canViewField, $canViewZone, $canViewChapter])->filter()->count();
+//         $hierarchyCol   = $hierarchyCount > 1 ? intval(12 / $hierarchyCount) : 4;
+
+//         // Static Master Dictionary Map
+//         $approvalStatuses = [
+//             'zone_pending'      => 'Zone Pending',      'zone_approved'     => 'Zone Approved',     'zone_rejected'     => 'Zone Rejected',
+//             'field_pending'     => 'Field Pending',     'field_approved'    => 'Field Approved',    'field_rejected'    => 'Field Rejected',
+//             'national_pending'  => 'National Pending',  'national_approved' => 'National Approved', 'national_rejected' => 'National Rejected',
+//         ];
+
+//         return (object) [
+//             'canViewChapter' => $canViewChapter,
+//             'canViewZone'    => $canViewZone,
+//             'canViewField'   => $canViewField,
+//             'hierarchyCount' => $hierarchyCount,
+//             'hierarchyCol'   => $hierarchyCol,
+//             'statuses'        => $approvalStatuses
+//         ];
+//     }
+// }
+
+if (!function_exists('resolveAwardIndexContext')) {
+    /**
+     * Resolves layout grid architecture, structural visibility rules,
+     * editing permissions based on global settings, and static translation maps.
+     *
+     * @param mixed|null $user Optional user context override
+     * @return object Clean fluent property object map
+     */
+    function resolveAwardIndexContext($user = null): object
+    {
+        if (!$user) {
+            $user = auth()->user() ?? auth()->guard('stakeholder')->user();
+        }
+
+        $settings = awardSettings();
+
+        if (!$user) {
+            return (object) [
+                'canViewChapter' => false,
+                'canEdit'        => false,
+                'canViewZone'    => false,
+                'canViewField'   => false,
+                'hierarchyCount' => 0,
+                'hierarchyCol'   => 12,
+                'statuses'       => []
+            ];
+        }
+
+        $userRole = (int)($user->role_id ?? $user->role ?? 0);
+        $isAdmin  = ($userRole === 1);
+
+        $canViewChapter = $isAdmin || in_array($userRole, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders()));
+        $canViewZone    = $isAdmin || in_array($userRole, array_merge(fieldStakeholders(), secretariatStakeholders(), ncpStakeholders()));
+        $canViewField   = $isAdmin || in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders()));
+
+        $canEdit = $isAdmin;
+
+        if (!$canEdit) {
+            $canEdit = match(true) {
+                in_array($userRole, chapterStakeholders()) => (bool) ($settings->allow_chapter_edit ?? false),
+                in_array($userRole, zoneStakeholders())    => (bool) ($settings->allow_zone_edit ?? false),
+                in_array($userRole, fieldStakeholders())   => (bool) ($settings->allow_field_edit ?? false),
+                default                                    => false
+            };
+        }
+
+        $hierarchyCount = collect([$canViewField, $canViewZone, $canViewChapter])->filter()->count();
+        $hierarchyCol   = $hierarchyCount > 1 ? intval(12 / $hierarchyCount) : 4;
+
+        $approvalStatuses = [
+            'zone_pending'      => 'Zone Pending',      'zone_approved'     => 'Zone Approved',     'zone_rejected'     => 'Zone Rejected',
+            'field_pending'     => 'Field Pending',     'field_approved'    => 'Field Approved',    'field_rejected'    => 'Field Rejected',
+            'national_pending'  => 'National Pending',  'national_approved' => 'National Approved', 'national_rejected' => 'National Rejected',
+        ];
+
+        return (object) [
+            'canViewChapter' => $canViewChapter,
+            'canEdit'        => $canEdit,
+            'canViewZone'    => $canViewZone,
+            'canViewField'   => $canViewField,
+            'hierarchyCount' => $hierarchyCount,
+            'hierarchyCol'   => $hierarchyCol,
+            'statuses'       => $approvalStatuses
+        ];
+    }
+}
+
+if (!function_exists('fileFields')) {
+    /**
+     * Returns a lowercase collection array of recognized file upload form input keys.
+     *
+     * @return array
+     */
+    function fileFields(): array
+    {
+        return array_map('strtolower', [
+            'picturesave_picture_as_your_name',
+            'upload_a_clear_and_recent_picture_of_yourself',
+            'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature',
+            'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature_file_id',
+            'upload_a_clear_and_recent_picture_of_yourself_file_id', 
+            'document', 
+            'uploaded_file', 
+            'image', 
+            'attachment', 
+            'signature', 
+            'photo', 
+            'picture', 
+            'avatar'
+        ]);
+    }
+
+    if (!function_exists('specialFormFields')) {
+        /**
+         * Defines custom input field exceptions, identifying their type, 
+         * responsive behaviors, and collection configurations.
+         *
+         * @return array
+         */
+        function specialFormFields(): array
+        {
+            return [
+                'gender' => [
+                    'type'    => 'select',
+                    'options' => ['Male', 'Female']
+                ],
+                'are_you_born_again' => [
+                    'type'    => 'select',
+                    'options' => ['Yes', 'No']
+                ],
+                'marital_status' => [
+                    'type'    => 'select',
+                    'options' => ['Single', 'Married', 'Divorced', 'Widowed']
+                ],
+                'date_of_birth' => [
+                    'type' => 'date'
+                ],
+                'when' => [
+                    'type' => 'date'
+                ],
+                'graduation_year' => [
+                    'type' => 'date'
+                ],
+            ];
+        }
     }
 }
 

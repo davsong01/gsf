@@ -46,12 +46,25 @@
                         <span class="menu-title" data-i18n="User">Financial Reports</span>
                     </a>
                 </li>
+                
             @endif
             @if(!finStakeholders($user))
                 <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.reports') ? 'active' : '' }}">
                     <a href="{{ route('stakeholders.reports.index') }}">
                         <i class="fa fa-file" aria-hidden="true"></i>
                         <span class="menu-title" data-i18n="User">Monthly Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ $currentRoute === 'award.go' ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.award.go') }}">
+                        <i class="bx bxs-crown" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">First Class Award Entries</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ $currentRoute === 'award.go' ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.award.etf') }}">
+                        <i class="bx bxs-trophy" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">ETF Award Entries</span>
                     </a>
                 </li>
             @endif

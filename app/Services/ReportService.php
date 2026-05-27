@@ -739,7 +739,7 @@ class ReportService
 
             $rows[] = $row;
         }
-
+        
         return ExcelService::download($rows, $headers, $fileName);
     }
 

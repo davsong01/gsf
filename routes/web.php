@@ -250,17 +250,21 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('stakeholderreports', AdminReportsController::class);
 
     Route::controller(AwardController::class)->group(function () {
-        Route::get('award-enties/go', 'goAwardEntries')->name('stakeholderreports.award.go');
-        Route::get('award-enties/etf', 'etfAwardEntries')->name('stakeholderreports.award.etf');
-        Route::get('award-enties/{award}', 'edit')->name('stakeholderreports.awards.edit');
-        Route::get('award-enties-single/{award}', 'show')->name('stakeholderreports.awards.show');
-        Route::get('award-enties-download/{award}', 'download')->name('stakeholderreports.awards.download');
-        Route::delete('delete/{award}', 'destroy')->name('stakeholderreports.awards.delete');
-        Route::post('bulkdelete', 'bulkDelete')->name('stakeholderreports.awards.bulk-delete');
-        Route::post('bulkapprove', 'bulkDelete')->name('stakeholderreports.awards.bulk-approve');
+        Route::get('award-enties/go', 'goAwardEntries')->name('award.go');
+        Route::get('award-enties/etf', 'etfAwardEntries')->name('award.etf');
+        Route::get('award-enties/{award}', 'edit')->name('awards.edit');
+        Route::get('award-enties-single/{award}', 'show')->name('awards.show');
+        Route::get('award-enties-download/{award}', 'download')->name('awards.download');
+        Route::delete('delete/{award}', 'destroy')->name('awards.delete');
+        Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
+        Route::post('bulkapprove', 'bulkDelete')->name('awards.bulk-approve');
         
-        Route::post('award-update', 'updateAward')->name('stakeholderreports.awards.update');
+        Route::get('award-approve/{award}', 'approveEntry')->name('award.approve');
+        Route::post('award-reject/{award}', 'rejectEntry')->name('award.reject');
+        
+        Route::post('award-update', 'updateAward')->name('awards.update');
     });
+
     Route::post('adjust-award-status/{report}', [AdminReportsController::class, 'adjustAwardStatus'])->name('awards.adjust.status');
 
     Route::post('stakeholderreports-adjust-status/{report}', [AdminReportsController::class, 'adjustReportStatus'])->name('stakeholderreports.adjust.status');
@@ -281,7 +285,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     // Official
     Route::resource('nec', NecController::class);
     Route::get('award-settings', [AwardController::class, 'awardSettings'])->name('award.settings');
-    Route::post('award-settings', [AwardController::class, 'updateAwardSettings'])->name('award.settings');
+    Route::post('award-settings', [AwardController::class, 'updateAwardSettings'])->name('award.settings.update');
 
     
     Route::get('archived-nec', [NecController::class, 'archivedNec'])->name('archive.nec.index');
@@ -673,6 +677,24 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
 
             Route::get('chapters/{chapter}/edit', 'chapterEdit')->name('chapters.edit');
             Route::put('chapters/{chapter}', 'chapterUpdate')->name('chapters.update');
+        });
+
+        // Award Management
+        Route::controller(AwardController::class)->group(function () {
+            Route::get('award-enties/go', 'goAwardEntries')->name('award.go');
+            Route::get('award-enties/etf', 'etfAwardEntries')->name('award.etf');
+            Route::get('award-enties/{award}', 'edit')->name('awards.edit');
+            Route::get('award-enties-single/{award}', 'show')->name('awards.show');
+            Route::get('award-enties-download/{award}', 'download')->name('awards.download');
+            Route::delete('delete/{award}', 'destroy')->name('awards.delete');
+            Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
+            Route::post('bulkapprove', 'bulkDelete')->name('awards.bulk-approve');
+
+            
+            Route::get('award-approve/{award}', 'approveEntry')->name('award.approve');
+            Route::post('award-reject/{award}', 'rejectEntry')->name('award.reject');
+            
+            Route::post('award-update', 'updateAward')->name('awards.update');
         });
 
     });

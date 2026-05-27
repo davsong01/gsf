@@ -190,58 +190,62 @@
     @endif
         
     <!-- Top Profile Banner Block with Header Image Positioned Legibly -->
-    <div class="card overview-banner-card mb-2">
-    <div class="card-body p-1">
-        <div class="row align-items-center g-4">
-            
-            <!-- Left Column: Avatar Picture Matrix Container -->
-            <div class="col-auto">
-                @if($headerImageEntry)
-                    <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry->value]) }}" 
-                         class="header-avatar-preview trigger-zoom-modal" 
-                         data-file-url="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry->value]) }}"
-                         data-label="Nominee Profile Photo"
-                         title="Click to expand snapshot portrait"
-                         alt="Nominee Picture">
-                @else
-                    <div class="header-avatar-placeholder">
-                        <i class="bx bx-user" style="font-size: 2.2rem;"></i>
-                    </div>
-                @endif
-            </div>
+    <div class="card overview-banner-card mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-center g-4">
+                
+                <!-- Left Column: Avatar Picture Matrix Container -->
+                <div class="col-auto">
+                    @if($headerImageEntry)
+                        <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry->value]) }}" 
+                             class="header-avatar-preview trigger-zoom-modal" 
+                             data-file-url="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry->value]) }}"
+                             data-label="Nominee Profile Photo"
+                             title="Click to expand snapshot portrait"
+                             alt="Nominee Picture">
+                    @else
+                        <div class="header-avatar-placeholder">
+                            <i class="bx bx-user" style="font-size: 2.2rem;"></i>
+                        </div>
+                    @endif
+                </div>
 
-            <!-- Center Column: Core Award Profile Identification Details -->
-            <div class="col flex-grow-1 ml-1">
-                <div class="d-flex align-items-start align-items-sm-center justify-content-between flex-wrap gap-2 mb-3">
-                    <!-- Title & Reference ID Stack Block -->
-                    <div>
-                        <h4 class="text-white fw-bold mb-1 d-flex align-items-center gap-2">
-                            <i class="bx bx-award text-white"></i>{{ucfirst($award->type)}} Award Nomination
-                        </h4>
-                        <div class="font-monospace text-muted font-xs tracking-tight ms-4 ps-1" style="color: rgba(255, 255, 255, 0.6) !important;">
-                            {{ $award->reference }}
+                <!-- Center Column: Core Award Profile Identification Details -->
+                <div class="col flex-grow-1 ml-1">
+                    <div class="d-flex align-items-start align-items-sm-center justify-content-between flex-wrap gap-2 mb-3">
+                        <!-- Title & Reference ID Stack Block -->
+                        <div>
+                            <h4 class="text-white fw-bold mb-1 d-flex align-items-center gap-2">
+                                <i class="bx bx-award text-white"></i>{{ucfirst($award->type)}} Award Nomination
+                            </h4>
+                            <div class="font-monospace text-muted font-xs tracking-tight ms-4 ps-1" style="color: rgba(255, 255, 255, 0.6) !important;">
+                                {{ $award->reference }}
+                            </div>
+                        </div>
+
+                        <!-- Award Classification Type Pill Tag -->
+                        {{-- <div>
+                            <span class="badge bg-primary text-uppercase font-xs px-2 py-1 shadow-sm" style="font-size: 0.72rem; letter-spacing: 0.02em;">
+                                {{ $award->type }}
+                            </span>
+                        </div> --}}
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-6">
+                            <div class="meta-label">Nominee Profile</div>
+                            <div class="meta-value text-truncate" style="max-width: 220px;" title="{{ $award->name }}">{{ $award->name ?? 'Unnamed Nominee' }}</div>
+                        </div>
+                        
+                        <div class="col-12 col-md-6">
+                            <div class="meta-label">Submitted On</div>
+                            <div class="meta-value">{{ $award->created_at->format('d M Y, h:i A') }}</div>
                         </div>
                     </div>
                 </div>
-                <div class="row g-3">
-                    <div class="col-6 col-md-6">
-                        <div class="meta-label">Nominee Profile</div>
-                        <div class="meta-value text-truncate" style="max-width: 220px;" title="{{ $award->name }}">{{ $award->name ?? 'Unnamed Nominee' }}</div>
-                    </div>
-                    
-                    <div class="col-12 col-md-6">
-                        <div class="meta-label">Submitted On</div>
-                        <div class="meta-value">{{ $award->created_at->format('d M Y, h:i A') }}</div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Right Column: Integrated Regional Context, Compliance Tracking & Workflow Statuses -->
-            <div class="col-12 col-lg-5">
-                <div class="compliance-wrapper header-compliance-card h-100 d-flex flex-column justify-content-between gap-3">
-                    
-                    <!-- Top Sub-Section: Regional Compliance Information -->
-                    <div>
+                <!-- Right Column: Integrated Regional Context & Report Compliance Tracking Node -->
+                <div class="col-12 col-lg-4">
+                    <div class="compliance-wrapper header-compliance-card">
                         @php
                             $chapterCompliance = $award->chapter ? $award->chapter->reportCompliance() : 0;
                             
@@ -260,15 +264,15 @@
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="d-flex flex-column">
                                 @if(empty($award->chapter_id))
-                                <span class="font-sm lh-sm text-white" style="font-size: 1rem;">
+                                <span class="font-sm lh-sm" style="font-size: 1rem;">
                                     <strong>{{ $award->entries->firstWhere('key', 'select_institution')->value ?? 'N/A' }}</strong>
                                 </span>
                                 @else
-                                <span class="font-sm lh-sm text-white" style="font-size: 1rem;">
+                                <span class="font-sm lh-sm" style="font-size: 1rem;">
                                     {{ $award->chapter->name ?? '—' }}
                                 </span>
                                 @endif
-                                <span class="font-xs text-muted mt-0.5" style="color: rgba(255,255,255,0.5) !important;">
+                                <span class="font-xs text-muted mt-0.5">
                                     {{ $award->zone->name ?? 'N/A' }} &bull; {{ $award->field->name ?? 'N/A' }}
                                 </span>
                             </div>
@@ -288,68 +292,11 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Divider separating context from approval flow metrics -->
-                    <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); width: 100%;"></div>
-                    <div>
-                        <div class="meta-label mb-1 mt-2" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255, 255, 255, 0.5) !important;">
-                            Approval Status Clearance
-                        </div>
-                        
-                        @php
-                            $stages = [
-                                'Chapter'  => ['value' => $award->chapter_status,  'level' => 'chapter'],
-                                'Zone'     => ['value' => $award->zone_status,     'level' => 'zone'],
-                                'Field'    => ['value' => $award->field_status,    'level' => 'field'],
-                                'National' => ['value' => $award->national_status, 'level' => 'national'],
-                            ];
-                        @endphp
-
-                        <div class="row g-2">
-                            @foreach($stages as $label => $data)
-                                <div class="col-6 col-sm-3 col-lg-6 col-xl-3">
-                                    <!-- Calibrated Micro-Card Background and Borders for Dark Blue backgrounds -->
-                                    <div class="p-2 rounded d-flex flex-column align-items-start justify-content-between" 
-                                        style="background-color: rgba(15, 23, 42, 0.4); min-height: 54px; border: 1px solid rgba(255, 255, 255, 0.08);">
-                                        
-                                        <span class="mb-1" style="font-size: 0.65rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; color: white !important;">
-                                            {{ $label }}
-                                        </span>
-                                        
-                                        @if($data['value'] == 2)
-                                            <!-- High-Contrast Neon Red Tag -->
-                                            <span class="badge d-inline-flex align-items-center gap-1 border" 
-                                                style="font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; background-color: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4) !important; color: #ff6b6b !important;">
-                                                Rejected
-                                                <a href="#{{ $data['level'] }}Rejection{{ $award->id }}" data-toggle="modal" class="lh-1 m-0 p-0" style="color: #ff6b6b !important;" title="View feedback">
-                                                    <i class="bx bx-message-rounded-dots" style="font-size: 0.85rem; vertical-align: middle;"></i>
-                                                </a>
-                                            </span>
-                                        @elseif($data['value'] == 1)
-                                            <!-- High-Contrast Vibrant Emerald Tag -->
-                                            <span class="badge border" 
-                                                style="font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; background-color: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4) !important; color: #34d399 !important;">
-                                                Approved
-                                            </span>
-                                        @else
-                                            <!-- High-Contrast Crisp Amber Gold Tag -->
-                                            <span class="badge border" 
-                                                style="font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; background-color: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4) !important; color: #fbbf24 !important;">
-                                                Pending
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
                 </div>
-            </div>
 
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Main Dynamic Key-Value Form Section -->
     <section id="kv-entry-form">
@@ -362,15 +309,7 @@
                 @foreach($award->entries as $entry)
                     @php
                         $isInstitutionKey = in_array($entry->key, ['select_institution', 'chapter_id']);
-
-                        $cleanKey = strtolower($entry->key);
-                        
                         $isFieldFile = in_array($entry->key, $fileFields) || str_contains(strtolower($entry->key), 'file') || str_contains(strtolower($entry->key), 'image');
-
-                        $specialFields = specialFormFields();
-                        $hasSpecialSchema = array_key_exists($cleanKey, $specialFields);
-                        $fieldSchema = $hasSpecialSchema ? $specialFields[$cleanKey] : null;
-                        // dd($hasSpecialSchema);
                     @endphp
 
                     @if($isInstitutionKey && !$isAdmin)
@@ -414,30 +353,8 @@
                                             @endif
                                         </div>
                                     </div>
-                                @elseif($hasSpecialSchema)
-                                    {{-- Handle Custom Select Dropdown Options --}}
-                                    @if($fieldSchema['type'] === 'select')
-                                        <select class="form-select w-100 mb-1" 
-                                                id="entry-{{ $entry->id }}" 
-                                                name="entries[{{ $entry->key }}]"
-                                                {{ $canEdit == 0 ? 'disabled' : '' }}>
-                                            <option value="">-- Choose Option --</option>
-                                            @foreach($fieldSchema['options'] as $option)
-                                                <option value="{{ $option }}" {{ (string)$entry->value === (string)$option ? 'selected' : '' }}>
-                                                    {{ $option }}
-                                                </option>
-                                            @endforeach
-                                        </select>
 
-                                    {{-- Handle Native HTML Date Inputs --}}
-                                    @elseif($fieldSchema['type'] === 'date')
-                                        <input type="date" 
-                                            class="form-control w-100 mb-1" 
-                                            id="entry-{{ $entry->id }}" 
-                                            name="entries[{{ $entry->key }}]" 
-                                            value="{{ !empty($entry->value) ? date('Y-m-d', strtotime($entry->value)) : '' }}"
-                                            {{ $canEdit == 0 ? 'disabled' : '' }}>
-                                    @endif
+                                {{-- Render institution select dropdown --}}
                                 @elseif($isInstitutionKey)
                                     <select class="form-select w-100 mb-1" 
                                             id="entry-{{ $entry->id }}" 
@@ -635,7 +552,7 @@
                 <div class="modal-body py-3">
                     <div class="mb-2">
                         <label for="rejection_reason" class="form-label font-sm fw-medium text-secondary mb-1">Reason explaining the rejection context</label>
-                        <textarea name="rejection_reason" id="rejection_reason" class="form-control font-sm rounded-2" rows="4" placeholder="Provide details why you have to reject..." required></textarea>
+                        <textarea name="rejection_reason" id="rejection_reason" class="form-control font-sm rounded-2" rows="4" placeholder="Provide details to the chapter clarifying why adjustments are required..." required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0">

@@ -3,11 +3,31 @@
     $chapters = $entries['chapters'];
     $fields = $entries['fields'];
     $zones = $entries['zones'];
+
+    $permissions = resolveAwardIndexContext();
+
+    $canViewChapter = $permissions->canViewChapter;
+    $canViewZone = $permissions->canViewZone;
+    $canViewField = $permissions->canViewField;
+
+    $canEdit = $permissions->canEdit;
+    
+    $hierarchyCount = $permissions->hierarchyCount;
+    $hierarchyCol = $permissions->hierarchyCol;
+    $approval_statuses = $permissions->statuses;
+  
 @endphp
-@extends('layouts.dashboard')
+
+@extends($isAdmin ? 'layouts.dashboard' : 'layouts.stakeholderdashboard')
+
 @section('title', 'Award Entries')
-@section('item')
-<li class="breadcrumb-item"> <a href="{{ route('stakeholderreports.award.go') }}">Award Entries</a></li>
+
+@section($isAdmin ? 'item' : 'active')
+    @if($isAdmin)
+        <li class="breadcrumb-item"> 
+            <a href="{{ route($isAdmin ? 'award.go' : 'stakeholders.award.go') }}">Award Entries</a>
+        </li>
+    @endif
 @endsection
 
 @section('extra_styles')
@@ -57,21 +77,6 @@
         </div>
 
         <!-- Filters Form Panel -->
-        @php
-            $canViewChapter = in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders()));
-            $canViewZone = in_array($user->role_id, array_merge(fieldStakeholders(), secretariatStakeholders(), ncpStakeholders()));
-            $canViewField = in_array($user->role_id, array_merge(secretariatStakeholders(), ncpStakeholders()));
-
-            $hierarchyCount = collect([$canViewField, $canViewZone, $canViewChapter])->filter()->count();
-            $hierarchyCol = $hierarchyCount > 1 ? intval(12 / $hierarchyCount) : 4;
-
-            $approval_statuses = [
-                'zone_pending'     => 'Zone Pending', 'zone_approved'    => 'Zone Approved', 'zone_rejected'    => 'Zone Rejected',
-                'field_pending'    => 'Field Pending', 'field_approved'   => 'Field Approved', 'field_rejected'   => 'Field Rejected',
-                'national_pending' => 'National Pending', 'national_approved'=> 'National Approved', 'national_rejected'=> 'National Rejected',
-            ];
-        @endphp
-
         <div class="row">
             <div class="col-12">
                 <form method="GET" class="row g-2 align-items-end">
@@ -91,10 +96,10 @@
                     @if($canViewField || $isAdmin)
                         <div class="col-md-{{ $hierarchyCol }} mb-2">
                             <label class="form-label">Field</label>
-                            <select name="field_filter" class="form-control">
+                            <select name="field_id" class="form-control">
                                 <option value="">All Fields</option>
                                 @foreach($fields as $field)
-                                    <option value="{{ $field->id }}" @selected(request('field_filter') == $field->id)>{{ $field->name }}</option>
+                                    <option value="{{ $field->id }}" @selected(request('field_id') == $field->id)>{{ $field->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -103,10 +108,10 @@
                     @if($canViewZone || $isAdmin)
                         <div class="col-md-{{ $hierarchyCol }} mb-2">
                             <label class="form-label">Zone</label>
-                            <select name="zone_filter" class="form-control">
+                            <select name="zone_id" class="form-control">
                                 <option value="">All Zones</option>
                                 @foreach($zones as $zone)
-                                    <option value="{{ $zone->id }}" @selected(request('zone_filter') == $zone->id)>{{ $zone->name }}</option>
+                                    <option value="{{ $zone->id }}" @selected(request('zone_id') == $zone->id)>{{ $zone->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -115,10 +120,10 @@
                     @if($canViewChapter || $isAdmin)
                         <div class="col-md-{{ $hierarchyCol }} mb-2">
                             <label class="form-label">Chapter</label>
-                            <select name="chapter_filter" class="form-control">
+                            <select name="chapter_id" class="form-control">
                                 <option value="">All Chapters</option>
                                 @foreach($chapters as $chapter)
-                                    <option value="{{ $chapter->id }}" @selected(request('chapter_filter') == $chapter->id)>{{ $chapter->name }}</option>
+                                    <option value="{{ $chapter->id }}" @selected(request('chapter_id') == $chapter->id)>{{ $chapter->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -143,7 +148,7 @@
         <!-- Master Data Render Table Component -->
         <div class="row">
             <div class="col-12">
-                <form id="bulk-actions-form" method="POST" action="{{ route('stakeholderreports.awards.bulk-delete') }}" onsubmit="return confirm('Confirm total purge of selected entries?');">
+                <form id="bulk-actions-form" method="POST" action="{{ route($isAdmin ? 'awards.bulk-delete' : 'stakeholders.awards.bulk-delete') }}" onsubmit="return confirm('Confirm total purge of selected entries?');">
                     @csrf
 
                     <div class="card border-0 shadow-sm rounded-3 overflow-hidden p-1">
@@ -163,6 +168,7 @@
                                                     
                                                     <!-- Floating Micro-Dropdown Inline (Icon Only) -->
                                                     <div class="dropdown" id="bulk-dropdown-wrapper" style="opacity: 0; pointer-events: none; transition: all 0.2s ease-in-out;">
+                                                        
                                                         <button class="btn btn-white btn-sm border p-0 d-flex align-items-center justify-content-center shadow-none text-secondary rounded-2" 
                                                                 type="button" 
                                                                 id="bulkActionsMenu" 
@@ -173,20 +179,22 @@
                                                                 title="Bulk Actions">
                                                             <i class="bx bx-dots-vertical-rounded font-sm"></i>
                                                         </button>
+                                                     
                                                         <div class="dropdown-menu border-0 shadow-sm rounded-2 font-xs py-1" aria-labelledby="bulkActionsMenu">
                                                             <!-- Action 1: Bulk Approve -->
+                                                            @if($isAdmin)
                                                             <button type="button" 
                                                                     class="dropdown-item text-success d-flex align-items-center gap-2 py-1.5 fw-medium bulk-action-trigger" 
-                                                                    data-action-url="{{ route('stakeholderreports.awards.bulk-approve') }}" 
+                                                                    data-action-url="{{ route('awards.bulk-approve') }}" 
                                                                     data-method="POST" 
                                                                     data-confirm="Are you sure you want to APPROVE all (<span class='selected-count-placeholder'>0</span>) selected entries?">
                                                                 <i class="fa fa-check font-xs pr-1"></i> Approve Selected (<span class="selected-count-placeholder">0</span>)
                                                             </button>
-                                                            
+                                                            @endif
                                                             <!-- Action 2: Bulk Delete -->
                                                             <button type="button" 
                                                                     class="dropdown-item text-danger d-flex align-items-center gap-2 py-1.5 fw-medium bulk-action-trigger" 
-                                                                    data-action-url="{{ route('stakeholderreports.awards.bulk-delete') }}" 
+                                                                    data-action-url="{{ route($isAdmin ? 'awards.bulk-delete' : 'stakeholders.awards.bulk-delete') }}" 
                                                                     data-method="DELETE" 
                                                                     data-confirm="Are you absolutely sure you want to DELETE and purge all (<span class='selected-count-placeholder'>0</span>) selected entries? This cannot be undone.">
                                                                 <i class="fa fa-trash font-xs pr-1"></i> Delete Selected (<span class="selected-count-placeholder">0</span>)
@@ -229,7 +237,7 @@
                                                 </td>
 
                                                 <td colspan="3" class="pe-4 align-middle pt-3 pb-2.5">
-                                                    @if($awardGroup->first() && $awardGroup->first()->chapter && ($isAdmin || in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders()))))
+                                                    @if($awardGroup->first() && $awardGroup->first()->chapter && ($isAdmin || in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders(), chapterStakeholders()))))
                                                         @php
                                                             $chapterCompliance = $awardGroup->first()->chapter->reportCompliance();
                                                             
@@ -297,19 +305,24 @@
                                                 <td>
                                                     @php
                                                         $statuses = [
-                                                            'Zone'     => ['value' => $award->zone_status, 'modal' => 'zoneRejection', 'view' => 'stakeholder.modals.zone_rejection_comment'],
-                                                            'Field'    => ['value' => $award->field_status, 'modal' => 'fieldRejection', 'view' => 'stakeholder.modals.field_rejection_comment'],
-                                                            'National' => ['value' => $award->national_status, 'modal' => 'secretariatRejection', 'view' => 'stakeholder.modals.secretariat_rejection_comment'],
+                                                            'Chapter'     => ['value' => $award->chapter_status,     'level' => 'chapter'],
+                                                            'Zone'     => ['value' => $award->zone_status,     'level' => 'zone'],
+                                                            'Field'    => ['value' => $award->field_status,    'level' => 'field'],
+                                                            'National' => ['value' => $award->national_status, 'level' => 'national'],
                                                         ];
                                                     @endphp
+                                                    
                                                     <div class="d-flex flex-column gap-1">
                                                         @foreach($statuses as $label => $data)
                                                             <div class="d-flex align-items-center font-xs">
-                                                                <span class="text-muted fw-normal" style="width: 100%;">{{ $label }}</span>
+                                                                <!-- Pro tip: changed width: 100% to a fixed width or flex-grow to ensure the badges line up neatly -->
+                                                                <span class="text-muted fw-normal flex-grow-1">{{ $label }}</span>
+                                                                
                                                                 @if($data['value'] == 2)
                                                                     <span class="badge badge-status bg-soft-danger text-danger d-inline-flex align-items-center gap-1">
                                                                         Rejected
-                                                                        <a href="#{{ $data['modal'] }}{{ $award->id }}" data-toggle="modal" class="text-danger lh-1 font-sm" title="View feedback">
+                                                                        <!-- The target ID now cleanly matches our dynamic pattern: #zoneRejection12, #fieldRejection12, etc. -->
+                                                                        <a href="#{{ $data['level'] }}Rejection{{ $award->id }}" data-toggle="modal" class="text-danger lh-1 font-sm" title="View feedback">
                                                                             <i class="bx bx-message-rounded-dots"></i>
                                                                         </a>
                                                                     </span>
@@ -328,11 +341,17 @@
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     <div class="d-inline-flex align-items-center justify-content-end gap-1">
+                                                        @if($isAdmin)
                                                         <button type="button" class="btn btn-action-icon text-secondary bg-transparent border-0 p-1" data-toggle="modal" data-target="#statusAdjustModal{{ $award->id }}" title="Adjust Status">
                                                             <i class="fa fa-cog font-sm"></i>
                                                         </button>
-                                                        <a href="{{ route('stakeholderreports.awards.show', $award->id) }}" class="btn btn-action-icon text-warning p-1" title="Edit Entry" onclick="return confirm('Modify this record?');"><i class="fa fa-edit font-sm"></i></a>
+                                                        @endif
+                                                        
+                                                        <a href="{{ route($isAdmin ? 'awards.show' : 'stakeholders.awards.show', $award->id) }}" class="btn btn-action-icon text-warning p-1" title="Edit Entry" onclick="return confirm('Modify this record?');"><i class="fa fa-edit font-sm"></i></a>
+                                                        
+                                                        @if($isAdmin)
                                                         <a href="#" class="btn btn-action-icon text-danger p-1" title="Delete Submission" onclick="event.preventDefault(); if (confirm('Remove this submission record?')) { document.getElementById('delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-trash font-sm"></i></a>
+                                                        @endif
                                                     </div>
                                                 </td>
                                             </tr>
@@ -387,14 +406,26 @@
         </div>
 
         {{-- Dynamic Feedback Comment Partials Backdrops --}}
-        @foreach(['Zone' => ['value' => $award->zone_status, 'view' => 'stakeholder.modals.zone_rejection_comment'], 'Field' => ['value' => $award->field_status, 'view' => 'stakeholder.modals.field_rejection_comment'], 'National' => ['value' => $award->national_status, 'view' => 'stakeholder.modals.secretariat_rejection_comment']] as $label => $data)
-            @if($data['value'] == 2)
-                @include($data['view'], ['item' => $award])
+        @foreach([
+            'chapter'  => ['status' => $award->chapter_status, 'field' => 'chapter_comment', 'title' => 'Chapter Office'],
+            'zone'     => ['status' => $award->zone_status, 'field' => 'zone_comment', 'title' => 'Zone'],
+            'field'    => ['status' => $award->field_status, 'field' => 'field_comment', 'title' => 'Field'],
+            'national' => ['status' => $award->national_status, 'field' => 'national_comment', 'title' => 'National Secretariat']
+        ] as $level => $config)
+            
+            @if($config['status'] == 2)
+                @include('stakeholder.modals.award_rejection_comments', [
+                    'level'   => $level,
+                    'title'   => $config['title'],
+                    'comment' => $award->{$config['field']},
+                    'report'  => $award
+                ])
             @endif
+
         @endforeach
 
         {{-- Single Record Destructive Action Execution Target Handler --}}
-        <form id="delete-award-{{ $award->id }}" action="{{ route('stakeholderreports.awards.delete', $award->id) }}" method="POST" style="display: none;">
+        <form id="delete-award-{{ $award->id }}" action="{{ route($isAdmin ? 'awards.delete' : 'stakeholders.awards.delete', $award->id) }}" method="POST" style="display: none;">
             @csrf
             @method('DELETE')
         </form>
