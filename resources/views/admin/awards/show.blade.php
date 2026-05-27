@@ -309,7 +309,7 @@
                                         @if(!empty($entry->value))
                                             <!-- Interactive Zoom Media Preview Thumb Node -->
                                             
-                                            <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => base64_decode($entry->value)]) }}" 
+                                            <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $entry->value]) }}" 
                                                  class="file-thumbnail-preview trigger-zoom-modal" 
                                                  data-file-url="{{ route(($isAdmin ? 'admin.protected.download' : 'protected.download'), ['file' => $entry->value]) }}"
                                                  data-label="{{ str_replace('_', ' ', $entry->key) }}"
