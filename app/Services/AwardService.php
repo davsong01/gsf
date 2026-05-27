@@ -349,22 +349,14 @@ class AwardService{
                                 'field_id'   => $chapter->field_id
                             ]);
                         }
-                    }
-
-                    if ($key === 'timestamp') {
+                    }elseif ($key === 'timestamp') {
                         $award->update([
                             'created_at' => \Carbon\Carbon::parse($value),
                             'updated_at' => \Carbon\Carbon::parse($value)
                         ]);
 
                         continue;
-                    }
-
-                    Log::info([
-                        'key' => $key
-                    ]);
-                    // Handle file processing dynamically via the key string flag
-                    if (str_ends_with($key, '_file_id') || in_array($key, ['upload_a_clear_and_recent_picture_of_yourself', 'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature', 'picturesave_picture_as_your_name'])) {
+                    }elseif (str_ends_with($key, '_file_id') || in_array($key, ['upload_a_clear_and_recent_picture_of_yourself', 'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature', 'picturesave_picture_as_your_name'])) {
                         try {
                             if (filter_var($value, FILTER_VALIDATE_URL)) {
 
@@ -444,6 +436,8 @@ class AwardService{
                             $key = str_replace('_file_id', '', $key);
                             $value = 'Download Failed: ' . $e->getMessage();
                         }
+                    }else{
+                        continue;
                     }
 
                     // Store everything cleanly matching your precise mapping schema layout

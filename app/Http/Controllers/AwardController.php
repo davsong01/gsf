@@ -175,7 +175,7 @@ class AwardController extends Controller
                     if(isAdmin()['status']){
                         if($cleanKey == 'chapter_id'){
                             $chapter = Chapter::where('id', $value)->first();
-                            
+
                             $award->update([
                                 'chapter_id' => $chapter->id,
                                 'zone_id' => $chapter->zone_id,
