@@ -1262,3 +1262,16 @@ if (!function_exists('paginationIndex')) {
     }
 }
 
+if (!function_exists('isAdmin')){
+    function isAdmin($user = null) : array
+    {
+        $user = $user ? $user : (auth()->user() ?? auth()->guard('stakeholder')->user());
+        $isAdmin = (!empty($user->role) && $user->role == 1);
+        
+        return [
+            'status' => $isAdmin,
+            'user' => $user
+        ];
+    }
+}
+

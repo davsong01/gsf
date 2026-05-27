@@ -168,7 +168,7 @@
 
     @php
         // Dynamically find a profile photo or primary image from key-value pairs to feature on the header banner
-        $fileFields = ['passport', 'photo', 'image', 'picture', 'avatar'];
+        $fileFields = ['picturesave_picture_as_your_name','upload_a_clear_and_recent_picture_of_yourself'];
         $headerImageEntry = $award->entries->first(function($entry) use ($fileFields) {
             return in_array(strtolower($entry->key), $fileFields) && !empty($entry->value);
         });
@@ -182,7 +182,7 @@
                 <!-- Left Column: Avatar Picture Matrix Container -->
                 <div class="col-auto">
                     @if($headerImageEntry)
-                        <img src="{{ route('protected.download', ['file' => $headerImageEntry->value]) }}" 
+                        <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry->value]) }}" 
                              class="header-avatar-preview trigger-zoom-modal" 
                              data-file-url="{{ route('protected.download', ['file' => $headerImageEntry->value]) }}"
                              data-label="Nominee Profile Photo"
@@ -201,7 +201,7 @@
                         <!-- Title & Reference ID Stack Block -->
                         <div>
                             <h4 class="text-white fw-bold mb-1 d-flex align-items-center gap-2">
-                                <i class="bx bx-award text-white"></i> Award Nomination Profile
+                                <i class="bx bx-award text-white"></i>{{ucfirst($award->type)}} Award Nomination
                             </h4>
                             <div class="font-monospace text-muted font-xs tracking-tight ms-4 ps-1" style="color: rgba(255, 255, 255, 0.6) !important;">
                                 {{ $award->reference }}
@@ -209,11 +209,11 @@
                         </div>
 
                         <!-- Award Classification Type Pill Tag -->
-                        <div>
+                        {{-- <div>
                             <span class="badge bg-primary text-uppercase font-xs px-2 py-1 shadow-sm" style="font-size: 0.72rem; letter-spacing: 0.02em;">
                                 {{ $award->type }}
                             </span>
-                        </div>
+                        </div> --}}
                     </div>
                     <div class="row g-3">
                         <div class="col-6 col-md-6">
@@ -248,9 +248,15 @@
 
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="d-flex flex-column">
-                                <span class="text-white fw-semibold font-base mb-0" style="font-size: 0.9rem;">
+                                @if(empty($award->chapter_id))
+                                <span class="font-sm lh-sm" style="font-size: 1rem;">
+                                    <strong>{{ $award->entries->firstWhere('key', 'select_institution')->value ?? 'N/A' }}</strong>
+                                </span>
+                                @else
+                                <span class="font-sm lh-sm" style="font-size: 1rem;">
                                     {{ $award->chapter->name ?? '—' }}
                                 </span>
+                                @endif
                                 <span class="font-xs text-muted mt-0.5">
                                     {{ $award->zone->name ?? 'N/A' }} &bull; {{ $award->field->name ?? 'N/A' }}
                                 </span>
@@ -281,7 +287,6 @@
     <section id="kv-entry-form">
     <form action="{{ route('stakeholderreports.awards.update', $award->id) }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Confirm changes? This action will save edits to this award submission record.');">
         @csrf
-        @method('PUT')
 
         <div class="section-card">
             <h4 class="text-dark fw-bold mb-4 border-bottom pb-2">Nomination Entry Form Values</h4>
@@ -290,33 +295,32 @@
             <div class="row g-4">
                 @foreach($award->entries as $entry)
                     @php
+                        $isInstitutionKey = in_array($entry->key, ['select_institution', 'chapter_id']);
                         $isFieldFile = in_array(strtolower($entry->key), ['attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature','attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature_file_id','upload_a_clear_and_recent_picture_of_yourself_file_id', 'upload_a_clear_and_recent_picture_of_yourself', 'document', 'uploaded_file', 'proof', 'image', 'attachment', 'signature', 'photo', 'picture', 'avatar']) || str_contains(strtolower($entry->key), 'file') || str_contains(strtolower($entry->key), 'image');
                     @endphp
 
-                    <!-- 2 columns on desktops, full width on mobile devices -->
+                    {{-- CRITICAL: Completely skip rendering the entire layout block if it is an institution key and the user is NOT an admin --}}
+                    @if($isInstitutionKey && !$isAdmin)
+                        @continue
+                    @endif
+
                     <div class="col-12 col-md-6">
-                        <div class="form-field-group border-0 p-0 m-0 d-flex flex-column gap-1.5 h-100 justify-content-end">
+                        <div class="form-field-group border-0 h-100 justify-content-end">
                             
-                            <!-- Field Label (Positioned cleanly on top) -->
                             <label for="entry-{{ $entry->id }}" class="form-label text-dark fw-semibold font-sm mb-1">
                                 {{ $entry->name }}
                             </label>
 
-                            <!-- Dynamic Input Field Element Area -->
                             <div class="w-100">
                                 @if($isFieldFile)
                                     <div class="d-flex align-items-center gap-3 border rounded-3 p-2 bg-white" style="min-height: 70px;">
                                         @if(!empty($entry->value))
-                                            <!-- Interactive Zoom Media Preview Thumb Node -->
-                                            
                                             <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $entry->value]) }}" 
-                                                 class="file-thumbnail-preview trigger-zoom-modal" 
-                                                 data-file-url="{{ route(($isAdmin ? 'admin.protected.download' : 'protected.download'), ['file' => $entry->value]) }}"
-                                                 data-label="{{ str_replace('_', ' ', $entry->key) }}"
-                                                 title="Click to zoom file context"
-                                                 alt="Attachment">
-
-                                                 <img class="uploaded-file" src="
+                                                class="file-thumbnail-preview trigger-zoom-modal" 
+                                                data-file-url="{{ route(($isAdmin ? 'admin.protected.download' : 'protected.download'), ['file' => $entry->value]) }}"
+                                                data-label="{{ str_replace('_', ' ', $entry->key) }}"
+                                                title="Click to zoom file context"
+                                                alt="Attachment">
                                         @else
                                             <div class="bg-light text-muted rounded d-flex align-items-center justify-content-center" style="width:50px; height:50px; flex-shrink: 0;">
                                                 <i class="fa fa-file-image-o font-medium"></i>
@@ -324,27 +328,40 @@
                                         @endif
 
                                         <div class="flex-grow-1">
-                                            
                                             <input type="file" 
-                                                   class="form-control form-control-sm border-0 p-0 shadow-none mb-1" 
-                                                   id="entry-{{ $entry->id }}"
-                                                   name="entries[{{ $entry->key }}]" 
-                                                   accept=".jpg,.jpeg,.png">
+                                                class="form-control form-control-sm border-0 p-0 shadow-none mb-1" 
+                                                id="entry-{{ $entry->id }}"
+                                                name="entries[{{ $entry->key }}]" 
+                                                accept=".jpg,.jpeg,.png">
                                             <div class="font-xs text-muted mt-0.5">Upload to replace file asset (Accepts: JPG, JPEG, PNG)</div>
                                         </div>
                                     </div>
+
+                                {{-- Render institution select dropdown (Only reached if $isAdmin is true due to the @continue check above) --}}
+                                @elseif($isInstitutionKey)
+                                    <select class="form-select w-100 mb-1" 
+                                            id="entry-{{ $entry->id }}" 
+                                            name="entries[{{ $entry->key }}]">
+                                        <option value="">-- Select or Search Institution --</option>
+                                        @foreach($chapters as $chapter)
+                                            <option value="{{ $chapter->id }}" {{ (string)$entry->value === (string)$chapter->id ? 'selected' : '' }}>
+                                                {{ $chapter->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
                                 @else
                                     @if(strlen($entry->value) > 100)
                                         <textarea class="form-control w-100" 
-                                                  id="entry-{{ $entry->id }}" 
-                                                  name="entries[{{ $entry->key }}]" 
-                                                  rows="3">{{ $entry->value }}</textarea>
+                                                id="entry-{{ $entry->id }}" 
+                                                name="entries[{{ $entry->key }}]" 
+                                                rows="3">{{ $entry->value }}</textarea>
                                     @else
                                         <input type="text" 
-                                               class="form-control w-100 mb-1" 
-                                               id="entry-{{ $entry->id }}" 
-                                               name="entries[{{ $entry->key }}]" 
-                                               value="{{ $entry->value }}">
+                                            class="form-control w-100 mb-1" 
+                                            id="entry-{{ $entry->id }}" 
+                                            name="entries[{{ $entry->key }}]" 
+                                            value="{{ $entry->value }}">
                                     @endif
                                 @endif
                             </div>

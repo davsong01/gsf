@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Award;
+use App\Models\Chapter;
 use App\Services\AwardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -40,9 +41,10 @@ class AwardController extends Controller
     }
 
     public function etfAwardEntries(Request $request){
-        $user = auth()->user() ?? auth()->guard('stakeholder')->user();
-    
-        $isAdmin = (!empty($user->role) && $user->role == 1);
+        $adminDetails = isAdmin();
+        $isAdmin = $adminDetails['status'];
+        $user = $adminDetails['user'];
+
         $request->merge([
             'type' => 'etf'
         ]);
@@ -74,11 +76,14 @@ class AwardController extends Controller
      */
     public function show(Award $award)
     {
-        $isAdmin = (!empty($user->role) && $user->role == 1);
-        $user = auth()->user() ?? auth()->guard('stakeholder')->user();
-
+        $adminDetails = isAdmin();
+        $isAdmin = $adminDetails['status'];
+        $user = $adminDetails['user'];
+        
         $award->load('entries');
-        return view('admin.awards.show', compact('isAdmin', 'isAdmin', 'user', 'award'));
+        $chapters = Chapter::select('id', 'name')->get();
+        
+        return view('admin.awards.show', compact('isAdmin', 'isAdmin', 'award', 'chapters', 'user'));
     }
 
     /**

@@ -19,122 +19,404 @@ use Illuminate\Support\Facades\Log;
 // web app url: https://script.google.com/macros/s/AKfycbyn8X8DoQzNh4i0je5U6rN4F1YJ673wemqtMlAnqJkNq11-sGfhvD5ZxGXHNPLkIhRruw/exec
 
 class AwardService{
-    public function index(Request $request, $user, $type, $isAdmin)
-    {
-        $role = $user->role_id ?? $user->role;
+    // public function index(Request $request, $user, $type, $isAdmin)
+    // {
+    //     $role = $user->role_id ?? $user->role;
         
-        /** =====================
-         * BASE MODELS
-         * ===================== */
-        $chaptersQuery = Chapter::query();
-        $zonesQuery = Zone::query();
-        $fieldsQuery = Field::query();
+    //     /** =====================
+    //      * BASE MODELS
+    //      * ===================== */
+    //     $chaptersQuery = Chapter::query();
+    //     $zonesQuery = Zone::query();
+    //     $fieldsQuery = Field::query();
 
-        $chapterIds = collect();
-        $zoneIds = collect();
-        $fieldIds = collect();
+    //     $chapterIds = collect();
+    //     $zoneIds = collect();
+    //     $fieldIds = collect();
 
-        /** =====================
-         * ROLE-BASED SCOPING
-         * ===================== */
-        if ($isAdmin || finStakeholders($user)) {
-            // Admin → full access
+    //     /** =====================
+    //      * ROLE-BASED SCOPING
+    //      * ===================== */
+    //     if ($isAdmin || finStakeholders($user)) {
+    //         // Admin → full access
+    //         $chapterIds = Chapter::pluck('id');
+    //         $zoneIds    = Zone::pluck('id');
+    //         $fieldIds   = Field::pluck('id');
+    //     } else {
+    //         if (in_array($role, chapterStakeholders())) {
+    //             $chapterIds = collect([$user->chapter_id]);
+    //             $zoneIds    = collect([$user->zone_id]);
+    //             $fieldIds   = collect([$user->field_id]);
+    //         }
+    //         elseif (in_array($role, zoneStakeholders())) {
+    //             $zoneIds = collect([$user->zone_id]);
+
+    //             $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
+
+    //             $fieldIds = Field::whereHas('zones', fn ($q) =>
+    //                 $q->where('id', $user->zone_id)
+    //             )->pluck('id');
+    //         }
+    //         elseif (in_array($role, fieldStakeholders())) {
+    //             $fieldIds = collect([$user->field_id]);
+
+    //             $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
+
+    //             $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
+    //         }
+    //         elseif (in_array($role, secretariatStakeholders())) {
+    //             $chapterIds = Chapter::pluck('id');
+    //             $zoneIds    = Zone::pluck('id');
+    //             $fieldIds   = Field::pluck('id');
+    //         }
+    //     }
+
+    //     // Fixed initialization syntax order: Model::query()->with(...)
+    //     $awards = Award::query()->with('entries', 'chapter', 'field', 'zone')
+    //         ->when($request->filled('reference'), fn ($q) => $q->where('reference', $request->reference))
+    //         ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type))
+    //         ->when($chapterIds->isNotEmpty(), fn ($q) => $q->whereIn('chapter_id', $chapterIds))
+    //         ->when($zoneIds->isNotEmpty(), fn ($q) => $q->whereIn('zone_id', $zoneIds))
+    //         ->when($fieldIds->isNotEmpty(), fn ($q) => $q->whereIn('field_id', $fieldIds));
+
+    //     /** =====================
+    //      * DATE RANGE FILTERS
+    //      * ===================== */
+    //     if ($request->filled('from_date') || $request->filled('to_date')) {
+    //         // Fallback boundaries if only one input is present
+    //         $from = $request->filled('from_date')
+    //             ? Carbon::parse($request->from_date)->startOfDay()
+    //             : Carbon::parse('1970-01-01')->startOfDay();
+
+    //         $to = $request->filled('to_date')
+    //             ? Carbon::parse($request->to_date)->endOfDay()
+    //             : Carbon::now()->endOfDay();
+
+    //         // Standard Laravel whereBetween query implementation
+    //         $awards->whereBetween('created_at', [$from, $to]);
+    //     }
+
+    //     /** =====================
+    //      * SCOPE FILTERS
+    //      * ===================== */
+    //     foreach (['chapter', 'zone', 'field'] as $scope) {
+    //         if ($request->filled("{$scope}_filter")) {
+    //             $awards->where("{$scope}_id", $request->input("{$scope}_filter"));
+    //         }
+    //     }
+
+    //     /** =====================
+    //      * STATUS FILTERS
+    //      * ===================== */
+    //     if ($request->filled('status_filter')) {
+    //         $statusMap = [
+    //             'field_pending'      => ['field_status', 0],
+    //             'field_approved'     => ['field_status', 1],
+    //             'field_rejected'     => ['field_status', 2],
+    //             'zone_pending'       => ['zone_status', 0],
+    //             'zone_approved'      => ['zone_status', 1],
+    //             'zone_rejected'      => ['zone_status', 2],
+    //             'national_pending'   => ['national_status', 0],
+    //             'national_approved'  => ['national_status', 1],
+    //             'national_rejected'  => ['national_status', 2],
+    //         ];
+
+    //         if (isset($statusMap[$request->status_filter])) {
+    //             [$column, $value] = $statusMap[$request->status_filter];
+    //             $awards->where($column, $value);
+    //         }
+    //     }
+
+    //     return [
+    //         'awards'   => $awards->with(['chapter', 'zone', 'field'])
+    //                             ->orderByDesc('created_at') // Organized chronological timeline sorting
+    //                             ->paginate(20),
+    //         'chapters' => $chaptersQuery->whereIn('id', $chapterIds)->orderBy('name')->get(),
+    //         'zones'    => $zonesQuery->whereIn('id', $zoneIds)->orderBy('name')->get(),
+    //         'fields'   => $fieldsQuery->whereIn('id', $fieldIds)->orderBy('name')->get(),
+    //     ];
+    // }
+    // public function index(Request $request, $user, $type, $isAdmin)
+    // {
+    //     $role = $user->role_id ?? $user->role;
+        
+    //     /** =====================
+    //      * BASE MODELS
+    //      * ===================== */
+    //     $chaptersQuery = Chapter::query();
+    //     $zonesQuery = Zone::query();
+    //     $fieldsQuery = Field::query();
+
+    //     $chapterIds = collect();
+    //     $zoneIds = collect();
+    //     $fieldIds = collect();
+
+    //     /** =====================
+    //      * ROLE-BASED SCOPING
+    //      * ===================== */
+    //     if ($isAdmin || finStakeholders($user)) {
+    //         // Admin → full access
+    //         $chapterIds = Chapter::pluck('id');
+    //         $zoneIds    = Zone::pluck('id');
+    //         $fieldIds   = Field::pluck('id');
+    //     } else {
+    //         if (in_array($role, chapterStakeholders())) {
+    //             $chapterIds = collect([$user->chapter_id]);
+    //             $zoneIds    = collect([$user->zone_id]);
+    //             $fieldIds   = collect([$user->field_id]);
+    //         }
+    //         elseif (in_array($role, zoneStakeholders())) {
+    //             $zoneIds = collect([$user->zone_id]);
+    //             $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
+    //             $fieldIds = Field::whereHas('zones', fn ($q) =>
+    //                 $q->where('id', $user->zone_id)
+    //             )->pluck('id');
+    //         }
+    //         elseif (in_array($role, fieldStakeholders())) {
+    //             $fieldIds = collect([$user->field_id]);
+    //             $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
+    //             $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
+    //         }
+    //         elseif (in_array($role, secretariatStakeholders())) {
+    //             $chapterIds = Chapter::pluck('id');
+    //             $zoneIds    = Zone::pluck('id');
+    //             $fieldIds   = Field::pluck('id');
+    //         }
+    //     }
+
+    //     // Build the query scope constraints
+    //     $awardsQuery = Award::query()->with(['entries', 'chapter', 'field', 'zone'])
+    //         ->when($request->filled('reference'), fn ($q) => $q->where('reference', $request->reference))
+    //         ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type))
+    //         ->when($chapterIds->isNotEmpty(), function ($q) use ($chapterIds) {
+    //             // Include assigned chapters OR anything with a null chapter context if roles permit
+    //             $q->where(fn($sub) => $sub->whereIn('chapter_id', $chapterIds)->orWhereNull('chapter_id'));
+    //         })
+    //         ->when($zoneIds->isNotEmpty(), fn ($q) => $q->whereIn('zone_id', $zoneIds))
+    //         ->when($fieldIds->isNotEmpty(), fn ($q) => $q->whereIn('field_id', $fieldIds));
+
+    //     /** =====================
+    //      * DATE RANGE FILTERS
+    //      * ===================== */
+    //     if ($request->filled('from_date') || $request->filled('to_date')) {
+    //         $from = $request->filled('from_date')
+    //             ? \Carbon\Carbon::parse($request->from_date)->startOfDay()
+    //             : \Carbon\Carbon::parse('1970-01-01')->startOfDay();
+
+    //         $to = $request->filled('to_date')
+    //             ? \Carbon\Carbon::parse($request->to_date)->endOfDay()
+    //             : \Carbon\Carbon::now()->endOfDay();
+
+    //         $awardsQuery->whereBetween('created_at', [$from, $to]);
+    //     }
+
+    //     /** =====================
+    //      * SCOPE FILTERS
+    //      * ===================== */
+    //     foreach (['chapter', 'zone', 'field'] as $scope) {
+    //         if ($request->filled("{$scope}_filter")) {
+    //             $awardsQuery->where("{$scope}_id", $request->input("{$scope}_filter"));
+    //         }
+    //     }
+
+    //     /** =====================
+    //      * STATUS FILTERS
+    //      * ===================== */
+    //     if ($request->filled('status_filter')) {
+    //         $statusMap = [
+    //             'field_pending'      => ['field_status', 0],
+    //             'field_approved'     => ['field_status', 1],
+    //             'field_rejected'     => ['field_status', 2],
+    //             'zone_pending'       => ['zone_status', 0],
+    //             'zone_approved'      => ['zone_status', 1],
+    //             'zone_rejected'      => ['zone_status', 2],
+    //             'national_pending'   => ['national_status', 0],
+    //             'national_approved'  => ['national_status', 1],
+    //             'national_rejected'  => ['national_status', 2],
+    //         ];
+
+    //         if (isset($statusMap[$request->status_filter])) {
+    //             [$column, $value] = $statusMap[$request->status_filter];
+    //             $awardsQuery->where($column, $value);
+    //         }
+    //     }
+
+    //     // Execute results fetching pagination mapping
+    //     $paginatedAwards = $awardsQuery->orderByDesc('created_at')->paginate(100);
+        
+    //     $groupedAwards = $paginatedAwards->getCollection()->groupBy(function ($award) {
+    //         // Condition cluster checks: if chapter_id doesn't exist, dump into a single unified key group
+    //         if (empty($award->chapter_id)) {
+    //             return 'No Assigned Chapter';
+    //         }
+
+    //         // Otherwise generate unique tracking group identifier keys
+    //         $chapStr  = $award->chapter->name ?? 'Unmapped Chapter';
+
+    //         return "{$chapStr}";
+    //     });
+
+    //     // Replace default flat items inside pagination with our grouped collection list tree framework
+    //     $paginatedAwards->setCollection($groupedAwards);
+    
+    //     return [
+    //         'awards'   => $paginatedAwards, // Returns grouped structural hierarchy maintaining page offsets links!
+    //         'chapters' => $chaptersQuery->whereIn('id', $chapterIds)->orderBy('name')->get(),
+    //         'zones'    => $zonesQuery->whereIn('id', $zoneIds)->orderBy('name')->get(),
+    //         'fields'   => $fieldsQuery->whereIn('id', $fieldIds)->orderBy('name')->get(),
+    //     ];
+    // }
+    public function index(Request $request, $user, $type, $isAdmin)
+{
+    $role = $user->role_id ?? $user->role;
+    
+    /** =====================
+     * BASE MODELS
+     * ===================== */
+    $chaptersQuery = Chapter::query();
+    $zonesQuery = Zone::query();
+    $fieldsQuery = Field::query();
+
+    $chapterIds = collect();
+    $zoneIds = collect();
+    $fieldIds = collect();
+
+    /** =====================
+     * ROLE-BASED SCOPING
+     * ===================== */
+    if ($isAdmin || finStakeholders($user)) {
+        // Admin / Fin Stakeholders → full access
+        $chapterIds = Chapter::pluck('id');
+        $zoneIds    = Zone::pluck('id');
+        $fieldIds   = Field::pluck('id');
+    } else {
+        if (in_array($role, chapterStakeholders())) {
+            $chapterIds = collect([$user->chapter_id]);
+            $zoneIds    = collect([$user->zone_id]);
+            $fieldIds   = collect([$user->field_id]);
+        }
+        elseif (in_array($role, zoneStakeholders())) {
+            $zoneIds = collect([$user->zone_id]);
+            $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
+            $fieldIds = Field::whereHas('zones', fn ($q) =>
+                $q->where('id', $user->zone_id)
+            )->pluck('id');
+        }
+        elseif (in_array($role, fieldStakeholders())) {
+            $fieldIds = collect([$user->field_id]);
+            $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
+            $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
+        }
+        elseif (in_array($role, secretariatStakeholders())) {
             $chapterIds = Chapter::pluck('id');
             $zoneIds    = Zone::pluck('id');
             $fieldIds   = Field::pluck('id');
-        } else {
-            if (in_array($role, chapterStakeholders())) {
-                $chapterIds = collect([$user->chapter_id]);
-                $zoneIds    = collect([$user->zone_id]);
-                $fieldIds   = collect([$user->field_id]);
-            }
-            elseif (in_array($role, zoneStakeholders())) {
-                $zoneIds = collect([$user->zone_id]);
-
-                $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
-
-                $fieldIds = Field::whereHas('zones', fn ($q) =>
-                    $q->where('id', $user->zone_id)
-                )->pluck('id');
-            }
-            elseif (in_array($role, fieldStakeholders())) {
-                $fieldIds = collect([$user->field_id]);
-
-                $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
-
-                $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
-            }
-            elseif (in_array($role, secretariatStakeholders())) {
-                $chapterIds = Chapter::pluck('id');
-                $zoneIds    = Zone::pluck('id');
-                $fieldIds   = Field::pluck('id');
-            }
         }
-
-        // Fixed initialization syntax order: Model::query()->with(...)
-        $awards = Award::query()->with('entries', 'chapter', 'field', 'zone')
-            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type))
-            ->when($chapterIds->isNotEmpty(), fn ($q) => $q->whereIn('chapter_id', $chapterIds))
-            ->when($zoneIds->isNotEmpty(), fn ($q) => $q->whereIn('zone_id', $zoneIds))
-            ->when($fieldIds->isNotEmpty(), fn ($q) => $q->whereIn('field_id', $fieldIds));
-
-        /** =====================
-         * DATE RANGE FILTERS
-         * ===================== */
-        if ($request->filled('from_date') || $request->filled('to_date')) {
-            // Fallback boundaries if only one input is present
-            $from = $request->filled('from_date')
-                ? Carbon::parse($request->from_date)->startOfDay()
-                : Carbon::parse('1970-01-01')->startOfDay();
-
-            $to = $request->filled('to_date')
-                ? Carbon::parse($request->to_date)->endOfDay()
-                : Carbon::now()->endOfDay();
-
-            // Standard Laravel whereBetween query implementation
-            $awards->whereBetween('created_at', [$from, $to]);
-        }
-
-        /** =====================
-         * SCOPE FILTERS
-         * ===================== */
-        foreach (['chapter', 'zone', 'field'] as $scope) {
-            if ($request->filled("{$scope}_filter")) {
-                $awards->where("{$scope}_id", $request->input("{$scope}_filter"));
-            }
-        }
-
-        /** =====================
-         * STATUS FILTERS
-         * ===================== */
-        if ($request->filled('status_filter')) {
-            $statusMap = [
-                'field_pending'      => ['field_status', 0],
-                'field_approved'     => ['field_status', 1],
-                'field_rejected'     => ['field_status', 2],
-                'zone_pending'       => ['zone_status', 0],
-                'zone_approved'      => ['zone_status', 1],
-                'zone_rejected'      => ['zone_status', 2],
-                'national_pending'   => ['national_status', 0],
-                'national_approved'  => ['national_status', 1],
-                'national_rejected'  => ['national_status', 2],
-            ];
-
-            if (isset($statusMap[$request->status_filter])) {
-                [$column, $value] = $statusMap[$request->status_filter];
-                $awards->where($column, $value);
-            }
-        }
-
-        return [
-            'awards'   => $awards->with(['chapter', 'zone', 'field'])
-                                ->orderByDesc('created_at') // Organized chronological timeline sorting
-                                ->paginate(20),
-            'chapters' => $chaptersQuery->whereIn('id', $chapterIds)->orderBy('name')->get(),
-            'zones'    => $zonesQuery->whereIn('id', $zoneIds)->orderBy('name')->get(),
-            'fields'   => $fieldsQuery->whereIn('id', $fieldIds)->orderBy('name')->get(),
-        ];
     }
+
+    /** =====================
+     * BUILD QUERY & SCOPE BOUNDARIES
+     * ===================== */
+    $awardsQuery = Award::query()->with(['entries', 'chapter', 'field', 'zone'])
+        ->when($request->filled('reference'), fn ($q) => $q->where('reference', $request->reference))
+        ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type));
+
+    // Unified Location Constraint Framework (Fixes missing null chapter_id rows)
+    $awardsQuery->where(function($query) use ($chapterIds, $zoneIds, $fieldIds, $isAdmin, $role, $user) {
+        
+        // Logical Block 1: Strict operational relationships matching active user nodes
+        $query->where(function($sub) use ($chapterIds, $zoneIds, $fieldIds) {
+            if ($chapterIds->isNotEmpty()) {
+                $sub->whereIn('chapter_id', $chapterIds);
+            }
+            if ($zoneIds->isNotEmpty()) {
+                $sub->whereIn('zone_id', $zoneIds);
+            }
+            if ($fieldIds->isNotEmpty()) {
+                $sub->whereIn('field_id', $fieldIds);
+            }
+        });
+
+        // Logical Block 2: Fallback bypass for completely unassigned chapters (Global roles only)
+        if ($isAdmin || in_array($role, array_merge(secretariatStakeholders(), finStakeholders($user) ? [$role] : []))) {
+            $query->orWhereNull('chapter_id');
+        }
+    });
+
+    /** =====================
+     * DATE RANGE FILTERS
+     * ===================== */
+    if ($request->filled('from_date') || $request->filled('to_date')) {
+        $from = $request->filled('from_date')
+            ? \Carbon\Carbon::parse($request->from_date)->startOfDay()
+            : \Carbon\Carbon::parse('1970-01-01')->startOfDay();
+
+        $to = $request->filled('to_date')
+            ? \Carbon\Carbon::parse($request->to_date)->endOfDay()
+            : \Carbon\Carbon::now()->endOfDay();
+
+        $awardsQuery->whereBetween('created_at', [$from, $to]);
+    }
+
+    /** =====================
+     * SCOPE FILTERS (Explicit User Requests)
+     * ===================== */
+    foreach (['chapter', 'zone', 'field'] as $scope) {
+        if ($request->filled("{$scope}_filter")) {
+            $awardsQuery->where("{$scope}_id", $request->input("{$scope}_filter"));
+        }
+    }
+
+    /** =====================
+     * STATUS FILTERS
+     * ===================== */
+    if ($request->filled('status_filter')) {
+        $statusMap = [
+            'field_pending'      => ['field_status', 0],
+            'field_approved'     => ['field_status', 1],
+            'field_rejected'     => ['field_status', 2],
+            'zone_pending'       => ['zone_status', 0],
+            'zone_approved'      => ['zone_status', 1],
+            'zone_rejected'      => ['zone_status', 2],
+            'national_pending'   => ['national_status', 0],
+            'national_approved'  => ['national_status', 1],
+            'national_rejected'  => ['national_status', 2],
+        ];
+
+        if (isset($statusMap[$request->status_filter])) {
+            [$column, $value] = $statusMap[$request->status_filter];
+            $awardsQuery->where($column, $value);
+        }
+    }
+
+    /** =====================
+     * PAGINATION & GROUPING PIPELINE
+     * ===================== */
+    $paginatedAwards = $awardsQuery->orderByDesc('created_at')->paginate(100);
+    
+    $groupedAwards = $paginatedAwards->getCollection()
+        ->groupBy(function ($award) {
+            if (empty($award->chapter_id)) {
+                return 'No Official Chapter';
+            }
+
+            return $award->chapter->name ?? 'Unmapped Chapter';
+        })
+        // Sort the groups so 'No Official Chapter' is pushed to the very end
+        ->sortBy(function ($value, $key) {
+            return $key === 'No Official Chapter' ? 1 : 0;
+        });
+
+    // Re-inject the sorted, grouped framework back into the pagination instance
+    $paginatedAwards->setCollection($groupedAwards);
+
+    return [
+        'awards'   => $paginatedAwards,
+        'chapters' => $chaptersQuery->whereIn('id', $chapterIds)->orderBy('name')->get(),
+        'zones'    => $zonesQuery->whereIn('id', $zoneIds)->orderBy('name')->get(),
+        'fields'   => $fieldsQuery->whereIn('id', $fieldIds)->orderBy('name')->get(),
+    ];
+}
 
     public function storeFromGoogle(array $data)
     {
