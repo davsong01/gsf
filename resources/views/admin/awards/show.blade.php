@@ -1,553 +1,479 @@
-@php
-    $awards = $entries['awards'];
-    $chapters = $entries['chapters'];
-    $fields = $entries['fields'];
-    $zones = $entries['zones'];
-@endphp
 @extends('layouts.dashboard')
-@section('title', 'Award Entries')
-@section('item')
-<li class="breadcrumb-item"> <a href="{{ route('stakeholderreports.award.go') }}">Award Entries</a></li>
-@endsection
-
+@section('title', 'Edit Award Submission')
 @section('content')
-<div class="content-body">
-    <section id="awards-dashboard">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="card-title mb-0">{{ $title }}</h4>
-        </div>
 
-        <!-- Filters -->
-        @php
-            $canViewChapter = in_array($user->role_id, array_merge(
-                fieldStakeholders(),
-                zoneStakeholders(),
-                secretariatStakeholders(),
-                ncpStakeholders()
-            ));
-
-            $canViewZone = in_array($user->role_id, array_merge(
-                fieldStakeholders(),
-                secretariatStakeholders(),
-                ncpStakeholders()
-            ));
-
-            $canViewField = in_array($user->role_id, array_merge(
-                secretariatStakeholders(),
-                ncpStakeholders()
-            ));
-
-            $hierarchyCount = collect([
-                $canViewField,
-                $canViewZone,
-                $canViewChapter
-            ])->filter()->count();
-
-            $hierarchyCol = $hierarchyCount > 1 ? intval(12 / $hierarchyCount) : 4;
-
-            $approval_statuses = [
-                'zone_pending'     => 'Zone Pending',
-                'zone_approved'    => 'Zone Approved',
-                'zone_rejected'    => 'Zone Rejected',
-
-                'field_pending'    => 'Field Pending',
-                'field_approved'   => 'Field Approved',
-                'field_rejected'   => 'Field Rejected',
-
-                'national_pending' => 'National Pending',
-                'national_approved'=> 'National Approved',
-                'national_rejected'=> 'National Rejected',
-            ];
-        @endphp
-
-        <div class="row mb-3">
-            <div class="col-12">
-                <form method="GET" class="row g-2 align-items-end">
-
-                    {{-- Date range --}}
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label">From</label>
-                        <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
-                    </div>
-
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label">To</label>
-                        <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
-                    </div>
-
-                    {{-- Field --}}
-                    @if($canViewField || $isAdmin)
-                        <div class="col-md-{{ $hierarchyCol }} mb-2">
-                            <label class="form-label">Field</label>
-                            <select name="field_filter" class="form-control">
-                                <option value="">All Fields</option>
-                                @foreach($fields as $field)
-                                    <option value="{{ $field->id }}" @selected(request('field_filter') == $field->id)>
-                                        {{ $field->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-
-                    {{-- Zone --}}
-                    @if($canViewZone || $isAdmin)
-                        <div class="col-md-{{ $hierarchyCol }} mb-2">
-                            <label class="form-label">Zone</label>
-                            <select name="zone_filter" class="form-control">
-                                <option value="">All Zones</option>
-                                @foreach($zones as $zone)
-                                    <option value="{{ $zone->id }}" @selected(request('zone_filter') == $zone->id)>
-                                        {{ $zone->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-
-                    {{-- Chapter --}}
-                    @if($canViewChapter || $isAdmin)
-                        <div class="col-md-{{ $hierarchyCol }} mb-2">
-                            <label class="form-label">Chapter</label>
-                            <select name="chapter_filter" class="form-control">
-                                <option value="">All Chapters</option>
-                                @foreach($chapters as $chapter)
-                                    <option value="{{ $chapter->id }}" @selected(request('chapter_filter') == $chapter->id)>
-                                        {{ $chapter->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-
-                    {{-- Status --}}
-                    <div class="col-md-3 mb-2">
-                        <label class="form-label">Approval Status</label>
-                        <select name="status_filter" class="form-control">
-                            <option value="">All Statuses</option>
-                            @foreach($approval_statuses as $key => $label)
-                                <option value="{{ $key }}" @selected(request('status_filter') == $key)>
-                                    {{ $label }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Buttons --}}
-                    <div class="col-md-2 mb-2">
-                        <button class="btn btn-secondary w-100">Filter</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Awards Table -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-align-middle mb-0 custom-modern-table">
-                                <tbody>
-                                    @forelse($awards as $award)
-                                    
-                                    {{-- Status Adjustment Modal Frame --}}
-                                    <div class="modal fade" id="statusAdjustModal{{ $award->id }}" tabindex="-1" role="dialog">
-                                        <div class="modal-dialog modal-dialog-centered" role="document">
-                                            <form id="bulk-actions-form" method="POST" action="{{ route('stakeholderreports.awards.bulk-delete') }}" onsubmit="return confirm('Are you sure you want to delete all selected items?');">
-                                                @csrf
-                                                @method('DELETE')
-
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-                                                            
-                                                            <!-- Bulk Actions Toolbar Header -->
-                                                            <div class="card-header bg-white border-bottom-0 pt-3 pb-2 px-4 d-flex align-items-center justify-content-between">
-                                                                <div class="d-flex align-items-center gap-2">
-                                                                    <div class="dropdown" id="bulk-dropdown-wrapper" style="opacity: 0.5; pointer-events: none; transition: all 0.2s ease;">
-                                                                        <button class="btn btn-light border font-sm rounded-2 dropdown-toggle px-3 py-1.5 d-flex align-items-center gap-1 shadow-none" type="button" id="bulkActionsMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                                            <i class="bx bx-layer font-base text-secondary"></i> Bulk Actions
-                                                                        </button>
-                                                                        <div class="dropdown-menu border-0 shadow-sm rounded-2 font-sm py-1" aria-labelledby="bulkActionsMenu">
-                                                                            <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2 py-2">
-                                                                                <i class="fa fa-trash font-xs"></i> Delete Selected
-                                                                            </button>
-                                                                        </div>
-                                                                    </div>
-                                                                    <span id="selected-count-badge" class="badge bg-soft-primary text-primary font-xs rounded-pill px-2 py-1 d-none">0 Selected</span>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Modern Table Layout -->
-                                                            <div class="card-body p-0">
-                                                                <div class="table-responsive">
-                                                                    <table class="table table-align-middle mb-0 custom-modern-table">
-                                                                        <thead>
-                                                                            <tr>
-                                                                                <th class="ps-4" style="width: 40px;">
-                                                                                    <div class="form-check custom-checkbox">
-                                                                                        <input type="checkbox" class="form-check-input cursor-pointer shadow-none" id="master-checkbox">
-                                                                                    </div>
-                                                                                </th>
-                                                                                <th class="text-uppercase text-muted tracking-wider" style="width: 60px;">S/N</th>
-                                                                                <th class="text-uppercase text-muted tracking-wider">Nominee & Ref</th>
-                                                                                <th class="text-uppercase text-muted tracking-wider">Award Type</th>
-                                                                                @if($isAdmin || in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
-                                                                                    <th class="text-uppercase text-muted tracking-wider">Origin Location</th>
-                                                                                @endif
-                                                                                <th class="text-uppercase text-muted tracking-wider">Approval Progress</th>
-                                                                                <th class="text-uppercase text-muted tracking-wider">Submitted On</th>
-                                                                                <th class="text-uppercase text-muted tracking-wider text-end pe-4" style="min-width: 180px;">Actions</th>
-                                                                            </tr>
-                                                                        </thead>
-
-                                                                        <tbody>
-                                                                            @forelse($awards as $award)
-                                                                            <tr>
-                                                                                <td class="ps-4">
-                                                                                    <div class="form-check custom-checkbox">
-                                                                                        <input type="checkbox" name="ids[]" value="{{ $award->id }}" class="form-check-input row-checkbox cursor-pointer shadow-none">
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td class="text-secondary fw-medium">
-                                                                                    {{ $loop->iteration }}
-                                                                                </td>
-                                                                                <td>
-                                                                                    <div class="d-flex flex-column">
-                                                                                        <!-- Calls your model attribute seamlessly -->
-                                                                                        <span class="text-dark fw-semibold font-base mb-0">
-                                                                                            {{ $award->name }}
-                                                                                        </span>
-                                                                                        <span class="text-muted tracking-tight font-xs">
-                                                                                            {{ $award->reference }}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td>
-                                                                                    <span class="badge badge-modern bg-soft-primary text-primary">
-                                                                                        {{ $award->type }}
-                                                                                    </span>
-                                                                                </td>
-
-                                                                                @if($isAdmin || in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
-                                                                                    <td>
-                                                                                        <div class="d-flex flex-column font-sm">
-                                                                                            <span class="text-dark fw-medium">{{ $award->chapter->name ?? '—' }}<br>
-                                                                                                <strong style="color:{{$award->chapter->reportCompliance() < 100 ? 'red' : 'green'}}">({{$award->chapter->reportCompliance() . '% Report Compliance'}})<strong></span>
-                                                                                            <span class="text-muted font-xs">
-                                                                                                {{ $award->zone->name ?? 'N/A' }} &bull; {{ $award->field->name ?? 'N/A' }}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                @endif
-
-                                                                                <td>
-                                                                                    @php
-                                                                                        $statuses = [
-                                                                                            'Zone'     => ['value' => $award->zone_status, 'modal' => 'zoneRejection', 'view' => 'stakeholder.modals.zone_rejection_comment'],
-                                                                                            'Field'    => ['value' => $award->field_status, 'modal' => 'fieldRejection', 'view' => 'stakeholder.modals.field_rejection_comment'],
-                                                                                            'National' => ['value' => $award->national_status, 'modal' => 'secretariatRejection', 'view' => 'stakeholder.modals.secretariat_rejection_comment'],
-                                                                                        ];
-                                                                                    @endphp
-
-                                                                                    <div class="d-flex flex-column gap-1">
-                                                                                        @foreach($statuses as $label => $data)
-                                                                                            <div class="d-flex align-items-center font-xs">
-                                                                                                <span class="text-muted fw-normal" style="width: 55px;">{{ $label }}</span>
-                                                                                                
-                                                                                                @if($data['value'] == 2)
-                                                                                                    <span class="badge badge-status bg-soft-danger text-danger d-inline-flex align-items-center gap-1">
-                                                                                                        Rejected
-                                                                                                        <a href="#{{ $data['modal'] }}{{ $award->id }}" data-toggle="modal" class="text-danger lh-1 font-sm" title="View feedback">
-                                                                                                            <i class="bx bx-message-rounded-dots"></i>
-                                                                                                        </a>
-                                                                                                    </span>
-                                                                                                    @include($data['view'], ['item' => $award])
-                                                                                                @elseif($data['value'] == 1)
-                                                                                                    <span class="badge badge-status bg-soft-success text-success">Approved</span>
-                                                                                                @else
-                                                                                                    <span class="badge badge-status bg-soft-warning text-warning">Pending</span>
-                                                                                                @endif
-                                                                                            </div>
-                                                                                        @endforeach
-                                                                                    </div>
-                                                                                </td>
-
-                                                                                <td class="text-secondary font-sm">
-                                                                                    {{ $award->created_at->format('d M Y') }}
-                                                                                    <div class="font-xs text-muted mt-0">{{ $award->created_at->format('h:i A') }}</div>
-                                                                                </td>
-
-                                                                                <td class="text-end pe-4">
-                                                                                    <div class="d-inline-flex align-items-center justify-content-end gap-1">
-                                                                                        {{-- Adjust Status --}}
-                                                                                        <button type="button" class="btn btn-action-icon text-secondary" data-toggle="modal" data-target="#statusAdjustModal{{ $award->id }}" title="Adjust Status">
-                                                                                            <i class="fa fa-cog font-sm"></i>
-                                                                                        </button>
-
-                                                                                        {{-- View Details --}}
-                                                                                        <a href="{{ route('stakeholderreports.awards.show', $award->id) }}" class="btn btn-action-icon text-primary" title="View Submission">
-                                                                                            <i class="fa fa-eye font-sm"></i>
-                                                                                        </a>
-
-                                                                                        {{-- Edit handler --}}
-                                                                                        <a href="{{ route('stakeholderreports.awards.edit', $award->id) }}" class="btn btn-action-icon text-warning" title="Edit Entry" onclick="return confirm('Are you sure you want to modify this record?');">
-                                                                                            <i class="fa fa-edit font-sm"></i>
-                                                                                        </a>
-
-                                                                                        {{-- Single Row Delete execution --}}
-                                                                                        <a href="#" class="btn btn-action-icon text-danger" title="Delete Submission" onclick="event.preventDefault(); if (confirm('Are you absolutely sure you want to remove this submission record?')) { document.getElementById('delete-award-{{ $award->id }}').submit(); }">
-                                                                                            <i class="fa fa-trash font-sm"></i>
-                                                                                        </a>
-                                                                                    </div>
-                                                                                </td>
-                                                                            </tr>
-                                                                            @empty
-                                                                            <tr>
-                                                                                <td colspan="8" class="text-center py-5 text-muted">
-                                                                                    <i class="bx bx-file-blank display-4 d-block mb-2 text-light"></i>
-                                                                                    No award submissions matched your current search index parameters.
-                                                                                </td>
-                                                                            </tr>
-                                                                            @endforelse
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-                                                            </div>
-
-                                                            @if($awards->hasPages())
-                                                                <div class="card-footer bg-white border-top-0 px-4 py-3 d-flex justify-content-center">
-                                                                    {{ $awards->links() }}
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </form>
-
-                                            <!-- Single Row Non-Bulk Forms Fallbacks (Rendered outside primary master loop tag) -->
-                                            @foreach($awards as $award)
-                                                <form id="delete-award-{{ $award->id }}" action="{{ route('stakeholderreports.awards.delete', $award->id) }}" method="POST" class="d-none">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                </form>
-
-                                                {{-- Status Adjustment Modal --}}
-                                                <div class="modal fade" id="statusAdjustModal{{ $award->id }}" tabindex="-1" role="dialog">
-                                                    <div class="modal-dialog modal-dialog-centered" role="document">
-                                                        <form method="POST" action="{{ route('awards.adjust.status', $award->id) }}">
-                                                            @csrf
-                                                            <div class="modal-content border-0 shadow">
-                                                                <div class="modal-header border-bottom-0 pb-0">
-                                                                    <h5 class="modal-title fw-bold text-dark font-base">Override Status</h5>
-                                                                    <button type="button" class="btn-close shadow-none border-0 bg-transparent text-muted" data-dismiss="modal" aria-label="Close" style="font-size: 1.25rem;">&times;</button>
-                                                                </div>
-                                                                <div class="modal-body py-3">
-                                                                    <div class="mb-3">
-                                                                        <label class="form-label font-sm fw-medium text-secondary mb-1">Target Action State</label>
-                                                                        <select name="approval_status" class="form-select form-control font-sm rounded-2" required>
-                                                                            <option value="">-- Select Status --</option>
-                                                                            @foreach($approval_statuses as $key => $label)
-                                                                                @if(!str_ends_with($key, '_pending'))
-                                                                                    <option value="{{ $key }}">{{ $label }}</option>
-                                                                                @endif
-                                                                            @endforeach
-                                                                        </select>
-                                                                    </div>
-                                                                    <div>
-                                                                        <label class="form-label font-sm fw-medium text-secondary mb-1">Reason / Contextual Feedback</label>
-                                                                        <textarea name="rejection_reason" class="form-control font-sm rounded-2" rows="3" placeholder="Provide context or a reason for override..."></textarea>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer border-top-0 pt-0">
-                                                                    <button type="button" class="btn btn-light font-sm px-3 rounded-2" data-dismiss="modal">Cancel</button>
-                                                                    <button type="submit" class="btn btn-success font-sm px-3 rounded-2">Save Adjustments</button>
-                                                                </div>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-
-                                            <!-- JavaScript Interactive Script Matrix -->
-                                            <script>
-                                                document.addEventListener('DOMContentLoaded', function () {
-                                                    const masterCheckbox = document.getElementById('master-checkbox');
-                                                    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-                                                    const bulkDropdownWrapper = document.getElementById('bulk-dropdown-wrapper');
-                                                    const selectedCountBadge = document.getElementById('selected-count-badge');
-
-                                                    function updateBulkInterfaceState() {
-                                                        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
-                                                        
-                                                        if (checkedCount > 0) {
-                                                            bulkDropdownWrapper.style.opacity = "1";
-                                                            bulkDropdownWrapper.style.pointerEvents = "auto";
-                                                            selectedCountBadge.textContent = `${checkedCount} Selected`;
-                                                            selectedCountBadge.classList.remove('d-none');
-                                                        } else {
-                                                            bulkDropdownWrapper.style.opacity = "0.5";
-                                                            bulkDropdownWrapper.style.pointerEvents = "none";
-                                                            selectedCountBadge.classList.add('d-none');
-                                                        }
-                                                    }
-
-                                                    // Toggle all rows when master checkbox changes
-                                                    if (masterCheckbox) {
-                                                        masterCheckbox.addEventListener('change', function () {
-                                                            rowCheckboxes.forEach(checkbox => {
-                                                                checkbox.checked = this.checked;
-                                                            });
-                                                            updateBulkInterfaceState();
-                                                        });
-                                                    }
-
-                                                    // Individual row checkbox interactions
-                                                    rowCheckboxes.forEach(checkbox => {
-                                                        checkbox.addEventListener('change', function () {
-                                                            if (!this.checked && masterCheckbox) {
-                                                                masterCheckbox.checked = false;
-                                                            } else if (document.querySelectorAll('.row-checkbox:checked').length === rowCheckboxes.length && masterCheckbox) {
-                                                                masterCheckbox.checked = true;
-                                                            }
-                                                            updateBulkInterfaceState();
-                                                        });
-                                                    });
-                                                });
-                                            </script>
-
-                                            <style>
-                                                /* Styling extension to keep layout clean and interactive */
-                                                .cursor-pointer { cursor: pointer; }
-                                                .custom-checkbox .form-check-input {
-                                                    width: 16px;
-                                                    height: 16px;
-                                                    border-radius: 4px;
-                                                    border: 1.5px solid #cbd5e1;
-                                                }
-                                                .custom-checkbox .form-check-input:checked {
-                                                    background-color: #3b82f6;
-                                                    border-color: #3b82f6;
-                                                }
-                                                /* Rest of style matrix styles from previous design follow smoothly... */
-                                                .custom-modern-table { border-collapse: separate; border-spacing: 0; }
-                                                .custom-modern-table thead th { background-color: #fdfdfd; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; padding-top: 14px; padding-bottom: 14px; border-bottom: 1px solid #edf2f7; }
-                                                .custom-modern-table tbody tr:hover { background-color: #f8fafc !important; }
-                                                .custom-modern-table tbody td { padding-top: 14px; padding-bottom: 14px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
-                                                .font-base { font-size: 0.925rem !important; }
-                                                .font-sm { font-size: 0.835rem !important; }
-                                                .font-xs { font-size: 0.75rem !important; }
-                                                .badge-modern { font-size: 0.7rem !important; font-weight: 600; padding: 5px 10px; border-radius: 6px; }
-                                                .bg-soft-primary { background-color: #e3efff !important; }
-                                                .badge-status { font-size: 0.65rem !important; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
-                                                .bg-soft-success { background-color: #def7ec !important; }
-                                                .bg-soft-danger { background-color: #fde8e8 !important; }
-                                                .bg-soft-warning { background-color: #fef08a !important; }
-                                                .btn-action-icon { width: 28px; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid transparent; background: transparent; transition: all 0.15s ease; }
-                                                .btn-action-icon:hover { background-color: #f1f5f9; border-color: #e2e8f0; transform: translateY(-1px); }
-                                            </style>
-                                        </div>
-                                    </div>
-                                    @empty
-                                    <tr>
-                                        <td colspan="7" class="text-center py-5 text-muted">
-                                            <i class="bx bx-file-blank display-4 d-block mb-2 text-light"></i>
-                                            No award submissions matched your current search index parameters.
-                                        </td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    @if($awards->hasPages())
-                        <div class="card-footer bg-white border-top-0 px-4 py-3 d-flex justify-content-center">
-                            {{ $awards->links() }}
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-<!-- Modern UI Style Overrides -->
+@section('extra_styles')
 <style>
-    .custom-modern-table {
-        border-collapse: separate;
-        border-spacing: 0;
+    /* Premium Page Layout Structure */
+    .premium-page-wrapper {
+        background-color: #f8fafc;
+        color: #1e293b;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
-    .custom-modern-table thead th {
-        background-color: #fdfdfd;
+    
+    /* Top Profile Meta Deck Frame with Integrated Image Box */
+    .overview-banner-card {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #f8fafc;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .header-avatar-preview {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 3px solid rgba(255, 255, 255, 0.15);
+        cursor: zoom-in;
+        transition: transform 0.2s ease, border-color 0.2s;
+    }
+    .header-avatar-preview:hover {
+        transform: scale(1.04);
+        border-color: #3b82f6;
+    }
+    .header-avatar-placeholder {
+        width: 90px;
+        height: 90px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px dashed rgba(255, 255, 255, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+    }
+    .meta-label {
         font-size: 0.72rem;
-        font-weight: 700;
+        text-transform: uppercase;
         letter-spacing: 0.05em;
-        padding-top: 14px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid #edf2f7;
+        color: #94a3b8;
+        font-weight: 600;
     }
-    .custom-modern-table tbody tr {
-        transition: background-color 0.15s ease;
+    .meta-value {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #f1f5f9;
     }
-    .custom-modern-table tbody tr:hover {
-        background-color: #f8fafc !important;
+
+    /* Modern Dynamic Form Cards */
+    .section-card {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
     }
-    .custom-modern-table tbody td {
-        padding-top: 14px;
-        padding-bottom: 14px;
-        vertical-align: middle;
+    .form-field-group {
         border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
     }
-    .table-align-middle td, .table-align-middle th {
-        vertical-align: middle !important;
+    .form-field-group:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
     }
     
-    /* Font Sizing Hierarchy Helpers */
-    .font-base { font-size: 0.925rem !important; }
-    .font-sm { font-size: 0.835rem !important; }
-    .font-xs { font-size: 0.75rem !important; }
-    .tracking-wider { letter-spacing: 0.06em; }
-    .tracking-tight { letter-spacing: -0.01em; }
-
-    /* Custom Modern Badges */
-    .badge-modern {
-        font-size: 0.7rem !important;
+    label {
         font-weight: 600;
-        letter-spacing: 0.02em;
-        padding: 5px 10px;
-        border-radius: 6px;
+        color: #334155;
+        font-size: 0.875rem;
+        text-transform: capitalize;
     }
-    .bg-soft-primary { background-color: #e3efff !important; }
-    
-    /* Micro Approval Badges */
-    .badge-status {
-        font-size: 0.65rem !important;
-        font-weight: 600;
-        padding: 2px 6px;
-        border-radius: 4px;
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        padding: 10px 14px;
+        font-size: 0.875rem;
+        transition: all 0.15s ease-in-out;
     }
-    .bg-soft-success { background-color: #def7ec !important; }
-    .bg-soft-danger { background-color: #fde8e8 !important; }
-    .bg-soft-warning { background-color: #fef08a !important; }
+    .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
 
-    /* Action Buttons Design */
-    .btn-action-icon {
-        width: 28px;
-        height: 28px;
-        padding: 0;
+    /* Media File Handling Layouts */
+    .file-thumbnail-preview {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        cursor: zoom-in;
+        transition: opacity 0.2s;
+    }
+    .file-thumbnail-preview:hover {
+        opacity: 0.85;
+    }
+
+    /* Sticky Bottom Actions Command Station */
+    .sticky-action-buttons {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 1050;
+    }
+    .btn-circle {
+        position: relative;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 6px;
-        border: 1px solid transparent;
-        background: transparent;
-        transition: all 0.15s ease;
+        font-size: 18px;
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        transition: transform 0.2s ease, background-color 0.15s;
+        border: none;
     }
-    .btn-action-icon:hover {
-        background-color: #f1f5f9;
-        border-color: #e2e8f0;
-        transform: translateY(-1px);
+    .btn-circle:hover {
+        transform: translateY(-2px) scale(1.05);
+    }
+    .btn-circle .btn-label {
+        position: absolute;
+        right: 68px;
+        white-space: nowrap;
+        background: #0f172a;
+        padding: 6px 12px;
+        border-radius: 6px;
+        opacity: 0;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 600;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+    }
+    .btn-circle:hover .btn-label {
+        opacity: 1;
     }
 </style>
-    </section>
+@endsection
+
+<div class="content-body premium-page-wrapper">
+    @if ($errors->any())
+        <div class="alert alert-danger border-0 shadow-sm rounded-3">
+            <strong>Please fix the errors below:</strong>
+            <ul class="mb-0 mt-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @php
+        // Dynamically find a profile photo or primary image from key-value pairs to feature on the header banner
+        $fileFields = ['passport', 'photo', 'image', 'picture', 'avatar'];
+        $headerImageEntry = $award->entries->first(function($entry) use ($fileFields) {
+            return in_array(strtolower($entry->key), $fileFields) && !empty($entry->value);
+        });
+    @endphp
+
+    <!-- Top Profile Banner Block with Header Image Positioned Legibly -->
+  <div class="card overview-banner-card mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-center g-4">
+                
+                <!-- Left Column: Avatar Picture Matrix Container -->
+                <div class="col-auto">
+                    @if($headerImageEntry)
+                        <img src="{{ route('protected.download', ['file' => $headerImageEntry->value]) }}" 
+                             class="header-avatar-preview trigger-zoom-modal" 
+                             data-file-url="{{ route('protected.download', ['file' => $headerImageEntry->value]) }}"
+                             data-label="Nominee Profile Photo"
+                             title="Click to expand snapshot portrait"
+                             alt="Nominee Picture">
+                    @else
+                        <div class="header-avatar-placeholder">
+                            <i class="bx bx-user" style="font-size: 2.2rem;"></i>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Center Column: Core Award Profile Identification Details -->
+                <div class="col flex-grow-1 ml-1">
+                    <div class="d-flex align-items-start align-items-sm-center justify-content-between flex-wrap gap-2 mb-3">
+                        <!-- Title & Reference ID Stack Block -->
+                        <div>
+                            <h4 class="text-white fw-bold mb-1 d-flex align-items-center gap-2">
+                                <i class="bx bx-award text-white"></i> Award Nomination Profile
+                            </h4>
+                            <div class="font-monospace text-muted font-xs tracking-tight ms-4 ps-1" style="color: rgba(255, 255, 255, 0.6) !important;">
+                                {{ $award->reference }}
+                            </div>
+                        </div>
+
+                        <!-- Award Classification Type Pill Tag -->
+                        <div>
+                            <span class="badge bg-primary text-uppercase font-xs px-2 py-1 shadow-sm" style="font-size: 0.72rem; letter-spacing: 0.02em;">
+                                {{ $award->type }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-6">
+                            <div class="meta-label">Nominee Profile</div>
+                            <div class="meta-value text-truncate" style="max-width: 220px;" title="{{ $award->name }}">{{ $award->name ?? 'Unnamed Nominee' }}</div>
+                        </div>
+                        
+                        <div class="col-12 col-md-6">
+                            <div class="meta-label">Submitted On</div>
+                            <div class="meta-value">{{ $award->created_at->format('d M Y, h:i A') }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Integrated Regional Context & Report Compliance Tracking Node -->
+                <div class="col-12 col-lg-4">
+                    <div class="compliance-wrapper header-compliance-card">
+                        @php
+                            $chapterCompliance = $award->chapter ? $award->chapter->reportCompliance() : 0;
+                            
+                            if ($chapterCompliance >= 80) {
+                                $progressBarColor = 'bg-success';
+                                $badgeColor = 'bg-soft-success';
+                            } elseif ($chapterCompliance >= 50) {
+                                $progressBarColor = 'bg-warning text-dark';
+                                $badgeColor = 'bg-soft-warning';
+                            } else {
+                                $progressBarColor = 'bg-danger';
+                                $badgeColor = 'bg-soft-danger';
+                            }
+                        @endphp
+
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex flex-column">
+                                <span class="text-white fw-semibold font-base mb-0" style="font-size: 0.9rem;">
+                                    {{ $award->chapter->name ?? '—' }}
+                                </span>
+                                <span class="font-xs text-muted mt-0.5">
+                                    {{ $award->zone->name ?? 'N/A' }} &bull; {{ $award->field->name ?? 'N/A' }}
+                                </span>
+                            </div>
+                            
+                            <span class="badge badge-status {{ $badgeColor }}">
+                                {{ $chapterCompliance }}% Compliance
+                            </span>
+                        </div>
+
+                        <div class="progress rounded-pill shadow-none" style="height: 6px; background-color: rgba(255,255,255,0.1);">
+                            <div class="progress-bar {{ $progressBarColor }} rounded-pill" 
+                                role="progressbar" 
+                                style="width: {{ $chapterCompliance }}%;" 
+                                aria-valuenow="{{ $chapterCompliance }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dynamic Key-Value Form Section -->
+    <section id="kv-entry-form">
+    <form action="{{ route('stakeholderreports.awards.update', $award->id) }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Confirm changes? This action will save edits to this award submission record.');">
+        @csrf
+        @method('PUT')
+
+        <div class="section-card">
+            <h4 class="text-dark fw-bold mb-4 border-bottom pb-2">Nomination Entry Form Values</h4>
+            
+            <!-- Grid Wrap to enforce 2-column distribution on medium screens and up -->
+            <div class="row g-4">
+                @foreach($award->entries as $entry)
+                    @php
+                        $isFieldFile = in_array(strtolower($entry->key), ['attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature','attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature_file_id','upload_a_clear_and_recent_picture_of_yourself_file_id', 'upload_a_clear_and_recent_picture_of_yourself', 'document', 'uploaded_file', 'proof', 'image', 'attachment', 'signature', 'photo', 'picture', 'avatar']) || str_contains(strtolower($entry->key), 'file') || str_contains(strtolower($entry->key), 'image');
+                    @endphp
+
+                    <!-- 2 columns on desktops, full width on mobile devices -->
+                    <div class="col-12 col-md-6">
+                        <div class="form-field-group border-0 p-0 m-0 d-flex flex-column gap-1.5 h-100 justify-content-end">
+                            
+                            <!-- Field Label (Positioned cleanly on top) -->
+                            <label for="entry-{{ $entry->id }}" class="form-label text-dark fw-semibold font-sm mb-1">
+                                {{ $entry->name }}
+                            </label>
+
+                            <!-- Dynamic Input Field Element Area -->
+                            <div class="w-100">
+                                @if($isFieldFile)
+                                    <div class="d-flex align-items-center gap-3 border rounded-3 p-2 bg-white" style="min-height: 70px;">
+                                        @if(!empty($entry->value))
+                                            <!-- Interactive Zoom Media Preview Thumb Node -->
+                                            
+                                            <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => base64_decode($entry->value)]) }}" 
+                                                 class="file-thumbnail-preview trigger-zoom-modal" 
+                                                 data-file-url="{{ route(($isAdmin ? 'admin.protected.download' : 'protected.download'), ['file' => $entry->value]) }}"
+                                                 data-label="{{ str_replace('_', ' ', $entry->key) }}"
+                                                 title="Click to zoom file context"
+                                                 alt="Attachment">
+
+                                                 <img class="uploaded-file" src="
+                                        @else
+                                            <div class="bg-light text-muted rounded d-flex align-items-center justify-content-center" style="width:50px; height:50px; flex-shrink: 0;">
+                                                <i class="fa fa-file-image-o font-medium"></i>
+                                            </div>
+                                        @endif
+
+                                        <div class="flex-grow-1">
+                                            
+                                            <input type="file" 
+                                                   class="form-control form-control-sm border-0 p-0 shadow-none mb-1" 
+                                                   id="entry-{{ $entry->id }}"
+                                                   name="entries[{{ $entry->key }}]" 
+                                                   accept=".jpg,.jpeg,.png">
+                                            <div class="font-xs text-muted mt-0.5">Upload to replace file asset (Accepts: JPG, JPEG, PNG)</div>
+                                        </div>
+                                    </div>
+                                @else
+                                    @if(strlen($entry->value) > 100)
+                                        <textarea class="form-control w-100" 
+                                                  id="entry-{{ $entry->id }}" 
+                                                  name="entries[{{ $entry->key }}]" 
+                                                  rows="3">{{ $entry->value }}</textarea>
+                                    @else
+                                        <input type="text" 
+                                               class="form-control w-100 mb-1" 
+                                               id="entry-{{ $entry->id }}" 
+                                               name="entries[{{ $entry->key }}]" 
+                                               value="{{ $entry->value }}">
+                                    @endif
+                                @endif
+                            </div>
+
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Bottom Control Submit Button Grid -->
+        <div class="mt-4 mb-5">
+            <button type="submit" class="btn btn-primary fw-semibold px-5 py-2.5" style="border-radius:8px">
+                <i class="fa fa-save me-1"></i> Save Changes & Update Records
+            </button>
+        </div>
+    </form>
+</section>
 </div>
+
+<!-- Zoom System Modal Frame Container -->
+<div class="modal fade" id="imageZoomSystemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-semibold text-dark text-truncate" id="zoomModalLabel">File Asset Focus</h6>
+                <button type="button" class="btn-close shadow-none border-0 bg-transparent text-muted" data-dismiss="modal" aria-label="Close" style="font-size:1.25rem;">&times;</button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <img src="" id="zoomedTargetImageElement" class="img-fluid rounded border shadow-sm" style="max-height: 65vh; object-fit: contain;" alt="Focus Workspace">
+            </div>
+            <div class="modal-footer border-0 pt-0 justify-content-between">
+                <span class="text-muted font-xs">Click outside or press ESC to close full view mode</span>
+                <button type="button" class="btn btn-light font-sm px-3 rounded-2" data-dismiss="modal">Close View</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@php
+    $canAct = false;
+    $userRole = $user->role_id;
+
+    if(in_array($userRole, zoneStakeholders()) && in_array($award->zone_status, [0,2])) {
+        $canAct = true;
+        $approveRoute = route('stakeholders.reports.approve', $award->id);
+        $rejectRoute  = route('stakeholders.reports.reject', $award->id);
+        $tooltipApprove = 'Approve for Zone';
+        $tooltipReject = 'Reject for Zone';
+    }
+    elseif(in_array($userRole, fieldStakeholders()) && $award->zone_status == 1 && in_array($award->field_status, [0,2])) {
+        $canAct = true;
+        $approveRoute = route('stakeholders.reports.approve', $award->id);
+        $rejectRoute  = route('stakeholders.reports.reject', $award->id);
+        $tooltipApprove = 'Approve for Field';
+        $tooltipReject = 'Reject for Field';
+    }
+    elseif(in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders()))
+           && $award->zone_status == 1
+           && $award->field_status == 1
+           && in_array($award->national_status, [0,2])) {
+        $canAct = true;
+        $approveRoute = route('stakeholders.reports.approve', $award->id);
+        $rejectRoute  = route('stakeholders.reports.reject', $award->id);
+        $tooltipApprove = 'Approve for National';
+        $tooltipReject = 'Reject for National';
+    }
+@endphp
+
+@if($canAct && $approveRoute)
+<!-- Floating Action Button Controls Frame -->
+<div class="sticky-action-buttons">
+    <a href="{{ $approveRoute }}"
+       class="btn-circle bg-success text-white d-flex align-items-center justify-content-center"
+       title="{{ $tooltipApprove }}"
+       onclick="return confirm('Are you sure you want to approve this submission record?');">
+        <i class="fa fa-check"></i>
+        <span class="btn-label">{{ $tooltipApprove }}</span>
+    </a>
+
+    <button type="button" 
+            class="btn-circle bg-danger text-white d-flex align-items-center justify-content-center" 
+            data-toggle="modal" 
+            data-target="#rejectModal"
+            title="{{ $tooltipReject }}">
+        <i class="fa fa-times"></i>
+        <span class="btn-label">{{ $tooltipReject }}</span>
+    </button>
+</div>
+
+<!-- Rejection Criteria Context Form Modal Backdrop Box -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form action="{{ $rejectRoute }}" method="POST">
+            @csrf
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark font-base" id="rejectModalLabel">Reject Submission Record</h5>
+                    <button type="button" class="btn-close shadow-none border-0 bg-transparent text-muted" data-dismiss="modal" aria-label="Close" style="font-size:1.25rem;">&times;</button>
+                </div>
+                <div class="modal-body py-3">
+                    <div class="mb-2">
+                        <label for="rejection_reason" class="form-label font-sm fw-medium text-secondary mb-1">Reason explaining the rejection context</label>
+                        <textarea name="rejection_reason" id="rejection_reason" class="form-control font-sm rounded-2" rows="4" placeholder="Provide details to the chapter clarifying why adjustments are required..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light font-sm px-3 rounded-2" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger font-sm px-3 rounded-2">Reject Submission</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
+@endsection
+
+@section('extra_scripts')
+<script>
+    $(document).ready(function() {
+        // Shared global zoom system binding logic for headers and fields
+        $('.trigger-zoom-modal').on('click', function() {
+            const assetUrl = $(this).data('file-url');
+            const fieldLabel = $(this).data('label');
+            
+            $('#zoomModalLabel').text(`Attachment Content: ${fieldLabel}`);
+            $('#zoomedTargetImageElement').attr('src', assetUrl);
+            $('#imageZoomSystemModal').modal('show');
+        });
+    });
+</script>
 @endsection

@@ -280,13 +280,6 @@
                                                                                                 </div>
                                                                                             </div>
                                                                                         </div>
-                                                                                        {{-- <div class="d-flex flex-column font-sm">
-                                                                                            <span class="text-dark fw-medium">{{ $award->chapter->name ?? '—' }}<br>
-                                                                                                <strong style="color:{{$award->chapter->reportCompliance() < 100 ? 'red' : 'green'}}">({{$award->chapter->reportCompliance() . '% Report Compliance'}})<strong></span>
-                                                                                            <span class="text-muted font-xs">
-                                                                                                {{ $award->zone->name ?? 'N/A' }} &bull; {{ $award->field->name ?? 'N/A' }}
-                                                                                            </span>
-                                                                                        </div> --}}
                                                                                         
                                                                                     </td>
                                                                                 @endif

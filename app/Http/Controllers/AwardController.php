@@ -74,8 +74,11 @@ class AwardController extends Controller
      */
     public function show(Award $award)
     {
+        $isAdmin = (!empty($user->role) && $user->role == 1);
+        $user = auth()->user() ?? auth()->guard('stakeholder')->user();
+
         $award->load('entries');
-        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title')));
+        return view('admin.awards.show', compact('isAdmin', 'isAdmin', 'user', 'award'));
     }
 
     /**
