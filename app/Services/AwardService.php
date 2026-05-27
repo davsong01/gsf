@@ -436,8 +436,6 @@ class AwardService{
                             $key = str_replace('_file_id', '', $key);
                             $value = 'Download Failed: ' . $e->getMessage();
                         }
-                    }else{
-                        continue;
                     }
 
                     // Store everything cleanly matching your precise mapping schema layout
