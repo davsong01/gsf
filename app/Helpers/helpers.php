@@ -1334,7 +1334,7 @@ if (!function_exists('resolveAwardPermissions')) {
         }
 
         $userRole       = (int)($user->role_id ?? $user->role ?? 0);
-        $isAdmin        = ($userRole === 1);
+        $isAdmin        = isAdmin()['status'];
         $settings       = awardSettings(); // Leverage dynamic settings helper array
         
         $canAct         = false;
@@ -1372,7 +1372,7 @@ if (!function_exists('resolveAwardPermissions')) {
                 $tooltipReject  = 'Reject for Field';
             }
             // NATIONAL SECRETARIAT & NCP TIER EVALUATION (Requires Zone & Field Approval)
-            elseif (in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders())) 
+            elseif ($isAdmin || in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders())) 
                     && (int)$award->zone_status === 1 
                     && (int)$award->field_status === 1 
                     && in_array((int)$award->national_status, [0, 2])) {
@@ -1388,7 +1388,7 @@ if (!function_exists('resolveAwardPermissions')) {
             // dd($e->getMessage());
             report($e); // Fail-secure log capture
         }
-
+        
         return (object) [
             'canAct'          => $canAct,
             'canEdit'         => $canEdit,
