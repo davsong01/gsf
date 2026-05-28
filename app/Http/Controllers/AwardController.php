@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\EmailTypeEnum;
 use App\Models\Award;
-use App\Models\AwardEntries;
 use App\Models\AwardSetting;
 use App\Models\Chapter;
 use App\Services\AwardService;
@@ -14,7 +12,9 @@ use App\Services\FileUploadService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use ZipArchive;
 
 class AwardController extends Controller
 {
@@ -401,94 +401,17 @@ class AwardController extends Controller
         return back()->with('message', 'Operation Successful');
     }
 
-    // public function awardReportsDownloadDownload(string $type)
-    // {
-    //     $awards = Award::where('type', $type)->get();
-    //     $fileName = 'award-nomination-report-' . now()->format('Y-m-d-His') . '.xlsx';
 
-    //     if ($awards->isEmpty()) {
-    //         return redirect()->back()->with('error', 'No award records found to download.');
-    //     }
-
-    //     $headers = [
-    //         'Nominee Name', 'Email Address', 'Phone Number', 'Chapter', 
-    //         'Chapter Status', 'Zone Status', 'Field Status', 'National Status', 
-    //         'Final Approved By', 'Final Approved On', 'Submission Date'
-    //     ];
-
-    //     // Helper closure to translate status integers to professional string labels
-    //     $statusLabel = function($val) {
-    //         return match((int)$val) {
-    //             1 => 'Approved',
-    //             2 => 'Rejected',
-    //             default => 'Pending'
-    //         };
-    //     };
-
-    //     $allRows = [];
-    //     foreach ($awards as $award) {
-    //         // Resolve final approval meta-details safely (assumes national secretariat approval is the final stage)
-    //         $isFinalApproved = ($award->national_status == 1);
-            
-    //         // Lookup final approval tracking trace parameters dynamically 
-    //         // If your schema tracks an approved_by user relation, replace or update these fallbacks accordingly
-    //         $finalApprovedBy = $award->approvedBy?->name ?? '' ;
-    //         $finalApprovedOn = $award->national_approved_on ? Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—';                 
-
-    //         $allRows[] = [
-    //             'Nominee Name'      => $award->name ?? 'Unnamed Nominee',
-    //             'Email Address'     => $award->email,
-    //             'Phone Number'      => $award->phone ?? '—',
-    //             'Chapter'           => $award->chapter->name ?? $award->entries->firstWhere('key', 'select_institution')?->value ?? '—',
-    //             'Chapter Status'    => $statusLabel($award->chapter_status),
-    //             'Zone Status'       => $statusLabel($award->zone_status),
-    //             'Field Status'      => $statusLabel($award->field_status),
-    //             'National Status'   => $statusLabel($award->national_status),
-    //             'Final Approved By' => $finalApprovedBy,
-    //             'Final Approved On' => $finalApprovedOn,
-    //             'Submission Date'   => optional($award->created_at)->format('Y-m-d H:i A'),
-                
-    //             // Raw values appended at the end solely for filtering out separate sheets cleanly
-    //             '_chapter_raw'  => (int)$award->chapter_status,
-    //             '_zone_raw'     => (int)$award->zone_status,
-    //             '_field_raw'    => (int)$award->field_status,
-    //             '_national_raw' => (int)$award->national_status,
-    //         ];
-    //     }
-
-
-    //     // 3. Segment Row Arrays into target sheets using internal flags
-    //     $sheetsData = [
-    //         'All Nominees'             => collect($allRows),
-    //         'Passed Chapter Clearance' => collect($allRows)->where('_chapter_raw', 1),
-    //         'Passed Zone Clearance'    => collect($allRows)->where('_zone_raw', 1),
-    //         'Passed Field Clearance'   => collect($allRows)->where('_field_raw', 1),
-    //         'Passed National Approval' => collect($allRows)->where('_national_raw', 1),
-    //     ];
-
-        
-    //     // 4. Clean up internal raw filter data from rows so they don't leak into Excel columns
-    //     foreach ($sheetsData as $sheetName => $collection) {
-    //         $sheetsData[$sheetName] = $collection->map(function ($row) {
-    //             unset($row['_chapter_raw'], $row['_zone_raw'], $row['_field_raw'], $row['_national_raw']);
-    //             return $row;
-    //         })->values()->toArray();
-    //     }
-        
-    //     return ExcelService::downloadMultipleSheets($sheetsData, $headers, $fileName);
-    // }
     public function awardReportsDownloadDownload(string $type)
     {
-        // Grouping: Order by chapter_id first, then by the raw form entry fallback string if no relation exists
         $awards = Award::where('type', $type)
             ->orderBy('chapter_id', 'asc')
             ->get()
             ->sortBy(function($award) {
-                // This ensures that even unassigned chapter records get grouped cleanly by their custom typed text
                 return $award->chapter?->name ?? $award->entries->firstWhere('key', 'select_institution')?->value ?? 'ZZZ';
             });
 
-        $fileName = 'award-nomination-report-' . now()->format('Y-m-d-His') . '.xlsx';
+        $fileName = $type . ' award-nomination-report-' . now()->format('Y-m-d-His') . '.xlsx';
 
         if ($awards->isEmpty()) {
             return redirect()->back()->with('error', 'No award records found to download.');
@@ -516,7 +439,7 @@ class AwardController extends Controller
             
             // Lookup final approval tracking trace parameters dynamically 
             $finalApprovedBy = $award->approvedBy?->name ?? '';
-            $finalApprovedOn = $award->national_approved_on ? \Carbon\Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—';                 
+            $finalApprovedOn = $award->national_approved_on ? Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—';                 
 
             $allRows[] = [
                 'Nominee Name'      => $award->name ?? 'Unnamed Nominee',
@@ -558,5 +481,98 @@ class AwardController extends Controller
         }
         
         return ExcelService::downloadMultipleSheets($sheetsData, $headers, $fileName);
+    }
+
+
+    public function awardAssetsDownloadDownload()
+    {
+        
+        $awards = Award::with('entries')->latest()->get();
+
+        if ($awards->isEmpty()) {
+            return redirect()->back()->with('error', 'No award records found to download.');
+        }
+
+        // 1. Differentiate between images and documents
+        $allFileFields = fileFields();
+        $images = ["picturesave_picture_as_your_name", "upload_a_clear_and_recent_picture_of_yourself"];
+        
+        // Documents are whatever file keys remain after filtering out the images
+        $documents = array_diff($allFileFields, $images);
+
+        // 2. Setup Temporary Zip Target File Archive
+        $zipFileName = 'award-assets-' . now()->format('Y-m-d-His') . '.zip';
+        $zipFilePath = storage_path('app/' . $zipFileName);
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return redirect()->back()->with('error', 'Could not initialize compressed ZIP engine context.');
+        }
+
+        // Explicitly seed directory structures inside the zip file
+        $zip->addEmptyDir('images');
+        $zip->addEmptyDir('documents');
+
+        $hasAddedFiles = false;
+
+        // 3. Process every award item row sequentially
+        foreach ($awards as $award) {
+            $nomineeSlug = str_replace([' ', '/', '\\'], '_', $award->name ?? 'Unnamed_Nominee');
+
+            foreach ($award->entries as $entry) {
+                // Guard: Ignore blank input lines or failed download strings
+                if (empty($entry->value) || str_starts_with($entry->value, 'Download Failed:')) {
+                    continue;
+                }
+
+                $isImage = in_array($entry->key, $images);
+                $isDocument = in_array($entry->key, $documents);
+
+                // Process only matching assets defined in your file helpers
+                if ($isImage || $isDocument) {
+                    // Generate internal loop down route parameters mapping
+                    $downloadUrl = route('admin.protected.download', ['file' => $entry->value]);
+
+                    try {
+                        // Fetch file contents stream using internal app requests
+                        $response = Http::timeout(30)->get($downloadUrl);
+
+                        if ($response->successful()) {
+                            $fileContents = $response->body();
+
+                            // Resolve file extensions dynamically from headers or default to original key naming structures
+                            $sanitizedKey = str_replace(['_file_id', 'upload_a_'], '', $entry->key);
+                            $extension = pathinfo(parse_url($entry->value, PHP_URL_PATH), PATHINFO_EXTENSION);
+
+                            $finalFileName = "{$nomineeSlug}_{$sanitizedKey}.{$extension}";
+
+                            // Route into correct directory layer structure inside the zip
+                            $targetFolder = $isImage ? 'images/' : 'documents/';
+
+                            $zip->addFromString($targetFolder . $finalFileName, $fileContents);
+                            $hasAddedFiles = true;
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Failed downloading asset file for Award ID [{$award->id}], Key [{$entry->key}]: " . $e->getMessage());
+                    }
+                }
+            }
+        }
+
+        // Close and save the zip archive
+        $zip->close();
+
+        // 4. Return stream response file download, then purge temporary file off disk storage
+        if ($hasAddedFiles && file_exists($zipFilePath)) {
+            return response()->download($zipFilePath, $zipFileName)->deleteFileAfterSend(true);
+        }
+
+        // Cleanup empty file if nothing was added
+        if (file_exists($zipFilePath)) {
+            @unlink($zipFilePath);
+        }
+
+        return redirect()->back()->with('error', 'No actual binary file attachments were recovered to pack inside the zip storage bundle.');
     }
 }

@@ -145,6 +145,9 @@
                     <div class="col-md-3 mb-2">
                         <a href="{{route('award.report.download', $type)}}" class="btn btn-info w-100">Download Report</a>
                     </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{route('award.report.assets')}}" class="btn btn-danger w-100">Download Assets</a>
+                    </div>
                     @endif
                 </form>
             </div>
