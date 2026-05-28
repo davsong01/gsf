@@ -123,19 +123,41 @@ class AwardController extends Controller
         }
 
         $permissions = resolveAwardPermissions($award);
-        if (!$permissions->canEdit) {
+
+        $canComment = $permissions->canComment;
+
+        if (!$permissions->canEdit && !$permissions->canComment) {
             return back()->with('error', 'Invalid Action: You do not have permission to modify this form.');
         }
 
         // 3. Establish lookup assets
         $fileFields = fileFields();
         $entries = $request->entries;
+
+        $adminDetails = isAdmin();
+        $isAdmin = $adminDetails['status'];
+        $userRole = $adminDetails['userRole'];
+
         // dd($entries, $request->all());
         try {
-            $adminUpdates = $request->only(["chapter_comment", "zone_comment", "field_comment", "national_comment"]);
+            if($isAdmin){
+                $pdates = $request->only(["chapter_comment", "zone_comment", "field_comment", "national_comment"]);
+            }
 
-            if(isAdmin()['status']){
-                $award->update($adminUpdates);
+            if(in_array($userRole, chapterStakeholders()) && $canComment){
+                $pdates = $request->only(["chapter_comment"]);
+            }
+
+            if(in_array($userRole, zoneStakeholders())  && $canComment){
+                $pdates = $request->only(["zone_comment"]);
+            }
+
+            if(in_array($userRole, fieldStakeholders())  && $canComment){
+                $pdates = $request->only(["field_comment"]);
+            }
+
+            if(!empty($pdates)){
+                $award->update($pdates);
             }
 
             if(!empty($entries)){
@@ -205,72 +227,6 @@ class AwardController extends Controller
         }
     }
 
-    public function approveEntry(Request $request, Award $award)
-    {
-        $user = auth()->user() ?? auth()->guard('stakeholder')->user();
-        $userRole = (int)($user->role_id ?? $user->role ?? 0);
-        $comment = $request->input('comment'); // Kept generic 'comment' for approval notes
-
-        $isAdmin = isAdmin()['status'];
-
-        $updateData = [];
-
-        if (in_array($userRole, chapterStakeholders())) {
-            $updateData['chapter_status'] = 1;
-            $updateData['chapter_comment'] = $comment;
-        }
-
-        if (in_array($userRole, zoneStakeholders())) {
-            $updateData['zone_status'] = 1;
-            $updateData['zone_comment'] = $comment;
-        }
-
-        if (in_array($userRole, fieldStakeholders())) {
-            $updateData['field_status'] = 1;
-            $updateData['field_comment'] = $comment;
-        }
-
-        if ($isAdmin) {
-            $updateData['national_status'] = 1;
-            $updateData['national_comment'] = $comment;
-            $updateData['national_approved_on'] = now();
-            $updateData['national_approved_by'] = auth()->user()->id;
-        }
-
-        if (!empty($updateData)) {
-            $award->update($updateData);
-        }
-
-        if ($isAdmin) {
-            $awardType = ($award->type === 'go') ? 'First Class' : 'E.T.F.';
-
-            $content = "Dear " . $award->name . ",<br><br>";
-            $content .= "Congratulations! We are pleased to inform you that your application for the G.S.F. <strong>{$awardType}</strong> award has been approved by the administration.<br><br>";
-
-            if (!empty($comment)) {
-                $content .= "<strong>Reviewer Feedback / Comments:</strong><br>";
-                $content .= "<blockquote>" . nl2br(e($comment)) . "</blockquote><br>";
-            }
-
-            $content .= "Further updates regarding presentation ceremonies or distributions will be communicated to you shortly.<br><br>";
-            $content .= "Best regards,<br>Committee on ETF and First Class Awards";
-
-            $emailsToQueue = [
-                'recipient'  => $award->email,
-                'subject'    => "Congratulations! Your {$awardType} Entry Has Been Approved",
-                'content'    => $content,
-                'type'       => 'generic',
-                'priority'   => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-
-            // Execute logging and database queuing
-            $log = EmailService::logEmail($emailsToQueue);
-        }
-
-        return back()->with('message', 'Operation Successful');
-    }
 
     /**
      * Remove the specified resource from storage.
@@ -321,21 +277,95 @@ class AwardController extends Controller
     public function updateAwardSettings(Request $request){
         $settings = AwardSetting::first();
 
-        $settings->update($request->only([
-            'allow_chapter_edit', 'allow_chapter_comment', 'allow_chapter_approval',
-            'allow_zone_edit',    'allow_zone_comment',    'allow_zone_approval',
-            'allow_field_edit',   'allow_field_comment',   'allow_field_approval'
-        ]));
+        $settings->update($request->except(['_token']));
 
         return redirect()->back()->with('message', 'System configurations saved successfully.');
     }
 
 
+    public function approveEntry(Request $request, Award $award)
+    {
+        $user = auth()->user() ?? auth()->guard('stakeholder')->user();
+        $userRole = (int)($user->role_id ?? $user->role ?? 0);
+        $comment = trim((string) $request->input('comment'));
+
+        $isAdmin = isAdmin()['status'];
+
+        $updateData = [];
+
+        if (in_array($userRole, chapterStakeholders())) {
+            $updateData['chapter_status'] = 1;
+
+            if (!empty($comment)) {
+                $updateData['chapter_comment'] = $comment;
+            }
+        }
+
+        if (in_array($userRole, zoneStakeholders())) {
+            $updateData['zone_status'] = 1;
+
+            if (!empty($comment)) {
+                $updateData['zone_comment'] = $comment;
+            }
+        }
+
+        if (in_array($userRole, fieldStakeholders())) {
+            $updateData['field_status'] = 1;
+
+            if (!empty($comment)) {
+                $updateData['field_comment'] = $comment;
+            }
+        }
+
+        if ($isAdmin) {
+            $updateData['national_status'] = 1;
+            $updateData['national_approved_on'] = now();
+            $updateData['national_approved_by'] = auth()->user()->id;
+
+            if (!empty($comment)) {
+                $updateData['national_comment'] = $comment;
+            }
+        }
+
+        if (!empty($updateData)) {
+            $award->update($updateData);
+        }
+
+        if ($isAdmin) {
+            $awardType = ($award->type === 'go') ? 'First Class' : 'E.T.F.';
+
+            $content = "Dear " . $award->name . ",<br><br>";
+            $content .= "Congratulations! We are pleased to inform you that your application for the G.S.F. <strong>{$awardType}</strong> award has been approved by the administration.<br><br>";
+
+            if (!empty($comment)) {
+                $content .= "<strong>Reviewer Feedback / Comments:</strong><br>";
+                $content .= "<blockquote>" . nl2br(e($comment)) . "</blockquote><br>";
+            }
+
+            $content .= "Further updates regarding presentation ceremonies or distributions will be communicated to you shortly.<br><br>";
+            $content .= "Best regards,<br>Committee on ETF and First Class Awards";
+
+            $emailsToQueue = [
+                'recipient'  => $award->email,
+                'subject'    => "Congratulations! Your {$awardType} Entry Has Been Approved",
+                'content'    => $content,
+                'type'       => 'generic',
+                'priority'   => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            EmailService::logEmail($emailsToQueue);
+        }
+
+        return back()->with('message', 'Operation Successful');
+    }
+    
     public function rejectEntry(Request $request, Award $award)
     {
         $user = auth()->user() ?? auth()->guard('stakeholder')->user();
         $userRole = (int)($user->role_id ?? $user->role ?? 0);
-        $comment = $request->input('rejection_reason');
+        $comment = trim((string) $request->input('rejection_reason'));
 
         $isAdmin = isAdmin()['status'];
 
@@ -344,24 +374,36 @@ class AwardController extends Controller
 
         if (in_array($userRole, chapterStakeholders())) {
             $updateData['chapter_status'] = 2;
-            $updateData['chapter_comment'] = $comment;
+
+            if (!empty($comment)) {
+                $updateData['chapter_comment'] = $comment;
+            }
         }
 
         if (in_array($userRole, zoneStakeholders())) {
             $updateData['zone_status'] = 2;
-            $updateData['zone_comment'] = $comment;
+
+            if (!empty($comment)) {
+                $updateData['zone_comment'] = $comment;
+            }
         }
 
         if (in_array($userRole, fieldStakeholders())) {
-            $updateData['field_status'] = 2; // Note: Fixed 'chapter_status' to 'field_status' here
-            $updateData['field_comment'] = $comment;
+            $updateData['field_status'] = 2;
+
+            if (!empty($comment)) {
+                $updateData['field_comment'] = $comment;
+            }
         }
 
         if ($isAdmin) {
             $updateData['national_status'] = 2;
-            $updateData['national_comment'] = $request->input('comment');
             $updateData['national_rejected_on'] = now();
             $updateData['national_rejected_by'] = auth()->user()->id;
+
+            if (!empty($comment)) {
+                $updateData['national_comment'] = $comment;
+            }
         }
 
         if (!empty($updateData)) {
@@ -394,8 +436,7 @@ class AwardController extends Controller
                 'updated_at' => now(),
             ];
 
-            // 4. Execute logging and debug
-            $log = EmailService::logEmail($emailsToQueue);
+            EmailService::logEmail($emailsToQueue);
         }
 
         return back()->with('message', 'Operation Successful');
@@ -528,7 +569,7 @@ class AwardController extends Controller
 
                     if ($isImage || $isDocument) {
                         $downloadUrl = route('admin.protected.download', ['file' => $entry->value]);
-                        
+
                         try {
                             // Use a shorter timeout per file so a single dead link doesn't hang the entire export
                             $response = Http::timeout(10)->get($downloadUrl);

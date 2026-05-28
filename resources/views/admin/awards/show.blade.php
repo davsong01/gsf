@@ -3,21 +3,22 @@
     $fileFields = fileFields();;
     $headerImageEntry = $award->entries->first(function($entry) {
         return in_array(strtolower($entry->key), [
-            'upload_a_clear_and_recent_picture_of_yourself_file_id', 
+            'upload_a_clear_and_recent_picture_of_yourself_file_id',
             'upload_a_clear_and_recent_picture_of_yourself',
             'picturesave_picture_as_your_name'
         ]) && !empty($entry->value);
     });
-    
+
     $permissions = resolveAwardPermissions($award);
     $canAct = $permissions->canAct;
     $canEdit = $permissions->canEdit;
+    $canComment = $permissions->canComment;
     $approveRoute = $permissions->approveRoute;
     $rejectRoute = $permissions->rejectRoute;
     $tooltipApprove = $permissions->tooltipApprove;
     $tooltipReject = $permissions->tooltipReject;
 
-  
+
     $userRole = $user->role_id;
     $settings = awardSettings();
 @endphp
@@ -33,7 +34,7 @@
         color: #1e293b;
         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
-    
+
     /* Top Profile Meta Deck Frame with Integrated Image Box */
     .overview-banner-card {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -97,7 +98,7 @@
         padding-bottom: 0;
         margin-bottom: 0;
     }
-    
+
     label {
         font-weight: 600;
         color: #334155;
@@ -188,17 +189,17 @@
             </ul>
         </div>
     @endif
-        
+
     <!-- Top Profile Banner Block with Header Image Positioned Legibly -->
     <div class="card overview-banner-card mb-2">
     <div class="card-body p-1">
         <div class="row align-items-center g-4">
-            
+
             <!-- Left Column: Avatar Picture Matrix Container -->
             <div class="col-auto">
                 @if($headerImageEntry)
-                    <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry->value]) }}" 
-                         class="header-avatar-preview trigger-zoom-modal" 
+                    <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry->value]) }}"
+                         class="header-avatar-preview trigger-zoom-modal"
                          data-file-url="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry->value]) }}"
                          data-label="Nominee Profile Photo"
                          title="Click to expand snapshot portrait"
@@ -228,7 +229,7 @@
                         <div class="meta-label">Nominee Profile</div>
                         <div class="meta-value text-truncate" style="max-width: 220px;" title="{{ $award->name }}">{{ $award->name ?? 'Unnamed Nominee' }}</div>
                     </div>
-                    
+
                     <div class="col-12 col-md-6">
                         <div class="meta-label">Submitted On</div>
                         <div class="meta-value">{{ $award->created_at->format('d M Y, h:i A') }}</div>
@@ -239,12 +240,12 @@
             <!-- Right Column: Integrated Regional Context, Compliance Tracking & Workflow Statuses -->
             <div class="col-12 col-lg-5">
                 <div class="compliance-wrapper header-compliance-card h-100 d-flex flex-column justify-content-between gap-3">
-                    
+
                     <!-- Top Sub-Section: Regional Compliance Information -->
                     <div>
                         @php
                             $chapterCompliance = $award->chapter ? $award->chapter->reportCompliance() : 0;
-                            
+
                             if ($chapterCompliance >= 80) {
                                 $progressBarColor = 'bg-success';
                                 $badgeColor = 'bg-soft-success';
@@ -272,18 +273,18 @@
                                     {{ $award->zone->name ?? 'N/A' }} &bull; {{ $award->field->name ?? 'N/A' }}
                                 </span>
                             </div>
-                            
+
                             <span class="badge badge-status {{ $badgeColor }}">
                                 {{ $chapterCompliance }}% Compliance
                             </span>
                         </div>
 
                         <div class="progress rounded-pill shadow-none" style="height: 6px; background-color: rgba(255,255,255,0.1);">
-                            <div class="progress-bar {{ $progressBarColor }} rounded-pill" 
-                                role="progressbar" 
-                                style="width: {{ $chapterCompliance }}%;" 
-                                aria-valuenow="{{ $chapterCompliance }}" 
-                                aria-valuemin="0" 
+                            <div class="progress-bar {{ $progressBarColor }} rounded-pill"
+                                role="progressbar"
+                                style="width: {{ $chapterCompliance }}%;"
+                                aria-valuenow="{{ $chapterCompliance }}"
+                                aria-valuemin="0"
                                 aria-valuemax="100">
                             </div>
                         </div>
@@ -295,7 +296,7 @@
                         <div class="meta-label mb-1 mt-2" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255, 255, 255, 0.5) !important;">
                             Approval Status Clearance
                         </div>
-                        
+
                         @php
                             $stages = [
                                 'Chapter'  => ['value' => $award->chapter_status,  'level' => 'chapter'],
@@ -309,16 +310,16 @@
                             @foreach($stages as $label => $data)
                                 <div class="col-6 col-sm-3 col-lg-6 col-xl-3">
                                     <!-- Calibrated Micro-Card Background and Borders for Dark Blue backgrounds -->
-                                    <div class="p-2 rounded d-flex flex-column align-items-start justify-content-between" 
+                                    <div class="p-2 rounded d-flex flex-column align-items-start justify-content-between"
                                         style="background-color: rgba(15, 23, 42, 0.4); min-height: 54px; border: 1px solid rgba(255, 255, 255, 0.08);">
-                                        
+
                                         <span class="mb-1" style="font-size: 0.65rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; color: white !important;">
                                             {{ $label }}
                                         </span>
-                                        
+
                                         @if($data['value'] == 2)
                                             <!-- High-Contrast Neon Red Tag -->
-                                            <span class="badge d-inline-flex align-items-center gap-1 border" 
+                                            <span class="badge d-inline-flex align-items-center gap-1 border"
                                                 style="font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; background-color: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4) !important; color: #ff6b6b !important;">
                                                 Rejected
                                                 <a href="#{{ $data['level'] }}Rejection{{ $award->id }}" data-toggle="modal" class="lh-1 m-0 p-0" style="color: #ff6b6b !important;" title="View feedback">
@@ -327,13 +328,13 @@
                                             </span>
                                         @elseif($data['value'] == 1)
                                             <!-- High-Contrast Vibrant Emerald Tag -->
-                                            <span class="badge border" 
+                                            <span class="badge border"
                                                 style="font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; background-color: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4) !important; color: #34d399 !important;">
                                                 Approved
                                             </span>
                                         @else
                                             <!-- High-Contrast Crisp Amber Gold Tag -->
-                                            <span class="badge border" 
+                                            <span class="badge border"
                                                 style="font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; background-color: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4) !important; color: #fbbf24 !important;">
                                                 Pending
                                             </span>
@@ -364,7 +365,7 @@
                         $isInstitutionKey = in_array($entry->key, ['select_institution', 'chapter_id']);
 
                         $cleanKey = strtolower($entry->key);
-                        
+
                         $isFieldFile = in_array($entry->key, $fileFields) || str_contains(strtolower($entry->key), 'file') || str_contains(strtolower($entry->key), 'image');
 
                         $specialFields = specialFormFields();
@@ -379,7 +380,7 @@
 
                     <div class="col-12 col-md-6">
                         <div class="form-field-group border-0 h-100 justify-content-end">
-                            
+
                             <label for="entry-{{ $entry->id }}" class="form-label text-dark fw-semibold font-sm mb-1">
                                 {{ $entry->name }}
                             </label>
@@ -388,8 +389,8 @@
                                 @if($isFieldFile)
                                     <div class="d-flex align-items-center gap-3 border rounded-3 p-2 bg-white" style="min-height: 70px;">
                                         @if(!empty($entry->value))
-                                            <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $entry->value]) }}" 
-                                                class="file-thumbnail-preview trigger-zoom-modal" 
+                                            <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $entry->value]) }}"
+                                                class="file-thumbnail-preview trigger-zoom-modal"
                                                 data-file-url="{{ route(($isAdmin ? 'admin.protected.download' : 'protected.download'), ['file' => $entry->value]) }}"
                                                 data-label="{{ str_replace('_', ' ', $entry->key) }}"
                                                 title="Click to zoom file context"
@@ -403,10 +404,10 @@
                                         <div class="flex-grow-1">
                                             {{-- Hide file uploader entirely if form is not editable --}}
                                             @if($canEdit == 1)
-                                                <input type="file" 
-                                                    class="form-control form-control-sm border-0 p-0 shadow-none mb-1" 
+                                                <input type="file"
+                                                    class="form-control form-control-sm border-0 p-0 shadow-none mb-1"
                                                     id="entry-{{ $entry->id }}"
-                                                    name="entries[{{ $entry->key }}]" 
+                                                    name="entries[{{ $entry->key }}]"
                                                     accept=".jpg,.jpeg,.png">
                                                 <div class="font-xs text-muted mt-0.5">Upload to replace file asset (Accepts: JPG, JPEG, PNG)</div>
                                             @else
@@ -417,8 +418,8 @@
                                 @elseif($hasSpecialSchema)
                                     {{-- Handle Custom Select Dropdown Options --}}
                                     @if($fieldSchema['type'] === 'select')
-                                        <select class="form-select w-100 mb-1" 
-                                                id="entry-{{ $entry->id }}" 
+                                        <select class="form-select w-100 mb-1"
+                                                id="entry-{{ $entry->id }}"
                                                 name="entries[{{ $entry->key }}]"
                                                 {{ $canEdit == 0 ? 'disabled' : '' }}>
                                             <option value="">-- Choose Option --</option>
@@ -431,16 +432,16 @@
 
                                     {{-- Handle Native HTML Date Inputs --}}
                                     @elseif($fieldSchema['type'] === 'date')
-                                        <input type="date" 
-                                            class="form-control w-100 mb-1" 
-                                            id="entry-{{ $entry->id }}" 
-                                            name="entries[{{ $entry->key }}]" 
+                                        <input type="date"
+                                            class="form-control w-100 mb-1"
+                                            id="entry-{{ $entry->id }}"
+                                            name="entries[{{ $entry->key }}]"
                                             value="{{ !empty($entry->value) ? date('Y-m-d', strtotime($entry->value)) : '' }}"
                                             {{ $canEdit == 0 ? 'disabled' : '' }}>
                                     @endif
                                 @elseif($isInstitutionKey)
-                                    <select class="form-select w-100 mb-1" 
-                                            id="entry-{{ $entry->id }}" 
+                                    <select class="form-select w-100 mb-1"
+                                            id="entry-{{ $entry->id }}"
                                             name="entries[{{ $entry->key }}]"
                                             {{ $canEdit == 0 ? 'disabled' : '' }}>
                                         <option value="">-- Select or Search Institution --</option>
@@ -453,16 +454,16 @@
 
                                 @else
                                     @if(strlen($entry->value) > 100)
-                                        <textarea class="form-control w-100" 
-                                                id="entry-{{ $entry->id }}" 
-                                                name="entries[{{ $entry->key }}]" 
+                                        <textarea class="form-control w-100"
+                                                id="entry-{{ $entry->id }}"
+                                                name="entries[{{ $entry->key }}]"
                                                 rows="3"
                                                 {{ $canEdit == 0 ? 'disabled' : '' }}>{{ $entry->value }}</textarea>
                                     @else
-                                        <input type="text" 
-                                            class="form-control w-100 mb-1" 
-                                            id="entry-{{ $entry->id }}" 
-                                            name="entries[{{ $entry->key }}]" 
+                                        <input type="text"
+                                            class="form-control w-100 mb-1"
+                                            id="entry-{{ $entry->id }}"
+                                            name="entries[{{ $entry->key }}]"
                                             value="{{ $entry->value }}"
                                             {{ $canEdit == 0 ? 'disabled' : '' }}>
                                     @endif
@@ -547,7 +548,7 @@
                                         </label>
 
                                         {{-- Enforce explicit editable rights ONLY for Admin users --}}
-                                        @if($isAdmin)
+                                        @if($isAdmin || $canComment)
 
                                             <textarea
                                                 class="form-control rounded-3 shadow-none border"
@@ -587,7 +588,7 @@
                 @endforeach
 
             </div>
-            @if($canEdit)
+            @if($canEdit || $canComment)
             <div class="mt-4 mb-1">
                 <button type="submit" class="btn btn-primary fw-semibold px-5 py-2.5" style="border-radius:8px">
                     <i class="fa fa-save me-1"></i> Save Changes & Update Records
@@ -612,9 +613,9 @@
         <span class="btn-label">{{ $tooltipApprove }}</span>
     </a>
 
-    <button type="button" 
-            class="btn-circle bg-danger text-white d-flex align-items-center justify-content-center" 
-            data-toggle="modal" 
+    <button type="button"
+            class="btn-circle bg-danger text-white d-flex align-items-center justify-content-center"
+            data-toggle="modal"
             data-target="#rejectModal"
             title="{{ $tooltipReject }}">
         <i class="fa fa-times"></i>
@@ -656,12 +657,12 @@
                 <button type="button" class="btn-close shadow-none border-0 bg-transparent text-muted" data-dismiss="modal" aria-label="Close" style="font-size:1.25rem;">&times;</button>
             </div>
             <div class="modal-body text-center p-4 d-flex align-items-center justify-content-center" style="min-height: 350px;">
-                <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 1 1'%2F%3E" 
-                     id="zoomedTargetImageElement" 
-                     class="img-fluid rounded border shadow-sm" 
-                     style="max-height: 65vh; max-width: 100%; object-fit: contain; display: none;" 
+                <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 1 1'%2F%3E"
+                     id="zoomedTargetImageElement"
+                     class="img-fluid rounded border shadow-sm"
+                     style="max-height: 65vh; max-width: 100%; object-fit: contain; display: none;"
                      alt="Focus Workspace">
-                     
+
                 <div id="zoomModalSpinnerElement" class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading asset data structure...</span>
                 </div>
@@ -681,25 +682,25 @@
     $('.trigger-zoom-modal').on('click', function() {
     let fileUrl = $(this).data('file-url');
     let fileLabel = $(this).data('label');
-    
+
     // Set text labels
     $('#zoomModalLabel').text(fileLabel ? 'Focus View: ' + fileLabel : 'File Asset Focus');
-    
+
     let $img = $('#zoomedTargetImageElement');
     let $spinner = $('#zoomModalSpinnerElement');
-    
+
     // 1. Hide the image and display the loader before inserting the source
     $img.hide();
     $spinner.show();
-    
+
     // 2. Open the Bootstrap modal structure
     $('#imageZoomSystemModal').modal('show');
-    
+
     // 3. Bind the onload hook to handle sizing animations safely after down-streaming finishes
     $img.attr('src', fileUrl).on('load', function() {
         $spinner.hide();
         $img.fadeIn(200);
-        
+
         // Recalculate centering dynamically now that the dimensions are known
         let modalInstance = bootstrap.Modal.getInstance(document.getElementById('imageZoomSystemModal'));
         if (modalInstance && typeof modalInstance.handleUpdate === 'function') {

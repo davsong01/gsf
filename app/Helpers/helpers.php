@@ -1273,15 +1273,17 @@ if (!function_exists('isAdmin')){
     function isAdmin($user = null) : array
     {
         if (!$user) {
-            $user = auth()->user() 
-                ?? auth()->guard('stakeholder')->user() 
+            $user = auth()->user()
+                ?? auth()->guard('stakeholder')->user()
                 ?? auth()->guard('web')->user();
         }
+
 
         if (!$user) {
             return [
                 'status' => false,
-                'user' => null
+                'user' => null,
+                'userRole' => null
             ];
         }
 
@@ -1298,10 +1300,11 @@ if (!function_exists('isAdmin')){
         }
 
         $isAdmin = (!is_null($roleValue) && (int)$roleValue === 1);
-                    
+
         return [
             'status' => $isAdmin,
-            'user' => $user
+            'user' => $user,
+            'userRole' => (int)($user->role_id ?? $user->role ?? 0)
         ];
     }
 }
@@ -1333,21 +1336,27 @@ if (!function_exists('resolveAwardPermissions')) {
             ];
         }
 
-        $userRole       = (int)($user->role_id ?? $user->role ?? 0);
-        $isAdmin        = isAdmin()['status'];
-        $settings       = awardSettings(); // Leverage dynamic settings helper array
-        
+        $isAdminDetails        = isAdmin();
+        $isAdmin = $isAdminDetails['status'];
+        $userRole = $isAdminDetails['userRole'];
+
+        $settings       = awardSettings();
+
         $canAct         = false;
         $canEdit        = $isAdmin; // Admins bypass permission clamps natively
+        $canComment     = false;
         $approveRoute   = '#';
         $rejectRoute    = '#';
         $tooltipApprove = '';
         $tooltipReject  = '';
 
+        // dd($settings, $settings->allow_chapter_edit);
         try {
+
             if (in_array($userRole, chapterStakeholders()) && in_array((int)$award->chapter_status, [0, 2])) {
                 $canAct         = $settings->allow_chapter_approval ?? true;
-                $canEdit        = (bool)($settings['allow_chapter_edit'] ?? false);
+                $canEdit        = $settings->allow_chapter_edit ?? 0;
+                $canComment     = $settings->allow_chapter_comment ?? 0;
                 $approveRoute   = route('stakeholders.award.approve', $award->id);
                 $rejectRoute    = route('stakeholders.award.reject', $award->id);
                 $tooltipApprove = 'Approve for Chapter';
@@ -1357,6 +1366,7 @@ if (!function_exists('resolveAwardPermissions')) {
             elseif (in_array($userRole, zoneStakeholders()) && in_array((int)$award->zone_status, [0, 2])) {
                 $canAct         = $settings->allow_zone_approval ?? true;
                 $canEdit        = (bool)($settings['allow_zone_edit'] ?? false);
+                $canComment     = $settings->allow_zone_comment ?? 0;
                 $approveRoute   = route('stakeholders.award.approve', $award->id);
                 $rejectRoute    = route('stakeholders.award.reject', $award->id);
                 $tooltipApprove = 'Approve for Zone';
@@ -1366,32 +1376,35 @@ if (!function_exists('resolveAwardPermissions')) {
             elseif (in_array($userRole, fieldStakeholders()) && (int)$award->zone_status === 1 && in_array((int)$award->field_status, [0, 2])) {
                 $canAct         = $settings->allow_field_approval ?? true;
                 $canEdit        = (bool)($settings['allow_field_edit'] ?? false);
+                $canComment     = $settings->allow_field_comment ?? 0;
                 $approveRoute   = route('stakeholders.award.approve', $award->id);
                 $rejectRoute    = route('stakeholders.award.reject', $award->id);
                 $tooltipApprove = 'Approve for Field';
                 $tooltipReject  = 'Reject for Field';
+
             }
             // NATIONAL SECRETARIAT & NCP TIER EVALUATION (Requires Zone & Field Approval)
-            elseif ($isAdmin || in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders())) 
-                    && (int)$award->zone_status === 1 
-                    && (int)$award->field_status === 1 
+            elseif ($isAdmin || in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders()))
+                    && (int)$award->zone_status === 1
+                    && (int)$award->field_status === 1
                     && in_array((int)$award->national_status, [0, 2])) {
-                
+
                 $canAct         = true;
                 $canEdit        = true;
+                $canComment     = true;
                 $approveRoute   = route('award.approve', $award->id);
                 $rejectRoute    = route('award.reject', $award->id);
                 $tooltipApprove = 'Approve for National';
                 $tooltipReject  = 'Reject for National';
             }
         } catch (\Throwable $e) {
-            // dd($e->getMessage());
-            report($e); // Fail-secure log capture
+            report($e);
         }
-        
+
         return (object) [
             'canAct'          => $canAct,
             'canEdit'         => $canEdit,
+            'canComment'      => $canComment,
             'approveRoute'    => $approveRoute,
             'rejectRoute'     => $rejectRoute,
             'tooltipApprove'  => $tooltipApprove,
@@ -1399,66 +1412,6 @@ if (!function_exists('resolveAwardPermissions')) {
         ];
     }
 }
-
-// if (!function_exists('resolveAwardIndexContext')) {
-//     /**
-//      * Resolves layout grid architecture, structural visibility rules,
-//      * and static translation maps for the collection list/index view.
-//      *
-//      * @param mixed|null $user Optional user context override
-//      * @return object Clean fluent property object map
-//      */
-//     function resolveAwardIndexContext($user = null): object
-//     {
-//         if (!$user) {
-//             $user = auth()->user() ?? auth()->guard('stakeholder')->user();
-//         }
-
-//         if (!$user) {
-//             return (object) [
-//                 'canViewChapter' => false,
-//                 'canEditChapter' => false,
-//                 'canViewZone'    => false,
-//                 'canEditZone' => false,
-
-//                 'canViewField'   => false,
-//                 'canEditField' => false,
-
-//                 'hierarchyCount' => 0,
-//                 'hierarchyCol'   => 12,
-//                 'statuses'       => []
-//             ];
-//         }
-
-//         $userRole = (int)($user->role_id ?? $user->role ?? 0);
-//         $isAdmin  = ($userRole === 1);
-
-//         // Compute Visibility rules (Admins automatically view all steps)
-//         $canViewChapter = $isAdmin || in_array($userRole, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders()));
-//         $canViewZone    = $isAdmin || in_array($userRole, array_merge(fieldStakeholders(), secretariatStakeholders(), ncpStakeholders()));
-//         $canViewField   = $isAdmin || in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders()));
-
-//         // Process Responsive Grid System Math
-//         $hierarchyCount = collect([$canViewField, $canViewZone, $canViewChapter])->filter()->count();
-//         $hierarchyCol   = $hierarchyCount > 1 ? intval(12 / $hierarchyCount) : 4;
-
-//         // Static Master Dictionary Map
-//         $approvalStatuses = [
-//             'zone_pending'      => 'Zone Pending',      'zone_approved'     => 'Zone Approved',     'zone_rejected'     => 'Zone Rejected',
-//             'field_pending'     => 'Field Pending',     'field_approved'    => 'Field Approved',    'field_rejected'    => 'Field Rejected',
-//             'national_pending'  => 'National Pending',  'national_approved' => 'National Approved', 'national_rejected' => 'National Rejected',
-//         ];
-
-//         return (object) [
-//             'canViewChapter' => $canViewChapter,
-//             'canViewZone'    => $canViewZone,
-//             'canViewField'   => $canViewField,
-//             'hierarchyCount' => $hierarchyCount,
-//             'hierarchyCol'   => $hierarchyCol,
-//             'statuses'        => $approvalStatuses
-//         ];
-//     }
-// }
 
 if (!function_exists('resolveAwardIndexContext')) {
     /**
@@ -1540,21 +1493,21 @@ if (!function_exists('fileFields')) {
             'upload_a_clear_and_recent_picture_of_yourself',
             'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature',
             'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature_file_id',
-            'upload_a_clear_and_recent_picture_of_yourself_file_id', 
-            'document', 
-            'uploaded_file', 
-            'image', 
-            'attachment', 
-            'signature', 
-            'photo', 
-            'picture', 
+            'upload_a_clear_and_recent_picture_of_yourself_file_id',
+            'document',
+            'uploaded_file',
+            'image',
+            'attachment',
+            'signature',
+            'photo',
+            'picture',
             'avatar'
         ]);
     }
 
     if (!function_exists('specialFormFields')) {
         /**
-         * Defines custom input field exceptions, identifying their type, 
+         * Defines custom input field exceptions, identifying their type,
          * responsive behaviors, and collection configurations.
          *
          * @return array

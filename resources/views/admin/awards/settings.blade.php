@@ -16,7 +16,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-                        
+
                         <!-- Header Bar with Save Controls -->
                         <div class="card-header bg-white border-bottom pt-4 pb-3 px-4 d-flex align-items-center justify-content-between">
                             <div>
@@ -29,12 +29,12 @@
                         </div>
 
                         <div class="card-body p-4">
-                            
-                           
+
+
                             <div class="row g-4">
-                                
+
                                 <!-- ==================== CHAPTER CONFIGURATIONS ==================== -->
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <div class="form-group mb-0">
                                         <label for="allow_chapter_edit" class="form-label text-dark fw-semibold font-sm mb-1">
                                             Allow Chapter Editing
@@ -46,7 +46,7 @@
                                     </div>
                                 </div>
 
-                                {{-- <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <div class="form-group mb-0">
                                         <label for="allow_chapter_comment" class="form-label text-dark fw-semibold font-sm mb-1">
                                             Allow Chapter Comment
@@ -56,9 +56,9 @@
                                             <option value="0" {{ ($settings->allow_chapter_comment ?? 0) == 0 ? 'selected' : '' }}>No</option>
                                         </select>
                                     </div>
-                                </div> --}}
+                                </div>
 
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <div class="form-group mb-0">
                                         <label for="allow_chapter_approval" class="form-label text-dark fw-semibold font-sm mb-1">
                                             Allow Chapter Approval
@@ -71,7 +71,7 @@
                                 </div>
 
                                 <!-- ==================== ZONE CONFIGURATIONS ==================== -->
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <div class="form-group mb-0">
                                         <label for="allow_zone_edit" class="form-label text-dark fw-semibold font-sm mb-1">
                                             Allow Zone Editing
@@ -83,7 +83,7 @@
                                     </div>
                                 </div>
 
-                                {{-- <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <div class="form-group mb-0">
                                         <label for="allow_zone_comment" class="form-label text-dark fw-semibold font-sm mb-1">
                                             Allow Zone Comment
@@ -93,9 +93,9 @@
                                             <option value="0" {{ ($settings->allow_zone_comment ?? 0) == 0 ? 'selected' : '' }}>No</option>
                                         </select>
                                     </div>
-                                </div> --}}
+                                </div>
 
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <div class="form-group mb-0">
                                         <label for="allow_zone_approval" class="form-label text-dark fw-semibold font-sm mb-1">
                                             Allow Zone Approvals
@@ -108,7 +108,7 @@
                                 </div>
 
                                 <!-- ==================== FIELD CONFIGURATIONS ==================== -->
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <div class="form-group mb-0">
                                         <label for="allow_field_edit" class="form-label text-dark fw-semibold font-sm mb-1">
                                             Allow Field Editing
@@ -120,7 +120,7 @@
                                     </div>
                                 </div>
 
-                                {{-- <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <div class="form-group mb-0">
                                         <label for="allow_field_comment" class="form-label text-dark fw-semibold font-sm mb-1">
                                             Allow Field Comment
@@ -130,9 +130,9 @@
                                             <option value="0" {{ ($settings->allow_field_comment ?? 0) == 0 ? 'selected' : '' }}>No</option>
                                         </select>
                                     </div>
-                                </div> --}}
+                                </div>
 
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <div class="form-group mb-0">
                                         <label for="allow_field_approval" class="form-label text-dark fw-semibold font-sm mb-1">
                                             Allow Field Approvals
