@@ -258,13 +258,13 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::delete('delete/{award}', 'destroy')->name('awards.delete');
         Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
         Route::post('bulkapprove', 'bulkDelete')->name('awards.bulk-approve');
-        
+
         Route::get('award-approve/{award}', 'approveEntry')->name('award.approve');
         Route::post('award-reject/{award}', 'rejectEntry')->name('award.reject');
-        
+
         Route::post('award-update', 'updateAward')->name('awards.update');
-        Route::get('download-award-report/{type}', 'awardReportsDownloadDownload')->name('award.report.download');
-        Route::get('download-award-asset', 'awardAssetsDownloadDownload')->name('award.report.assets');
+        Route::get('download-award-report/{type}', 'awardReportsDownload')->name('award.report.download');
+        Route::get('download-award-asset', 'awardAssetsDownload')->name('award.report.assets');
     });
 
     Route::post('adjust-award-status/{report}', [AdminReportsController::class, 'adjustAwardStatus'])->name('awards.adjust.status');
@@ -289,7 +289,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('award-settings', [AwardController::class, 'awardSettings'])->name('award.settings');
     Route::post('award-settings', [AwardController::class, 'updateAwardSettings'])->name('award.settings.update');
 
-    
+
     Route::get('archived-nec', [NecController::class, 'archivedNec'])->name('archive.nec.index');
     Route::post('process-archive-nec', [NecController::class, 'archiveNec'])->name('nec.archive');
 
@@ -692,10 +692,10 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
             Route::post('bulkapprove', 'bulkDelete')->name('awards.bulk-approve');
 
-            
+
             Route::get('award-approve/{award}', 'approveEntry')->name('award.approve');
             Route::post('award-reject/{award}', 'rejectEntry')->name('award.reject');
-            
+
             Route::post('award-update', 'updateAward')->name('awards.update');
         });
 

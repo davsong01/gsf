@@ -62,7 +62,7 @@ class Award extends Model
         return Attribute::get(function () {         
             return $this->entries?->firstWhere('key', 'email')?->value 
                 ?? $this->entries?->firstWhere('key', 'email_address')?->value 
-                ?? 'Unnamed Nominee';
+                ?? 'Unnamed Email';
         });
     }
 

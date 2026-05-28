@@ -54,7 +54,7 @@ class AwardController extends Controller
         $adminDetails = isAdmin();
         $isAdmin = $adminDetails['status'];
         $user = $adminDetails['user'];
-        
+
         $type = 'etf';
 
         $request->merge([
@@ -63,7 +63,7 @@ class AwardController extends Controller
 
         $entries = $this->awardService->index($request, $user, $type , $isAdmin);
         $title = 'EducationTrust Fund (E.T.F.) Award Submissions';
-        
+
         return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type')));
     }
 
@@ -91,10 +91,10 @@ class AwardController extends Controller
         $adminDetails = isAdmin();
         $isAdmin = $adminDetails['status'];
         $user = $adminDetails['user'];
-        
+
         $award->load('entries');
         $chapters = Chapter::select('id', 'name')->get();
-        
+
         return view('admin.awards.show', compact('isAdmin', 'isAdmin', 'award', 'chapters', 'user'));
     }
 
@@ -117,7 +117,7 @@ class AwardController extends Controller
     public function updateAward(Request $request)
     {
         $award = Award::with('entries')->where('id', $request->award_id)->first();
-        
+
         if (!$award) {
             return back()->with('error', 'Award record not found.');
         }
@@ -133,7 +133,7 @@ class AwardController extends Controller
         // dd($entries, $request->all());
         try {
             $adminUpdates = $request->only(["chapter_comment", "zone_comment", "field_comment", "national_comment"]);
-            
+
             if(isAdmin()['status']){
                 $award->update($adminUpdates);
             }
@@ -142,29 +142,29 @@ class AwardController extends Controller
                 foreach ($entries as $key => $value) {
                     // Find the matching entry row relative to this award
                     $toUpdate = $award->entries->firstWhere('key', $key);
-                    
+
                     if (!$toUpdate) {
                         continue;
                     }
-    
+
                     $cleanKey = strtolower($key);
-    
+
                     // Check if the current payload key maps to a recognized file type
                     if (in_array($cleanKey, $fileFields) || str_contains($cleanKey, 'file') || str_contains($cleanKey, 'image')) {
-                        
+
                         // Ensure a physical file asset was actually attached inside the request payload
                         if ($request->hasFile("entries.{$key}")) {
                             $uploadedFile = $request->file("entries.{$key}");
-                            
+
                             // Validate file integrity before shipping to the upload pipeline
                             if ($uploadedFile->isValid()) {
-                                
+
                                 // Execute your secure upload service structure
                                 $value = app(FileUploadService::class)->secureUpload(
                                     $uploadedFile,
                                     'award-files'
                                 );
-                                
+
                                 // Grab the temp file path from the upload to handle cleaning downstream
                                 $tmpFilePath = $uploadedFile->getRealPath();
                                 if ($tmpFilePath && file_exists($tmpFilePath)) {
@@ -172,12 +172,12 @@ class AwardController extends Controller
                                 }
                             }
                         } else {
-                            // Critical Safe Fallback: If no new file was uploaded, bypass rewriting 
+                            // Critical Safe Fallback: If no new file was uploaded, bypass rewriting
                             // the field so we don't overwrite the existing filename with a null/empty string.
-                            continue; 
+                            continue;
                         }
                     }
-    
+
                     if(isAdmin()['status']){
                         if(in_array($cleanKey, ['chapter_id', 'select_institution'])){
                             $chapter = Chapter::where('id', $value)->first();
@@ -190,7 +190,7 @@ class AwardController extends Controller
                             }
                         }
                     }
-                    
+
                     // Corrected: Set the database attribute column 'value' as the key wrapper target
                     $toUpdate->update([
                         'value' => $value,
@@ -210,7 +210,7 @@ class AwardController extends Controller
         $user = auth()->user() ?? auth()->guard('stakeholder')->user();
         $userRole = (int)($user->role_id ?? $user->role ?? 0);
         $comment = $request->input('comment'); // Kept generic 'comment' for approval notes
-        
+
         $isAdmin = isAdmin()['status'];
 
         $updateData = [];
@@ -221,12 +221,12 @@ class AwardController extends Controller
         }
 
         if (in_array($userRole, zoneStakeholders())) {
-            $updateData['zone_status'] = 1; 
+            $updateData['zone_status'] = 1;
             $updateData['zone_comment'] = $comment;
         }
 
         if (in_array($userRole, fieldStakeholders())) {
-            $updateData['field_status'] = 1; 
+            $updateData['field_status'] = 1;
             $updateData['field_comment'] = $comment;
         }
 
@@ -242,16 +242,16 @@ class AwardController extends Controller
         }
 
         if ($isAdmin) {
-            $awardType = ($award->type === 'go') ? 'First Class' : 'E.T.F.'; 
-                        
+            $awardType = ($award->type === 'go') ? 'First Class' : 'E.T.F.';
+
             $content = "Dear " . $award->name . ",<br><br>";
             $content .= "Congratulations! We are pleased to inform you that your application for the G.S.F. <strong>{$awardType}</strong> award has been approved by the administration.<br><br>";
-            
+
             if (!empty($comment)) {
                 $content .= "<strong>Reviewer Feedback / Comments:</strong><br>";
                 $content .= "<blockquote>" . nl2br(e($comment)) . "</blockquote><br>";
             }
-            
+
             $content .= "Further updates regarding presentation ceremonies or distributions will be communicated to you shortly.<br><br>";
             $content .= "Best regards,<br>Committee on ETF and First Class Awards";
 
@@ -264,7 +264,7 @@ class AwardController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
-            
+
             // Execute logging and database queuing
             $log = EmailService::logEmail($emailsToQueue);
         }
@@ -317,7 +317,7 @@ class AwardController extends Controller
 
         return view('admin.awards.settings', compact('settings'));
     }
-    
+
     public function updateAwardSettings(Request $request){
         $settings = AwardSetting::first();
 
@@ -330,7 +330,7 @@ class AwardController extends Controller
         return redirect()->back()->with('message', 'System configurations saved successfully.');
     }
 
- 
+
     public function rejectEntry(Request $request, Award $award)
     {
         $user = auth()->user() ?? auth()->guard('stakeholder')->user();
@@ -343,12 +343,12 @@ class AwardController extends Controller
         $updateData = [];
 
         if (in_array($userRole, chapterStakeholders())) {
-            $updateData['chapter_status'] = 2; 
+            $updateData['chapter_status'] = 2;
             $updateData['chapter_comment'] = $comment;
         }
 
         if (in_array($userRole, zoneStakeholders())) {
-            $updateData['zone_status'] = 2; 
+            $updateData['zone_status'] = 2;
             $updateData['zone_comment'] = $comment;
         }
 
@@ -367,20 +367,20 @@ class AwardController extends Controller
         if (!empty($updateData)) {
             $award->update($updateData);
         }
-        
+
         if ($isAdmin) {
-            $awardType = ($award->type === 'go') ? 'First Class' : 'E.T.F.'; 
-                        
+            $awardType = ($award->type === 'go') ? 'First Class' : 'E.T.F.';
+
             $content = "Dear ".$award->name.",<br><br>";
             $content .= "We regret to inform you that your application for the G.S.F. <strong>{$awardType}</strong> award has been declined by the administration.<br><br>";
-            
+
             if (!empty($comment)) {
                 $content .= "<strong>Reason / Reviewer Feedback:</strong><br>";
                 $content .= "<blockquote>" . nl2br(e($comment)) . "</blockquote><br>";
             } else {
                 $content .= "No specific reason was provided by the administration.<br><br>";
             }
-            
+
             $content .= "Thank you for your participation and interest.<br><br>";
             $content .= "Best regards,<br>Committee on ETF and First Class Awards";
 
@@ -393,7 +393,7 @@ class AwardController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
-            
+
             // 4. Execute logging and debug
             $log = EmailService::logEmail($emailsToQueue);
         }
@@ -402,7 +402,7 @@ class AwardController extends Controller
     }
 
 
-    public function awardReportsDownloadDownload(string $type)
+    public function awardReportsDownload(string $type)
     {
         $awards = Award::where('type', $type)
             ->orderBy('chapter_id', 'asc')
@@ -418,8 +418,8 @@ class AwardController extends Controller
         }
 
         $headers = [
-            'Nominee Name', 'Email Address', 'Phone Number', 'Chapter', 
-            'Chapter Status', 'Zone Status', 'Field Status', 'Final Status', 
+            'Nominee Name', 'Email Address', 'Phone Number', 'Chapter',
+            'Chapter Status', 'Zone Status', 'Field Status', 'Final Status',
             'Final Approved By', 'Final Approved On', 'Submission Date'
         ];
 
@@ -436,10 +436,10 @@ class AwardController extends Controller
         foreach ($awards as $award) {
             // Resolve final approval meta-details safely (assumes national secretariat approval is the final stage)
             $isFinalApproved = ($award->national_status == 1);
-            
-            // Lookup final approval tracking trace parameters dynamically 
+
+            // Lookup final approval tracking trace parameters dynamically
             $finalApprovedBy = $award->approvedBy?->name ?? '';
-            $finalApprovedOn = $award->national_approved_on ? Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—';                 
+            $finalApprovedOn = $award->national_approved_on ? Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—';
 
             $allRows[] = [
                 'Nominee Name'      => $award->name ?? 'Unnamed Nominee',
@@ -453,7 +453,7 @@ class AwardController extends Controller
                 'Final Approved By' => $finalApprovedBy,
                 'Final Approved On' => $finalApprovedOn,
                 'Submission Date'   => optional($award->created_at)->format('Y-m-d H:i A'),
-                
+
                 // Raw values appended at the end solely for filtering out separate sheets cleanly
                 '_chapter_raw'  => (int)$award->chapter_status,
                 '_zone_raw'     => (int)$award->zone_status,
@@ -479,25 +479,20 @@ class AwardController extends Controller
                 return $row;
             })->values()->toArray();
         }
-        
+
         return ExcelService::downloadMultipleSheets($sheetsData, $headers, $fileName);
     }
-
-
-    public function awardAssetsDownloadDownload()
+    public function awardAssetsDownload()
     {
-        
-        $awards = Award::with('entries')->latest()->get();
-
-        if ($awards->isEmpty()) {
+        // 1. Initial Check to ensure we have data before opening a Zip archive
+        $totalAwards = Award::count();
+        if ($totalAwards === 0) {
             return redirect()->back()->with('error', 'No award records found to download.');
         }
 
-        // 1. Differentiate between images and documents
+        // Identify and differentiate asset classification rules
         $allFileFields = fileFields();
         $images = ["picturesave_picture_as_your_name", "upload_a_clear_and_recent_picture_of_yourself"];
-        
-        // Documents are whatever file keys remain after filtering out the images
         $documents = array_diff($allFileFields, $images);
 
         // 2. Setup Temporary Zip Target File Archive
@@ -505,74 +500,168 @@ class AwardController extends Controller
         $zipFilePath = storage_path('app/' . $zipFileName);
 
         $zip = new ZipArchive();
-
         if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             return redirect()->back()->with('error', 'Could not initialize compressed ZIP engine context.');
         }
 
-        // Explicitly seed directory structures inside the zip file
         $zip->addEmptyDir('images');
         $zip->addEmptyDir('documents');
 
         $hasAddedFiles = false;
 
-        // 3. Process every award item row sequentially
-        foreach ($awards as $award) {
-            $nomineeSlug = str_replace([' ', '/', '\\'], '_', $award->name ?? 'Unnamed_Nominee');
+        // 3. Expand Execution Limits Safely
+        @set_time_limit(300); // Extends script lifetime window up to 5 minutes
+        ini_set('memory_limit', '512M'); // Allocates plenty of headspace workspace buffer
 
-            foreach ($award->entries as $entry) {
-                // Guard: Ignore blank input lines or failed download strings
-                if (empty($entry->value) || str_starts_with($entry->value, 'Download Failed:')) {
-                    continue;
-                }
+        // 4. Stream and download records using memory-safe Chunks
+        Award::with('entries')->latest()->chunk(20, function ($awards) use ($images, $documents, $zip, &$hasAddedFiles) {
+            foreach ($awards as $award) {
+                $nomineeSlug = str_replace([' ', '/', '\\'], '_', $award->name ?? 'Unnamed_Nominee');
 
-                $isImage = in_array($entry->key, $images);
-                $isDocument = in_array($entry->key, $documents);
+                foreach ($award->entries as $entry) {
+                    if (empty($entry->value) || str_starts_with($entry->value, 'Download Failed:')) {
+                        continue;
+                    }
 
-                // Process only matching assets defined in your file helpers
-                if ($isImage || $isDocument) {
-                    // Generate internal loop down route parameters mapping
-                    $downloadUrl = route('admin.protected.download', ['file' => $entry->value]);
+                    $isImage = in_array($entry->key, $images);
+                    $isDocument = in_array($entry->key, $documents);
 
-                    try {
-                        // Fetch file contents stream using internal app requests
-                        $response = Http::timeout(30)->get($downloadUrl);
+                    if ($isImage || $isDocument) {
+                        $downloadUrl = route('admin.protected.download', ['file' => $entry->value]);
+                        
+                        try {
+                            // Use a shorter timeout per file so a single dead link doesn't hang the entire export
+                            $response = Http::timeout(10)->get($downloadUrl);
 
-                        if ($response->successful()) {
-                            $fileContents = $response->body();
+                            if ($response->successful()) {
+                                $fileContents = $response->body();
 
-                            // Resolve file extensions dynamically from headers or default to original key naming structures
-                            $sanitizedKey = str_replace(['_file_id', 'upload_a_'], '', $entry->key);
-                            $extension = pathinfo(parse_url($entry->value, PHP_URL_PATH), PATHINFO_EXTENSION);
+                                $sanitizedKey = str_replace(['_file_id', 'upload_a_'], '', $entry->key);
+                                $extension = pathinfo(parse_url($entry->value, PHP_URL_PATH), PATHINFO_EXTENSION);
+                                $finalFileName = "{$nomineeSlug}_{$sanitizedKey}.{$extension}";
 
-                            $finalFileName = "{$nomineeSlug}_{$sanitizedKey}.{$extension}";
+                                $targetFolder = $isImage ? 'images/' : 'documents/';
 
-                            // Route into correct directory layer structure inside the zip
-                            $targetFolder = $isImage ? 'images/' : 'documents/';
-
-                            $zip->addFromString($targetFolder . $finalFileName, $fileContents);
-                            $hasAddedFiles = true;
+                                // Writes straight into the open file descriptor on disk
+                                $zip->addFromString($targetFolder . $finalFileName, $fileContents);
+                                $hasAddedFiles = true;
+                            }
+                        } catch (\Exception $e) {
+                            Log::error("Failed downloading asset file for Award ID [{$award->id}], Key [{$entry->key}]: " . $e->getMessage());
                         }
-                    } catch (\Exception $e) {
-                        Log::error("Failed downloading asset file for Award ID [{$award->id}], Key [{$entry->key}]: " . $e->getMessage());
                     }
                 }
             }
-        }
 
-        // Close and save the zip archive
+            // Force PHP to wipe finished Eloquent models from RAM before moving to the next chunk
+            unset($awards);
+            gc_collect_cycles();
+        });
+
+        // Save and finalize our tracking container archive pointers
         $zip->close();
 
-        // 4. Return stream response file download, then purge temporary file off disk storage
+        // 5. Deliver complete file stream to frontend browser
         if ($hasAddedFiles && file_exists($zipFilePath)) {
             return response()->download($zipFilePath, $zipFileName)->deleteFileAfterSend(true);
         }
 
-        // Cleanup empty file if nothing was added
         if (file_exists($zipFilePath)) {
             @unlink($zipFilePath);
         }
 
-        return redirect()->back()->with('error', 'No actual binary file attachments were recovered to pack inside the zip storage bundle.');
+        return redirect()->back()->with('error', 'No binary attachments were found to include in the ZIP package.');
     }
+
+    // public function awardAssetsDownload()
+    // {
+
+    //     $awards = Award::with('entries')->latest()->get();
+
+    //     if ($awards->isEmpty()) {
+    //         return redirect()->back()->with('error', 'No award records found to download.');
+    //     }
+
+    //     // 1. Differentiate between images and documents
+    //     $allFileFields = fileFields();
+    //     $images = ["picturesave_picture_as_your_name", "upload_a_clear_and_recent_picture_of_yourself"];
+
+    //     // Documents are whatever file keys remain after filtering out the images
+    //     $documents = array_diff($allFileFields, $images);
+
+    //     // 2. Setup Temporary Zip Target File Archive
+    //     $zipFileName = 'award-assets-' . now()->format('Y-m-d-His') . '.zip';
+    //     $zipFilePath = storage_path('app/' . $zipFileName);
+
+    //     $zip = new ZipArchive();
+
+    //     if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+    //         return redirect()->back()->with('error', 'Could not initialize compressed ZIP engine context.');
+    //     }
+
+    //     // Explicitly seed directory structures inside the zip file
+    //     $zip->addEmptyDir('images');
+    //     $zip->addEmptyDir('documents');
+
+    //     $hasAddedFiles = false;
+
+    //     // 3. Process every award item row sequentially
+    //     foreach ($awards as $award) {
+    //         $nomineeSlug = str_replace([' ', '/', '\\'], '_', $award->name ?? 'Unnamed_Nominee');
+
+    //         foreach ($award->entries as $entry) {
+    //             // Guard: Ignore blank input lines or failed download strings
+    //             if (empty($entry->value) || str_starts_with($entry->value, 'Download Failed:')) {
+    //                 continue;
+    //             }
+
+    //             $isImage = in_array($entry->key, $images);
+    //             $isDocument = in_array($entry->key, $documents);
+
+    //             // Process only matching assets defined in your file helpers
+    //             if ($isImage || $isDocument) {
+    //                 // Generate internal loop down route parameters mapping
+    //                 $downloadUrl = route('admin.protected.download', ['file' => $entry->value]);
+
+    //                 try {
+    //                     // Fetch file contents stream using internal app requests
+    //                     $response = Http::timeout(30)->get($downloadUrl);
+
+    //                     if ($response->successful()) {
+    //                         $fileContents = $response->body();
+
+    //                         // Resolve file extensions dynamically from headers or default to original key naming structures
+    //                         $sanitizedKey = str_replace(['_file_id', 'upload_a_'], '', $entry->key);
+    //                         $extension = pathinfo(parse_url($entry->value, PHP_URL_PATH), PATHINFO_EXTENSION);
+
+    //                         $finalFileName = "{$nomineeSlug}_{$sanitizedKey}.{$extension}";
+
+    //                         // Route into correct directory layer structure inside the zip
+    //                         $targetFolder = $isImage ? 'images/' : 'documents/';
+
+    //                         $zip->addFromString($targetFolder . $finalFileName, $fileContents);
+    //                         $hasAddedFiles = true;
+    //                     }
+    //                 } catch (\Exception $e) {
+    //                     Log::error("Failed downloading asset file for Award ID [{$award->id}], Key [{$entry->key}]: " . $e->getMessage());
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     // Close and save the zip archive
+    //     $zip->close();
+
+    //     // 4. Return stream response file download, then purge temporary file off disk storage
+    //     if ($hasAddedFiles && file_exists($zipFilePath)) {
+    //         return response()->download($zipFilePath, $zipFileName)->deleteFileAfterSend(true);
+    //     }
+
+    //     // Cleanup empty file if nothing was added
+    //     if (file_exists($zipFilePath)) {
+    //         @unlink($zipFilePath);
+    //     }
+
+    //     return redirect()->back()->with('error', 'No actual binary file attachments were recovered to pack inside the zip storage bundle.');
+    // }
 }
