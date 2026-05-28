@@ -263,6 +263,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::post('award-reject/{award}', 'rejectEntry')->name('award.reject');
         
         Route::post('award-update', 'updateAward')->name('awards.update');
+        Route::get('download-award-report/{type}', 'awardReportsDownloadDownload')->name('award.report.download');
+
     });
 
     Route::post('adjust-award-status/{report}', [AdminReportsController::class, 'adjustAwardStatus'])->name('awards.adjust.status');

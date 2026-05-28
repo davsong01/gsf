@@ -141,6 +141,11 @@
                     <div class="col-md-2 mb-2">
                         <button class="btn btn-secondary w-100">Filter</button>
                     </div>
+                    @if($isAdmin)
+                    <div class="col-md-3 mb-2">
+                        <a href="{{route('award.report.download', $type)}}" class="btn btn-info w-100">Download Report</a>
+                    </div>
+                    @endif
                 </form>
             </div>
         </div>
@@ -299,6 +304,17 @@
                                                         </span>
                                                         @endif
                                                         <span class="text-muted tracking-tight font-xs font-monospace">{{ $award->reference }}</span>
+                                                        @if($award->national_status == 1)
+                                                            <br>
+                                                            <span><strong>Approved By:</strong> {{ $award->approvedBy?->name ?? 'System' }}</span><br>
+                                                            <span><strong>Approved On:</strong> {{ $award->national_approved_on ? \Carbon\Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—' }}</span><br>
+                                                        @endif
+
+                                                        @if($award->national_status == 2)
+                                                            <br>
+                                                            <span><strong>Rejected By:</strong> {{ $award->rejectedBy?->name ?? 'System' }}</span><br>
+                                                            <span><strong>Rejected On:</strong> {{ $award->national_rejected_on ? \Carbon\Carbon::parse($award->national_rejected_on)->format('d M Y, h:i A') : '—' }}</span><br>
+                                                        @endif
                                                         <span style="width: 60%;" class="badge badge-modern bg-soft-primary text-primary">{{ $award->type == 'go' ? 'GO AWARD' : $award->type }}</span>
 
                                                     </div>

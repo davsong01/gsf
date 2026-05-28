@@ -9,7 +9,9 @@ use App\Models\AwardSetting;
 use App\Models\Chapter;
 use App\Services\AwardService;
 use App\Services\EmailService;
+use App\Services\ExcelService;
 use App\Services\FileUploadService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -37,29 +39,32 @@ class AwardController extends Controller
         $adminDetails = isAdmin();
         $isAdmin = $adminDetails['status'];
         $user = $adminDetails['user'];
+        $type = 'go';
 
         $request->merge([
-            'type' => 'go'
+            'type' => $type
         ]);
 
-        $entries = $this->awardService->index($request, $user, 'go', $isAdmin);
+        $entries = $this->awardService->index($request, $user, $type, $isAdmin);
         $title = 'General Overseer (G.O.) Award Submissions';
-        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title')));
+        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type')));
     }
 
     public function etfAwardEntries(Request $request){
         $adminDetails = isAdmin();
         $isAdmin = $adminDetails['status'];
         $user = $adminDetails['user'];
+        
+        $type = 'etf';
 
         $request->merge([
-            'type' => 'etf'
+            'type' => $type
         ]);
 
-        $entries = $this->awardService->index($request, $user, 'etf', $isAdmin);
+        $entries = $this->awardService->index($request, $user, $type , $isAdmin);
         $title = 'EducationTrust Fund (E.T.F.) Award Submissions';
         
-        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title')));
+        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type')));
     }
 
     /**
@@ -228,6 +233,8 @@ class AwardController extends Controller
         if ($isAdmin) {
             $updateData['national_status'] = 1;
             $updateData['national_comment'] = $comment;
+            $updateData['national_approved_on'] = now();
+            $updateData['national_approved_by'] = auth()->user()->id;
         }
 
         if (!empty($updateData)) {
@@ -353,6 +360,8 @@ class AwardController extends Controller
         if ($isAdmin) {
             $updateData['national_status'] = 2;
             $updateData['national_comment'] = $request->input('comment');
+            $updateData['national_rejected_on'] = now();
+            $updateData['national_rejected_by'] = auth()->user()->id;
         }
 
         if (!empty($updateData)) {
@@ -390,5 +399,164 @@ class AwardController extends Controller
         }
 
         return back()->with('message', 'Operation Successful');
+    }
+
+    // public function awardReportsDownloadDownload(string $type)
+    // {
+    //     $awards = Award::where('type', $type)->get();
+    //     $fileName = 'award-nomination-report-' . now()->format('Y-m-d-His') . '.xlsx';
+
+    //     if ($awards->isEmpty()) {
+    //         return redirect()->back()->with('error', 'No award records found to download.');
+    //     }
+
+    //     $headers = [
+    //         'Nominee Name', 'Email Address', 'Phone Number', 'Chapter', 
+    //         'Chapter Status', 'Zone Status', 'Field Status', 'National Status', 
+    //         'Final Approved By', 'Final Approved On', 'Submission Date'
+    //     ];
+
+    //     // Helper closure to translate status integers to professional string labels
+    //     $statusLabel = function($val) {
+    //         return match((int)$val) {
+    //             1 => 'Approved',
+    //             2 => 'Rejected',
+    //             default => 'Pending'
+    //         };
+    //     };
+
+    //     $allRows = [];
+    //     foreach ($awards as $award) {
+    //         // Resolve final approval meta-details safely (assumes national secretariat approval is the final stage)
+    //         $isFinalApproved = ($award->national_status == 1);
+            
+    //         // Lookup final approval tracking trace parameters dynamically 
+    //         // If your schema tracks an approved_by user relation, replace or update these fallbacks accordingly
+    //         $finalApprovedBy = $award->approvedBy?->name ?? '' ;
+    //         $finalApprovedOn = $award->national_approved_on ? Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—';                 
+
+    //         $allRows[] = [
+    //             'Nominee Name'      => $award->name ?? 'Unnamed Nominee',
+    //             'Email Address'     => $award->email,
+    //             'Phone Number'      => $award->phone ?? '—',
+    //             'Chapter'           => $award->chapter->name ?? $award->entries->firstWhere('key', 'select_institution')?->value ?? '—',
+    //             'Chapter Status'    => $statusLabel($award->chapter_status),
+    //             'Zone Status'       => $statusLabel($award->zone_status),
+    //             'Field Status'      => $statusLabel($award->field_status),
+    //             'National Status'   => $statusLabel($award->national_status),
+    //             'Final Approved By' => $finalApprovedBy,
+    //             'Final Approved On' => $finalApprovedOn,
+    //             'Submission Date'   => optional($award->created_at)->format('Y-m-d H:i A'),
+                
+    //             // Raw values appended at the end solely for filtering out separate sheets cleanly
+    //             '_chapter_raw'  => (int)$award->chapter_status,
+    //             '_zone_raw'     => (int)$award->zone_status,
+    //             '_field_raw'    => (int)$award->field_status,
+    //             '_national_raw' => (int)$award->national_status,
+    //         ];
+    //     }
+
+
+    //     // 3. Segment Row Arrays into target sheets using internal flags
+    //     $sheetsData = [
+    //         'All Nominees'             => collect($allRows),
+    //         'Passed Chapter Clearance' => collect($allRows)->where('_chapter_raw', 1),
+    //         'Passed Zone Clearance'    => collect($allRows)->where('_zone_raw', 1),
+    //         'Passed Field Clearance'   => collect($allRows)->where('_field_raw', 1),
+    //         'Passed National Approval' => collect($allRows)->where('_national_raw', 1),
+    //     ];
+
+        
+    //     // 4. Clean up internal raw filter data from rows so they don't leak into Excel columns
+    //     foreach ($sheetsData as $sheetName => $collection) {
+    //         $sheetsData[$sheetName] = $collection->map(function ($row) {
+    //             unset($row['_chapter_raw'], $row['_zone_raw'], $row['_field_raw'], $row['_national_raw']);
+    //             return $row;
+    //         })->values()->toArray();
+    //     }
+        
+    //     return ExcelService::downloadMultipleSheets($sheetsData, $headers, $fileName);
+    // }
+    public function awardReportsDownloadDownload(string $type)
+    {
+        // Grouping: Order by chapter_id first, then by the raw form entry fallback string if no relation exists
+        $awards = Award::where('type', $type)
+            ->orderBy('chapter_id', 'asc')
+            ->get()
+            ->sortBy(function($award) {
+                // This ensures that even unassigned chapter records get grouped cleanly by their custom typed text
+                return $award->chapter?->name ?? $award->entries->firstWhere('key', 'select_institution')?->value ?? 'ZZZ';
+            });
+
+        $fileName = 'award-nomination-report-' . now()->format('Y-m-d-His') . '.xlsx';
+
+        if ($awards->isEmpty()) {
+            return redirect()->back()->with('error', 'No award records found to download.');
+        }
+
+        $headers = [
+            'Nominee Name', 'Email Address', 'Phone Number', 'Chapter', 
+            'Chapter Status', 'Zone Status', 'Field Status', 'Final Status', 
+            'Final Approved By', 'Final Approved On', 'Submission Date'
+        ];
+
+        // Helper closure to translate status integers to professional string labels
+        $statusLabel = function($val) {
+            return match((int)$val) {
+                1 => 'Approved',
+                2 => 'Rejected',
+                default => 'Pending'
+            };
+        };
+
+        $allRows = [];
+        foreach ($awards as $award) {
+            // Resolve final approval meta-details safely (assumes national secretariat approval is the final stage)
+            $isFinalApproved = ($award->national_status == 1);
+            
+            // Lookup final approval tracking trace parameters dynamically 
+            $finalApprovedBy = $award->approvedBy?->name ?? '';
+            $finalApprovedOn = $award->national_approved_on ? \Carbon\Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—';                 
+
+            $allRows[] = [
+                'Nominee Name'      => $award->name ?? 'Unnamed Nominee',
+                'Email Address'     => $award->email,
+                'Phone Number'      => $award->phone,
+                'Chapter'           => $award->chapter->name ?? $award->entries->firstWhere('key', 'select_institution')?->value ?? '—',
+                'Chapter Status'    => $statusLabel($award->chapter_status),
+                'Zone Status'       => $statusLabel($award->zone_status),
+                'Field Status'      => $statusLabel($award->field_status),
+                'National Status'   => $statusLabel($award->national_status),
+                'Final Approved By' => $finalApprovedBy,
+                'Final Approved On' => $finalApprovedOn,
+                'Submission Date'   => optional($award->created_at)->format('Y-m-d H:i A'),
+                
+                // Raw values appended at the end solely for filtering out separate sheets cleanly
+                '_chapter_raw'  => (int)$award->chapter_status,
+                '_zone_raw'     => (int)$award->zone_status,
+                '_field_raw'    => (int)$award->field_status,
+                '_national_raw' => (int)$award->national_status,
+            ];
+        }
+
+        // 3. Segment Row Arrays into target sheets using internal flags
+        // Because the source collection ($allRows) is already perfectly sorted, these sub-collections inherit the same order!
+        $sheetsData = [
+            'All Nominees'             => collect($allRows),
+            'Passed Chapter Clearance' => collect($allRows)->where('_chapter_raw', 1),
+            'Passed Zone Clearance'    => collect($allRows)->where('_zone_raw', 1),
+            'Passed Field Clearance'   => collect($allRows)->where('_field_raw', 1),
+            'Passed National Approval' => collect($allRows)->where('_national_raw', 1),
+        ];
+
+        // 4. Clean up internal raw filter data from rows so they don't leak into Excel columns
+        foreach ($sheetsData as $sheetName => $collection) {
+            $sheetsData[$sheetName] = $collection->map(function ($row) {
+                unset($row['_chapter_raw'], $row['_zone_raw'], $row['_field_raw'], $row['_national_raw']);
+                return $row;
+            })->values()->toArray();
+        }
+        
+        return ExcelService::downloadMultipleSheets($sheetsData, $headers, $fileName);
     }
 }

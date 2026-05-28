@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\AwardEntries;
 use App\Models\Chapter;
 use App\Models\Field;
+use App\Models\User;
 use App\Models\Zone;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,6 +32,15 @@ class Award extends Model
         return $this->belongsTo(Zone::class);
     }
 
+    public function approvedBy(){
+        return $this->belongsTo(User::class, 'national_approved_by');
+    }
+
+    public function rejectedBy(){
+        return $this->belongsTo(User::class, 'national_rejected_by');
+    }
+
+
     protected function name(): Attribute
     {
         return Attribute::get(function () {
@@ -53,6 +63,15 @@ class Award extends Model
             return $this->entries?->firstWhere('key', 'email')?->value 
                 ?? $this->entries?->firstWhere('key', 'email_address')?->value 
                 ?? 'Unnamed Nominee';
+        });
+    }
+
+     protected function phone(): Attribute
+    {
+        return Attribute::get(function () {         
+            return $this->entries?->firstWhere('key', 'phone_number')?->value 
+                // ?? $this->entries?->firstWhere('key', 'email_address')?->value 
+                ?? '-';
         });
     }
 
