@@ -356,7 +356,7 @@ class AwardService{
                         ]);
 
                         continue;
-                    }elseif (str_ends_with($key, '_file_id') || in_array($key, ['upload_a_clear_and_recent_picture_of_yourself', 'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature', 'picturesave_picture_as_your_name'])) {
+                    }elseif (str_ends_with($key, '_file_id') || in_array($key, ['upload_a_clear_and_recent_picture_of_yourself', 'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature', 'picturesave_picture_as_your_name', 'upload_result'])) {
                         try {
                             if (filter_var($value, FILTER_VALIDATE_URL)) {
 

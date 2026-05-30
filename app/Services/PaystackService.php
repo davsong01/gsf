@@ -39,7 +39,7 @@ class PaystackService
                 Log::info("cURL Error #:" . $err);
             } else {
                 $response = json_decode($response);
-                
+
                 if (!empty($response) && $response->data->status == 'success' && (($response->data->amount / 100) == $transaction->total_amount)) {
                     $status = true;
                     $message = $response;
