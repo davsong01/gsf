@@ -916,8 +916,8 @@ class ReportService
                 continue;
             }
 
-            $location = env('IMAGE_UPLOAD_PATH') . '/' . $report->file_location;
-
+            $location = base_path('protected_uploads/') . $report->file_location;
+            
             if (! File::exists($location)) {
                 continue;
             }
