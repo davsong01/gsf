@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::dropIfExists('stakeholder_reports');
-        
+
         if (!Schema::hasTable('stakeholder_reports')) {
             Schema::create('stakeholder_reports', function (Blueprint $table) {
             $table->id();
@@ -34,8 +34,8 @@ return new class extends Migration
             $table->timestamp('national_rejected_at')->nullable();
 
             $table->string('field_comment')->nullable();
-            $table->string('zone_comment')->nullable();
-            $table->string('national_comment')->nullable();
+            $table->text('zone_comment')->nullable();
+            $table->text('national_comment')->nullable();
 
             $table->timestamps();
             });

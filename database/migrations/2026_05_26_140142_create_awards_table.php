@@ -19,14 +19,14 @@ return new class extends Migration
             $table->integer('chapter_id')->nullable();
             $table->integer('zone_id')->nullable();
             $table->integer('zone_status')->nullable();
-            $table->string('zone_comment')->nullable();
+            $table->text('zone_comment')->nullable();
 
             $table->integer('field_id')->nullable();
             $table->integer('field_status')->nullable();
-            $table->string('field_comment')->nullable();
+            $table->text('field_comment')->nullable();
 
             $table->integer('national_status')->nullable();
-            $table->string('national_comment')->nullable();
+            $table->text('national_comment')->nullable();
 
             $table->timestamps();
         });

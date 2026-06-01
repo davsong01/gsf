@@ -36,38 +36,26 @@ class OfficialController extends Controller
             'email'       => 'required|email|unique:users,email',
             'phone'       => 'required|string',
             'gender'      => 'required|in:Male,Female',
-            'passport'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // 2MB
+            'passport'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'password'    => 'nullable|string',
             'permissions' => 'nullable|array',
         ]);
 
-        // Handle password
-       if ($request['password']) {
-            $password = Hash::make($request['password']);
-        } else {
-            $password = Hash::make($request['phone']);
-        }
+        $data['password'] = $request->filled('password')
+            ? Hash::make($request->password)
+            : Hash::make($request->phone);
 
-        // Handle passport upload
-        $passportPath = null;
         if ($request->hasFile('passport')) {
-            $passportPath = $this->uploadImage(
+            $data['passport'] = $this->uploadImage(
                 $request->file('passport'),
                 'frontend/passports'
             );
         }
 
-        $user = User::create([
-            'name'        => $data['name'],
-            'slug'        => Str::slug($data['name']),
-            'email'       => $data['email'],
-            'phone'       => $data['phone'],
-            'gender'      => $data['gender'],
-            'passport'    => $passportPath,
-            'password'    => $password,
-            'role'        => 1,
-            'permissions' => $data['permissions'] ?? [],
-        ]);
+        $data['slug'] = Str::slug($data['name']);
+        $data['role'] = 1;
+
+        $user = User::create($data);
 
         $user->update([
             'family_id' => 'GSF-OFF-' . $user->id,
@@ -83,19 +71,26 @@ class OfficialController extends Controller
         return view('admin.official.create')->with('official', $official);
     }
 
-    public function update(User $official, Request $request){
-        if ($request['password']) {
-            $request['password'] = Hash::make($request['password']);
-        } else {
-            $request['password'] = Hash::make($request['phone']);
-        }
+   public function update(User $official, Request $request)
+    {
+        $data = $request->except('passport');
 
-        if($request->filled('passport')){
-            $request['passport'] = $this->uploadImage($request->passport, 'frontend/passports');
-        }
-        $official->update($request->all());
+        $data['password'] = $request->filled('password')
+            ? Hash::make($request->password)
+            : Hash::make($request->phone);
 
-        return redirect(route('officials.index'))->with('message', 'Update successful');
+        if ($request->hasFile('passport')) {
+            $data['passport'] = $this->uploadImage(
+                $request->file('passport'),
+                'frontend/passports'
+            );
+        }
+       
+        $official->update($data);
+
+        return redirect()
+            ->route('officials.index')
+            ->with('message', 'Update successful');
     }
 
     public function delete(User $official){

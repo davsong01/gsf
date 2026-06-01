@@ -40,7 +40,7 @@ class HomeController extends Controller
             return false;
         }
     }
-    
+
     public function index() {
         $events = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', '<>', 0)->limit(6)->get();
         $national = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', 0)->limit(3)->get();
@@ -473,8 +473,12 @@ class HomeController extends Controller
         }
 
         $nationalevents = Event::where('chapter_id', 0)->get();
-        $related = Chapter::where('zone_id', $chapter->zone_id)->orWhere('field_id', $chapter->field->id)->get();
+        $related = null;
 
+        if($chapter->exists()){
+            $related = Chapter::where('zone_id', $chapter->zone_id)->orWhere('field_id', $chapter->field->id)->get();
+        }
+        
         return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents','chapter','related'));
         // return view('frontend.main.single-chapter', compact('chapter', 'nationalevents'));
     }
