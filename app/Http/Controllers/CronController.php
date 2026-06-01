@@ -2,20 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Nec;
-use App\Models\Chapter;
-use App\Models\TempUser;
-use App\Models\Stakeholder;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Models\CriticalEmail;
-use App\Services\EmailService;
-use App\Mail\NotificationEmail;
-use App\Models\StakeholderReport;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\PaymentController;
+use App\Mail\NotificationEmail;
+use App\Models\Chapter;
+use App\Models\CriticalEmail;
+use App\Models\Nec;
+use App\Models\Stakeholder;
+use App\Models\StakeholderReport;
+use App\Models\TempUser;
+use App\Models\UtilityCronTask;
+use App\Models\UtilityTracker;
+use App\Services\EmailService;
+use App\Services\ReportNotificationService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class CronController extends Controller
 {
@@ -217,6 +221,72 @@ class CronController extends Controller
             'status' => 'success',
             'message' => "{$sentCount} chapter reminder email(s) queued successfully.",
         ];
+    }
+
+    public function generateReportFiles($pick = 100)
+    {
+        $task = UtilityTracker::firstOrCreate(
+            ['key' => 'report-file-generation'],
+            [
+                'start' => 0,
+                'end' => 0,
+            ]
+        );
+
+        $lastId = $task->end ?? 0;
+
+        $reports = StakeholderReport::with(['field', 'zone', 'chapter'])
+            ->where('id', '>', $lastId)
+            ->orderBy('id', 'asc')
+            ->take($pick)
+            ->get();
+
+        if ($reports->isEmpty()) {
+            dd('all done');
+        }
+
+        $generated = 0;
+        $skipped = 0;
+
+        $batchStart = $reports->first()->id;
+
+        $newEnd = $lastId;
+
+        foreach ($reports as $report) {
+
+            $reportFile = ReportNotificationService::generatePdf($report);
+
+            if (
+                empty($reportFile['relative_path']) ||
+                empty($reportFile['absolute_path']) ||
+                ! File::exists($reportFile['absolute_path'])
+            ) {
+                $skipped++;
+                continue;
+            }
+
+            $report->update([
+                'file_location' => $reportFile['relative_path'],
+            ]);
+
+            $generated++;
+
+            // always move cursor forward
+            $newEnd = $report->id;
+        }
+
+        // update tracker correctly
+        $task->start = $batchStart;
+        $task->end = $newEnd;
+        $task->save();
+
+        dd([
+            'processed' => $reports->count(),
+            'start' => $batchStart,
+            'end' => $newEnd,
+            'generated' => $generated,
+            'skipped' => $skipped,
+        ]);
     }
 
     public function sendStakeholderCredentials()

@@ -121,7 +121,12 @@
             <tr>
                 <td style="width: 90px;">
                     {{-- <img src="{{ base_path('frontend/img/logo.png') }}" alt="Logo"> --}}
-                    <img src="{{ url('frontend/img/logo.png')}}" alt="Logo">
+                    @php
+                        $logoPath = public_path('frontend/img/logo.png');
+                        $logo = base64_encode(file_get_contents($logoPath));
+                    @endphp
+
+                    <img src="data:image/png;base64,{{ $logo }}" width="80">
                 </td>
                 <td class="header-details" style="padding-left: 10px;">
                     <h1>GOFAMINT STUDENTS’ FELLOWSHIP</h1>
@@ -282,20 +287,6 @@
             @endforeach
         @endforeach
 
-        <!-- Signatures -->
-        {{-- <div class="section-title">SIGNATURES</div>
-        @foreach(['president','gen_sec','fin_sec','evang_sec'] as $role)
-            <div class="signature-block">
-
-                @if(!empty($report->chapter->{$role.'_signature'}))
-                    <strong>{{ strtoupper(str_replace('_',' ', $role)) }}</strong><br>
-
-                    <img src="{{route('protected.download', ['file' => $report->chapter->{$role.'_signature'}]) }}">
-                @else
-                    <em>No signature</em>
-                @endif
-            </div>
-        @endforeach --}}
     </div>
 </body>
 </html>

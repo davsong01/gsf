@@ -133,7 +133,7 @@ class EmailService {
     {
         $type = $data['type'];
         $transaction = $data['transaction'] ?? null;
-
+        
         $emailContent = self::getContent($type, $transaction, $data);
 
         $subject = $data['subject'] ?? $emailContent['subject'];

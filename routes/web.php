@@ -145,6 +145,7 @@ Route:: get('create-nec', [CronController::class, 'createNecDummyCredentials']);
 Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
 Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
 Route::get('cron/send-report-reminders', [CronController::class, 'sendReportReminders']);
+Route::get('cron/repair-report-files/{pick?}', [CronController::class, 'generateReportFiles']);
 
 Route::get('send-stakeholder-credentials', [CronController::class, 'sendStakeholderCredentials'])->name('send.chapter.credentials');
 Route::get('send-zonal-pastor-credentials', [CronController::class, 'sendZonalPastorCredentials'])->name('send.zone.credentials');

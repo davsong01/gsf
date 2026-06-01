@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
-use Carbon\Carbon;
 use App\Models\Stakeholder;
-use Illuminate\Support\Str;
-use App\Services\EmailService;
-use Pdf;
-use App\Models\StakeholderReport;
 use App\Models\StakeholderQuestionSection;
+use App\Models\StakeholderReport;
+use App\Services\EmailService;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use Pdf;
 
 class ReportNotificationService
 {
@@ -346,7 +347,6 @@ class ReportNotificationService
     //     return 'All sent';
     // }
     public static function handleReportAction(StakeholderReport $report, $stakeholder, string $action){
-        $pdfFilePath = $report->file_location;
         $loginLink = "<a href='" . url('/stakeholders/login') . "'>Login</a>";
         $allEmailData = [];
 
@@ -403,6 +403,15 @@ class ReportNotificationService
          * APPROVE ACTION
          * ======================
          */
+
+        $reportFile = ReportNotificationService::generatePdf($report);
+    
+        if($reportFile['relative_path'] && $reportFile['absolute_path'] && File::exists($reportFile['absolute_path'])){
+            $report->update([
+                'file_location' => $reportFile['relative_path']
+            ]);
+        }
+        
         if ($action === 'approve') {
 
             $nextLevelIndex = $currentLevelIndex + 1;
@@ -444,7 +453,7 @@ class ReportNotificationService
                     'subject'     => $generatedEmail['subject'],
                     'content'     => $generatedEmail['content']
                         . "<p>Kindly {$loginLink} to review the report.</p>",
-                    'attachments' => json_encode([$pdfFilePath]),
+                    'attachments' => json_encode([$reportFile['relative_path']]),
                     'created_at'  => now(),
                     'updated_at'  => now(),
                 ];
@@ -497,7 +506,7 @@ class ReportNotificationService
                     'type'        => 'report_email',
                     'subject'     => $generatedEmail['subject'],
                     'content'     => $generatedEmail['content'] . $reason,
-                    'attachments' => json_encode([$pdfFilePath]),
+                    'attachments' => !empty($reportFile['relative_path']) ? json_encode([$reportFile['relative_path']]) : $report->file_location,
                     'created_at'  => now(),
                     'updated_at'  => now(),
                 ];
@@ -553,7 +562,7 @@ class ReportNotificationService
                             'subject'     => $generatedEmail['subject'],
                             'content'     => $generatedEmail['content']
                                 . "<p>Kindly {$loginLink} to complete your section of the report.</p>",
-                            'attachments' => json_encode([$pdfFilePath]),
+                            'attachments' => !empty($reportFile['relative_path']) ? json_encode([$reportFile['relative_path']]) : $report->file_location,
                             'created_at'  => now(),
                             'updated_at'  => now(),
                         ];
@@ -683,7 +692,7 @@ class ReportNotificationService
             $decoded = json_decode($answer->answer_value, true);
             return [$answer->question->label => $decoded ?? $answer->answer_value];
         });
-
+        
         // Load sections & questions
         $sections = StakeholderQuestionSection::isActive()
             ->with(['subsections.questions' => fn($q) => $q->orderBy('order')])
@@ -724,13 +733,13 @@ class ReportNotificationService
             "{$report->chapter->name} {$monthName} {$report->year} report"
         ) . '.pdf';
 
-        
+
         /**
          * Folder: public/reports/{year}/{Month}
          */
         $relativeDir  = "uploads/reports/{$report->year}/{$monthName}";
-        $absoluteDir  = env('IMAGE_UPLOAD_PATH').'/'.($relativeDir);
-
+        $absoluteDir  = base_path('protected_uploads/'.$relativeDir);
+        
         if (!is_dir($absoluteDir)) {
             mkdir($absoluteDir, 0755, true);
         }

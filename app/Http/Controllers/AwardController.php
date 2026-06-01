@@ -579,7 +579,7 @@ class AwardController extends Controller
                         try {
                             $decodedPath = base64_decode(ltrim($entry->value, '/'));
                             $fullPath = base_path('protected_uploads/' . ltrim($decodedPath, '/'));
-                    
+
                             if (!file_exists($fullPath)) {
                                 Log::warning("Missing file: {$fullPath}");
                                 continue;
@@ -624,7 +624,7 @@ class AwardController extends Controller
         if (file_exists($zipFilePath)) {
             @unlink($zipFilePath);
         }
-        dd('hold', $zipFileName);
+        
         return redirect()->back()->with('error', 'No binary attachments were found to include in the ZIP package.');
     }
 

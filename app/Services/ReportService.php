@@ -320,6 +320,7 @@ class ReportService
                     $isAdmin
                 );
 
+
                 DB::commit();
 
                 return [
@@ -509,6 +510,15 @@ class ReportService
             );
 
         }
+
+        $reportFile = ReportNotificationService::generatePdf($report);
+    
+        if($reportFile['relative_path'] && $reportFile['absolute_path'] && File::exists($reportFile['absolute_path'])){
+                $report->update([
+                    'file_location' => $reportFile['relative_path']
+                ]);
+        }
+
     }
 
     public function canEditReport($report, $user)
@@ -897,30 +907,39 @@ class ReportService
             throw new \Exception('Unable to create ZIP file.');
         }
 
+        // safe folder/file helper (no slug, just filesystem-safe)
+        $safe = fn ($v) => preg_replace('/[\/\\\\:*?"<>|]/', '-', $v ?? 'Unknown');
+
         foreach ($reports as $report) {
 
-            $location = base_path('protected_uploads/' . $report->file_location);
-
-            if (empty($report->file_location) || ! File::exists($location)) {
+            if (empty($report->file_location)) {
                 continue;
             }
 
-            // Convert numeric month → full month name
+            $location = env('IMAGE_UPLOAD_PATH') . '/' . $report->file_location;
+
+            if (! File::exists($location)) {
+                continue;
+            }
+
             $monthName = Carbon::create()
                 ->month((int) $report->month)
                 ->format('F');
 
-            $field = str($report->field->name ?? 'Unknown Field')->slug('_');
-            $zone = str($report->zone->name ?? 'Unknown Zone')->slug('_');
-            $chapter = str($report->chapter->name ?? 'Unknown Chapter')->slug('_');
+            // FOLDERS (readable, not slugged)
+            $field   = $safe($report->field->name ?? 'Unknown Field');
+            $zone    = $safe($report->zone->name ?? 'Unknown Zone');
+            $chapter = $safe($report->chapter->name ?? 'Unknown Chapter');
 
-            // Clean filename (no numeric month anymore)
+            // FINAL FILE FORMAT (THIS IS THE KEY FIX)
             $fileName = sprintf(
                 '%s.%s.%s.report.pdf',
                 $chapter,
                 $monthName,
                 $report->year
             );
+
+            $fileName = $safe($fileName);
 
             $zipPathInside = sprintf(
                 '%s/%s/%s/%s/%s',
