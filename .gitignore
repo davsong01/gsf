@@ -6,6 +6,7 @@
 /public/storage
 /storage/*.key
 /vendor
+/protected_uploads/
 /storage/logs
 # /public*
 # /public

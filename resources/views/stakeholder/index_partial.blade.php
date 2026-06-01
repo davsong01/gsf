@@ -75,7 +75,7 @@
                         <label class="form-label">To</label>
                         <input type="date" name="to_date" class="form-control" value="{{ request('to_date', now()->endOfMonth()->toDateString()) }}">
                     </div>
-                    
+
                     {{-- Field (highest first) --}}
                     @if($canViewField)
                         <div class="col-md-{{ $hierarchyCol }} mb-2">
@@ -122,7 +122,7 @@
                     @endif
 
                     {{-- Status --}}
-                    <div class="col-md-3 mb-2">
+                    <div class="col-md-2 mb-2">
                         <label class="form-label">Approval Status</label>
                         <select name="status_filter" class="form-control">
                             <option value="">All Status</option>
