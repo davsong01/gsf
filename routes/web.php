@@ -139,7 +139,6 @@ Route::get('/clear', function () {
     echo "<p>Fully optimized.*</p>";
 });
 
-
 Route:: get('cron/birthday-notification', [CronController::class, 'cron']);
 Route:: get('create-nec', [CronController::class, 'createNecDummyCredentials']);
 Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
@@ -168,6 +167,7 @@ Route::get('/preview-email/{id}', function ($id) {
 
     return EmailService::sendEmail($data, true);
 });
+
 Route::get('/conference', [ConferenceController::class, 'index']);
 
 Route::controller(HomeController::class)->group(function () {

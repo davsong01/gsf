@@ -245,7 +245,7 @@ class EmailService {
             if(env('APP_ENV') == 'local'){
                 $data['recipient'] = 'davsong16@gmail.com';
             }
-
+            dd($data);
             Mail::to($data['recipient'])->send(new NotificationEmail($data));
 
             return [

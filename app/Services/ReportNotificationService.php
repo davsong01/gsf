@@ -692,7 +692,7 @@ class ReportNotificationService
             $decoded = json_decode($answer->answer_value, true);
             return [$answer->question->label => $decoded ?? $answer->answer_value];
         });
-        dd('generate');
+        
         // Load sections & questions
         $sections = StakeholderQuestionSection::isActive()
             ->with(['subsections.questions' => fn($q) => $q->orderBy('order')])
