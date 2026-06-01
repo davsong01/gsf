@@ -2,23 +2,22 @@
 
 namespace App\Services;
 
-use App\Models\Food;
-use App\Models\Zone;
-use App\Models\Field;
 use App\Models\Chapter;
-use App\Models\Payment;
-use Illuminate\Http\Request;
-use App\Services\ExcelService;
-use App\Models\ConferenceEdition;
+use App\Models\Field;
+use App\Models\StakeholderQuestionSection;
 use App\Models\StakeholderReport;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Rap2hpoutre\FastExcel\FastExcel;
 use App\Models\StakeholderReportAnswer;
 use App\Models\StakeholderReportQuestion;
-use App\Models\StakeholderQuestionSection;
+use App\Models\Zone;
+use App\Services\ExcelService;
 use App\Services\ReportNotificationService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use ZipArchive;
+
 
 class ReportService
 {
@@ -38,7 +37,7 @@ class ReportService
         return array_reverse($sessions);
     }
 
-    
+
     public function index(Request $request, $user, bool $isAdmin = false)
     {
         $role = $user->role_id ?? $user->role;
@@ -112,33 +111,31 @@ class ReportService
                 ->when($fieldIds->isNotEmpty(), fn ($q) => $q->whereIn('field_id', $fieldIds));
         }
 
-        if ($request->filled('from_date')) {
-            $from = \Carbon\Carbon::parse($request->from_date);
-            $fromYear = $from->year;
-            $fromMonth = $from->month;
 
-            $reports->where(function ($query) use ($fromYear, $fromMonth) {
-                $query->where('year', '>', $fromYear)
-                    ->orWhere(function ($q) use ($fromYear, $fromMonth) {
-                        $q->where('year', $fromYear)
-                            ->where('month', '>=', $fromMonth);
-                    });
-            });
-        }
+        $from = $request->filled('from_date')
+            ? \Carbon\Carbon::parse($request->from_date)
+            : now()->startOfMonth();
 
-        if ($request->filled('to_date')) {
-            $to = \Carbon\Carbon::parse($request->to_date);
-            $toYear = $to->year;
-            $toMonth = $to->month;
+        $to = $request->filled('to_date')
+            ? \Carbon\Carbon::parse($request->to_date)
+            : now()->endOfMonth();
 
-            $reports->where(function ($query) use ($toYear, $toMonth) {
-                $query->where('year', '<', $toYear)
-                    ->orWhere(function ($q) use ($toYear, $toMonth) {
-                        $q->where('year', $toYear)
-                            ->where('month', '<=', $toMonth);
-                    });
-            });
-        }
+        $reports->where(function ($query) use ($from) {
+            $query->where('year', '>', $from->year)
+                ->orWhere(function ($q) use ($from) {
+                    $q->where('year', $from->year)
+                        ->where('month', '>=', $from->month);
+                });
+        });
+
+        $reports->where(function ($query) use ($to) {
+            $query->where('year', '<', $to->year)
+                ->orWhere(function ($q) use ($to) {
+                    $q->where('year', $to->year)
+                        ->where('month', '<=', $to->month);
+                });
+        });
+
 
         /** =====================
          * MANUAL FILTERS
@@ -174,6 +171,12 @@ class ReportService
         if ($request->action === 'download') {
             $reportsCollection = $reports->orderByDesc('year')->orderByDesc('month')->get();
             return $this->downloadFinancialReport($reportsCollection);
+        }
+
+        if (!empty($request->download) && $request->download == 1) {
+            $reportsCollection = $reports->orderByDesc('year')->orderByDesc('month')->get();
+
+            return $this->downloadCompactReport($reportsCollection, $from, $to);
         }
 
         return [
@@ -739,7 +742,7 @@ class ReportService
 
             $rows[] = $row;
         }
-        
+
         return ExcelService::download($rows, $headers, $fileName);
     }
 
@@ -861,5 +864,84 @@ class ReportService
         );
 
         return;
+    }
+
+
+    public function downloadCompactReport($reports, $from, $to)
+    {
+        if ($reports->isEmpty()) {
+            return back()->with('error', 'No reports found.');
+        }
+
+        $zipFileName = sprintf(
+            'GSF Report from %s to %s.zip',
+            $from->format('F Y'),
+            $to->format('F Y')
+        );
+
+        $rootFolder = sprintf(
+            'GSF Report from %s to %s',
+            $from->format('F Y'),
+            $to->format('F Y')
+        );
+
+        $zipPath = storage_path('app/temp/' . uniqid('gsf_report_') . '.zip');
+
+        if (! File::exists(dirname($zipPath))) {
+            File::makeDirectory(dirname($zipPath), 0755, true);
+        }
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            throw new \Exception('Unable to create ZIP file.');
+        }
+
+        foreach ($reports as $report) {
+
+            $location = base_path('protected_uploads/' . $report->file_location);
+
+            if (empty($report->file_location) || ! File::exists($location)) {
+                continue;
+            }
+
+            // Convert numeric month → full month name
+            $monthName = Carbon::create()
+                ->month((int) $report->month)
+                ->format('F');
+
+            $field = str($report->field->name ?? 'Unknown Field')->slug('_');
+            $zone = str($report->zone->name ?? 'Unknown Zone')->slug('_');
+            $chapter = str($report->chapter->name ?? 'Unknown Chapter')->slug('_');
+
+            // Clean filename (no numeric month anymore)
+            $fileName = sprintf(
+                '%s.%s.%s.report.pdf',
+                $chapter,
+                $monthName,
+                $report->year
+            );
+
+            $zipPathInside = sprintf(
+                '%s/%s/%s/%s/%s',
+                $rootFolder,
+                $field,
+                $zone,
+                $chapter,
+                $fileName
+            );
+
+            $zip->addFile($location, $zipPathInside);
+        }
+
+        $zip->close();
+
+        if (! file_exists($zipPath)) {
+            throw new \Exception('ZIP generation failed.');
+        }
+
+        return response()
+            ->download($zipPath, $zipFileName)
+            ->deleteFileAfterSend(true);
     }
 }

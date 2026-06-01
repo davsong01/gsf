@@ -65,19 +65,17 @@
         <div class="row mb-3">
             <div class="col-12">
                 <form method="GET" class="row g-2 align-items-end">
-
                     {{-- Date range --}}
                     <div class="col-md-2 mb-2">
                         <label class="form-label">From</label>
-                        <input type="date" name="from_date" class="form-control"
-                            value="{{ request('from_date') }}">
+                        <input type="date" name="from_date" class="form-control" value="{{ request('from_date', now()->startOfMonth()->toDateString()) }}">
                     </div>
 
                     <div class="col-md-2 mb-2">
                         <label class="form-label">To</label>
-                        <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
+                        <input type="date" name="to_date" class="form-control" value="{{ request('to_date', now()->endOfMonth()->toDateString()) }}">
                     </div>
-
+                    
                     {{-- Field (highest first) --}}
                     @if($canViewField)
                         <div class="col-md-{{ $hierarchyCol }} mb-2">
@@ -151,6 +149,13 @@
                     @endphp
                     <div class="col-md-2 mb-2">
                         <a href="{{route($route)}}" class="btn btn-primary w-100">View Analytics</a>
+                    </div>
+
+                    <div class="col-md-2 mb-2">
+                        <a href="{{ url()->current() . '?' . http_build_query(array_merge(request()->query(), ['download' => 1])) }}"
+                        class="btn btn-success w-100">
+                            Download
+                        </a>
                     </div>
                     @endif
                 </form>

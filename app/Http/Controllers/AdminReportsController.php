@@ -35,11 +35,14 @@ class AdminReportsController extends Controller
         $data = app(ReportService::class)
             ->index($request, $user, $isAdmin);
 
-
+        if ($data instanceof \Illuminate\Http\Response ||
+            $data instanceof \Symfony\Component\HttpFoundation\Response) {
+            return $data;
+        }
         return view('admin.reports.index', array_merge($data, compact('user', 'isAdmin')));
     }
 
-    
+
     public function create()
     {
     }
