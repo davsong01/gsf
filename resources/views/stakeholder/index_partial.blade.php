@@ -68,12 +68,12 @@
                     {{-- Date range --}}
                     <div class="col-md-2 mb-2">
                         <label class="form-label">From</label>
-                        <input type="date" name="from_date" class="form-control" value="{{ request('from_date', now()->startOfMonth()->toDateString()) }}">
+                        <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
                     </div>
 
                     <div class="col-md-2 mb-2">
                         <label class="form-label">To</label>
-                        <input type="date" name="to_date" class="form-control" value="{{ request('to_date', now()->endOfMonth()->toDateString()) }}">
+                        <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
                     </div>
 
                     {{-- Field (highest first) --}}

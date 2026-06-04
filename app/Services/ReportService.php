@@ -112,30 +112,62 @@ class ReportService
         }
 
 
-        $from = $request->filled('from_date')
-            ? \Carbon\Carbon::parse($request->from_date)
-            : now()->startOfMonth();
+        // $from = $request->filled('from_date')
+        //     ? \Carbon\Carbon::parse($request->from_date)
+        //     : now()->startOfMonth();
 
-        $to = $request->filled('to_date')
-            ? \Carbon\Carbon::parse($request->to_date)
-            : now()->endOfMonth();
+        // $to = $request->filled('to_date')
+        //     ? \Carbon\Carbon::parse($request->to_date)
+        //     : now()->endOfMonth();
 
-        $reports->where(function ($query) use ($from) {
-            $query->where('year', '>', $from->year)
-                ->orWhere(function ($q) use ($from) {
-                    $q->where('year', $from->year)
+        // $reports->where(function ($query) use ($from) {
+        //     $query->where('year', '>', $from->year)
+        //         ->orWhere(function ($q) use ($from) {
+        //             $q->where('year', $from->year)
+        //                 ->where('month', '>=', $from->month);
+        //         });
+        // });
+
+        // $reports->where(function ($query) use ($to) {
+        //     $query->where('year', '<', $to->year)
+        //         ->orWhere(function ($q) use ($to) {
+        //             $q->where('year', $to->year)
+        //                 ->where('month', '<=', $to->month);
+        //         });
+        // });
+
+        $hasFrom = $request->filled('from_date');
+        $hasTo   = $request->filled('to_date');
+
+        $from = $hasFrom
+            ? Carbon::parse($request->from_date)
+            : null;
+
+        $to = $hasTo
+            ? Carbon::parse($request->to_date)
+            : null;
+
+        // Apply FROM filter only if provided
+        if ($from) {
+            $reports->where(function ($query) use ($from) {
+                $query->where('year', '>', $from->year)
+                    ->orWhere(function ($q) use ($from) {
+                        $q->where('year', $from->year)
                         ->where('month', '>=', $from->month);
-                });
-        });
+                    });
+            });
+        }
 
-        $reports->where(function ($query) use ($to) {
-            $query->where('year', '<', $to->year)
-                ->orWhere(function ($q) use ($to) {
-                    $q->where('year', $to->year)
+        // Apply TO filter only if provided
+        if ($to) {
+            $reports->where(function ($query) use ($to) {
+                $query->where('year', '<', $to->year)
+                    ->orWhere(function ($q) use ($to) {
+                        $q->where('year', $to->year)
                         ->where('month', '<=', $to->month);
-                });
-        });
-
+                    });
+            });
+        }
 
         /** =====================
          * MANUAL FILTERS
@@ -512,7 +544,7 @@ class ReportService
         }
 
         $reportFile = ReportNotificationService::generatePdf($report);
-    
+
         if($reportFile['relative_path'] && $reportFile['absolute_path'] && File::exists($reportFile['absolute_path'])){
                 $report->update([
                     'file_location' => $reportFile['relative_path']
@@ -917,7 +949,7 @@ class ReportService
             }
 
             $location = base_path('protected_uploads/') . $report->file_location;
-            
+
             if (! File::exists($location)) {
                 continue;
             }
