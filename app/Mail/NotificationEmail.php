@@ -128,7 +128,7 @@ class NotificationEmail extends Mailable
 
         if (
             isset($this->data['type']) &&
-            in_array($this->data['type'], ['report_email', 'forgot-password','otp','generic'])
+            in_array($this->data['type'], ['forgot-password','otp','generic'])
         ) {
             $mail = $this->markdown('emails.generic')
                 ->subject($this->data['subject']);
@@ -136,6 +136,22 @@ class NotificationEmail extends Mailable
             foreach ((array) ($this->data['attachments'] ?? []) as $file) {
                 if (is_string($file)) {
                     $mail->attach($file);
+                }
+            }
+
+            return $mail;
+        }
+
+        if (
+            isset($this->data['type']) &&
+            in_array($this->data['type'], ['report_email'])
+        ) {
+            $mail = $this->markdown('emails.generic')
+                ->subject($this->data['subject']);
+            
+            foreach ((array) ($this->data['attachments'] ?? []) as $file) {
+                if (is_string($file)) {
+                    $mail->attach(base_path('protected_uploads/'.$file));
                 }
             }
 

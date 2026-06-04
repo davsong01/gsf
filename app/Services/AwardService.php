@@ -15,8 +15,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-//App ID: AKfycbyn8X8DoQzNh4i0je5U6rN4F1YJ673wemqtMlAnqJkNq11-sGfhvD5ZxGXHNPLkIhRruw
-// web app url: https://script.google.com/macros/s/AKfycbyn8X8DoQzNh4i0je5U6rN4F1YJ673wemqtMlAnqJkNq11-sGfhvD5ZxGXHNPLkIhRruw/exec
 
 class AwardService{
     public function index(Request $request, $user, $type, $isAdmin)

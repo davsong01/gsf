@@ -46,6 +46,7 @@ class AwardController extends Controller
         ]);
 
         $entries = $this->awardService->index($request, $user, $type, $isAdmin);
+        
         $title = 'General Overseer (G.O.) Award Submissions';
         return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type')));
     }
@@ -624,7 +625,7 @@ class AwardController extends Controller
         if (file_exists($zipFilePath)) {
             @unlink($zipFilePath);
         }
-        
+
         return redirect()->back()->with('error', 'No binary attachments were found to include in the ZIP package.');
     }
 

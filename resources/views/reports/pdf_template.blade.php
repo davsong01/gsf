@@ -131,9 +131,9 @@
                 <td class="header-details" style="padding-left: 10px;">
                     <h1>GOFAMINT STUDENTS’ FELLOWSHIP</h1>
                     <strong>International Headquarters, Aseese, Ogun State</strong>
-                    <p>MONTHLY REPORT — <strong>{{ $report->chapter->name }}</strong><br>
+                    <p>MONTHLY REPORT: <strong>{{ $report->chapter->name }}</strong><br>
                     {{ date("F", mktime(0,0,0,$report->month,10)) . ', ' . $report->year }}</p>
-                    <p>LAST UPDATED — <strong>{{ $report->updated_at->format('d M Y H:i') }}</strong></p>
+                    <p>LAST UPDATED: <strong>{{ $report->updated_at->format('d M Y H:i') }}</strong></p>
 
                     {{-- Status Info --}}
                     @php
