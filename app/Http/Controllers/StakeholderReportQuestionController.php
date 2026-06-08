@@ -208,7 +208,7 @@ class StakeholderReportQuestionController extends Controller
     public function update(Request $request, StakeholderReportQuestion $question)
     {
         $validated = $this->validateQuestion($request, $question->id);
-        $validated['slug'] = Str::slug($validated['label']);
+        // $validated['slug'] = Str::slug($validated['slug']);
 
         $question->update($validated);
 
