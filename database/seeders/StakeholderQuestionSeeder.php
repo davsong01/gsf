@@ -413,7 +413,7 @@ class StakeholderQuestionSeeder extends Seeder
                                 'role' => 'Field Pastor'
                             ],
                             [
-                                'label' => 'National Secetariat Comment',
+                                'label' => 'National secretariat Comment',
                                 'slug' => 'section_a_secretariat_comment',
                                 'type' => 'textarea',
                                 'is_required' => false,
@@ -740,7 +740,7 @@ class StakeholderQuestionSeeder extends Seeder
                                 'role' => 'Field Pastor'
                             ],
                             [
-                                'label' => 'National Secetariat Comment',
+                                'label' => 'National secretariat Comment',
                                 'slug' => 'section_b_secretariat_comment',
                                 'type' => 'textarea',
                                 'is_required' => false,
@@ -891,7 +891,7 @@ class StakeholderQuestionSeeder extends Seeder
                                 'role' => 'Field Pastor'
                             ],
                             [
-                                'label' => 'National Secetariat Comment',
+                                'label' => 'National secretariat Comment',
                                 'slug' => 'section_c_secretariat_comment',
                                 'type' => 'textarea',
                                 'is_required' => false,

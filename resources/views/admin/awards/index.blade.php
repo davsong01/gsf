@@ -84,6 +84,10 @@
             <div class="col-12">
                 <form method="GET" class="row g-2 align-items-end">
                     <div class="col-md-4 mb-2">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ request('name') }}">
+                    </div>
+                    <div class="col-md-4 mb-2">
                         <label class="form-label">Reference</label>
                         <input type="text" name="reference" class="form-control" value="{{ request('reference') }}">
                     </div>

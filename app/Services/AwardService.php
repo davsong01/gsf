@@ -147,6 +147,12 @@ class AwardService{
                 $request->reference
             );
         }
+    
+        if ($request->filled('name')) {
+            $awardsQuery->whereHas('entries', function ($query) use ($request) {
+                $query->where('value', 'like', '%' . $request->name . '%');
+            });
+        }
 
         if ($request->filled('type')) {
 
