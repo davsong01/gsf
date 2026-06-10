@@ -323,8 +323,10 @@ class ReportAnalyticsService
 
             if (!$filter($r)) continue;
 
-            $month = $this->normalizeMonth($r->month);
-            if (!$month) continue;
+            $month = $this->normalizeMonth($r->month, $r->year);
+            if (!$month){
+                continue;
+            } 
 
             $chapter = $chapters[$r->chapter_id] ?? null;
             $field   = $fields[$r->field_id] ?? null;
@@ -337,15 +339,29 @@ class ReportAnalyticsService
         return $this->uniqueMonths($result);
     }
     
-    protected function normalizeMonth($value): ?string
+    protected function normalizeMonth($month, $year = null): ?string
     {
-        if (!$value) return null;
+        if (!$month) return null;
 
-        if (is_numeric($value)) {
-            return Carbon::create()->month((int)$value)->format('F');
+        if (is_numeric($month) && $year) {
+            return Carbon::createFromDate((int)$year, (int)$month, 1)
+                ->format('Y-m'); // internal format ONLY
         }
 
-        return Carbon::parse($value)->format('F');
+        try {
+            return Carbon::parse($month)->format('Y-m');
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    protected function formatMonthForDisplay(string $ym): string
+    {
+        try {
+            return Carbon::createFromFormat('Y-m', $ym)->format('F Y');
+        } catch (\Exception $e) {
+            return $ym;
+        }
     }
 
     protected function getMonthsYetToSubmit($reports, $chapters, $fields, $from, $to): array
@@ -355,9 +371,11 @@ class ReportAnalyticsService
         $submitted = [];
 
         foreach ($reports as $r) {
-            $month = $this->normalizeMonth($r->month);
-            if (!$month) continue;
-
+            $month = $this->normalizeMonth($r->month, $r->year);
+            if (!$month){
+                continue;
+            } 
+            
             $submitted[$r->chapter_id][] = $month;
         }
 

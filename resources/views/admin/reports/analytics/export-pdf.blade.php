@@ -75,6 +75,23 @@
 </div>
 
 @php
+    function formatMonthSafe($m)
+    {
+        try {
+            if (!$m) return '-';
+
+            // strict Y-m format
+            if (preg_match('/^\d{4}-\d{2}$/', $m)) {
+                return \Carbon\Carbon::createFromFormat('Y-m', $m)->format('F Y');
+            }
+
+            // fallback parsing
+            return \Carbon\Carbon::parse($m)->format('F Y');
+        } catch (\Throwable $e) {
+            return $m;
+        }
+    }
+
     function renderTable($data) {
         if (empty($data)) {
             return '<div class="empty">No records found</div>';
@@ -85,9 +102,10 @@
 
         foreach ($data as $field => $chapters) {
             foreach ($chapters as $chapter => $months) {
+
                 $monthText = is_array($months)
-                    ? implode(', ', $months)
-                    : $months;
+                    ? implode(', ', array_map(fn($m) => formatMonthSafe($m), $months))
+                    : formatMonthSafe($months);
 
                 $html .= "<tr>
                     <td>{$field}</td>
@@ -101,7 +119,6 @@
 
         return $html;
     }
-
 @endphp
 
 {{-- ========================= --}}
