@@ -559,7 +559,8 @@ class ReportService
         $national = $report->national_status;
 
         $inEditMode = (bool) $report->edit_mode;
-        $isAdmin = $role == 1;
+        $isAdmin = isAdmin()['status'];
+
         $isFinance = finStakeholders($user);
 
         $allApproved = $zone == 1 && $field == 1 && $national == 1;
@@ -569,12 +570,13 @@ class ReportService
         | EDIT MODE OVERRIDE (MIRROR BLADE)
         |--------------------------------------------------------------------------
         */
+
         if ($inEditMode) {
             return [
                 'allApproved' => $allApproved,
                 'canEdit' =>
                     $isAdmin ||
-                    in_array($role, chapterStakeholders(), true),
+                    in_array($role, chapterStakeholders()),
             ];
         }
 

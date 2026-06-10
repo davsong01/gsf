@@ -211,7 +211,7 @@
                                         <td class="text-start">
                                             @php
                                                 $canEdit  = app(\App\Services\ReportService::class)->canEditReport($report, $user);
-
+                                                
                                                 $statuses = [
                                                     'Zone' => [
                                                         'value' => $report->zone_status,

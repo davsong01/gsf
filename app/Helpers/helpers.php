@@ -1302,7 +1302,7 @@ if (!function_exists('isAdmin')){
         $isAdmin = (!is_null($roleValue) && (int)$roleValue === 1);
 
         return [
-            'status' => $isAdmin,
+            'status' => $isAdmin && auth()->guard('web')->user(),
             'user' => $user,
             'userRole' => (int)($user->role_id ?? $user->role ?? 0)
         ];
@@ -1394,7 +1394,7 @@ if (!function_exists('resolveAwardPermissions')) {
                 $tooltipReject  = 'Reject for National';
             }
         } catch (\Throwable $e) {
-  
+
             report($e);
         }
 
