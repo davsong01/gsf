@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Zone;
-use App\Models\Field;
+use App\Exports\ExportChapters;
+use App\Http\Controllers\Controller;
 use App\Models\Chapter;
+use App\Models\Field;
 use App\Models\Setting;
 use App\Models\Stakeholder;
+use App\Models\User;
+use App\Models\Zone;
+use App\Services\EmailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use App\Exports\ExportChapters;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ChapterController extends Controller
 {
@@ -182,7 +184,8 @@ class ChapterController extends Controller
             'field_id' => $field,
         ]);
 
-
+        $this->createStakeholder($chapter, $request->email);
+        
         return redirect(route('chapters.index'))->with('message', 'Chapter succesfully created');
     }
 
@@ -216,6 +219,7 @@ class ChapterController extends Controller
 		}
 
         $request['field_id'] = $chapter->zone->field->id ?? null;
+        $oldEmail = $chapter->email;
 
         if($request->has('chapter_banner')){
             $request['banner'] = $this->uploadImage($request->chapter_banner, 'main/images/chapters');
@@ -246,6 +250,8 @@ class ChapterController extends Controller
 
         $chapter->update($request->except('chapter_banner'));
 
+        $this->createStakeholder($chapter->fresh(), $oldEmail);
+
         return redirect(route('chapters.index'))->with('message', 'Update successful');
     }
 
@@ -267,5 +273,140 @@ class ChapterController extends Controller
             return back()->with('message',' Delete succesful!');
 
          }return abort(404);
+    }
+
+    public function createStakeholder(Chapter $chapter, $oldEmail)
+    {
+        $chapterRoleId = 5;
+
+        $stakeholder = Stakeholder::where('chapter_id', $chapter->id)
+            ->where('role_id', $chapterRoleId)
+            ->first();
+
+        $allEmailData = [];
+
+        $sendCredentials = false;
+        $passwordPlain = null;
+
+        if (!$stakeholder) {
+
+            // ===================================
+            // BRAND NEW ACCOUNT
+            // ===================================
+            $passwordPlain = Str::random(8);
+
+            $stakeholder = Stakeholder::create([
+                'role_id'          => $chapterRoleId,
+                'chapter_id'       => $chapter->id,
+                'zone_id'          => $chapter->zone_id,
+                'field_id'         => $chapter->field_id,
+                'name'             => $chapter->name . ' Representative',
+                'email'            => $chapter->email,
+                'phone'            => $chapter->phone,
+                'status'           => 'active',
+                'password'         => bcrypt($passwordPlain),
+                'credentials_sent' => 1,
+            ]);
+
+            $sendCredentials = true;
+
+        } else {
+
+           
+            // ===================================
+            // UPDATE ACCOUNT DETAILS
+            // ===================================
+            $stakeholder->update([
+                'zone_id'  => $chapter->zone_id,
+                'field_id' => $chapter->field_id,
+                'name'     => $chapter->name . ' Representative',
+                'email'    => $chapter->email,
+                'phone'    => $chapter->phone,
+                'status'   => 'active',
+            ]);
+
+            // ===================================
+            // EMAIL CHANGED
+            // Reset password and resend credentials
+            // ===================================
+
+            if (
+                !empty($oldEmail)
+                && strtolower($oldEmail) != strtolower($chapter->email)
+            ) {
+
+                $passwordPlain = Str::random(8);
+
+                $stakeholder->update([
+                    'password'         => bcrypt($passwordPlain),
+                    'credentials_sent' => 1,
+                    'last_login_at'    => null,
+                ]);
+
+                $sendCredentials = true;
+            }
+
+            // ===================================
+            // NEVER SENT BEFORE + NEVER LOGGED IN
+            // Send first credentials
+            // ===================================
+            elseif (
+                empty($stakeholder->credentials_sent)
+                && empty($stakeholder->last_login_at)
+            ) {
+
+                $passwordPlain = Str::random(8);
+
+                $stakeholder->update([
+                    'password'         => bcrypt($passwordPlain),
+                    'credentials_sent' => 1,
+                ]);
+
+                $sendCredentials = true;
+            }
+        }
+
+        // ===================================
+        // SEND EMAIL ONLY WHEN REQUIRED
+        // ===================================
+        if ($sendCredentials) {
+
+            $loginLink = "<a href='" . url('/stakeholders/login') . "'>Login</a>";
+
+            $allEmailData[] = [
+                'recipient'  => $stakeholder->email,
+                'type'       => 'report_email',
+                'subject'    => 'Welcome to GSF Digital Portal',
+                'content'    => "
+                    <h5>Dear {$chapter->name},</h5>
+
+                    <p>Your fellowship representative account has been created or updated.</p>
+
+                    <p>
+                        <strong>Email:</strong> {$stakeholder->email}<br>
+                        <strong>Password:</strong> {$passwordPlain}
+                    </p>
+
+                    <p>{$loginLink}</p>
+
+                    <p>Please change your password after your first login.</p>
+
+                    <p>
+                        In His Service,<br>
+                        GSF National ICT
+                    </p>
+                ",
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+           $Log = EmailService::logEmail([
+                'type'       => 'report_email',
+                'recipients' => $allEmailData,
+            ]);
+
+        }
+
+        return $stakeholder;
     }
 }
