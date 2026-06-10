@@ -278,7 +278,7 @@ class ReportAnalyticsService
             // -------------------------
             // COMPLETENESS
             // -------------------------
-            'monthsYetToSubmit' => $this->getMonthsYetToSubmit(
+            'monthsYetToSubmit' => $this->getDefaulters(
                 $reports,
                 $chapters,
                 $fields,
@@ -286,7 +286,7 @@ class ReportAnalyticsService
                 $end
             ),
 
-            'neverSubmitted' => $this->getNeverSubmitted($reports, $chapters, $fields),
+            // 'neverSubmitted' => $this->getNeverSubmitted($reports, $chapters, $fields),
         ];
     }
 
@@ -349,12 +349,17 @@ class ReportAnalyticsService
 
         if (is_numeric($month) && $year) {
             return Carbon::createFromDate((int)$year, (int)$month, 1)
-                ->format('Y-m'); // internal format ONLY
+                ->format('Y-m');
         }
 
+        if (preg_match('/^\d{4}-\d{2}$/', $month)) {
+            return Carbon::createFromFormat('Y-m', $month)->format('Y-m');
+        }
+
+        // fallback
         try {
             return Carbon::parse($month)->format('Y-m');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return null;
         }
     }
@@ -368,19 +373,22 @@ class ReportAnalyticsService
         }
     }
 
-    protected function getMonthsYetToSubmit($reports, $chapters, $fields, $from, $to): array
+    protected function getDefaulters($reports, $chapters, $fields, $from, $to): array
     {
-        $expected = $this->getMonthRange($from, $to);
+        $expectedMonths = $this->getMonthRange($from, $to);
 
-        $submitted = [];
+        /**
+         * Build fast lookup:
+         * chapter_id => month => true
+         */
+        $reportMap = [];
 
         foreach ($reports as $r) {
+
             $month = $this->normalizeMonth($r->month, $r->year);
-            if (!$month){
-                continue;
-            } 
-            
-            $submitted[$r->chapter_id][] = $month;
+            if (!$month) continue;
+
+            $reportMap[$r->chapter_id][$month] = true;
         }
 
         $result = [];
@@ -390,18 +398,18 @@ class ReportAnalyticsService
             $field = $fields[$chapter->field_id] ?? null;
             if (!$field) continue;
 
-            $done = $submitted[$chapter->id] ?? [];
+            foreach ($expectedMonths as $month) {
+                
+                if (!isset($reportMap[$chapter->id][$month])) {
 
-            $missing = array_values(array_diff($expected, $done));
-
-            if ($missing) {
-                $result[$field->name][$chapter->name] = $missing;
+                    $result[$field->name][$chapter->name][] = $month;
+                }
             }
         }
 
         return $result;
     }
-
+        
     protected function getMonthRange($from, $to): array
     {
         $start = $from
@@ -415,10 +423,10 @@ class ReportAnalyticsService
         $months = [];
 
         while ($start->lte($end)) {
-            $months[] = $start->format('F Y');
+            $months[] = $start->format('Y-m');
             $start->addMonth();
         }
-
+        
         return $months;
     }
 
@@ -466,7 +474,7 @@ class ReportAnalyticsService
                 'fieldDeclined'          => $data['fieldDeclined'] ?? [],
 
                 'monthsYetToSubmit'      => $data['monthsYetToSubmit'] ?? [],
-                'neverSubmitted'      => $data['neverSubmitted'] ?? [],
+                // 'neverSubmitted'      => $data['neverSubmitted'] ?? [],
             ]
         )
         ->setPaper('a4', 'landscape');

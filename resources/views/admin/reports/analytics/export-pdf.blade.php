@@ -166,15 +166,15 @@
 {{-- ========================= --}}
 {{-- MONTHS YET TO SUBMIT --}}
 {{-- ========================= --}}
-<div class="section-title">4. MONTHS YET TO BE SUBMITTED</div>
+<div class="section-title">4. DEFAULTERS</div>
 
 {!! renderTable($monthsYetToSubmit) !!}
 
 {{-- ========================= --}}
 {{-- NEVER SUBMITTED --}}
 {{-- ========================= --}}
-<div class="section-title">5. CAMPUSES YET TO SUBMIT ANY REPORT</div>
-{!! renderTable($neverSubmitted) !!}
+{{-- <div class="section-title">5. CAMPUSES YET TO SUBMIT ANY REPORT</div>
+{!! renderTable($neverSubmitted) !!} --}}
 
 </body>
 </html>
