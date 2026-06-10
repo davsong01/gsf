@@ -102,7 +102,7 @@
 
         foreach ($data as $field => $chapters) {
             foreach ($chapters as $chapter => $months) {
-
+                
                 $monthText = is_array($months)
                     ? implode(', ', array_map(fn($m) => formatMonthSafe($m), $months))
                     : formatMonthSafe($months);
@@ -174,7 +174,6 @@
 {{-- NEVER SUBMITTED --}}
 {{-- ========================= --}}
 <div class="section-title">5. CAMPUSES YET TO SUBMIT ANY REPORT</div>
-
 {!! renderTable($neverSubmitted) !!}
 
 </body>

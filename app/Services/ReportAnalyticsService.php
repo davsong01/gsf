@@ -206,7 +206,7 @@ class ReportAnalyticsService
 
     public function generateSubmissionStatusReport($scope, $from = null, $to = null): array
     {
-        $query = DB::table('stakeholder_reports');
+        $query = DB::table('stakeholder_reports')->where('edit_mode', 0);
 
         // =========================
         // DATE RANGE FILTER
@@ -290,30 +290,34 @@ class ReportAnalyticsService
         ];
     }
 
-    protected function getNeverSubmitted($reports, $chapters, $fields): array
-    {
-        $submitted = [];
+   protected function getNeverSubmitted($reports, $chapters, $fields): array
+{
+    // Build a fast lookup of chapters that HAVE reports in the period
+    $hasReport = [];
 
-        foreach ($reports as $r) {
-            $submitted[$r->chapter_id] = true;
-        }
-
-        $result = [];
-
-        foreach ($chapters as $chapter) {
-
-            if (isset($submitted[$chapter->id])) {
-                continue;
-            }
-
-            $field = $fields[$chapter->field_id] ?? null;
-            if (!$field) continue;
-
-            $result[$field->name][] = $chapter->name;
-        }
-
-        return $result;
+    foreach ($reports as $r) {
+        $hasReport[$r->chapter_id] = true;
     }
+
+    $result = [];
+
+    foreach ($chapters as $chapter) {
+
+        // if chapter has at least one report → skip
+        if (isset($hasReport[$chapter->id])) {
+            continue;
+        }
+
+        $field = $fields[$chapter->field_id] ?? null;
+        if (!$field) {
+            continue;
+        }
+
+        $result[$field->name][] = $chapter->name;
+    }
+    
+    return $result;
+}
 
     protected function group($reports, $chapters, $fields, callable $filter): array
     {
