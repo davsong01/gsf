@@ -1,56 +1,102 @@
 @php
-if(!$isAdmin){
+if (!$isAdmin) {
     $canViewZone = in_array($user->role_id, array_merge(
         fieldStakeholders(),
         secretariatStakeholders(),
         ncpStakeholders()
     ));
-}else{
+} else {
     $canViewZone = true;
 }
 @endphp
 
-<form method="GET" class="row g-2 align-items-end graph-submit">
-    
-    @if($canViewZone)
-    <div class="col-md-4 mt-1">
-        <label>Fields (Start Typing)</label>
-        <select name="fields[]" class="form-select" multiple>
-            @foreach($fields ?? [] as $field)
-                <option value="{{ $field->id }}"
-                    {{ in_array($field->id, request('fields', [])) ? 'selected' : '' }}>
-                    {{ $field->name }}
-                </option>
-            @endforeach
-        </select>
-    </div>
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
 
-    <div class="col-md-4 mt-1">
-        <label>Zones (Start Typing)</label>
-        <select name="zones[]" class="form-select" multiple>
-        </select>
-    </div>
-    @endif
-    <div class="col-md-2 mt-1">
-        <label>From</label>
-        <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
-    </div>
+        <form method="GET" class="graph-submit">
 
-    <div class="col-md-2 mt-1">
-        <label>To</label>
-        <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
-    </div>
+            <div class="row g-3 align-items-end">
 
-    <div class="col-md-2 d-flex gap-2 mt-1">
-        <button type="submit" class="btn btn-primary w-100">Filter</button>
-        <button type="submit" name="filter_type" value="download" class="btn btn-success"
-                formmethod="post" formaction="{{ route(Route::currentRouteName(), $type) }}">
-            Download
-        </button>
-        <a href="{{ url()->current() }}" class="btn btn-outline-danger w-100">Reset</a>
-    </div>
-</form>
+                @if($canViewZone)
+                    <div class="col-xl-4 col-lg-4 col-md-6">
+                        <label class="form-label">Fields</label>
+                        <select name="fields[]" class="form-select" multiple>
+                            @foreach($fields ?? [] as $field)
+                                <option value="{{ $field->id }}"
+                                    {{ in_array($field->id, request('fields', [])) ? 'selected' : '' }}>
+                                    {{ $field->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
+                    <div class="col-xl-4 col-lg-4 col-md-6">
+                        <label class="form-label">Zones</label>
+                        <select name="zones[]" class="form-select" multiple></select>
+                    </div>
+                @endif
+
+                <div class="col-xl-2 col-md-6">
+                    <label class="form-label">From</label>
+                    <input type="date"
+                           name="from_date"
+                           class="form-control"
+                           value="{{ request('from_date') }}">
+                </div>
+
+                <div class="col-xl-2 col-md-6">
+                    <label class="form-label">To</label>
+                    <input type="date"
+                           name="to_date"
+                           class="form-control"
+                           value="{{ request('to_date') }}">
+                </div>
+
+            </div>
+
+            <hr class="my-3">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+
+                <div>
+                    <h6 class="mb-0">Report Filters</h6>
+                    <small class="text-muted">Filter and export report data</small>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-filter me-1"></i>
+                        Filter
+                    </button>
+
+                    {{-- KEEP OLD LOGIC (GET-based export) --}}
+                    <button type="submit"
+                            name="filter_type"
+                            value="pdf"
+                            class="btn btn-danger">
+                        PDF
+                    </button>
+
+                    <button type="submit"
+                            name="filter_type"
+                            value="excel"
+                            class="btn btn-success">
+                        Excel
+                    </button>
+
+                    <a href="{{ url()->current() }}" class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
 <script>
 $(document).ready(function () {
     const zoneSelect = $('select[name="zones[]"]');

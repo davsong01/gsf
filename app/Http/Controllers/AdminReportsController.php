@@ -180,8 +180,8 @@ class AdminReportsController extends Controller
         ];
 
         $request['isAdmin'] = $isAdmin;
-
-        if ($request->filter_type === 'download') {
+    
+        if ($request->filter_type === 'excel') {
 
             $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
 
@@ -216,6 +216,21 @@ class AdminReportsController extends Controller
                 $exportData,
                 $headers,
                 'chapter_compliance_report.xlsx'
+            );
+        }
+
+        if ($request->filter_type === 'pdf') {
+            $reportService = app(ReportAnalyticsService::class);
+
+            $data = $reportService->generateSubmissionStatusReport(
+                $scope,
+                $request->from_date ?? null,
+                $request->to_date ?? null
+            );
+
+            return $reportService->downloadSubmissionStatusPdf(
+                $data,
+                $request
             );
         }
 
