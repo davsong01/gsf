@@ -12,6 +12,12 @@ use Illuminate\Database\Eloquent\Model;
 class StakeholderReport extends Model
 {
     protected $guarded = [];
+    protected $casts = [
+        'zone_status' => 'integer',
+        'field_status' => 'integer',
+        'national_status' => 'integer',
+        'edit_mode' => 'integer',
+    ];
     
     public function chapter(){
         return $this->belongsTo(Chapter::class);
