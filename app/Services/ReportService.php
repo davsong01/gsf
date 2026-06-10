@@ -37,7 +37,6 @@ class ReportService
         return array_reverse($sessions);
     }
 
-
     public function index(Request $request, $user, bool $isAdmin = false)
     {
         $role = $user->role_id ?? $user->role;
@@ -222,7 +221,6 @@ class ReportService
         ];
     }
 
-
     public function getScopedEntitiesForUser($user, $isAdmin = false)
     {
         $role = $user->role_id ?? $user->role;
@@ -267,7 +265,6 @@ class ReportService
             'fields'     => Field::whereIn('id', $fieldIds)->orderBy('name')->get(),
         ];
     }
-
 
     public function prepareEditData(StakeholderReport $report, $user, bool $isAdmin = false
     ): array
@@ -553,75 +550,6 @@ class ReportService
 
     }
 
-    // public function canEditReport($report, $user)
-    // {
-    //     $role = $user->role_id;
-
-    //     $fieldStatus = $report->field_status;
-    //     $zoneStatus  = $report->zone_status;
-    //     $natStatus   = $report->national_status;
-    //     $isInEditMode   = $report->edit_mode ? true : false;
-    //     // Fully approved
-    //     $allApproved = $fieldStatus == 1 && $zoneStatus == 1 && $natStatus == 1;
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | NATIONAL APPROVAL
-    //     |--------------------------------------------------------------------------
-    //     | Locks everyone except Super Admin
-    //     */
-    //     if ($natStatus == 1) {
-    //         return [
-    //             'allApproved' => true,
-    //             'canEdit' => $role == 1, // Super Admin only
-    //         ];
-    //     }
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | FIELD APPROVAL
-    //     |--------------------------------------------------------------------------
-    //     | Locks Field, Zone, Chapter
-    //     */
-    //     if ($fieldStatus == 1) {
-    //         return [
-    //             'allApproved' => false,
-    //             'canEdit' => (
-    //                 in_array($role, secretariatStakeholders(), true) ||
-    //                 in_array($role, ncpStakeholders(), true) ||
-    //                 $role == 1
-    //             ),
-    //         ];
-    //     }
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | ZONE APPROVAL
-    //     |--------------------------------------------------------------------------
-    //     | Locks Zone & Chapter
-    //     */
-    //     if ($zoneStatus == 1) {
-    //         return [
-    //             'allApproved' => false,
-    //             'canEdit' => !(
-    //                 in_array($role, zoneStakeholders(), true) ||
-    //                 in_array($role, chapterStakeholders(), true)
-    //             ),
-    //         ];
-    //     }
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | NO LOCKS
-    //     |--------------------------------------------------------------------------
-    //     */
-
-        
-    //     return [
-    //         'allApproved' => false,
-    //         'canEdit' => true,
-    //     ];
-    // }
     public function canEditReport($report, $user)
     {
         $role = $user->role_id;
@@ -882,7 +810,6 @@ class ReportService
         return ExcelService::download($rows, $headers, $fileName);
     }
 
-
     public function approve($user, $report){
         $returnPayload = [
             'status' => false,
@@ -1002,7 +929,6 @@ class ReportService
         return;
     }
 
-
     public function downloadCompactReport($reports, $from, $to)
     {
         if ($reports->isEmpty()) {
@@ -1089,6 +1015,4 @@ class ReportService
             ->download($zipPath, $zipFileName)
             ->deleteFileAfterSend(true);
     }
-
-    
 }
