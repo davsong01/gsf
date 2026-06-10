@@ -170,19 +170,17 @@ class AdminReportsController extends Controller
         $zones  = DB::table('zones')->orderBy('name')->get();
 
         $data = [
-            'isAdmin' => true,
             'level' => $request->level ?? 'chapter',
             'type'  => $type,
             'fields'  => $fields,
             'zones'  => $zones,
             'legends' => Chapter::orderBy('name')->get(),
-            'isAdmin' => $isAdmin,// for filters
+            'isAdmin' => isAdmin()['status'],// for filters
         ];
 
         $request['isAdmin'] = $isAdmin;
-    
-        if ($request->filter_type === 'excel') {
 
+        if ($request->filter_type === 'excel') {
             $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
 
             $labels = $result['labels'];

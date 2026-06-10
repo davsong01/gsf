@@ -291,33 +291,33 @@ class ReportAnalyticsService
     }
 
    protected function getNeverSubmitted($reports, $chapters, $fields): array
-{
-    // Build a fast lookup of chapters that HAVE reports in the period
-    $hasReport = [];
+    {
+        // Build a fast lookup of chapters that HAVE reports in the period
+        $hasReport = [];
 
-    foreach ($reports as $r) {
-        $hasReport[$r->chapter_id] = true;
-    }
-
-    $result = [];
-
-    foreach ($chapters as $chapter) {
-
-        // if chapter has at least one report → skip
-        if (isset($hasReport[$chapter->id])) {
-            continue;
+        foreach ($reports as $r) {
+            $hasReport[$r->chapter_id] = true;
         }
 
-        $field = $fields[$chapter->field_id] ?? null;
-        if (!$field) {
-            continue;
+        $result = [];
+
+        foreach ($chapters as $chapter) {
+
+            // if chapter has at least one report → skip
+            if (isset($hasReport[$chapter->id])) {
+                continue;
+            }
+
+            $field = $fields[$chapter->field_id] ?? null;
+            if (!$field) {
+                continue;
+            }
+
+            $result[$field->name][] = $chapter->name;
         }
 
-        $result[$field->name][] = $chapter->name;
+        return $result;
     }
-    
-    return $result;
-}
 
     protected function group($reports, $chapters, $fields, callable $filter): array
     {
@@ -330,7 +330,7 @@ class ReportAnalyticsService
             $month = $this->normalizeMonth($r->month, $r->year);
             if (!$month){
                 continue;
-            } 
+            }
 
             $chapter = $chapters[$r->chapter_id] ?? null;
             $field   = $fields[$r->field_id] ?? null;
@@ -342,7 +342,7 @@ class ReportAnalyticsService
 
         return $this->uniqueMonths($result);
     }
-    
+
     protected function normalizeMonth($month, $year = null): ?string
     {
         if (!$month) return null;
@@ -376,7 +376,7 @@ class ReportAnalyticsService
     protected function getDefaulters($reports, $chapters, $fields, $from, $to): array
     {
         $expectedMonths = $this->getMonthRange($from, $to);
-
+    
         /**
          * Build fast lookup:
          * chapter_id => month => true
@@ -399,7 +399,7 @@ class ReportAnalyticsService
             if (!$field) continue;
 
             foreach ($expectedMonths as $month) {
-                
+
                 if (!isset($reportMap[$chapter->id][$month])) {
 
                     $result[$field->name][$chapter->name][] = $month;
@@ -409,7 +409,7 @@ class ReportAnalyticsService
 
         return $result;
     }
-        
+
     protected function getMonthRange($from, $to): array
     {
         $start = $from
@@ -420,13 +420,25 @@ class ReportAnalyticsService
             ? Carbon::parse($to)->endOfMonth()
             : now()->endOfMonth();
 
+        /**
+         * If today is before the 25th,
+         * exclude the current month from reporting.
+         */
+        if (now()->day < 25) {
+            $currentMonth = now()->format('Y-m');
+
+            if ($end->format('Y-m') >= $currentMonth) {
+                $end = now()->subMonth()->endOfMonth();
+            }
+        }
+
         $months = [];
 
         while ($start->lte($end)) {
             $months[] = $start->format('Y-m');
             $start->addMonth();
         }
-        
+
         return $months;
     }
 

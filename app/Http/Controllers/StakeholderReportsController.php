@@ -89,7 +89,7 @@ class StakeholderReportsController extends Controller
 
         $request['isAdmin'] = $isAdmin;
         // Handle Excel download
-        if ($request->filter_type === 'download') {
+        if ($request->filter_type === 'excel') {
             $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
             $labels = $result['labels'];
             $datasets = $result['datasets'];
@@ -113,6 +113,21 @@ class StakeholderReportsController extends Controller
             return ExcelService::download($exportData, $headers, 'chapter_compliance_report.xlsx');
         }
 
+        if ($request->filter_type === 'pdf') {
+            $reportService = app(ReportAnalyticsService::class);
+
+            $data = $reportService->generateSubmissionStatusReport(
+                $scope,
+                $request->from_date ?? null,
+                $request->to_date ?? null
+            );
+
+            return $reportService->downloadSubmissionStatusPdf(
+                $data,
+                $request
+            );
+        }
+        
         // Handle AJAX chart request
         if ($request->isMethod('post')) {
             $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
@@ -178,7 +193,7 @@ class StakeholderReportsController extends Controller
     {
         $user = Auth::guard('stakeholder')->user();
         $canEdit = app(ReportService::class)->canEditReport($report, $user);
-        
+
         if(!$canEdit['canEdit']){
             return back()->with('error', 'You are not authorized to edit this report');
         }
