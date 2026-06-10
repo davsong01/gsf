@@ -26,7 +26,7 @@
                     </div>
 
                     <div class="card-content">
-                        <div class="card-body p-0">
+                        <div class="card-body p-2">
                             <div class="table-responsive">
                                 <table class="table zero-configuration table table-align-middle mb-0 custom-modern-table">
                                     <thead>
