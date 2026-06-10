@@ -221,7 +221,7 @@ class AwardController extends Controller
                 }
             }
 
-            return back()->with('success', 'Award entries updated successfully.');
+            return back()->with('message', 'Award entries updated successfully.');
         } catch (\Throwable $e) {
             report($e);
             return back()->with('error', 'An error occurred while saving records: ' . $e->getMessage());
@@ -243,7 +243,7 @@ class AwardController extends Controller
                 $award->delete();
             });
 
-            return redirect()->back()->with('message', 'Delete Successful')->with('success', 'Award nomination and all associated entries deleted successfully.');
+            return redirect()->back()->with('message', 'Delete Successful')->with('message', 'Award nomination and all associated entries deleted successfully.');
 
         } catch (\Exception $e) {
             Log::error("Failed to delete Award ID [{$award->id}]: " . $e->getMessage());

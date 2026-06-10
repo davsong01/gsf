@@ -1349,7 +1349,6 @@ if (!function_exists('resolveAwardPermissions')) {
         $rejectRoute    = '#';
         $tooltipApprove = '';
         $tooltipReject  = '';
-
         // dd($settings, $settings->allow_chapter_edit);
         try {
 
@@ -1361,9 +1360,7 @@ if (!function_exists('resolveAwardPermissions')) {
                 $rejectRoute    = route('stakeholders.award.reject', $award->id);
                 $tooltipApprove = 'Approve for Chapter';
                 $tooltipReject  = 'Reject for Chapter';
-            }
-            // ZONE TIER EVALUATION
-            elseif (in_array($userRole, zoneStakeholders()) && in_array((int)$award->zone_status, [0, 2])) {
+            }elseif (in_array($userRole, zoneStakeholders()) && in_array((int)$award->zone_status, [0, 2])) {
                 $canAct         = $settings->allow_zone_approval ?? true;
                 $canEdit        = (bool)($settings['allow_zone_edit'] ?? false);
                 $canComment     = $settings->allow_zone_comment ?? 0;
@@ -1371,9 +1368,8 @@ if (!function_exists('resolveAwardPermissions')) {
                 $rejectRoute    = route('stakeholders.award.reject', $award->id);
                 $tooltipApprove = 'Approve for Zone';
                 $tooltipReject  = 'Reject for Zone';
-            }
-            // FIELD TIER EVALUATION (Requires Zone Approval)
-            elseif (in_array($userRole, fieldStakeholders()) && (int)$award->zone_status === 1 && in_array((int)$award->field_status, [0, 2])) {
+            // }elseif (in_array($userRole, fieldStakeholders()) && (int)$award->zone_status === 1 && in_array((int)$award->field_status, [0, 2])) {
+            }elseif (in_array($userRole, fieldStakeholders()) && in_array((int)$award->field_status, [0, 2])) {
                 $canAct         = $settings->allow_field_approval ?? true;
                 $canEdit        = (bool)($settings['allow_field_edit'] ?? false);
                 $canComment     = $settings->allow_field_comment ?? 0;
@@ -1398,6 +1394,7 @@ if (!function_exists('resolveAwardPermissions')) {
                 $tooltipReject  = 'Reject for National';
             }
         } catch (\Throwable $e) {
+  
             report($e);
         }
 

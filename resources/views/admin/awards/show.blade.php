@@ -18,7 +18,6 @@
     $tooltipApprove = $permissions->tooltipApprove;
     $tooltipReject = $permissions->tooltipReject;
 
-
     $userRole = $user->role_id;
     $settings = awardSettings();
 @endphp
@@ -179,17 +178,6 @@
 @endsection
 
 <div class="content-body premium-page-wrapper">
-    @if ($errors->any())
-        <div class="alert alert-danger border-0 shadow-sm rounded-3">
-            <strong>Please fix the errors below:</strong>
-            <ul class="mb-0 mt-1">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     <!-- Top Profile Banner Block with Header Image Positioned Legibly -->
     <div class="card overview-banner-card mb-2">
     <div class="card-body p-1">
@@ -352,13 +340,13 @@
     </div>
 </div>
 
-    <!-- Main Dynamic Key-Value Form Section -->
-    <section id="kv-entry-form">
+<!-- Main Dynamic Key-Value Form Section -->
+<section id="kv-entry-form">
     <form action="{{ route($isAdmin ? 'awards.update' : 'stakeholders.awards.update') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Confirm changes? This action will save edits to this award submission record.');">
         @csrf
 
         <div class="section-card">
-            <h4 class="text-dark fw-bold mb-4 border-bottom pb-2">Nomination Entry Form Values</h4>
+            <h4 class="text-dark fw-bold mb-2 border-bottom pb-2">Nomination Entry Form Values</h4>
             <div class="row g-4">
                 @foreach($award->entries as $entry)
                     @php

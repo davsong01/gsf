@@ -35,7 +35,7 @@
                         <div class="form-group mb-3">
                             <label for="email">Email</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <span class="input-group-text" style="border-radius: .45rem 0 0 .45rem !important; border-right: 0px !important;"><i class="fas fa-envelope"></i></span>
                                 <input type="text" class="form-control @error('email') is-invalid @enderror"
                                     id="email" name="email" placeholder="Enter email" value="{{ old('email') }}" required>
                             </div>
@@ -48,10 +48,10 @@
                         <div class="form-group mb-3">
                             <label for="password">Password</label>
                             <div class="input-group" id="show_hide_password">
-                                <span class="input-group-text"><i class="fas fa-unlock-alt"></i></span>
+                                <span class="input-group-text" style="border-radius: .45rem 0 0 .45rem !important; border-right: 0px !important;"><i class="fas fa-unlock-alt"></i></span>
                                 <input type="password" class="form-control @error('password') is-invalid @enderror"
                                     id="password" name="password" placeholder="Password" required>
-                                <span class="input-group-text toggle-password" style="cursor:pointer">
+                                <span class="input-group-text toggle-password" style="cursor:pointer; border-radius: 0 .45rem .45rem 0 !important; border-left: 0px !important;">
                                     <i class="fas fa-eye"></i>
                                 </span>
                             </div>
