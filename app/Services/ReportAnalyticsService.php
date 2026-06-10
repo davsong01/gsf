@@ -477,7 +477,7 @@ class ReportAnalyticsService
                 // 'neverSubmitted'      => $data['neverSubmitted'] ?? [],
             ]
         )
-        ->setPaper('a4', 'landscape');
+        ->setPaper('a4', 'portrait');
 
         return $pdf->download('gsf_monthly_report.pdf');
     }

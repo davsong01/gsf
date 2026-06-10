@@ -1,3 +1,15 @@
+@php
+    function countRows($data): int
+    {
+        $count = 0;
+
+        foreach ($data as $field => $chapters) {
+            $count += is_array($chapters) ? count($chapters) : 1;
+        }
+
+        return $count;
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,9 +23,10 @@
             color: #333;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
         }
 
         .title {
@@ -68,11 +81,50 @@
 
 <body>
 
-<div class="header">
-    <div class="title">GSF MONTHLY REPORT SUBMISSION STATUS</div>
-    <div class="subtitle">{{ strtoupper($type ?? '') }}</div>
-    <div class="subtitle">{{ $from ?? '-' }} - {{ $to ?? '-' }}</div>
-</div>
+{{-- ========================= --}}
+{{-- HEADER (FIXED FOR ANALYTICS CONTEXT) --}}
+{{-- ========================= --}}
+<table class="header-table">
+    <tr>
+        <td style="width: 90px; vertical-align: top;">
+            @php
+                $logoPath = public_path('frontend/img/logo.png');
+                $logo = file_exists($logoPath)
+                    ? base64_encode(file_get_contents($logoPath))
+                    : null;
+            @endphp
+
+            @if($logo)
+                <img src="data:image/png;base64,{{ $logo }}" width="80">
+            @endif
+        </td>
+
+        <td style="padding-left: 10px; vertical-align: top;">
+            <div class="title">GOFAMINT STUDENTS’ FELLOWSHIP</div>
+
+            <div class="subtitle">
+                International Headquarters, Ogunmakin, Lagos–Ibadan Expressway, Ogun State
+            </div>
+
+            <div style="margin-top: 6px;">
+                <strong>REPORT TYPE:</strong>
+                {{ strtoupper($type ?? 'GSF REPORT') }}
+            </div>
+
+            <div>
+                <strong>PERIOD:</strong>
+                {{ $from ? \Carbon\Carbon::parse($from)->format('F Y') : '-' }}
+                -
+                {{ $to ? \Carbon\Carbon::parse($to)->format('F Y') : '-' }}
+            </div>
+
+            <div>
+                <strong>GENERATED:</strong>
+                {{ now()->format('d M Y H:i') }}
+            </div>
+        </td>
+    </tr>
+</table>
 
 @php
     function formatMonthSafe($m)
@@ -80,29 +132,34 @@
         try {
             if (!$m) return '-';
 
-            // strict Y-m format
             if (preg_match('/^\d{4}-\d{2}$/', $m)) {
                 return \Carbon\Carbon::createFromFormat('Y-m', $m)->format('F Y');
             }
 
-            // fallback parsing
             return \Carbon\Carbon::parse($m)->format('F Y');
         } catch (\Throwable $e) {
             return $m;
         }
     }
 
-    function renderTable($data) {
+    function renderTable($data)
+    {
         if (empty($data)) {
             return '<div class="empty">No records found</div>';
         }
 
         $html = '<table>';
-        $html .= '<thead><tr><th>Field</th><th>Campus</th><th>Months</th></tr></thead><tbody>';
+        $html .= '<thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Campus</th>
+                        <th>Months</th>
+                    </tr>
+                  </thead><tbody>';
 
         foreach ($data as $field => $chapters) {
             foreach ($chapters as $chapter => $months) {
-                
+
                 $monthText = is_array($months)
                     ? implode(', ', array_map(fn($m) => formatMonthSafe($m), $months))
                     : formatMonthSafe($months);
@@ -121,61 +178,46 @@
     }
 @endphp
 
-{{-- ========================= --}}
-{{-- NATIONAL --}}
-{{-- ========================= --}}
 <div class="section-title">1. NATIONAL REPORTS</div>
 
-<div class="status-title">Approved</div>
+<div class="status-title">Approved ({{ countRows($nationallyApproved) }})</div>
 {!! renderTable($nationallyApproved) !!}
 
-<div class="status-title">Pending</div>
+<div class="status-title">Pending ({{ countRows($nationalPending) }})</div>
 {!! renderTable($nationalPending) !!}
 
-<div class="status-title">Rejected</div>
+<div class="status-title">Rejected ({{ countRows($nationalDeclined) }})</div>
 {!! renderTable($nationalDeclined) !!}
 
-{{-- ========================= --}}
-{{-- ZONE --}}
-{{-- ========================= --}}
+
 <div class="section-title">2. ZONE REPORTS</div>
 
-<div class="status-title">Approved</div>
+<div class="status-title">Approved ({{ countRows($zoneApproved) }})</div>
 {!! renderTable($zoneApproved) !!}
 
-<div class="status-title">Pending</div>
+<div class="status-title">Pending ({{ countRows($pendingZoneApproval) }})</div>
 {!! renderTable($pendingZoneApproval) !!}
 
-<div class="status-title">Rejected</div>
+<div class="status-title">Rejected ({{ countRows($zoneDeclined) }})</div>
 {!! renderTable($zoneDeclined) !!}
 
-{{-- ========================= --}}
-{{-- FIELD --}}
-{{-- ========================= --}}
+
 <div class="section-title">3. FIELD REPORTS</div>
 
-<div class="status-title">Approved</div>
+<div class="status-title">Approved ({{ countRows($fieldApproved) }})</div>
 {!! renderTable($fieldApproved) !!}
 
-<div class="status-title">Pending</div>
+<div class="status-title">Pending ({{ countRows($pendingFieldApproval) }})</div>
 {!! renderTable($pendingFieldApproval) !!}
 
-<div class="status-title">Rejected</div>
+<div class="status-title">Rejected ({{ countRows($fieldDeclined) }})</div>
 {!! renderTable($fieldDeclined) !!}
 
-{{-- ========================= --}}
-{{-- MONTHS YET TO SUBMIT --}}
-{{-- ========================= --}}
-<div class="section-title">4. DEFAULTERS</div>
+
+<div class="section-title">
+    4. DEFAULTERS ({{ countRows($monthsYetToSubmit) }})
+</div>
 
 {!! renderTable($monthsYetToSubmit) !!}
-
-{{-- ========================= --}}
-{{-- NEVER SUBMITTED --}}
-{{-- ========================= --}}
-{{-- <div class="section-title">5. CAMPUSES YET TO SUBMIT ANY REPORT</div>
-{!! renderTable($neverSubmitted) !!} --}}
-
 </body>
 </html>
-{{dd('sd')}}
