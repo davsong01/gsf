@@ -553,74 +553,168 @@ class ReportService
 
     }
 
+    // public function canEditReport($report, $user)
+    // {
+    //     $role = $user->role_id;
+
+    //     $fieldStatus = $report->field_status;
+    //     $zoneStatus  = $report->zone_status;
+    //     $natStatus   = $report->national_status;
+    //     $isInEditMode   = $report->edit_mode ? true : false;
+    //     // Fully approved
+    //     $allApproved = $fieldStatus == 1 && $zoneStatus == 1 && $natStatus == 1;
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | NATIONAL APPROVAL
+    //     |--------------------------------------------------------------------------
+    //     | Locks everyone except Super Admin
+    //     */
+    //     if ($natStatus == 1) {
+    //         return [
+    //             'allApproved' => true,
+    //             'canEdit' => $role == 1, // Super Admin only
+    //         ];
+    //     }
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | FIELD APPROVAL
+    //     |--------------------------------------------------------------------------
+    //     | Locks Field, Zone, Chapter
+    //     */
+    //     if ($fieldStatus == 1) {
+    //         return [
+    //             'allApproved' => false,
+    //             'canEdit' => (
+    //                 in_array($role, secretariatStakeholders(), true) ||
+    //                 in_array($role, ncpStakeholders(), true) ||
+    //                 $role == 1
+    //             ),
+    //         ];
+    //     }
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | ZONE APPROVAL
+    //     |--------------------------------------------------------------------------
+    //     | Locks Zone & Chapter
+    //     */
+    //     if ($zoneStatus == 1) {
+    //         return [
+    //             'allApproved' => false,
+    //             'canEdit' => !(
+    //                 in_array($role, zoneStakeholders(), true) ||
+    //                 in_array($role, chapterStakeholders(), true)
+    //             ),
+    //         ];
+    //     }
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | NO LOCKS
+    //     |--------------------------------------------------------------------------
+    //     */
+
+        
+    //     return [
+    //         'allApproved' => false,
+    //         'canEdit' => true,
+    //     ];
+    // }
     public function canEditReport($report, $user)
     {
         $role = $user->role_id;
 
-        $fieldStatus = $report->field_status;
-        $zoneStatus  = $report->zone_status;
-        $natStatus   = $report->national_status;
+        $zone = $report->zone_status;
+        $field = $report->field_status;
+        $national = $report->national_status;
 
-        // Fully approved
-        $allApproved = $fieldStatus == 1 && $zoneStatus == 1 && $natStatus == 1;
+        $inEditMode = (bool) $report->edit_mode;
+        $isAdmin = $role == 1;
+        $isFinance = finStakeholders($user);
+
+        $allApproved = $zone == 1 && $field == 1 && $national == 1;
 
         /*
         |--------------------------------------------------------------------------
-        | NATIONAL APPROVAL
+        | EDIT MODE OVERRIDE (MIRROR BLADE)
         |--------------------------------------------------------------------------
-        | Locks everyone except Super Admin
         */
-        if ($natStatus == 1) {
+        if ($inEditMode) {
             return [
-                'allApproved' => true,
-                'canEdit' => $role == 1, // Super Admin only
+                'allApproved' => $allApproved,
+                'canEdit' =>
+                    $isAdmin ||
+                    in_array($role, chapterStakeholders(), true),
             ];
         }
 
         /*
         |--------------------------------------------------------------------------
-        | FIELD APPROVAL
+        | ZONE STAGE
         |--------------------------------------------------------------------------
-        | Locks Field, Zone, Chapter
         */
-        if ($fieldStatus == 1) {
+        if (
+            in_array($role, zoneStakeholders(), true)
+        ) {
             return [
-                'allApproved' => false,
-                'canEdit' => (
-                    in_array($role, secretariatStakeholders(), true) ||
-                    in_array($role, ncpStakeholders(), true) ||
-                    $role == 1
-                ),
+                'allApproved' => $allApproved,
+                'canEdit' => in_array($zone, [0,2], true),
             ];
         }
 
         /*
         |--------------------------------------------------------------------------
-        | ZONE APPROVAL
+        | FIELD STAGE (requires zone approved)
         |--------------------------------------------------------------------------
-        | Locks Zone & Chapter
         */
-        if ($zoneStatus == 1) {
+        if (
+            in_array($role, fieldStakeholders(), true)
+        ) {
             return [
-                'allApproved' => false,
-                'canEdit' => !(
-                    in_array($role, zoneStakeholders(), true) ||
-                    in_array($role, chapterStakeholders(), true)
-                ),
+                'allApproved' => $allApproved,
+                'canEdit' =>
+                    $zone == 1 &&
+                    in_array($field, [0,2], true),
             ];
         }
 
         /*
         |--------------------------------------------------------------------------
-        | NO LOCKS
+        | NATIONAL STAGE (requires zone + field approved)
         |--------------------------------------------------------------------------
         */
+        if (
+            in_array($role, secretariatStakeholders(), true) ||
+            in_array($role, ncpStakeholders(), true)
+        ) {
+            return [
+                'allApproved' => $allApproved,
+                'canEdit' =>
+                    $zone == 1 &&
+                    $field == 1 &&
+                    in_array($national, [0,2], true),
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | FINANCE (GLOBAL EXCEPTION)
+        |--------------------------------------------------------------------------
+        */
+        if ($isFinance) {
+            return [
+                'allApproved' => $allApproved,
+                'canEdit' => !$inEditMode,
+            ];
+        }
+
         return [
-            'allApproved' => false,
-            'canEdit' => true,
+            'allApproved' => $allApproved,
+            'canEdit' => false,
         ];
     }
-
 
     public function prepareViewData(StakeholderReport $report, bool $isAdmin = false
     ): array

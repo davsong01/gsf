@@ -11,7 +11,7 @@
     $canViewField = $permissions->canViewField;
 
     $canEdit = $permissions->canEdit;
-
+        
     $hierarchyCount = $permissions->hierarchyCount;
     $hierarchyCol = $permissions->hierarchyCol;
     $approval_statuses = $permissions->statuses;

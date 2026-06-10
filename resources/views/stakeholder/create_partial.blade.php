@@ -387,38 +387,60 @@
 
 @php
     $canAct = false;
+    $inEditMode = $report->edit_mode;
 
-    // Zone approval
-    if(in_array($userRole, zoneStakeholders()) && in_array($report->zone_status, [0,2])) {
-        $canAct = true;
-        $approveRoute = route('stakeholders.reports.approve', $report->id);
-        $rejectRoute  = route('stakeholders.reports.reject', $report->id);
-        $tooltipApprove = 'Approve for Zone';
-        $tooltipReject = 'Reject for Zone';
+    // 🚨 GLOBAL BLOCK: edit mode disables all actions except later allowed logic (if any)
+    if (!$inEditMode) {
+
+        // Zone approval
+        if (
+            in_array($userRole, zoneStakeholders()) &&
+            in_array($report->zone_status, [0,2])
+        ) {
+            $canAct = true;
+            $approveRoute = route('stakeholders.reports.approve', $report->id);
+            $rejectRoute  = route('stakeholders.reports.reject', $report->id);
+            $tooltipApprove = 'Approve for Zone';
+            $tooltipReject = 'Reject for Zone';
+        }
+
+        // Field approval (only after zone approval)
+        elseif (
+            in_array($userRole, fieldStakeholders()) &&
+            $report->zone_status == 1 &&
+            in_array($report->field_status, [0,2])
+        ) {
+            $canAct = true;
+            $approveRoute = route('stakeholders.reports.approve', $report->id);
+            $rejectRoute  = route('stakeholders.reports.reject', $report->id);
+            $tooltipApprove = 'Approve for Field';
+            $tooltipReject = 'Reject for Field';
+        }
+
+        // National approval (only after zone & field approval)
+        elseif (
+            in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders())) &&
+            $report->zone_status == 1 &&
+            $report->field_status == 1 &&
+            in_array($report->national_status, [0,2])
+        ) {
+            $canAct = true;
+            $approveRoute = route('stakeholders.reports.approve', $report->id);
+            $rejectRoute  = route('stakeholders.reports.reject', $report->id);
+            $tooltipApprove = 'Approve for National';
+            $tooltipReject = 'Reject for National';
+        }
     }
 
-    // Field approval (only after zone approval)
-    elseif(in_array($userRole, fieldStakeholders()) && $report->zone_status == 1 && in_array($report->field_status, [0,2])) {
+    // OPTIONAL: edit mode override (only chapter if you want)
+    if ($inEditMode && in_array($userRole, chapterStakeholders())) {
         $canAct = true;
         $approveRoute = route('stakeholders.reports.approve', $report->id);
         $rejectRoute  = route('stakeholders.reports.reject', $report->id);
-        $tooltipApprove = 'Approve for Field';
-        $tooltipReject = 'Reject for Field';
-    }
-
-    // National/Secretariat/NCP approval (only after zone & field approval)
-    elseif(in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders()))
-           && $report->zone_status == 1
-           && $report->field_status == 1
-           && in_array($report->national_status, [0,2])) {
-        $canAct = true;
-        $approveRoute = route('stakeholders.reports.approve', $report->id);
-        $rejectRoute  = route('stakeholders.reports.reject', $report->id);
-        $tooltipApprove = 'Approve for National';
-        $tooltipReject = 'Reject for National';
+        $tooltipApprove = 'Edit Mode Action';
+        $tooltipReject = 'Edit Mode Action';
     }
 @endphp
-
 @if($canAct && $approveRoute)
     <div class="sticky-action-buttons">
     <!-- Approve Button -->

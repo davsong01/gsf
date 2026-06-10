@@ -210,7 +210,7 @@ class StakeholderController extends Controller
         ]);
 
         $role = StakeholderRole::find($request->input('role_id'));
-dd('sds');
+                
         // Role-based assignments
         switch (true) {
             case in_array($role->slug, ['chapter-representative']):

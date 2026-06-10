@@ -178,7 +178,7 @@ class StakeholderReportsController extends Controller
     {
         $user = Auth::guard('stakeholder')->user();
         $canEdit = app(ReportService::class)->canEditReport($report, $user);
-
+        
         if(!$canEdit['canEdit']){
             return back()->with('error', 'You are not authorized to edit this report');
         }
