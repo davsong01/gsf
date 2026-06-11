@@ -354,7 +354,6 @@ class ChapterController extends Controller
                 empty($stakeholder->credentials_sent)
                 && empty($stakeholder->last_login_at)
             ) {
-
                 $passwordPlain = Str::random(8);
 
                 $stakeholder->update([

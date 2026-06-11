@@ -205,6 +205,22 @@
                                             <span class="badge {{ $report->edit_mode ? 'bg-warning' : 'bg-success' }}">
                                                 {{ $report->edit_mode ? 'Currently Editing' : 'Final Submission' }}
                                             </span>
+                                            @if($isAdmin || in_array($user->role_id, array_merge(secretariatStakeholders(), ncpStakeholders())))
+                                                <div class="form-check form-switch">
+                                                    <input
+                                                        class="form-check-input js-edit-toggle"
+                                                        type="checkbox"
+                                                        role="switch"
+                                                        id="editSwitch{{ $report->id }}"
+                                                        data-id="{{ $report->id }}"
+                                                        {{ $report->edit_mode ? 'checked' : '' }}
+                                                    >
+
+                                                    <label class="form-check-label" for="editSwitch{{ $report->id }}">
+                                                        {{ $report->edit_mode ? 'Edit Mode Enabled, Turn off' : 'Edit Mode Disabled, Turn on' }}
+                                                    </label>
+                                                </div>
+                                            @endif
                                         </td>
 
 
@@ -413,3 +429,44 @@
         </div>
     </section>
 </div>
+<script>
+$(document).on('change', '.js-edit-toggle', function () {
+
+    const toggle = $(this);
+    const reportId = toggle.data('id');
+    const isOn = toggle.is(':checked') ? 1 : 0;
+
+    const label = toggle.closest('.form-check').find('label');
+
+    toggle.prop('disabled', true);
+
+    $.ajax({
+        url: '/admin/reports/toggle-edit-mode',
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            report_id: reportId,
+            edit_mode: isOn
+        },
+        success: function (res) {
+
+            if (res.status) {
+                label.text(isOn ? 'Edit Mode Enabled' : 'Edit Mode Disabled');
+                alert(res.message || 'Updated successfully');
+                location.reload();
+            } else {
+                toggle.prop('checked', !isOn);
+                alert(res.message || 'Update failed');
+            }
+        },
+        error: function () {
+            toggle.prop('checked', !isOn);
+            alert('Something went wrong');
+        },
+        complete: function () {
+            toggle.prop('disabled', false);
+        }
+    });
+
+});
+</script>

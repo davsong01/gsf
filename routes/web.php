@@ -279,6 +279,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::get('stakeholderreports/download/{report}', [StakeholderReportsController::class, 'download'])->name('stakeholderreports.download');
     Route::get('stakeholderreports-nudge/{report}', [AdminReportsController::class, 'nudge'])->name('stakeholderreports.nudge');
+    Route::post('/admin/reports/toggle-edit-mode', [AdminReportsController::class, 'toggleEditMode']);
 
     Route::prefix('stakeholder')->as('stakeholder.')->group(function () {
         Route::resource('questions', StakeholderReportQuestionController::class);

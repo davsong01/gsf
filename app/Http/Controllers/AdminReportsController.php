@@ -26,6 +26,27 @@ class AdminReportsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function toggleEditMode(Request $request)
+    {
+        $request->validate([
+            'report_id'  => 'required|integer|exists:stakeholder_reports,id',
+            'edit_mode'  => 'required|boolean',
+        ]);
+
+        $report = StakeholderReport::findOrFail($request->report_id);
+
+        $report->edit_mode = (int) $request->edit_mode;
+        $report->save();
+
+        return response()->json([
+            'status'  => true,
+            'message' => $report->edit_mode
+                ? 'Edit mode enabled'
+                : 'Edit mode disabled',
+        ]);
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
