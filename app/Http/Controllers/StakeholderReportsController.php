@@ -127,7 +127,7 @@ class StakeholderReportsController extends Controller
                 $request
             );
         }
-        
+
         // Handle AJAX chart request
         if ($request->isMethod('post')) {
             $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
@@ -154,6 +154,7 @@ class StakeholderReportsController extends Controller
         $user = Auth::guard('stakeholder')->user();
 
         $months = getMonths();
+        
         $chapter = $user->chapter;
 
         $sections = StakeholderQuestionSection::isActive()
