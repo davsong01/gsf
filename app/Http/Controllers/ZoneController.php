@@ -137,7 +137,7 @@ class ZoneController extends Controller
                 'designation_id' => $designation_id
             ]);
         }
-        
+
         // Update dependencies
         $zone->chapters()->update([
             'field_id' => $request->field_id,

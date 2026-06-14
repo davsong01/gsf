@@ -83,10 +83,10 @@ class PaymentService {
                     'registration_user_type' => $extras['slot'] > 1 ? 'moderator' : 'participant',
                 ]);
             }
-            
+
             $allocatableFields = $plan->fields()->pluck('name')->toArray();
             $filteredFields = [];
-
+            
             // Auto-fill field_id if missing but chapter exists
             if (in_array('field_id', $allocatableFields, true) && empty($data['field_id']) && !empty($data['chapter'])) {
                 $fieldId = DB::table('chapters')->where('id', $data['chapter'])->value('field_id');

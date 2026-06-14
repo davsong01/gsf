@@ -154,7 +154,7 @@ class StakeholderReportsController extends Controller
         $user = Auth::guard('stakeholder')->user();
 
         $months = getMonths();
-        
+
         $chapter = $user->chapter;
 
         $sections = StakeholderQuestionSection::isActive()
@@ -322,6 +322,9 @@ class StakeholderReportsController extends Controller
         $user = Auth::guard('stakeholder')->user();
         $isAdmin = false;
 
+        $request->merge([
+            'status_filter' => 'zone_approved'
+        ]);
         $result = app(ReportService::class)
             ->index($request, $user, $isAdmin);
 

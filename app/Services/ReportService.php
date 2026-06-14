@@ -65,8 +65,7 @@ class ReportService
                 $chapterIds = collect([$user->chapter_id]);
                 $zoneIds    = collect([$user->zone_id]);
                 $fieldIds   = collect([$user->field_id]);
-            }
-            elseif (in_array($role, zoneStakeholders())) {
+            }elseif (in_array($role, zoneStakeholders())) {
                 $zoneIds = collect([$user->zone_id]);
 
                 $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
@@ -74,15 +73,13 @@ class ReportService
                 $fieldIds = Field::whereHas('zones', fn ($q) =>
                     $q->where('id', $user->zone_id)
                 )->pluck('id');
-            }
-            elseif (in_array($role, fieldStakeholders())) {
+            }elseif (in_array($role, fieldStakeholders())) {
                 $fieldIds = collect([$user->field_id]);
 
                 $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
 
                 $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
-            }
-            elseif (in_array($role, secretariatStakeholders())) {
+            }elseif (in_array($role, secretariatStakeholders())) {
                 $chapterIds = Chapter::pluck('id');
                 $zoneIds    = Zone::pluck('id');
                 $fieldIds   = Field::pluck('id');
@@ -565,18 +562,21 @@ class ReportService
 
         $allApproved = $zone == 1 && $field == 1 && $national == 1;
 
-        /*
-        |--------------------------------------------------------------------------
-        | EDIT MODE OVERRIDE (MIRROR BLADE)
-        |--------------------------------------------------------------------------
-        */
-
         if ($inEditMode) {
             return [
                 'allApproved' => $allApproved,
                 'canEdit' =>
                     $isAdmin ||
                     in_array($role, chapterStakeholders()),
+            ];
+        }
+
+        if (
+            in_array($role, chapterStakeholders(), true)
+        ) {
+            return [
+                'allApproved' => $allApproved,
+                'canEdit' => $isAdmin || in_array($zone, [0,2], true),
             ];
         }
 
@@ -590,7 +590,7 @@ class ReportService
         ) {
             return [
                 'allApproved' => $allApproved,
-                'canEdit' => in_array($zone, [0,2], true),
+                'canEdit' => $isAdmin || in_array($zone, [0,2], true),
             ];
         }
 
@@ -605,8 +605,8 @@ class ReportService
             return [
                 'allApproved' => $allApproved,
                 'canEdit' =>
-                    $zone == 1 &&
-                    in_array($field, [0,2], true),
+                    $isAdmin || ($zone == 1 &&
+                    in_array($field, [0,2], true)),
             ];
         }
 
@@ -615,6 +615,7 @@ class ReportService
         | NATIONAL STAGE (requires zone + field approved)
         |--------------------------------------------------------------------------
         */
+
         if (
             in_array($role, secretariatStakeholders(), true) ||
             in_array($role, ncpStakeholders(), true)
@@ -622,9 +623,7 @@ class ReportService
             return [
                 'allApproved' => $allApproved,
                 'canEdit' =>
-                    $zone == 1 &&
-                    $field == 1 &&
-                    in_array($national, [0,2], true),
+                $isAdmin || ($zone == 1 && $field == 1 && in_array($national, [0,2], true)),
             ];
         }
 
@@ -633,10 +632,20 @@ class ReportService
         | FINANCE (GLOBAL EXCEPTION)
         |--------------------------------------------------------------------------
         */
+
         if ($isFinance) {
             return [
                 'allApproved' => $allApproved,
-                'canEdit' => !$inEditMode,
+                'canEdit' => $isAdmin || !$inEditMode,
+            ];
+        }
+
+        if ($inEditMode) {
+            return [
+                'allApproved' => $allApproved,
+                'canEdit' =>
+                    $isAdmin ||
+                    in_array($role, chapterStakeholders()),
             ];
         }
 

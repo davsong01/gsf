@@ -46,7 +46,7 @@
                         <span class="menu-title" data-i18n="User">Financial Reports</span>
                     </a>
                 </li>
-                
+
             @endif
             @if(!finStakeholders($user))
                 <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.reports') ? 'active' : '' }}">
