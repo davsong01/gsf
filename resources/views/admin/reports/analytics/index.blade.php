@@ -51,6 +51,17 @@
             </div>
         </a>
     </div>
+    <div class="col-md-3 col-sm-6 mb-2">
+        <a href="{{ route($isAdmin ? 'reports.analytics.type' : 'stakeholders.reports.analytics.type', 'section') }}" class="text-decoration-none">
+            <div class="card h-100 shadow border-0 text-white bg-info hover-card">
+                <div class="card-body d-flex flex-column align-items-center text-center">
+                    <div class="mb-2"><i class="fa fa-chart-line fa-2x"></i></div>
+                    <h6 class="mb-1">Section Reports</h6>
+                    <small>Analyze report section performance trends</small>
+                </div>
+            </div>
+        </a>
+    </div>
 
     {{-- <div class="col-md-3 col-sm-6 mb-2">
         <a href="{{ route('reports.analytics.type', 'compliance') }}" class="text-decoration-none">

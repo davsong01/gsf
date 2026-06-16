@@ -223,70 +223,87 @@ class ReportAnalyticsService
 
         $reports = $query->get();
 
-        $chapters = DB::table('chapters')->get()->keyBy('id');
-        $fields   = DB::table('fields')->get()->keyBy('id');
+        $groupedRows = [];
+        $periods = [];
 
-        // =========================
-        // BUILD OUTPUT
-        // =========================
+        foreach ($reports as $report) {
+
+            $period = date(
+                'M Y',
+                mktime(0, 0, 0, (int) $report->month, 1, (int) $report->year)
+            );
+
+            $periods[$period] = $period;
+
+            foreach ($report->answers as $answer) {
+
+                $key = implode('|', [
+                    $report->chapter_id,
+                    $report->zone_id,
+                    $report->field_id,
+                    $answer->question_section_id,
+                    $answer->question_sub_section_id,
+                    $answer->question_id,
+                ]);
+
+                if (!isset($groupedRows[$key])) {
+
+                    $groupedRows[$key] = [
+                        'Chapter' => $report->chapter->name ?? '-',
+                        'Zone' => $report->zone->name ?? '-',
+                        'Field' => $report->field->name ?? '-',
+                        'Section' => $answer->section->name ?? '-',
+                        'Sub Section' => $answer->subSection->name ?? '-',
+                        'Question' => $answer->question->label ?? '-',
+                    ];
+                }
+
+                $groupedRows[$key][$period] = $this->normalizeAnswerValue(
+                    $answer->answer_value ?? $answer->answer
+                );
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Sort periods chronologically
+        |--------------------------------------------------------------------------
+        */
+        uksort($periods, function ($a, $b) {
+            return strtotime('01 ' . $a) <=> strtotime('01 ' . $b);
+        });
+
+        $periods = array_values($periods);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ensure every row has every month column
+        |--------------------------------------------------------------------------
+        */
+        $rows = [];
+
+        foreach ($groupedRows as $row) {
+
+            foreach ($periods as $period) {
+                $row[$period] = $row[$period] ?? '-';
+            }
+
+            $rows[] = $row;
+        }
+
         return [
-            // -------------------------
-            // NATIONAL
-            // -------------------------
-            'nationallyApproved' => $this->group($reports, $chapters, $fields, function ($r) {
-                return $r->national_status == 1;
-            }),
-
-            'nationalDeclined' => $this->group($reports, $chapters, $fields, function ($r) {
-                return $r->national_status == 2;
-            }),
-
-            'nationalPending' => $this->group($reports, $chapters, $fields, function ($r) {
-                return $r->national_status == 0;
-            }),
-
-            // -------------------------
-            // ZONE
-            // -------------------------
-            'zoneApproved' => $this->group($reports, $chapters, $fields, function ($r) {
-                return $r->zone_status == 1;
-            }),
-
-            'pendingZoneApproval' => $this->group($reports, $chapters, $fields, function ($r) {
-                return in_array($r->zone_status, [0, 2]);
-            }),
-
-            'zoneDeclined' => $this->group($reports, $chapters, $fields, function ($r) {
-                return $r->zone_status == 2;
-            }),
-
-            // -------------------------
-            // FIELD
-            // -------------------------
-            'fieldApproved' => $this->group($reports, $chapters, $fields, function ($r) {
-                return $r->field_status == 1;
-            }),
-
-            'pendingFieldApproval' => $this->group($reports, $chapters, $fields, function ($r) {
-                return in_array($r->field_status, [0, 2]) && $r->zone_status == 1;
-            }),
-
-            'fieldDeclined' => $this->group($reports, $chapters, $fields, function ($r) {
-                return $r->field_status == 2;
-            }),
-
-            // -------------------------
-            // COMPLETENESS
-            // -------------------------
-            'monthsYetToSubmit' => $this->getDefaulters(
-                $reports,
-                $chapters,
-                $fields,
-                $start,
-                $end
+            'headers' => array_merge(
+                [
+                    'Chapter',
+                    'Zone',
+                    'Field',
+                    'Section',
+                    'Sub Section',
+                    'Question',
+                ],
+                $periods
             ),
-
-            // 'neverSubmitted' => $this->getNeverSubmitted($reports, $chapters, $fields),
+            'rows' => $rows,
         ];
     }
 
@@ -376,7 +393,7 @@ class ReportAnalyticsService
     protected function getDefaulters($reports, $chapters, $fields, $from, $to): array
     {
         $expectedMonths = $this->getMonthRange($from, $to);
-    
+
         /**
          * Build fast lookup:
          * chapter_id => month => true
@@ -492,5 +509,202 @@ class ReportAnalyticsService
         ->setPaper('a4', 'portrait');
 
         return $pdf->download('gsf_monthly_report.pdf');
+    }
+
+    public function getQuestionAnalysisData(Request $request): array
+    {
+        $query = StakeholderReport::query()
+            ->with([
+                'stakeholder',
+                'chapter',
+                'zone',
+                'field',
+                'answers.section',
+                'answers.subSection',
+                'answers.question'
+            ]);
+
+        if ($request->filled('fields')) {
+            $query->whereIn('field_id', $request->fields);
+        }
+
+        if ($request->filled('zones')) {
+            $query->whereIn('zone_id', $request->zones);
+        }
+
+        if ($request->filled('chapters')) {
+            $query->whereIn('chapter_id', $request->chapters);
+        }
+
+        if ($request->filled('sections') && !in_array('all', (array) $request->sections)) {
+
+            $query->whereHas('answers', function ($q) use ($request) {
+                $q->whereIn('question_section_id', $request->sections);
+            });
+
+            $query->with([
+                'answers' => function ($q) use ($request) {
+                    $q->whereIn('question_section_id', $request->sections);
+                }
+            ]);
+        }
+
+        if ($request->filled('sub_sections') && !in_array('all', (array) $request->sub_sections)) {
+
+            $query->whereHas('answers', function ($q) use ($request) {
+                $q->whereIn('question_sub_section_id', $request->sub_sections);
+            });
+
+            $query->with([
+                'answers' => function ($q) use ($request) {
+                    $q->whereIn('question_sub_section_id', $request->sub_sections);
+                }
+            ]);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $reports = $query->get();
+
+        $periods = [];
+        $groupedRows = [];
+
+        foreach ($reports as $report) {
+
+            $period = Carbon::create(
+                (int) $report->year,
+                (int) $report->month,
+                1
+            )->format('M Y');
+
+            $periods[$period] = Carbon::create(
+                (int) $report->year,
+                (int) $report->month,
+                1
+            )->timestamp;
+
+            foreach ($report->answers as $answer) {
+
+                $key = implode('|', [
+                    $report->chapter_id,
+                    $report->zone_id,
+                    $report->field_id,
+                    $answer->question_section_id,
+                    $answer->question_sub_section_id,
+                    $answer->question_id,
+                ]);
+
+                if (!isset($groupedRows[$key])) {
+
+                    $groupedRows[$key] = [
+                        'Chapter'      => $report->chapter->name ?? '-',
+                        // 'Zone'         => $report->zone->name ?? '-',
+                        // 'Field'        => $report->field->name ?? '-',
+                        // 'Section'      => $answer->section->name ?? '-',
+                        // 'Sub Section'  => $answer->subSection->name ?? '-',
+                        'Item'     => $answer->question->label ?? '-',
+                    ];
+                }
+
+                $groupedRows[$key][$period] = $this->normalizeAnswerValue(
+                    $answer->answer_value ?? $answer->answer
+                );
+            }
+        }
+
+        asort($periods);
+        $periodColumns = array_keys($periods);
+
+        $rows = [];
+
+        foreach ($groupedRows as $row) {
+
+            foreach ($periodColumns as $period) {
+                $row[$period] = $row[$period] ?? '-';
+            }
+
+            $rows[] = $row;
+        }
+
+        return [
+            'headers' => array_merge(
+                [
+                    'Chapter',
+                    // 'Zone',
+                    // 'Field',
+                    // 'Section',
+                    // 'Sub Section',
+                    'Item',
+                ],
+                $periodColumns
+            ),
+            'rows' => $rows,
+        ];
+    }
+
+    private function normalizeAnswerValue($value): string
+    {
+        if (is_null($value)) {
+            return '-';
+        }
+
+        // If already string/number
+        if (is_string($value) || is_numeric($value)) {
+            return (string) $value;
+        }
+
+        // If JSON object or array
+        if (is_array($value)) {
+
+            // CASE 1: associative nested object (Week 1 format)
+            $isAssoc = array_keys($value) !== range(0, count($value) - 1);
+
+            if ($isAssoc) {
+
+                $output = [];
+
+                foreach ($value as $key => $inner) {
+
+                    if (is_array($inner)) {
+                        $flatten = [];
+
+                        foreach ($inner as $k => $v) {
+                            $flatten[] = "{$k}: {$v}";
+                        }
+
+                        $output[] = $key . " → " . implode(', ', $flatten);
+
+                    } else {
+                        $output[] = "{$key}: {$inner}";
+                    }
+                }
+
+                return implode(" | ", $output);
+            }
+
+            // CASE 2: list of objects
+            $output = [];
+
+            foreach ($value as $item) {
+                if (is_array($item)) {
+                    $output[] = implode(', ', array_map(
+                        fn($k, $v) => "$k: $v",
+                        array_keys($item),
+                        $item
+                    ));
+                }
+            }
+
+            return implode(" || ", $output);
+        }
+
+        // fallback (JSON string maybe)
+        return (string) $value;
     }
 }

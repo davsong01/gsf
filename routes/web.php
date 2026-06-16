@@ -274,6 +274,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::get('fix-orphan-reports', [AdminReportsController::class, 'fixOrphanReport'])->name('report.fix.orphan');
     Route::get('report-analytics', [AdminReportsController::class, 'reportAnalyticsIndex'])->name('reports.analytics');
+    Route::get('/ajax/sub-sections-by-sections', [AdminReportsController::class, 'getSubSectionsBySections'])->name('get.sub-sections');
+
     Route::any('report-analytics/{type}', [AdminReportsController::class, 'reportAnalyticsType'])->name('reports.analytics.type');
     Route::get('stakeholderreports/export', [AdminReportsController::class, 'export'])->name('stakeholderreports.export');
 
@@ -635,7 +637,6 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('report-analytics', [StakeholderReportsController::class, 'reportAnalyticsIndex'])->name('reports.analytics');
             Route::any('report-analytics/{type}', [StakeholderReportsController::class, 'reportAnalyticsType'])->name('reports.analytics.type');
             Route::get('stakeholderreports/export', [StakeholderReportsController::class, 'export'])->name('report.export');
-
         });
 
         // Payments

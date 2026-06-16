@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Chapter;
-use Illuminate\Http\Request;
-use App\Services\ExcelService;
-use App\Services\ReportService;
-use App\Models\StakeholderReport;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Chapter;
+use App\Models\Field;
 use App\Models\Stakeholder;
-use Illuminate\Support\Facades\Auth;
+use App\Models\StakeholderQuestionSection;
+use App\Models\StakeholderQuestionSubSection;
+use App\Models\StakeholderReport;
+use App\Models\Zone;
+use App\Services\ExcelService;
 use App\Services\ReportAnalyticsService;
+use App\Services\ReportService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 
 class AdminReportsController extends Controller
@@ -180,29 +184,144 @@ class AdminReportsController extends Controller
     }
 
 
+    // public function reportAnalyticsType(Request $request, $type)
+    // {
+    //     $isAdmin = true;
+    //     $user = auth()->user();
+
+    //     $scope = app(ReportService::class)->getScopedEntitiesForUser($user, $isAdmin);
+
+    //     $fields = DB::table('fields')->orderBy('name')->get();
+    //     $zones  = DB::table('zones')->orderBy('name')->get();
+
+    //     $data = [
+    //         'level' => $request->level ?? 'chapter',
+    //         'type'  => $type,
+    //         'fields'  => $fields,
+    //         'zones'  => $zones,
+    //         'legends' => Chapter::orderBy('name')->get(),
+    //         'isAdmin' => isAdmin()['status'],// for filters
+    //     ];
+
+    //     $request['isAdmin'] = $isAdmin;
+
+    //     if ($request->filter_type === 'excel') {
+    //         $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
+
+    //         $labels = $result['labels'];
+    //         $datasets = $result['datasets'];
+
+    //         $exportData = [];
+
+    //         foreach ($datasets as $chapterData) {
+
+    //             $chapter = Chapter::with(['field', 'zone'])->find($chapterData['legend_id']);
+
+    //             $row = [
+    //                 'Chapter' => $chapterData['label'],
+    //                 'Field'   => $chapter->field->name ?? '-',
+    //                 'Zone'    => $chapter->zone->name ?? '-',
+    //             ];
+
+    //             foreach ($labels as $index => $month) {
+    //                 // Use tooltip (status label) for each month
+    //                 $row[$month] = $chapterData['tooltip'][$index][0]['status_label'] ?? 'Not Submitted';
+    //             }
+
+    //             $exportData[] = $row;
+    //         }
+
+    //         // Build headers with Field and Zone included
+    //         $headers = array_merge(['Chapter', 'Field', 'Zone'], $labels);
+
+    //         // Download Excel
+    //         return ExcelService::download(
+    //             $exportData,
+    //             $headers,
+    //             'chapter_compliance_report.xlsx'
+    //         );
+    //     }
+
+    //     if ($request->filter_type === 'pdf') {
+    //         $reportService = app(ReportAnalyticsService::class);
+
+    //         $data = $reportService->generateSubmissionStatusReport(
+    //             $scope,
+    //             $request->from_date ?? null,
+    //             $request->to_date ?? null
+    //         );
+
+    //         return $reportService->downloadSubmissionStatusPdf(
+    //             $data,
+    //             $request
+    //         );
+    //     }
+
+    //     // Handle AJAX request for graph
+    //     if ($request->isMethod('post')) {
+    //         $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
+    //         return response()->json([
+    //             'labels'        => $result['labels'],
+    //             'datasets'      => $result['datasets'],
+    //             'status_levels' => $result['status_levels'],
+    //         ]);
+    //     }
+
+    //     // Normal GET request to view page
+    //     return view('admin.reports.analytics.compliance', $data);
+    // }
     public function reportAnalyticsType(Request $request, $type)
     {
         $isAdmin = true;
         $user = auth()->user();
 
-        $scope = app(ReportService::class)->getScopedEntitiesForUser($user, $isAdmin);
+        $scope = app(ReportService::class)
+            ->getScopedEntitiesForUser($user, $isAdmin);
 
-        $fields = DB::table('fields')->orderBy('name')->get();
-        $zones  = DB::table('zones')->orderBy('name')->get();
+        $fields = Field::orderBy('name')->get();
+        $zones = Zone::orderBy('name')->get();
 
         $data = [
             'level' => $request->level ?? 'chapter',
-            'type'  => $type,
-            'fields'  => $fields,
-            'zones'  => $zones,
+            'type' => $type,
+            'fields' => $fields,
+            'zones' => $zones,
+            'sections' => StakeholderQuestionSection::orderBy('name')->get(),
+            'chapters' => Chapter::orderBy('name')->get(),
             'legends' => Chapter::orderBy('name')->get(),
-            'isAdmin' => isAdmin()['status'],// for filters
+            'isAdmin' => isAdmin()['status'],
         ];
+
+        if ($type === 'section') {
+
+            if ($request->filter_type === 'excel') {
+
+                $exportData = $this->reportAnalyticService
+                    ->getQuestionAnalysisData(
+                        $request
+                    );
+                    
+                return ExcelService::download(
+                    $exportData['rows'],
+                    $exportData['headers'],
+                    'question_analysis_report.xlsx'
+                );
+            }
+
+            $data['reports'] = $this->reportAnalyticService->getQuestionAnalysisData($request);
+
+            return view(
+                'admin.reports.analytics.question-analysis',
+                $data
+            );
+        }
 
         $request['isAdmin'] = $isAdmin;
 
         if ($request->filter_type === 'excel') {
-            $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
+
+            $result = $this->reportAnalyticService
+                ->fetchAnalyticsTypeData($request, $scope);
 
             $labels = $result['labels'];
             $datasets = $result['datasets'];
@@ -211,26 +330,30 @@ class AdminReportsController extends Controller
 
             foreach ($datasets as $chapterData) {
 
-                $chapter = Chapter::with(['field', 'zone'])->find($chapterData['legend_id']);
+                $chapter = Chapter::with([
+                    'field',
+                    'zone'
+                ])->find($chapterData['legend_id']);
 
                 $row = [
                     'Chapter' => $chapterData['label'],
-                    'Field'   => $chapter->field->name ?? '-',
-                    'Zone'    => $chapter->zone->name ?? '-',
+                    'Field' => $chapter->field->name ?? '-',
+                    'Zone' => $chapter->zone->name ?? '-',
                 ];
 
                 foreach ($labels as $index => $month) {
-                    // Use tooltip (status label) for each month
-                    $row[$month] = $chapterData['tooltip'][$index][0]['status_label'] ?? 'Not Submitted';
+                    $row[$month] = $chapterData['tooltip'][$index][0]['status_label']
+                        ?? 'Not Submitted';
                 }
 
                 $exportData[] = $row;
             }
 
-            // Build headers with Field and Zone included
-            $headers = array_merge(['Chapter', 'Field', 'Zone'], $labels);
+            $headers = array_merge(
+                ['Chapter', 'Field', 'Zone'],
+                $labels
+            );
 
-            // Download Excel
             return ExcelService::download(
                 $exportData,
                 $headers,
@@ -239,32 +362,117 @@ class AdminReportsController extends Controller
         }
 
         if ($request->filter_type === 'pdf') {
+
             $reportService = app(ReportAnalyticsService::class);
 
-            $data = $reportService->generateSubmissionStatusReport(
+            $pdfData = $reportService->generateSubmissionStatusReport(
                 $scope,
-                $request->from_date ?? null,
-                $request->to_date ?? null
+                $request->from_date,
+                $request->to_date
             );
 
             return $reportService->downloadSubmissionStatusPdf(
-                $data,
+                $pdfData,
                 $request
             );
         }
 
-        // Handle AJAX request for graph
         if ($request->isMethod('post')) {
-            $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
+
+            $result = $this->reportAnalyticService
+                ->fetchAnalyticsTypeData($request, $scope);
+
             return response()->json([
-                'labels'        => $result['labels'],
-                'datasets'      => $result['datasets'],
+                'labels' => $result['labels'],
+                'datasets' => $result['datasets'],
                 'status_levels' => $result['status_levels'],
             ]);
         }
 
-        // Normal GET request to view page
-        return view('admin.reports.analytics.compliance', $data);
+        return view(
+            'admin.reports.analytics.compliance',
+            $data
+        );
+    }
+
+    public function getSubSectionsBySections(Request $request)
+    {
+        $query = StakeholderQuestionSubSection::query();
+
+        if (
+            $request->filled('sections') &&
+            !in_array('all', (array) $request->sections)
+        ) {
+            $query->whereIn('section_id', $request->sections);
+        }
+
+        $subSections = $query
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        // prepend "All"
+        return response()->json(
+            collect([
+                [
+                    'id' => 'all',
+                    'name' => 'All'
+                ]
+            ])->merge($subSections)->values()
+        );
+    }
+    public function getQuestionAnalysisData(Request $request): array
+    {
+        $query = StakeholderReport::query()
+            ->with([
+                'stakeholder',
+                'chapter',
+                'zone',
+                'field'
+            ]);
+
+        if ($request->filled('chapters')) {
+            $query->whereIn('chapter_id', $request->chapters);
+        }
+
+        if ($request->filled('fields')) {
+            $query->whereIn('field_id', $request->fields);
+        }
+
+        if ($request->filled('zones')) {
+            $query->whereIn('zone_id', $request->zones);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate(
+                'created_at',
+                '>=',
+                $request->from_date
+            );
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate(
+                'created_at',
+                '<=',
+                $request->to_date
+            );
+        }
+
+        $reports = $query->get();
+
+        return [
+            'headers' => [
+                'Institution',
+                'Chapter',
+                'Zone',
+                'Field',
+                'Section',
+                'Sub Section',
+                'Question',
+                'Answer',
+            ],
+            'rows' => [],
+        ];
     }
 
     public function adjustReportStatus(Request $request, StakeholderReport $report){

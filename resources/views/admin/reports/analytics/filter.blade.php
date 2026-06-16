@@ -1,4 +1,5 @@
 @php
+$type = $type ?? '';
 if (!$isAdmin) {
     $canViewZone = in_array($user->role_id, array_merge(
         fieldStakeholders(),
@@ -12,9 +13,35 @@ if (!$isAdmin) {
 
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-
         <form method="GET" class="graph-submit">
+            @if($type == 'section')
+            <div class="row g-3 align-items-end">
 
+                {{-- Sections --}}
+                <div class="col-md-12 section-filter">
+                    <label class="form-label">Sections</label>
+                    <select name="sections[]" class="form-select select2 sections-select" multiple>
+                        <option value="all">All</option>
+
+                        @foreach($sections ?? [] as $section)
+                            <option value="{{ $section->id }}"
+                                {{ in_array($section->id, request('sections', [])) ? 'selected' : '' }}>
+                                {{ $section->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Sub Sections --}}
+                <div class="col-md-12">
+                    <label class="form-label">Sub Sections</label>
+                    <select name="sub_sections[]" class="form-select select2 sub-sections-select" multiple>
+                        {{-- loaded via ajax --}}
+                    </select>
+                </div>
+
+            </div>
+            @endif
             <div class="row g-3 align-items-end">
 
                 @if($canViewZone)

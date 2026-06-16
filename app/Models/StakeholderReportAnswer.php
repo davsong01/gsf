@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\StakeholderQuestionSection;
+use App\Models\StakeholderQuestionSubSection;
 use Illuminate\Database\Eloquent\Model;
 
 class StakeholderReportAnswer extends Model
@@ -17,4 +19,15 @@ class StakeholderReportAnswer extends Model
     {
         return $this->belongsTo(StakeholderReportQuestion::class, 'question_id');
     }
+
+    public function section()
+    {
+        return $this->belongsTo(StakeholderQuestionSection::class, 'question_section_id');
+    }
+
+    public function subSection()
+    {
+        return $this->belongsTo(StakeholderQuestionSubSection::class, 'question_sub_section_id');
+    }
+
 }

@@ -1,8 +1,3 @@
-{{-- @extends('layouts.dashboard')
-@section('title', 'Compliance Analytics')
-@section('item')
-<li class="breadcrumb-item"> <a href="{{ route('reports.analytics') }}">Monthly Reports</a></li>
-@endsection --}}
 @php
     $layout = $isAdmin ? 'layouts.dashboard' : 'layouts.stakeholderdashboard';
 @endphp

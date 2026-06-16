@@ -261,8 +261,6 @@ class StakeholderReportsController extends Controller
 
     }
 
-
-
     public function rejectReport(Request $request, StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
