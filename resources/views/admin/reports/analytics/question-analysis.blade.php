@@ -20,37 +20,39 @@
 
 @section('content')
 <style>
-#reportTable {
-    white-space: nowrap;
-}
-
-#reportTable td:hover {
-        white-space: normal;
-        position: relative;
-        z-index: 10;
-        background: #fff;
-        box-shadow: 0 0 5px rgba(0,0,0,0.2);
-    }
     #reportTable {
         table-layout: fixed;
         width: 100%;
+        border-collapse: separate; /* IMPORTANT for sticky headers */
+        border-spacing: 0;
     }
 
+    /* cells */
     #reportTable th,
     #reportTable td {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 180px; /* adjust as needed */
+        max-width: 180px;
     }
 
-    #reportTable th {
+    /* sticky header */
+    #reportTable thead th {
         position: sticky;
         top: 0;
-        background: #fff;
-        z-index: 2;
+        z-index: 100;
+        background: #f8f9fa; /* match table-light */
+        box-shadow: 0 2px 2px rgba(0,0,0,0.05);
     }
 
+    /* hover expansion */
+    #reportTable td:hover {
+        white-space: normal;
+        position: relative;
+        z-index: 50;
+        background: #fff;
+        box-shadow: 0 0 5px rgba(0,0,0,0.15);
+    }
 </style>
 <div class="row mb-2">
     <div class="col-12">
@@ -61,7 +63,7 @@
     <div class="col-12">
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
-                <div class="table-responsive">
+                <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
                     <table class="table table-bordered table-sm mb-0" id="reportTable">
                             {{-- {{dd($reports)}} --}}
                         <thead class="table-light">
