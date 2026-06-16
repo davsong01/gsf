@@ -23,6 +23,34 @@
 #reportTable {
     white-space: nowrap;
 }
+
+#reportTable td:hover {
+        white-space: normal;
+        position: relative;
+        z-index: 10;
+        background: #fff;
+        box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    #reportTable {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    #reportTable th,
+    #reportTable td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 180px; /* adjust as needed */
+    }
+
+    #reportTable th {
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 2;
+    }
+
 </style>
 <div class="row mb-2">
     <div class="col-12">

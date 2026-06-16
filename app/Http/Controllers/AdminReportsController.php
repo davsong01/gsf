@@ -183,93 +183,6 @@ class AdminReportsController extends Controller
         return view('admin.reports.analytics.index', array_merge($data, compact('isAdmin')));
     }
 
-
-    // public function reportAnalyticsType(Request $request, $type)
-    // {
-    //     $isAdmin = true;
-    //     $user = auth()->user();
-
-    //     $scope = app(ReportService::class)->getScopedEntitiesForUser($user, $isAdmin);
-
-    //     $fields = DB::table('fields')->orderBy('name')->get();
-    //     $zones  = DB::table('zones')->orderBy('name')->get();
-
-    //     $data = [
-    //         'level' => $request->level ?? 'chapter',
-    //         'type'  => $type,
-    //         'fields'  => $fields,
-    //         'zones'  => $zones,
-    //         'legends' => Chapter::orderBy('name')->get(),
-    //         'isAdmin' => isAdmin()['status'],// for filters
-    //     ];
-
-    //     $request['isAdmin'] = $isAdmin;
-
-    //     if ($request->filter_type === 'excel') {
-    //         $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
-
-    //         $labels = $result['labels'];
-    //         $datasets = $result['datasets'];
-
-    //         $exportData = [];
-
-    //         foreach ($datasets as $chapterData) {
-
-    //             $chapter = Chapter::with(['field', 'zone'])->find($chapterData['legend_id']);
-
-    //             $row = [
-    //                 'Chapter' => $chapterData['label'],
-    //                 'Field'   => $chapter->field->name ?? '-',
-    //                 'Zone'    => $chapter->zone->name ?? '-',
-    //             ];
-
-    //             foreach ($labels as $index => $month) {
-    //                 // Use tooltip (status label) for each month
-    //                 $row[$month] = $chapterData['tooltip'][$index][0]['status_label'] ?? 'Not Submitted';
-    //             }
-
-    //             $exportData[] = $row;
-    //         }
-
-    //         // Build headers with Field and Zone included
-    //         $headers = array_merge(['Chapter', 'Field', 'Zone'], $labels);
-
-    //         // Download Excel
-    //         return ExcelService::download(
-    //             $exportData,
-    //             $headers,
-    //             'chapter_compliance_report.xlsx'
-    //         );
-    //     }
-
-    //     if ($request->filter_type === 'pdf') {
-    //         $reportService = app(ReportAnalyticsService::class);
-
-    //         $data = $reportService->generateSubmissionStatusReport(
-    //             $scope,
-    //             $request->from_date ?? null,
-    //             $request->to_date ?? null
-    //         );
-
-    //         return $reportService->downloadSubmissionStatusPdf(
-    //             $data,
-    //             $request
-    //         );
-    //     }
-
-    //     // Handle AJAX request for graph
-    //     if ($request->isMethod('post')) {
-    //         $result = $this->reportAnalyticService->fetchAnalyticsTypeData($request, $scope);
-    //         return response()->json([
-    //             'labels'        => $result['labels'],
-    //             'datasets'      => $result['datasets'],
-    //             'status_levels' => $result['status_levels'],
-    //         ]);
-    //     }
-
-    //     // Normal GET request to view page
-    //     return view('admin.reports.analytics.compliance', $data);
-    // }
     public function reportAnalyticsType(Request $request, $type)
     {
         $isAdmin = true;
@@ -300,7 +213,7 @@ class AdminReportsController extends Controller
                     ->getQuestionAnalysisData(
                         $request
                     );
-                    
+
                 return ExcelService::download(
                     $exportData['rows'],
                     $exportData['headers'],

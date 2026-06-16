@@ -15,7 +15,7 @@ class ExcelService
     public static function download(array $data, array $headers, ?string $filename = null)
     {
         $filename = $filename ?? 'export_' . time() . '.xlsx';
-        
+
         // Ensure $data is a collection of associative arrays matching $headers
         $collection = collect($data)->map(function ($row) use ($headers) {
             $formattedRow = [];
@@ -61,7 +61,7 @@ class ExcelService
                 foreach ($this->sheets as $title => $data) {
                     $sheetObjects[] = new class($title, $data, $this->headers) implements FromCollection, WithHeadings, WithTitle, WithStyles {
                         private $title; private $data; private $headers;
-                        
+
                         public function __construct($title, $data, $headers) {
                             $this->title = $title; $this->data = $data; $this->headers = $headers;
                         }
