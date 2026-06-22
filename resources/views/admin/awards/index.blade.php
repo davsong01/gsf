@@ -159,7 +159,7 @@
                         </div>
                     @endif
 
-                    <div class="col-md-3 mb-2">
+                    <div class="col-md-2 mb-2">
                         <label class="form-label">Approval Status</label>
                         <select name="status_filter" class="form-control">
                             <option value="">All Statuses</option>
@@ -186,6 +186,9 @@
                     </div>
                     <div class="col-md-2 mb-2">
                         <a href="{{route('award.report.assets')}}" class="btn btn-danger w-100">Download Assets</a>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <a href="{{route('award.report.remove.duplicates')}}" class="btn btn-dark w-100">Remove Duplicates</a>
                     </div>
                     @endif
                 </form>

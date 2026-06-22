@@ -38,6 +38,133 @@ class AwardController extends Controller
         $entry = AwardEntries::find($id);
         dd($entry);
     }
+
+    public function removeDuplicates()
+    {
+        $duplicateKeys = [
+            'surname',
+            'first_name',
+            'phone_number',
+            'email_address',
+        ];
+
+        DB::beginTransaction();
+
+        try {
+
+            $awards = Award::with('entries')
+                ->orderBy('id')
+                ->get();
+
+            $groups = [];
+
+            foreach ($awards as $award) {
+
+                $entries = $award->entries->keyBy('key');
+
+                $values = [];
+
+                foreach ($duplicateKeys as $key) {
+
+                    $values[$key] = strtolower(
+                        trim((string) ($entries[$key]->value ?? ''))
+                    );
+                }
+
+                // Skip records with no identifying information
+                if (collect($values)->filter()->isEmpty()) {
+                    continue;
+                }
+
+                $hash = md5(json_encode($values));
+
+                $groups[$hash][] = $award;
+            }
+
+            $removedAwards = 0;
+            $removedEntries = 0;
+
+            foreach ($groups as $duplicates) {
+
+                if (count($duplicates) <= 1) {
+                    continue;
+                }
+
+                $duplicates = collect($duplicates);
+
+                $keepAward = $duplicates
+                    ->sort(function ($a, $b) {
+
+                        $scoreA =
+                            (in_array($a->chapter_status, [1, 2], true) ? 1 : 0) +
+                            (in_array($a->zone_status, [1, 2], true) ? 2 : 0) +
+                            (in_array($a->field_status, [1, 2], true) ? 4 : 0) +
+                            (in_array($a->national_status, [1, 2], true) ? 8 : 0);
+
+                        $scoreB =
+                            (in_array($b->chapter_status, [1, 2], true) ? 1 : 0) +
+                            (in_array($b->zone_status, [1, 2], true) ? 2 : 0) +
+                            (in_array($b->field_status, [1, 2], true) ? 4 : 0) +
+                            (in_array($b->national_status, [1, 2], true) ? 8 : 0);
+
+                        // Higher score wins
+                        if ($scoreA !== $scoreB) {
+                            return $scoreB <=> $scoreA;
+                        }
+
+                        // Tie breaker: oldest record wins
+                        return $a->id <=> $b->id;
+                    })
+                    ->first();
+
+                foreach ($duplicates as $award) {
+
+                    if ($award->id === $keepAward->id) {
+                        continue;
+                    }
+
+                    $entryCount = AwardEntries::where('award_id', $award->id)->count();
+
+                    AwardEntries::where('award_id', $award->id)->delete();
+
+                    $award->delete(); // soft delete
+
+                    $removedEntries += $entryCount;
+                    $removedAwards++;
+
+                    \Log::info('Duplicate award removed', [
+                        'kept_award_id' => $keepAward->id,
+                        'removed_award_id' => $award->id,
+                        'duplicate_hash' => md5(json_encode(
+                            collect($duplicateKeys)->mapWithKeys(function ($key) use ($keepAward) {
+                                $entry = $keepAward->entries->firstWhere('key', $key);
+
+                                return [
+                                    $key => strtolower(trim((string) ($entry?->value ?? '')))
+                                ];
+                            })->toArray()
+                        )),
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return back()->with(
+                'message',
+                "Removed {$removedAwards} duplicate awards and {$removedEntries} duplicate entries."
+            );
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            report($e);
+
+            return back()->with('error', $e->getMessage());
+        }
+    }
+    
     /**
      * Display a listing of the resource.
      */
@@ -280,6 +407,15 @@ class AwardController extends Controller
         }
 
         if ($isAdmin) {
+            if (!$award->currentShortlistStage || !$award->currentShortlistStage->stage) {
+                return back()->with('error', 'Award has not entered shortlist stage.');
+            }
+
+            // check if final stage is reached
+            if (!$award->currentShortlistStage->stage->mark_as_final) {
+                return back()->with('error', 'Only awards in the final stage can be approved.');
+            }
+
             $updateData['national_status'] = 1;
             $updateData['national_approved_on'] = now();
             $updateData['national_approved_by'] = auth()->user()->id;

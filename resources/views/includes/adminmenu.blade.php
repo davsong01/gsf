@@ -83,6 +83,15 @@
                                     </a>
                                 </li>
                             @endif
+                            @if(in_array('shortlist.index', $userPermissions))
+                                <li>
+                                    <a href="{{ route('shortlist.index') }}">
+                                        <i class="bx bx-right-arrow-alt"></i>
+                                        <span class="menu-item">Shortlist Stages</span>
+                                    </a>
+                                </li>
+                            @endif
+
                             @if(!empty(array_intersect(['award.go', 'award.etf'], $userPermissions)))
                                 <li class="nav-item disabled">
                                     <a href="">

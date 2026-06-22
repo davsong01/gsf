@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\AwardController;
+use App\Http\Controllers\AwardShortlistStageController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\ConferenceEditionController;
@@ -258,7 +259,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('award-enties-download/{award}', 'download')->name('awards.download');
         Route::delete('delete/{award}', 'destroy')->name('awards.delete');
         Route::get('delete/{award}', 'permanentDelete')->name('awards.permanent.delete');
-        Route::post('shortlist', 'Shortlist')->name('awards.shortlist');
+        Route::post('award-shortlist', 'Shortlist')->name('awards.shortlist');
         Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
         Route::post('bulkpermanantdelete', 'bulkPermantDelete')->name('awards.bulk-permanent-delete');
         Route::post('bulkapprove', 'bulkApprove')->name('awards.bulk-approve');
@@ -272,6 +273,11 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('download-award-report/{type}', 'awardReportsDownload')->name('award.report.download');
         Route::get('download-award-asset', 'awardAssetsDownload')->name('award.report.assets');
         Route::get('sync-asset/{id}', 'syncAsset')->name('award.sync.asset');
+        Route::get('remove-duplicates', 'removeDuplicates')->name('award.report.remove.duplicates');
+
+        Route::resource('shortlist', AwardShortlistStageController::class);
+
+
     });
 
     Route::post('adjust-award-status/{report}', [AdminReportsController::class, 'adjustAwardStatus'])->name('awards.adjust.status');

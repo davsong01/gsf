@@ -110,6 +110,11 @@ if (!function_exists('rootPermissions')) {
                                 'slug' => 'award.go',
                                 'name' => 'GO Award Entries'
                             ],
+                             [
+                                'id' => 22,
+                                'slug' => 'shortlist.index',
+                                'name' => 'Award Shortlist Stages'
+                            ],
                             [
                                 'id' => 23,
                                 'slug' => 'award.settings',
