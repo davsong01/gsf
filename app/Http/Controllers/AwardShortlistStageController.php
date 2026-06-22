@@ -103,9 +103,9 @@ class AwardShortlistStageController extends Controller
             $validated['slug'] = Str::slug($validated['title']);
         }
 
-        $validated['active'] = $request->has('active');
-        $validated['mark_as_final'] = $request->has('mark_as_final');
-
+        $validated['active'] = $request->boolean('active');
+        $validated['mark_as_final'] = $request->boolean('mark_as_final');
+        
         $shortlist->update($validated);
 
         return redirect()
