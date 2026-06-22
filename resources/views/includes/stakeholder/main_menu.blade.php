@@ -67,6 +67,12 @@
                         <span class="menu-title" data-i18n="User">ETF Award Entries</span>
                     </a>
                 </li>
+                <li class="nav-item disabled">
+                    <a href="">
+                        <i class="bx bxs-trophy" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Archived Applications</span>
+                    </a>
+                </li>
             @endif
             @if(in_array($user->role_id, chapterStakeholders()))
                 <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.users') ? 'active' : '' }}">

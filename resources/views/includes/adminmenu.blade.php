@@ -34,7 +34,7 @@
         in_array('award.go', $userPermissions)  ||
         in_array('award.etf', $userPermissions) ||
         in_array('award.settings', $userPermissions)
-        
+
     )
         <li class="nav-item has-sub {{ Request::is('stakeholder*') ? 'open is_shown' : '' }}">
             <a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title" data-i18n="Content">Digital Portal Mgt</span></a>
@@ -83,8 +83,16 @@
                                     </a>
                                 </li>
                             @endif
-
+                            @if(!empty(array_intersect(['award.go', 'award.etf'], $userPermissions)))
+                                <li class="nav-item disabled">
+                                    <a href="">
+                                        <i class="bx bx-right-arrow-alt" aria-hidden="true"></i>
+                                        <span class="menu-title" data-i18n="User">Archived Applications</span>
+                                    </a>
+                                </li>
+                            @endif
                             @if(in_array('award.settings', $userPermissions))
+
                                 <li>
                                     <a href="{{ route('award.settings') }}">
                                         <i class="bx bx-right-arrow-alt"></i>
@@ -93,7 +101,7 @@
                                 </li>
                             @endif
 
-                            
+
 
                         </ul>
                     </li>

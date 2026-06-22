@@ -1498,7 +1498,8 @@ if (!function_exists('fileFields')) {
             'signature',
             'photo',
             'picture',
-            'avatar'
+            'avatar',
+            'upload_result'
         ]);
     }
 

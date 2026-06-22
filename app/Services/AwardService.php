@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Award;
 use App\Models\AwardEntries;
+use App\Models\AwardShortlist;
+use App\Models\AwardShortlistHistory;
 use App\Models\Chapter;
 use App\Models\Field;
 use App\Models\Zone;
@@ -88,13 +90,23 @@ class AwardService{
         /** =====================
          * AWARDS QUERY
          * ===================== */
-        $awardsQuery = Award::query()
+        $awardsQuery = Award::whereYear('created_at', now()->year)
             ->with([
                 'entries',
                 'chapter',
                 'zone',
-                'field'
+                'field',
+                'shortlists',
+                'currentShortlistStage'
             ]);
+
+        if ($request->filled('current_shortlist_stage_id')) {
+
+            $awardsQuery->where(
+                'current_shortlist_stage_id',
+                $request->current_shortlist_stage_id
+            );
+        }
 
         /** =====================
          * ROLE SCOPE
@@ -147,7 +159,7 @@ class AwardService{
                 $request->reference
             );
         }
-    
+
         if ($request->filled('name')) {
             $awardsQuery->whereHas('entries', function ($query) use ($request) {
                 $query->where('value', 'like', '%' . $request->name . '%');
@@ -256,7 +268,7 @@ class AwardService{
          * ===================== */
         $paginatedAwards = $awardsQuery
             ->orderByDesc('created_at')
-            ->paginate(100);
+            ->paginate(200);
 
         /** =====================
          * GROUPING
@@ -458,5 +470,52 @@ class AwardService{
             Log::error("Google Webhook Transaction Failed: " . $e->getMessage());
             return ['status' => 'error', 'message' => $e->getMessage(), 'code' => 500];
         }
+    }
+
+    public function bulkShortlist(array $ids, int $stageId, ?string $remarks = null): void
+    {
+        if (empty($ids)) {
+            throw new \Exception('No entries selected.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $awards = Award::withTrashed()
+                ->whereIn('id', $ids)
+                ->get();
+
+            foreach ($awards as $award) {
+
+                $award->update([
+                    'current_shortlist_stage_id' => $stageId,
+                ]);
+
+                // optional: if you already have history table
+                $this->logStageChange($award->id, $stageId, $remarks);
+            }
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+
+    protected function logStageChange(int $awardId, int $stageId, ?string $remarks = null): void
+    {
+        // placeholder safe guard
+        if (!class_exists(AwardShortlist::class)) {
+            return;
+        }
+
+        AwardShortlist::create([
+            'award_id' => $awardId,
+            'shortlisted_by' => auth()->Id(),
+            'award_shortlist_stage_id' => $stageId,
+            'remarks' => $remarks,
+        ]);
     }
 }

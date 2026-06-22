@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\AwardEntries;
+use App\Models\AwardShortlist;
 use App\Models\Chapter;
 use App\Models\Field;
 use App\Models\User;
@@ -10,10 +11,14 @@ use App\Models\Zone;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Award extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes; // 2. Use the trait inside the class
+
+    // Optional: If you want to automatically cast it or treat it explicitly
+    protected $dates = ['deleted_at'];
     protected $guarded = [];
 
     public function entries(){
@@ -59,20 +64,31 @@ class Award extends Model
 
     protected function email(): Attribute
     {
-        return Attribute::get(function () {         
-            return $this->entries?->firstWhere('key', 'email')?->value 
-                ?? $this->entries?->firstWhere('key', 'email_address')?->value 
+        return Attribute::get(function () {
+            return $this->entries?->firstWhere('key', 'email')?->value
+                ?? $this->entries?->firstWhere('key', 'email_address')?->value
                 ?? 'Unnamed Email';
         });
     }
 
-     protected function phone(): Attribute
+    protected function phone(): Attribute
     {
-        return Attribute::get(function () {         
-            return $this->entries?->firstWhere('key', 'phone_number')?->value 
-                // ?? $this->entries?->firstWhere('key', 'email_address')?->value 
+        return Attribute::get(function () {
+            return $this->entries?->firstWhere('key', 'phone_number')?->value
+                // ?? $this->entries?->firstWhere('key', 'email_address')?->value
                 ?? '-';
         });
+    }
+
+    public function shortlists()
+    {
+        return $this->hasMany(AwardShortlist::class);
+    }
+
+    public function currentShortlistStage()
+    {
+        return $this->hasOne(AwardShortlist::class)
+            ->latestOfMany();
     }
 
 }

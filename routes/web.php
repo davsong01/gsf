@@ -257,8 +257,13 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('award-enties-single/{award}', 'show')->name('awards.show');
         Route::get('award-enties-download/{award}', 'download')->name('awards.download');
         Route::delete('delete/{award}', 'destroy')->name('awards.delete');
+        Route::get('delete/{award}', 'permanentDelete')->name('awards.permanent.delete');
+        Route::post('shortlist', 'Shortlist')->name('awards.shortlist');
         Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
-        Route::post('bulkapprove', 'bulkDelete')->name('awards.bulk-approve');
+        Route::post('bulkpermanantdelete', 'bulkPermantDelete')->name('awards.bulk-permanent-delete');
+        Route::post('bulkapprove', 'bulkApprove')->name('awards.bulk-approve');
+        Route::post('bulkreject', 'bulkReject')->name('awards.bulk-reject');
+        Route::post('bulkshortlist', 'bulkShortlist')->name('awards.bulk.shortlist');
 
         Route::get('award-approve/{award}', 'approveEntry')->name('award.approve');
         Route::post('award-reject/{award}', 'rejectEntry')->name('award.reject');
@@ -266,6 +271,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::post('award-update', 'updateAward')->name('awards.update');
         Route::get('download-award-report/{type}', 'awardReportsDownload')->name('award.report.download');
         Route::get('download-award-asset', 'awardAssetsDownload')->name('award.report.assets');
+        Route::get('sync-asset/{id}', 'syncAsset')->name('award.sync.asset');
     });
 
     Route::post('adjust-award-status/{report}', [AdminReportsController::class, 'adjustAwardStatus'])->name('awards.adjust.status');
@@ -691,10 +697,6 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('award-enties/{award}', 'edit')->name('awards.edit');
             Route::get('award-enties-single/{award}', 'show')->name('awards.show');
             Route::get('award-enties-download/{award}', 'download')->name('awards.download');
-            Route::delete('delete/{award}', 'destroy')->name('awards.delete');
-            Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
-            Route::post('bulkapprove', 'bulkDelete')->name('awards.bulk-approve');
-
 
             Route::get('award-approve/{award}', 'approveEntry')->name('award.approve');
             Route::post('award-reject/{award}', 'rejectEntry')->name('award.reject');

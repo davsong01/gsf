@@ -11,7 +11,7 @@
     $canViewField = $permissions->canViewField;
 
     $canEdit = $permissions->canEdit;
-        
+
     $hierarchyCount = $permissions->hierarchyCount;
     $hierarchyCol = $permissions->hierarchyCol;
     $approval_statuses = $permissions->statuses;
@@ -66,6 +66,29 @@
     .bg-soft-warning { background-color: rgba(234, 179, 8, 0.12) !important; color: #ca8a04 !important; }
     .bg-soft-danger { background-color: rgba(239, 68, 68, 0.12) !important; color: #dc2626 !important; }
     .badge-status { font-size: 0.72rem !important; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
+
+    .table-toolbar{
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .table-toolbar .form-select{
+        min-height: 31px;
+        font-size: 13px;
+    }
+
+    .table-toolbar .btn{
+        min-height: 31px;
+        padding: 0 14px;
+        font-size: 13px;
+    }
+
+    .table-toolbar #selected-counter{
+        font-size: 12px;
+    }
+    .bulk-control {
+        height: 38px;
+    }
 </style>
 @endsection
 
@@ -136,7 +159,7 @@
                         </div>
                     @endif
 
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-3 mb-2">
                         <label class="form-label">Approval Status</label>
                         <select name="status_filter" class="form-control">
                             <option value="">All Statuses</option>
@@ -146,13 +169,22 @@
                         </select>
                     </div>
                     <div class="col-md-2 mb-2">
+                        <label class="form-label">Shortlist Stages</label>
+                        <select name="current_shortlist_stage_id" class="form-control">
+                            <option value="">All Stages</option>
+                            @foreach($shortlistStages as $stage)
+                                <option value="{{ $stage->id }}" @selected(request('current_shortlist_stage_id') == $stage->id)>{{ $stage->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-2">
                         <button class="btn btn-secondary w-100">Filter</button>
                     </div>
                     @if($isAdmin)
-                    <div class="col-md-3 mb-2">
+                    <div class="col-md-2 mb-2">
                         <a href="{{route('award.report.download', $type)}}" class="btn btn-info w-100">Download Report</a>
                     </div>
-                    <div class="col-md-3 mb-2">
+                    <div class="col-md-2 mb-2">
                         <a href="{{route('award.report.assets')}}" class="btn btn-danger w-100">Download Assets</a>
                     </div>
                     @endif
@@ -163,61 +195,76 @@
         <!-- Master Data Render Table Component -->
         <div class="row">
             <div class="col-12">
-                <form id="bulk-actions-form" method="POST" action="{{ route($isAdmin ? 'awards.bulk-delete' : 'stakeholders.awards.bulk-delete') }}" onsubmit="return confirm('Confirm total purge of selected entries?');">
-                    @csrf
 
-                    <div class="card border-0 shadow-sm rounded-3 overflow-hidden p-1">
-                        <!-- Clean, Integrated Table Container -->
+                <form id="bulk-actions-form" method="POST" action="">
+                    @csrf
+                    <input type="hidden" name="_method" id="bulk-form-method" value="POST">
+
+                    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                        <div class="card-body table-toolbar d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-2">
+
+                                <select id="wp-bulk-action-select" class="form-select" style="width: 250px; height: 38px;">
+                                    <option value="">Select Bulk Action</option>
+
+                                    @if($isAdmin)
+                                        <option value="shortlist"
+                                                data-url="{{ route('awards.bulk.shortlist') }}"
+                                                data-method="POST"
+                                                data-confirm="Shortlist all selected entries?">
+                                            Shortlist
+                                        </option>
+                                        <option value="approve"
+                                                data-url="{{ route('awards.bulk-approve') }}"
+                                                data-method="POST"
+                                                data-confirm="Approve selected entries?">
+                                            Approve
+                                        </option>
+                                        <option value="reject"
+                                                data-url="{{ route('awards.bulk-reject') }}"
+                                                data-method="POST"
+                                                data-confirm="Reject selected entries?">
+                                            Reject
+                                        </option>
+                                    @endif
+
+                                    @if($user->email == 'davsong@gmail.com')
+                                        <option value="delete"
+                                                data-url="{{ route($isAdmin ? 'awards.bulk-delete' : 'stakeholders.awards.bulk-delete') }}"
+                                                data-method="DELETE"
+                                                data-confirm="Delete selected entries?">
+                                            Delete
+                                        </option>
+
+                                        <option value="permanent-delete"
+                                                data-url="{{ route($isAdmin ? 'awards.bulk-permanent-delete' : 'stakeholders.awards.bulk-permanent-delete') }}"
+                                                data-method="DELETE"
+                                                data-confirm="Permanently Delete selected entries? This action cannot be undone.">
+                                            Permanent Delete
+                                        </option>
+                                    @endif
+                                </select>
+
+                                <button type="button" id="wp-bulk-action-apply" class="btn btn-primary px-4" style="height: 38px;" disabled>
+                                    Apply
+                                </button>
+
+                            </div>
+
+                            <div class="small text-muted">
+                                <span id="selected-counter">0 selected</span>
+                            </div>
+
+                        </div>
+
                         <div class="card-body p-0">
                             <div class="table-responsive" style="max-height: 75vh; overflow-y: auto;">
                                 <table class="table table-align-middle mb-0 custom-modern-table">
                                     <thead>
-                                        <tr class="bg-light">
-                                            <!-- Embedded Action Cell -->
-                                            <th class="ps-4 align-middle" style="width: 60px; min-width: 60px;">
-                                                <div class="d-flex align-items-center gap-1.5">
-                                                    <!-- Master Checkbox -->
-                                                    <div class="form-check custom-checkbox">
-                                                        <input type="checkbox" class="form-check-input cursor-pointer shadow-none" id="master-checkbox">
-                                                    </div>
-
-                                                    <!-- Floating Micro-Dropdown Inline (Icon Only) -->
-                                                    <div class="dropdown" id="bulk-dropdown-wrapper" style="opacity: 0; pointer-events: none; transition: all 0.2s ease-in-out;">
-
-                                                        <button class="btn btn-white btn-sm border p-0 d-flex align-items-center justify-content-center shadow-none text-secondary rounded-2"
-                                                                type="button"
-                                                                id="bulkActionsMenu"
-                                                                data-toggle="dropdown"
-                                                                aria-haspopup="true"
-                                                                aria-expanded="false"
-                                                                style="width: 24px; height: 24px;"
-                                                                title="Bulk Actions">
-                                                            <i class="bx bx-dots-vertical-rounded font-sm"></i>
-                                                        </button>
-
-                                                        <div class="dropdown-menu border-0 shadow-sm rounded-2 font-xs py-1" aria-labelledby="bulkActionsMenu">
-                                                            <!-- Action 1: Bulk Approve -->
-                                                            @if($isAdmin)
-                                                            <button type="button"
-                                                                    class="dropdown-item text-success d-flex align-items-center gap-2 py-1.5 fw-medium bulk-action-trigger"
-                                                                    data-action-url="{{ route('awards.bulk-approve') }}"
-                                                                    data-method="POST"
-                                                                    data-confirm="Are you sure you want to APPROVE all (<span class='selected-count-placeholder'>0</span>) selected entries?">
-                                                                <i class="fa fa-check font-xs pr-1"></i> Approve Selected (<span class="selected-count-placeholder">0</span>)
-                                                            </button>
-                                                            @endif
-                                                            @if($user->email == 'davsong@gmail.com')
-                                                            <!-- Action 2: Bulk Delete -->
-                                                            <button type="button"
-                                                                    class="dropdown-item text-danger d-flex align-items-center gap-2 py-1.5 fw-medium bulk-action-trigger"
-                                                                    data-action-url="{{ route($isAdmin ? 'awards.bulk-delete' : 'stakeholders.awards.bulk-delete') }}"
-                                                                    data-method="DELETE"
-                                                                    data-confirm="Are you absolutely sure you want to DELETE and purge all (<span class='selected-count-placeholder'>0</span>) selected entries? This cannot be undone.">
-                                                                <i class="fa fa-trash font-xs pr-1"></i> Delete Selected (<span class="selected-count-placeholder">0</span>)
-                                                            </button>
-                                                            @endif
-                                                        </div>
-                                                    </div>
+                                        <tr class="bg-light border-bottom">
+                                            <th class="ps-4 align-middle" style="width: 45px;">
+                                                <div class="form-check custom-checkbox">
+                                                    <input type="checkbox" class="form-check-input cursor-pointer shadow-none" id="master-checkbox">
                                                 </div>
                                             </th>
                                             <th class="text-uppercase text-muted tracking-wider align-middle" style="width: 60px;">S/N</th>
@@ -230,144 +277,165 @@
 
                                     <tbody>
                                         @forelse($awards as $groupKey => $awardGroup)
-                                            <tr class="sticky-chapter-row">
-
-                                                <td colspan="3" class="ps-4 align-middle pt-1 pb-2">
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="d-flex flex-column">
-                                                            <span class="text-dark fw-bold font-base m-0 lh-base" style="letter-spacing: -0.01em;">
-                                                                {{ $groupKey }}
+                                            <tr class="sticky-chapter-row table-sm bg-light-subtle">
+                                                <td class="ps-4 align-middle"></td>
+                                                <td></td>
+                                                <td colspan="2" class="align-middle pt-2 pb-2">
+                                                    <div class="d-flex flex-column">
+                                                        <span class="text-dark fw-bold font-base m-0 lh-base">
+                                                            {{ $groupKey }}
+                                                        </span>
+                                                        @if($awardGroup->first() && $awardGroup->first()->chapter)
+                                                            <span class="text-muted font-xs lh-sm" style="font-size: 0.68rem;">
+                                                                {{ $awardGroup->first()->zone->name ?? 'N/A' }} &bull; {{ $awardGroup->first()->field->name ?? 'N/A' }}
                                                             </span>
-                                                            @if($awardGroup->first() && $awardGroup->first()->chapter)
-                                                                <span class="text-muted font-xs lh-sm" style="font-size: 0.68rem;">
-                                                                    {{ $awardGroup->first()->zone->name ?? 'N/A' }} &bull; {{ $awardGroup->first()->field->name ?? 'N/A' }}
-                                                                </span>
-                                                            @endif
-                                                        </div>
+                                                        @endif
                                                     </div>
                                                 </td>
-
-                                                <td class="align-middle pt-3 pb-2.5">
-                                                    <span class="badge bg-secondary font-xs rounded-pill fw-medium px-2 py-1" style="font-size: 0.7rem;">
+                                                <td class="align-middle">
+                                                    <span class="badge bg-secondary font-xs rounded-pill fw-medium px-2 py-0.5" style="font-size: 0.7rem;">
                                                         {{ $awardGroup->count() }} {{ Str::plural('Entry', $awardGroup->count()) }}
                                                     </span>
                                                 </td>
-
-                                                <td colspan="3" class="pe-4 align-middle pt-3 pb-2.5">
+                                                <td class="pe-4 align-middle text-end">
                                                     @if($awardGroup->first() && $awardGroup->first()->chapter && ($isAdmin || in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders(), chapterStakeholders()))))
                                                         @php
                                                             $chapterCompliance = $awardGroup->first()->chapter->reportCompliance();
-
-                                                            if ($chapterCompliance >= 80) {
-                                                                $progressBarColor = 'bg-success';
-                                                                $badgeColor = 'bg-soft-success';
-                                                            } elseif ($chapterCompliance >= 50) {
-                                                                $progressBarColor = 'bg-warning';
-                                                                $badgeColor = 'bg-soft-warning';
-                                                            } else {
-                                                                $progressBarColor = 'bg-danger';
-                                                                $badgeColor = 'bg-soft-danger';
-                                                            }
+                                                            $progressBarColor = $chapterCompliance >= 80 ? 'bg-success' : ($chapterCompliance >= 50 ? 'bg-warning' : 'bg-danger');
+                                                            $badgeColor = $chapterCompliance >= 80 ? 'bg-soft-success text-success' : ($chapterCompliance >= 50 ? 'bg-soft-warning text-warning' : 'bg-soft-danger text-danger');
                                                         @endphp
-
-                                                        <div class="d-flex flex-column gap-1 ms-auto" style="max-width: 240px;">
-                                                            <span class="text-muted font-xs fw-semibold tracking-wide text-uppercase" style="font-size: 0.65rem;">
-                                                                Report Compliance Level
-                                                            </span>
-                                                            <div class="d-flex align-items-center gap-2">
-                                                                <div class="progress rounded-pill w-100 shadow-none border-0 mb-0" style="height: 5px; background-color: #cbd5e1;">
-                                                                    <div class="progress-bar {{ $progressBarColor }} rounded-pill"
-                                                                        role="progressbar"
-                                                                        style="width: {{ $chapterCompliance }}%;"
-                                                                        aria-valuenow="{{ $chapterCompliance }}" aria-valuemin="0" aria-valuemax="100">
-                                                                    </div>
-                                                                </div>
-                                                                <span class="badge badge-status {{ $badgeColor }} text-nowrap fw-bold" style="font-size: 0.68rem !important; min-width: 45px; text-align: center; padding: 2px 6px;">
-                                                                    {{ $chapterCompliance }}%
-                                                                </span>
+                                                        <div class="d-flex align-items-center gap-2 ms-auto" style="max-width: 240px;">
+                                                            <div class="progress rounded-pill w-100 shadow-none border-0 mb-0" style="height: 5px; background-color: #cbd5e1;">
+                                                                <div class="progress-bar {{ $progressBarColor }} rounded-pill" role="progressbar" style="width: {{ $chapterCompliance }}%;"></div>
                                                             </div>
+                                                            <span class="badge {{ $badgeColor }} text-nowrap fw-bold" style="font-size: 0.68rem !important; min-width: 45px;">
+                                                                {{ $chapterCompliance }}%
+                                                            </span>
                                                         </div>
                                                     @else
                                                         <div class="text-end text-muted font-xs pe-2">—</div>
                                                     @endif
                                                 </td>
-
                                             </tr>
 
-                                            <!-- Internal Submissions Loop Iterator -->
                                             @foreach($awardGroup as $award)
-                                            <tr>
-                                                <td class="ps-4">
+                                            <tr class="award-row-item">
+                                                <td class="ps-4 align-middle">
                                                     <div class="form-check custom-checkbox">
                                                         <input type="checkbox" name="ids[]" value="{{ $award->id }}" class="form-check-input row-checkbox cursor-pointer shadow-none">
                                                     </div>
                                                 </td>
-                                                <td class="text-secondary fw-medium">
+
+                                                <td class="text-secondary fw-medium align-middle">
                                                     {{ $loop->iteration }}
                                                 </td>
-                                                <td>
-                                                    <div class="d-flex flex-column">
-                                                        <span class="text-dark fw-semibold font-base mb-0">{{ $award->name }}</span>
-                                                        @if(empty($award->chapter_id))
-                                                        <span class="font-sm lh-sm" style="font-size: 0.68rem;">
-                                                            <strong>{{ $award->entries->firstWhere('key', 'select_institution')->value ?? 'N/A' }}</strong>
+
+                                                <td class="align-middle">
+
+                                                    <div class="d-flex flex-column gap-2">
+
+                                                        {{-- SHORTLIST STATUS BLOCK --}}
+                                                        <div class="p-2 rounded bg-light border">
+
+                                                            @if($award->currentShortlistStage)
+
+                                                                <div class="d-flex flex-column gap-1">
+
+                                                                    <span class="badge bg-success w-fit">
+                                                                        {{ $award->currentShortlistStage->stage->title }}
+                                                                    </span>
+                                                                    <a href="shortlistHistoryModal_{{ $award->id }}"
+                                                                        class="view-shortlist-history text-decoration-none font-xs text-muted"
+                                                                        data-award="{{ $award->id }}"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#shortlistHistoryModal">
+                                                                        View History
+                                                                    </a>
+                                                                </div>
+                                                            @else
+                                                                <span class="text-danger font-xs fw-semibold">
+                                                                    Not Shortlisted
+                                                                </span>
+                                                            @endif
+                                                        </div>
+
+                                                        {{-- CORE INFO --}}
+                                                        <span class="text-dark fw-semibold font-base mb-0">
+                                                            {{ $award->name }}
                                                         </span>
+
+                                                        @if(empty($award->chapter_id))
+                                                            <span class="font-sm lh-sm" style="font-size: 0.68rem;">
+                                                                <strong>
+                                                                    {{ $award->entries->firstWhere('key', 'select_institution')->value ?? 'N/A' }}
+                                                                </strong>
+                                                            </span>
                                                         @endif
-                                                        <span class="text-muted tracking-tight font-xs font-monospace">{{ $award->reference }}</span>
+
+                                                        <span class="text-muted tracking-tight font-xs font-monospace">
+                                                            {{ $award->reference }}
+                                                        </span>
+
                                                         @if($award->national_status == 1)
-                                                            <br>
-                                                            <span><strong>Approved By:</strong> {{ $award->approvedBy?->name ?? 'System' }}</span><br>
-                                                            <span><strong>Approved On:</strong> {{ $award->national_approved_on ? \Carbon\Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—' }}</span><br>
+                                                            <span class="font-xs mt-1">
+                                                                <strong>Approved By:</strong>
+                                                                {{ $award->approvedBy?->name ?? 'System' }}
+                                                                on {{ $award->national_approved_on ? \Carbon\Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—' }}
+                                                            </span>
                                                         @endif
 
                                                         @if($award->national_status == 2)
-                                                            <br>
-                                                            <span><strong>Rejected By:</strong> {{ $award->rejectedBy?->name ?? 'System' }}</span><br>
-                                                            <span><strong>Rejected On:</strong> {{ $award->national_rejected_on ? \Carbon\Carbon::parse($award->national_rejected_on)->format('d M Y, h:i A') : '—' }}</span><br>
+                                                            <span class="font-xs mt-1">
+                                                                <strong>Rejected By:</strong>
+                                                                {{ $award->rejectedBy?->name ?? 'System' }}
+                                                                on {{ $award->national_rejected_on ? \Carbon\Carbon::parse($award->national_rejected_on)->format('d M Y, h:i A') : '—' }}
+                                                            </span>
                                                         @endif
-                                                        <span style="width: 60%;" class="badge badge-modern bg-soft-primary text-primary">{{ $award->type == 'go' ? 'GO AWARD' : $award->type }}</span>
+
+                                                        <span class="badge badge-modern bg-soft-primary text-primary mt-1 w-fit">
+                                                            {{ $award->type == 'go' ? 'GO AWARD' : $award->type }}
+                                                        </span>
 
                                                     </div>
+
                                                 </td>
 
-                                                <td>
+                                                <td class="align-middle">
                                                     @php
                                                         $statuses = [
-                                                            'Chapter'     => ['value' => $award->chapter_status,     'level' => 'chapter'],
-                                                            'Zone'     => ['value' => $award->zone_status,     'level' => 'zone'],
-                                                            'Field'    => ['value' => $award->field_status,    'level' => 'field'],
-                                                            'National' => ['value' => $award->national_status, 'level' => 'national'],
+                                                            'Chapter' => ['value' => $award->chapter_status, 'level' => 'chapter'],
+                                                            'Zone'    => ['value' => $award->zone_status, 'level' => 'zone'],
+                                                            'Field'   => ['value' => $award->field_status, 'level' => 'field'],
+                                                            'National'=> ['value' => $award->national_status, 'level' => 'national'],
                                                         ];
                                                     @endphp
-
                                                     <div class="d-flex flex-column gap-1">
                                                         @foreach($statuses as $label => $data)
-                                                            <div class="d-flex align-items-center font-xs">
-                                                                <!-- Pro tip: changed width: 100% to a fixed width or flex-grow to ensure the badges line up neatly -->
-                                                                <span class="text-muted fw-normal flex-grow-1">{{ $label }}</span>
-
+                                                            <div class="d-flex align-items-center font-xs justify-content-between" style="max-width: 160px;">
+                                                                <span class="text-muted fw-normal">{{ $label }}</span>
                                                                 @if($data['value'] == 2)
-                                                                    <span class="badge badge-status bg-soft-danger text-danger d-inline-flex align-items-center gap-1">
+                                                                    <span class="badge bg-soft-danger text-danger d-inline-flex align-items-center gap-1">
                                                                         Rejected
-                                                                        <!-- The target ID now cleanly matches our dynamic pattern: #zoneRejection12, #fieldRejection12, etc. -->
-                                                                        <a href="#{{ $data['level'] }}Rejection{{ $award->id }}" data-toggle="modal" class="text-danger lh-1 font-sm" title="View feedback">
+                                                                        <a href="#{{ $data['level'] }}Rejection{{ $award->id }}" data-toggle="modal" class="text-danger lh-1" title="View feedback">
                                                                             <i class="bx bx-message-rounded-dots"></i>
                                                                         </a>
                                                                     </span>
                                                                 @elseif($data['value'] == 1)
-                                                                    <span class="badge badge-status bg-soft-success text-success">Approved</span>
+                                                                    <span class="badge bg-soft-success text-success">Approved</span>
                                                                 @else
-                                                                    <span class="badge badge-status bg-soft-warning text-warning">Pending</span>
+                                                                    <span class="badge bg-soft-warning text-warning">Pending</span>
                                                                 @endif
                                                             </div>
                                                         @endforeach
                                                     </div>
                                                 </td>
-                                                <td class="text-secondary font-sm">
+
+                                                <td class="text-secondary font-sm align-middle">
                                                     {{ $award->created_at->format('d M Y') }}
                                                     <div class="font-xs text-muted mt-0">{{ $award->created_at->format('h:i A') }}</div>
                                                 </td>
-                                                <td class="text-end pe-4">
+
+                                                <td class="text-end pe-4 align-middle">
                                                     <div class="d-inline-flex align-items-center justify-content-end gap-1">
                                                         @if($isAdmin)
                                                         <button type="button" class="btn btn-action-icon text-secondary bg-transparent border-0 p-1" data-toggle="modal" data-target="#statusAdjustModal{{ $award->id }}" title="Adjust Status">
@@ -383,13 +451,12 @@
                                                     </div>
                                                 </td>
                                             </tr>
-                                            @endforeach
-
+                                            @endforeach {{-- Properly trailing internal items loop iterator --}}
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="text-center py-5 text-muted">
+                                                <td colspan="6" class="text-center py-5 text-muted">
                                                     <i class="bx bx-file-blank display-4 d-block mb-2 text-light"></i>
-                                                    No award submissions matched your search index parameters.
+                                                    No award submissions matched your parameters.
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -399,7 +466,7 @@
                         </div>
 
                         @if($awards->hasPages())
-                            <div class="card-footer bg-white border-top-0 px-4 py-3 d-flex justify-content-center">
+                            <div class="card-footer bg-white border-top px-4 py-3 d-flex justify-content-center">
                                 {{ $awards->links() }}
                             </div>
                         @endif
@@ -410,57 +477,7 @@
     </section>
 </div>
 
-<!-- =========================================================================
-     MODAL LAYERS & ALTERNATE STANDALONE DELETION FRAMES SUB-DECK
-     ========================================================================= -->
-@foreach($awards as $awardGroup)
-    @foreach($awardGroup as $award)
-
-        {{-- Status Adjustment Modal --}}
-        <div class="modal fade" id="statusAdjustModal{{ $award->id }}" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <!-- Status setting operations form content can be structured inside this container -->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title fw-bold">Adjust Status: {{ $award->reference }}</h5>
-                        <button type="button" class="btn-close border-0 bg-transparent" data-dismiss="modal" aria-label="Close">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <!-- Custom settings inputs matching controller handlers -->
-                        <p class="font-sm text-muted">Modify verification markers for this nomination context profile.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Dynamic Feedback Comment Partials Backdrops --}}
-        @foreach([
-            'chapter'  => ['status' => $award->chapter_status, 'field' => 'chapter_comment', 'title' => 'Chapter Office'],
-            'zone'     => ['status' => $award->zone_status, 'field' => 'zone_comment', 'title' => 'Zone'],
-            'field'    => ['status' => $award->field_status, 'field' => 'field_comment', 'title' => 'Field'],
-            'national' => ['status' => $award->national_status, 'field' => 'national_comment', 'title' => 'National Secretariat']
-        ] as $level => $config)
-
-            @if($config['status'] == 2)
-                @include('stakeholder.modals.award_rejection_comments', [
-                    'level'   => $level,
-                    'title'   => $config['title'],
-                    'comment' => $award->{$config['field']},
-                    'report'  => $award
-                ])
-            @endif
-
-        @endforeach
-
-        {{-- Single Record Destructive Action Execution Target Handler --}}
-        <form id="delete-award-{{ $award->id }}" action="{{ route($isAdmin ? 'awards.delete' : 'stakeholders.awards.delete', $award->id) }}" method="POST" style="display: none;">
-            @csrf
-            @method('DELETE')
-        </form>
-
-    @endforeach
-@endforeach
-
+@include('admin.awards.modals')
 @endsection
 
 @section('extra_scripts')
@@ -468,18 +485,32 @@
     $(document).ready(function() {
         const masterCheckbox = $('#master-checkbox');
         const rowCheckboxes = $('.row-checkbox');
-        const bulkWrapper = $('#bulk-dropdown-wrapper');
-        const form = $('#bulk-actions-form');
-        const methodContainer = $('#method-spoofing-container');
+        const actionSelect = $('#wp-bulk-action-select');
+        const applyButton = $('#wp-bulk-action-apply');
+        const selectedCounter = $('#selected-counter');
+        const bulkForm = $('#bulk-actions-form');
+        const methodInput = $('#bulk-form-method');
+        const shortlistModal = $('#shortlistStageModal');
 
         function evaluateBulkToolbarState() {
             const checkedCount = $('.row-checkbox:checked').length;
-            if (checkedCount > 0) {
-                bulkWrapper.css({'opacity': '1', 'pointer-events': 'auto'});
-                $('.selected-count-placeholder').text(checkedCount);
+            const selectedAction = actionSelect.val();
+
+            selectedCounter.text(`${checkedCount} selected`);
+
+            $('.row-checkbox').each(function() {
+                const row = $(this).closest('.award-row-item');
+                if (this.checked) {
+                    row.addClass('table-primary-subtle bg-opacity-25');
+                } else {
+                    row.removeClass('table-primary-subtle bg-opacity-25');
+                }
+            });
+
+            if (checkedCount > 0 && selectedAction !== "") {
+                applyButton.removeAttr('disabled');
             } else {
-                bulkWrapper.css({'opacity': '0', 'pointer-events': 'none'});
-                $('.selected-count-placeholder').text('0');
+                applyButton.attr('disabled', 'true');
             }
         }
 
@@ -493,36 +524,82 @@
             evaluateBulkToolbarState();
         });
 
-        // Intercept action options inside dropdown items contextually
-        $('.bulk-action-trigger').on('click', function(e) {
+        actionSelect.on('change', function() {
+            evaluateBulkToolbarState();
+        });
+
+        // Intercept Apply Button Click
+        applyButton.on('click', function(e) {
             e.preventDefault();
 
-            const targetUrl = $(this).data('action-url');
-            const httpMethod = $(this).data('method').toUpperCase();
-            const checkedCount = $('.row-checkbox:checked').length;
+            const selectedOption = actionSelect.find('option:selected');
+            const actionValue = actionSelect.val();
+            const targetUrl = selectedOption.data('url');
+            const httpMethod = selectedOption.data('method');
+            const confirmationMessage = selectedOption.data('confirm');
 
-            // Build confirmation message text
-            let confirmationMessage = $(this).data('confirm');
-            confirmationMessage = confirmationMessage.replace("<span class='selected-count-placeholder'>0</span>", checkedCount)
-                                                    .replace("<span class=\"selected-count-placeholder\">0</span>", checkedCount);
+            if (!targetUrl) return;
 
-            if (confirm(confirmationMessage)) {
-                // 1. Dynamic route injection
-                form.attr('action', targetUrl);
+            // CASE 1: Action is Shortlist -> Open the Modal instead of confirming/submitting directly
+            if (actionValue === 'shortlist') {
+                // Ensure form points to the shortlist route and spoofing field matches
+                bulkForm.attr('action', targetUrl);
+                methodInput.val(httpMethod.toUpperCase());
 
-                // 2. Clear previous dynamic REST verbs
-                methodContainer.empty();
+                // Reset any previously picked radio buttons inside the modal
+                $('input[name="shortlist_stage_id"]').prop('checked', false);
 
-                // 3. Inject Laravel method spoofing syntax conditionally
-                if (httpMethod === 'DELETE') {
-                    methodContainer.html('<input type="hidden" name="_method" value="DELETE">');
-                } else if (httpMethod === 'PUT' || httpMethod === 'PATCH') {
-                    methodContainer.html(`<input type="hidden" name="_method" value="${httpMethod}">`);
-                }
-
-                // Execute processing submit pipeline
-                form.submit();
+                // Fire Bootstrap Modal (Works for standard BS4 or BS5 data setups)
+                shortlistModal.modal('show');
+                return;
             }
+
+            // CASE 2: Standard Direct Actions (Approve, Reject, Delete)
+            if (confirm(confirmationMessage)) {
+                bulkForm.attr('action', targetUrl);
+                methodInput.val(httpMethod.toUpperCase());
+                bulkForm.submit();
+            }
+        });
+
+        // Handle the "Continue" submission button inside the Shortlist Modal
+        $('#submit-shortlist-action').on('click', function() {
+
+            const selectedStage = $('input[name="shortlist_stage_id"]:checked').val();
+            const remarks = $('#remarks').val();
+
+            if (!selectedStage) {
+                alert('Please select a shortlist stage to proceed.');
+                return;
+            }
+
+            // remove old payload inputs
+            $('#dynamic-modal-payload').remove();
+            $('#dynamic-remarks-payload').remove();
+
+            // append stage
+            bulkForm.append(`
+                <input type="hidden"
+                    id="dynamic-modal-payload"
+                    name="shortlist_stage_id"
+                    value="${selectedStage}">
+            `);
+
+            // append remarks (optional but safe)
+            if (remarks) {
+                bulkForm.append(`
+                    <input type="hidden"
+                        id="dynamic-remarks-payload"
+                        name="remarks"
+                        value="${remarks}">
+                `);
+            }
+
+            // close modal
+            shortlistModal.modal('hide');
+
+            // submit form
+            bulkForm.submit();
         });
     });
 </script>

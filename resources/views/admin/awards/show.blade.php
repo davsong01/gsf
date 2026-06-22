@@ -25,158 +25,6 @@
 @section('title', 'Edit Award Submission')
 @section('content')
 
-@section('extra_styles')
-<style>
-    /* Premium Page Layout Structure */
-    .premium-page-wrapper {
-        background-color: #f8fafc;
-        color: #1e293b;
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    }
-
-    /* Top Profile Meta Deck Frame with Integrated Image Box */
-    .overview-banner-card {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        color: #f8fafc;
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-    .header-avatar-preview {
-        width: 90px;
-        height: 90px;
-        object-fit: cover;
-        border-radius: 10px;
-        border: 3px solid rgba(255, 255, 255, 0.15);
-        cursor: zoom-in;
-        transition: transform 0.2s ease, border-color 0.2s;
-    }
-    .header-avatar-preview:hover {
-        transform: scale(1.04);
-        border-color: #3b82f6;
-    }
-    .header-avatar-placeholder {
-        width: 90px;
-        height: 90px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 2px dashed rgba(255, 255, 255, 0.15);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #64748b;
-    }
-    .meta-label {
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #94a3b8;
-        font-weight: 600;
-    }
-    .meta-value {
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: #f1f5f9;
-    }
-
-    /* Modern Dynamic Form Cards */
-    .section-card {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
-    }
-    .form-field-group {
-        border-bottom: 1px solid #f1f5f9;
-        padding-bottom: 20px;
-        margin-bottom: 20px;
-    }
-    .form-field-group:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-        margin-bottom: 0;
-    }
-
-    label {
-        font-weight: 600;
-        color: #334155;
-        font-size: 0.875rem;
-        text-transform: capitalize;
-    }
-    .form-control {
-        border-radius: 8px;
-        border: 1px solid #cbd5e1;
-        padding: 10px 14px;
-        font-size: 0.875rem;
-        transition: all 0.15s ease-in-out;
-    }
-    .form-control:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    }
-
-    /* Media File Handling Layouts */
-    .file-thumbnail-preview {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #cbd5e1;
-        cursor: zoom-in;
-        transition: opacity 0.2s;
-    }
-    .file-thumbnail-preview:hover {
-        opacity: 0.85;
-    }
-
-    /* Sticky Bottom Actions Command Station */
-    .sticky-action-buttons {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        z-index: 1050;
-    }
-    .btn-circle {
-        position: relative;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        transition: transform 0.2s ease, background-color 0.15s;
-        border: none;
-    }
-    .btn-circle:hover {
-        transform: translateY(-2px) scale(1.05);
-    }
-    .btn-circle .btn-label {
-        position: absolute;
-        right: 68px;
-        white-space: nowrap;
-        background: #0f172a;
-        padding: 6px 12px;
-        border-radius: 6px;
-        opacity: 0;
-        color: #ffffff;
-        font-size: 11px;
-        font-weight: 600;
-        pointer-events: none;
-        transition: opacity 0.2s ease;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
-    }
-    .btn-circle:hover .btn-label {
-        opacity: 1;
-    }
-</style>
-@endsection
-
 <div class="content-body premium-page-wrapper">
     <!-- Top Profile Banner Block with Header Image Positioned Legibly -->
     <div class="card overview-banner-card mb-2">
@@ -281,6 +129,44 @@
                     <!-- Divider separating context from approval flow metrics -->
                     <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); width: 100%;"></div>
                     <div>
+                        @if($award->currentShortlistStage)
+
+                            <div class="d-flex align-items-center justify-content-between mb-2 p-2 rounded"
+                                style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);">
+
+                                <div class="d-flex flex-column">
+
+                                    <span class="meta-label" style="font-size: 0.65rem; color: rgba(255,255,255,0.6);">
+                                        Shortlist Stage
+                                    </span>
+
+                                    <span class="text-white fw-semibold" style="font-size: 0.85rem;">
+                                        {{ $award->currentShortlistStage->stage->title }} @if($award->currentShortlistStage->stage->mark_as_final)<span style="color:red">(Final Stage)</span>@endif
+                                    </span>
+
+                                </div>
+
+                                <a href="#"
+                                class="btn btn-sm btn-outline-light"
+                                data-toggle="modal"
+                                data-target="#shortlistHistoryModal">
+                                    History
+                                </a>
+
+                            </div>
+
+                        @else
+
+                            <div class="p-2 rounded mb-2"
+                                style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);">
+
+                                <span class="text-danger font-xs fw-semibold">
+                                    Not Shortlisted
+                                </span>
+
+                            </div>
+
+                        @endif
                         <div class="meta-label mb-1 mt-2" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255, 255, 255, 0.5) !important;">
                             Approval Status Clearance
                         </div>
@@ -369,8 +255,19 @@
                     <div class="col-12 col-md-6">
                         <div class="form-field-group border-0 h-100 justify-content-end">
 
-                            <label for="entry-{{ $entry->id }}" class="form-label text-dark fw-semibold font-sm mb-1">
-                                {{ $entry->name }}
+                            <label for="entry-{{ $entry->id }}"
+                                class="form-label text-dark fw-semibold font-sm mb-1 d-flex align-items-center gap-2">
+
+                                <span>{{ $entry->name }}</span>
+
+                                @if($isFieldFile)
+                                    <a href="{{route('award.sync.asset', $entry->id)}}" class="ml-1 badge bg-light text-primary border fw-normal d-inline-flex align-items-center gap-1"
+                                        style="font-size: 0.7rem; cursor: pointer;">
+                                        <i class="fa fa-sync-alt"></i>
+                                        Re-sync
+                                    </a>
+                                @endif
+
                             </label>
 
                             <div class="w-100">
@@ -589,112 +486,7 @@
 </section>
 </div>
 
-
-@if($canAct && $approveRoute)
-<!-- Floating Action Button Controls Frame -->
-<div class="sticky-action-buttons">
-    <a href="{{ $approveRoute }}"
-       class="btn-circle bg-success text-white d-flex align-items-center justify-content-center"
-       title="{{ $tooltipApprove }}"
-       onclick="return confirm('Are you sure you want to approve this submission record?');">
-        <i class="fa fa-check"></i>
-        <span class="btn-label">{{ $tooltipApprove }}</span>
-    </a>
-
-    <button type="button"
-            class="btn-circle bg-danger text-white d-flex align-items-center justify-content-center"
-            data-toggle="modal"
-            data-target="#rejectModal"
-            title="{{ $tooltipReject }}">
-        <i class="fa fa-times"></i>
-        <span class="btn-label">{{ $tooltipReject }}</span>
-    </button>
-</div>
-
-<!-- Rejection Criteria Context Form Modal Backdrop Box -->
-<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form action="{{ $rejectRoute }}" method="POST">
-            @csrf
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold text-dark font-base" id="rejectModalLabel">Reject Submission Record</h5>
-                    <button type="button" class="btn-close shadow-none border-0 bg-transparent text-muted" data-dismiss="modal" aria-label="Close" style="font-size:1.25rem;">&times;</button>
-                </div>
-                <div class="modal-body py-3">
-                    <div class="mb-2">
-                        <label for="rejection_reason" class="form-label font-sm fw-medium text-secondary mb-1">Reason explaining the rejection context</label>
-                        <textarea name="rejection_reason" id="rejection_reason" class="form-control font-sm rounded-2" rows="4" placeholder="Provide details why you have to reject..." required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-light font-sm px-3 rounded-2" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger font-sm px-3 rounded-2">Reject Submission</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-@endif
-<!-- Zoom System Modal Frame Container -->
-<div class="modal fade" id="imageZoomSystemModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-        <div class="modal-content border-0 shadow-lg bg-white">
-            <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title fw-semibold text-dark text-truncate" id="zoomModalLabel">File Asset Focus</h6>
-                <button type="button" class="btn-close shadow-none border-0 bg-transparent text-muted" data-dismiss="modal" aria-label="Close" style="font-size:1.25rem;">&times;</button>
-            </div>
-            <div class="modal-body text-center p-4 d-flex align-items-center justify-content-center" style="min-height: 350px;">
-                <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 1 1'%2F%3E"
-                     id="zoomedTargetImageElement"
-                     class="img-fluid rounded border shadow-sm"
-                     style="max-height: 65vh; max-width: 100%; object-fit: contain; display: none;"
-                     alt="Focus Workspace">
-
-                <div id="zoomModalSpinnerElement" class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading asset data structure...</span>
-                </div>
-            </div>
-            <div class="modal-footer border-0 pt-0 justify-content-between">
-                <span class="text-muted font-xs">Press ESC to close full view mode</span>
-                <button type="button" class="btn btn-light font-sm px-3 rounded-2" data-dismiss="modal">Close View</button>
-            </div>
-        </div>
-    </div>
-</div>
+@include('admin.awards.actions')
 
 @endsection
-
-@section('extra_scripts')
-<script>
-    $('.trigger-zoom-modal').on('click', function() {
-    let fileUrl = $(this).data('file-url');
-    let fileLabel = $(this).data('label');
-
-    // Set text labels
-    $('#zoomModalLabel').text(fileLabel ? 'Focus View: ' + fileLabel : 'File Asset Focus');
-
-    let $img = $('#zoomedTargetImageElement');
-    let $spinner = $('#zoomModalSpinnerElement');
-
-    // 1. Hide the image and display the loader before inserting the source
-    $img.hide();
-    $spinner.show();
-
-    // 2. Open the Bootstrap modal structure
-    $('#imageZoomSystemModal').modal('show');
-
-    // 3. Bind the onload hook to handle sizing animations safely after down-streaming finishes
-    $img.attr('src', fileUrl).on('load', function() {
-        $spinner.hide();
-        $img.fadeIn(200);
-
-        // Recalculate centering dynamically now that the dimensions are known
-        let modalInstance = bootstrap.Modal.getInstance(document.getElementById('imageZoomSystemModal'));
-        if (modalInstance && typeof modalInstance.handleUpdate === 'function') {
-            modalInstance.handleUpdate();
-        }
-    });
-});
-</script>
-@endsection
+@include('admin.awards.show_script')

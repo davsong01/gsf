@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Award;
+use App\Models\AwardEntries;
 use App\Models\AwardSetting;
+use App\Models\AwardShortlistStage;
 use App\Models\Chapter;
 use App\Services\AwardService;
 use App\Services\EmailService;
@@ -13,7 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Log;
 use ZipArchive;
 
 class AwardController extends Controller
@@ -31,6 +33,11 @@ class AwardController extends Controller
 
         return response()->json([], 200);
     }
+
+    public function syncAsset($id){
+        $entry = AwardEntries::find($id);
+        dd($entry);
+    }
     /**
      * Display a listing of the resource.
      */
@@ -46,9 +53,12 @@ class AwardController extends Controller
         ]);
 
         $entries = $this->awardService->index($request, $user, $type, $isAdmin);
-        
+        $shortlistStages = AwardShortlistStage::where('active', 1)
+            ->orderBy('position')
+            ->get();
+
         $title = 'General Overseer (G.O.) Award Submissions';
-        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type')));
+        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type', 'shortlistStages')));
     }
 
     public function etfAwardEntries(Request $request){
@@ -64,8 +74,11 @@ class AwardController extends Controller
 
         $entries = $this->awardService->index($request, $user, $type , $isAdmin);
         $title = 'EducationTrust Fund (E.T.F.) Award Submissions';
+        $shortlistStages = AwardShortlistStage::where('active', 1)
+            ->orderBy('position')
+            ->get();
 
-        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type')));
+        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type', 'shortlistStages')));
     }
 
     /**
@@ -95,8 +108,11 @@ class AwardController extends Controller
 
         $award->load('entries');
         $chapters = Chapter::select('id', 'name')->get();
+        $shortlistStages = AwardShortlistStage::where('active', 1)
+            ->orderBy('position')
+            ->get();
 
-        return view('admin.awards.show', compact('isAdmin', 'isAdmin', 'award', 'chapters', 'user'));
+        return view('admin.awards.show', compact('isAdmin', 'isAdmin', 'award', 'chapters', 'user', 'shortlistStages'));
     }
 
     /**
@@ -226,61 +242,6 @@ class AwardController extends Controller
             report($e);
             return back()->with('error', 'An error occurred while saving records: ' . $e->getMessage());
         }
-    }
-
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Award $award)
-    {
-        try {
-            DB::transaction(function () use ($award) {
-                // 1. Delete all associated form input entries first
-                $award->entries()->delete();
-
-                // 2. Delete the parent award record
-                $award->delete();
-            });
-
-            return redirect()->back()->with('message', 'Delete Successful')->with('message', 'Award nomination and all associated entries deleted successfully.');
-
-        } catch (\Exception $e) {
-            Log::error("Failed to delete Award ID [{$award->id}]: " . $e->getMessage());
-
-            return redirect()->back()
-                ->with('error', 'An error occurred while trying to delete the award nomination.');
-        }
-    }
-
-
-    public function awardSettings()
-    {
-        // Fetches the first record or creates one with defaults if none exist
-        $settings = AwardSetting::firstOrCreate(
-            ['id' => 1], // Attributes to search for
-            [            // Default fallback values if creating for the first time
-                'allow_chapter_edit'     => 0,
-                'allow_chapter_comment'  => 0,
-                'allow_chapter_approval' => 0,
-                'allow_zone_edit'        => 0,
-                'allow_zone_comment'     => 0,
-                'allow_zone_approval'    => 0,
-                'allow_field_edit'       => 0,
-                'allow_field_comment'    => 0,
-                'allow_field_approval'   => 0,
-            ]
-        );
-
-        return view('admin.awards.settings', compact('settings'));
-    }
-
-    public function updateAwardSettings(Request $request){
-        $settings = AwardSetting::first();
-
-        $settings->update($request->except(['_token']));
-
-        return redirect()->back()->with('message', 'System configurations saved successfully.');
     }
 
 
@@ -442,7 +403,198 @@ class AwardController extends Controller
 
         return back()->with('message', 'Operation Successful');
     }
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Award $award)
+    {
+        try {
+            DB::transaction(function () use ($award) {
+                // 1. Delete all associated form input entries first
+                $award->entries()->delete();
 
+                // 2. Delete the parent award record
+                $award->delete();
+            });
+
+            return redirect()->back()->with('message', 'Delete Successful')->with('message', 'Award nomination and all associated entries deleted successfully.');
+
+        } catch (\Exception $e) {
+            Log::error("Failed to delete Award ID [{$award->id}]: " . $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', 'An error occurred while trying to delete the award nomination.');
+        }
+    }
+
+    public function permanentDelete(Award $award)
+    {
+        try {
+            DB::transaction(function () use ($award) {
+                if (method_exists($award->entries(), 'forceDelete')) {
+                    $award->entries()->forceDelete();
+                } else {
+                    $award->entries()->delete();
+                }
+
+                $award->forceDelete();
+            });
+
+            return redirect()->back()->with('message', 'Award nomination and all associated entries permanently deleted.');
+
+        } catch (\Exception $e) {
+            \Log::error("Failed to permanently delete Award ID [{$award->id}]: " . $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', 'An error occurred while trying to permanently delete the award nomination.');
+        }
+    }
+
+    public function bulkApprove(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return back()->with('error', 'No entries selected for bulk approval.');
+        }
+
+        try {
+            DB::transaction(function () use ($request, $ids) {
+                $awards = Award::whereIn('id', $ids)->get();
+                foreach ($awards as $award) {
+                    $this->approveEntry($request, $award);
+                }
+            });
+
+            return back()->with('message', 'Selected entries processed for approval.');
+        } catch (\Exception $e) {
+            \Log::error("Bulk approval loop failure: " . $e->getMessage());
+            return back()->with('error', 'An error occurred during bulk approval processing.');
+        }
+    }
+
+    public function bulkReject(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return back()->with('error', 'No entries selected for bulk rejection.');
+        }
+
+        try {
+            DB::transaction(function () use ($request, $ids) {
+                $awards = Award::whereIn('id', $ids)->get();
+                foreach ($awards as $award) {
+                    $this->rejectEntry($request, $award);
+                }
+            });
+
+            return back()->with('message', 'Selected entries processed for rejection.');
+        } catch (\Exception $e) {
+            \Log::error("Bulk rejection loop failure: " . $e->getMessage());
+            return back()->with('error', 'An error occurred during bulk rejection processing.');
+        }
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return back()->with('error', 'No entries selected for deletion.');
+        }
+
+        try {
+            DB::transaction(function () use ($ids) {
+                // If using soft deletes, make sure we can find them normally
+                $awards = Award::whereIn('id', $ids)->get();
+                foreach ($awards as $award) {
+                    // Call your existing single destroy method
+                    $this->destroy($award);
+                }
+            });
+
+            return back()->with('message', 'Selected nominations processed for deletion.');
+        } catch (\Exception $e) {
+            \Log::error("Bulk deletion loop failure: " . $e->getMessage());
+            return back()->with('error', 'An error occurred while deleting the selected nominations.');
+        }
+    }
+
+    public function bulkPermanentDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return back()->with('error', 'No entries selected for permanent purge.');
+        }
+
+        try {
+            DB::transaction(function () use ($ids) {
+                // Use withTrashed() in case entries are already soft-deleted
+                $awards = Award::withTrashed()->whereIn('id', $ids)->get();
+                foreach ($awards as $award) {
+                    // Call your existing single permanentDelete method
+                    $this->permanentDelete($award);
+                }
+            });
+
+            return back()->with('message', 'Selected nominations permanently purged from records.');
+        } catch (\Exception $e) {
+            \Log::error("Bulk permanent delete loop failure: " . $e->getMessage());
+            return back()->with('error', 'An error occurred during permanent bulk execution.');
+        }
+    }
+
+    public function bulkShortlist(Request $request, AwardService $awardService)
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer'],
+            'shortlist_stage_id' => ['required', 'integer'],
+            'remarks' => ['nullable', 'string'],
+        ]);
+
+        try {
+            $awardService->bulkShortlist(
+                $data['ids'],
+                $data['shortlist_stage_id'],
+                $data['remarks'] ?? null
+            );
+
+            return back()->with('message', 'Selected entries moved to stage successfully.');
+        } catch (\Exception $e) {
+            // dd($e->getMessage());
+            \Log::error("Bulk shortlist failure: " . $e->getMessage());
+
+            return back()->with('error', 'Failed to update shortlist stage.');
+        }
+    }
+
+    public function awardSettings()
+    {
+        // Fetches the first record or creates one with defaults if none exist
+        $settings = AwardSetting::firstOrCreate(
+            ['id' => 1], // Attributes to search for
+            [            // Default fallback values if creating for the first time
+                'allow_chapter_edit'     => 0,
+                'allow_chapter_comment'  => 0,
+                'allow_chapter_approval' => 0,
+                'allow_zone_edit'        => 0,
+                'allow_zone_comment'     => 0,
+                'allow_zone_approval'    => 0,
+                'allow_field_edit'       => 0,
+                'allow_field_comment'    => 0,
+                'allow_field_approval'   => 0,
+            ]
+        );
+
+        return view('admin.awards.settings', compact('settings'));
+    }
+
+    public function updateAwardSettings(Request $request){
+        $settings = AwardSetting::first();
+
+        $settings->update($request->except(['_token']));
+
+        return redirect()->back()->with('message', 'System configurations saved successfully.');
+    }
 
     public function awardReportsDownload(string $type)
     {
