@@ -74,7 +74,7 @@ class AwardShortlistStageController extends Controller
      */
     public function edit(AwardShortlistStage $shortlist)
     {
-        $shortlist = $shortlist;
+        $awardShortlistStage = $shortlist;
 
         return view('admin.shortliststages.edit', compact('awardShortlistStage'));
     }
