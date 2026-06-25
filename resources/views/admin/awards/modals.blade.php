@@ -38,11 +38,12 @@
         @endforeach
 
         {{-- Single Record Destructive Action Execution Target Handler --}}
+        @if($isAdmin)
         <form id="delete-award-{{ $award->id }}" action="{{ route($isAdmin ? 'awards.delete' : 'stakeholders.awards.delete', $award->id) }}" method="POST" style="display: none;">
             @csrf
             @method('DELETE')
         </form>
-
+        @endif
     @endforeach
 @endforeach
 <div class="modal fade"

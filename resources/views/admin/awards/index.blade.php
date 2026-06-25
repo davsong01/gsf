@@ -198,7 +198,6 @@
         <!-- Master Data Render Table Component -->
         <div class="row">
             <div class="col-12">
-
                 <form id="bulk-actions-form" method="POST" action="">
                     @csrf
                     <input type="hidden" name="_method" id="bulk-form-method" value="POST">
@@ -209,7 +208,6 @@
 
                                 <select id="wp-bulk-action-select" class="form-select" style="width: 250px; height: 38px;">
                                     <option value="">Select Bulk Action</option>
-
                                     @if($isAdmin)
                                         <option value="shortlist"
                                                 data-url="{{ route('awards.bulk.shortlist') }}"
@@ -230,8 +228,8 @@
                                             Reject
                                         </option>
                                     @endif
-
-                                    @if($user->email == 'davsong@gmail.com')
+                                           
+                                    @if($isAdmin && $user->email == 'davsong@gmail.com')
                                         <option value="delete"
                                                 data-url="{{ route($isAdmin ? 'awards.bulk-delete' : 'stakeholders.awards.bulk-delete') }}"
                                                 data-method="DELETE"
