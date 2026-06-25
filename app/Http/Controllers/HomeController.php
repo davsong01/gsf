@@ -455,8 +455,43 @@ class HomeController extends Controller
     }
 
 
-    public function singleCampus(){
-        $chapter = Chapter::where('id', request()->chapter)->first();
+    // public function singleCampus(){
+    //     $chapter = Chapter::where('id', request()->chapter)->first();
+
+    //     $token = false;
+    //     $realToken = '';
+
+    //     if (request()->token) {
+    //         if ($chapter->token != request()->token) {
+    //             return back()->with('error', 'Invalid Token for GSF Chapter, Kindly contact the National Publicity Office');
+    //         }
+
+    //         $token = true;
+    //         $realToken = $chapter->token;
+
+    //         return view('frontend.conference.campusView', compact('chapter', 'token', 'realToken'));
+    //     }
+
+    //     $nationalevents = Event::where('chapter_id', 0)->get();
+    //     $related = null;
+
+    //     if($chapter->exists()){
+    //         $related = Chapter::where('zone_id', $chapter->zone_id)->orWhere('field_id', $chapter->field->id)->get();
+    //     }
+        
+    //     return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents','chapter','related'));
+    //     // return view('frontend.main.single-chapter', compact('chapter', 'nationalevents'));
+    // }
+    public function singleCampus()
+    {
+        $id = request()->chapter ?? request()->chapter_id;
+
+        // Fetch the chapter or fail with a 404 error if it doesn't exist
+        $chapter = Chapter::where('id', $id)->first();
+
+        if (!$chapter) {
+            return back()->with('error', 'The requested chapter could not be found.');
+        }
 
         $token = false;
         $realToken = '';
@@ -473,15 +508,15 @@ class HomeController extends Controller
         }
 
         $nationalevents = Event::where('chapter_id', 0)->get();
-        $related = null;
-
-        if($chapter->exists()){
-            $related = Chapter::where('zone_id', $chapter->zone_id)->orWhere('field_id', $chapter->field->id)->get();
-        }
         
-        return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents','chapter','related'));
-        // return view('frontend.main.single-chapter', compact('chapter', 'nationalevents'));
+        // Since $chapter is verified as not null, you can safely query relationships
+        $related = Chapter::where('zone_id', $chapter->zone_id)
+            ->orWhere('field_id', $chapter->field?->id) // Using null-safe operator in case field is missing
+            ->get();
+
+        return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents', 'chapter', 'related'));
     }
+
 
     public function contactCampus(Request $request){
         $this->validate($request, [
