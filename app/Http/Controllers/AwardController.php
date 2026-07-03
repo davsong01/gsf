@@ -34,136 +34,6 @@ class AwardController extends Controller
         return response()->json([], 200);
     }
 
-    public function syncAsset($id){
-        $entry = AwardEntries::find($id);
-        dd($entry);
-    }
-
-    public function removeDuplicates()
-    {
-        $duplicateKeys = [
-            'surname',
-            'first_name',
-            'phone_number',
-            'email_address',
-        ];
-
-        DB::beginTransaction();
-
-        try {
-
-            $awards = Award::with('entries')
-                ->orderBy('id')
-                ->get();
-
-            $groups = [];
-
-            foreach ($awards as $award) {
-
-                $entries = $award->entries->keyBy('key');
-
-                $values = [];
-
-                foreach ($duplicateKeys as $key) {
-
-                    $values[$key] = strtolower(
-                        trim((string) ($entries[$key]->value ?? ''))
-                    );
-                }
-
-                // Skip records with no identifying information
-                if (collect($values)->filter()->isEmpty()) {
-                    continue;
-                }
-
-                $hash = md5(json_encode($values));
-
-                $groups[$hash][] = $award;
-            }
-
-            $removedAwards = 0;
-            $removedEntries = 0;
-
-            foreach ($groups as $duplicates) {
-
-                if (count($duplicates) <= 1) {
-                    continue;
-                }
-
-                $duplicates = collect($duplicates);
-
-                $keepAward = $duplicates
-                    ->sort(function ($a, $b) {
-
-                        $scoreA =
-                            (in_array($a->chapter_status, [1, 2], true) ? 1 : 0) +
-                            (in_array($a->zone_status, [1, 2], true) ? 2 : 0) +
-                            (in_array($a->field_status, [1, 2], true) ? 4 : 0) +
-                            (in_array($a->national_status, [1, 2], true) ? 8 : 0);
-
-                        $scoreB =
-                            (in_array($b->chapter_status, [1, 2], true) ? 1 : 0) +
-                            (in_array($b->zone_status, [1, 2], true) ? 2 : 0) +
-                            (in_array($b->field_status, [1, 2], true) ? 4 : 0) +
-                            (in_array($b->national_status, [1, 2], true) ? 8 : 0);
-
-                        // Higher score wins
-                        if ($scoreA !== $scoreB) {
-                            return $scoreB <=> $scoreA;
-                        }
-
-                        // Tie breaker: oldest record wins
-                        return $a->id <=> $b->id;
-                    })
-                    ->first();
-
-                foreach ($duplicates as $award) {
-
-                    if ($award->id === $keepAward->id) {
-                        continue;
-                    }
-
-                    $entryCount = AwardEntries::where('award_id', $award->id)->count();
-
-                    AwardEntries::where('award_id', $award->id)->delete();
-
-                    $award->delete(); // soft delete
-
-                    $removedEntries += $entryCount;
-                    $removedAwards++;
-
-                    \Log::info('Duplicate award removed', [
-                        'kept_award_id' => $keepAward->id,
-                        'removed_award_id' => $award->id,
-                        'duplicate_hash' => md5(json_encode(
-                            collect($duplicateKeys)->mapWithKeys(function ($key) use ($keepAward) {
-                                $entry = $keepAward->entries->firstWhere('key', $key);
-
-                                return [
-                                    $key => strtolower(trim((string) ($entry?->value ?? '')))
-                                ];
-                            })->toArray()
-                        )),
-                    ]);
-                }
-            }
-
-            DB::commit();
-
-            return back()->with(
-                'message',
-                "Removed {$removedAwards} duplicate awards and {$removedEntries} duplicate entries."
-            );
-
-        } catch (\Throwable $e) {
-
-            DB::rollBack();
-
-            report($e);
-
-            return back()->with('error', $e->getMessage());
-        }
-    }
 
     /**
      * Display a listing of the resource.
@@ -722,15 +592,15 @@ class AwardController extends Controller
         $settings = AwardSetting::firstOrCreate(
             ['id' => 1], // Attributes to search for
             [            // Default fallback values if creating for the first time
-                'allow_chapter_edit'     => 0,
-                'allow_chapter_comment'  => 0,
-                'allow_chapter_approval' => 0,
-                'allow_zone_edit'        => 0,
-                'allow_zone_comment'     => 0,
-                'allow_zone_approval'    => 0,
-                'allow_field_edit'       => 0,
-                'allow_field_comment'    => 0,
-                'allow_field_approval'   => 0,
+                'allow_chapter_edit'     => null,
+                'allow_chapter_comment'  => null,
+                'allow_chapter_approval' => null,
+                'allow_zone_edit'        => null,
+                'allow_zone_comment'     => null,
+                'allow_zone_approval'    => null,
+                'allow_field_edit'       => null,
+                'allow_field_comment'    => null,
+                'allow_field_approval'   => null,
             ]
         );
 
@@ -745,68 +615,89 @@ class AwardController extends Controller
         return redirect()->back()->with('message', 'System configurations saved successfully.');
     }
 
+
     public function awardReportsDownload(string $type)
     {
-        $awards = Award::where('type', $type)
-            ->orderBy('chapter_id', 'asc')
+        $awards = Award::with([
+                'entry',
+                'chapter',
+                'approvedBy',
+            ])
+            ->where('type', $type)
+            ->orderBy('chapter_id')
             ->get()
-            ->sortBy(function($award) {
-                return $award->chapter?->name ?? $award->entries->firstWhere('key', 'select_institution')?->value ?? 'ZZZ';
-            });
-
-        $fileName = $type . ' award-nomination-report-' . now()->format('Y-m-d-His') . '.xlsx';
+            ->sortBy(fn ($award) => $award->chapter?->name
+                ?? $award->entry?->select_institution
+                ?? 'ZZZ')
+            ->values();
 
         if ($awards->isEmpty()) {
-            return redirect()->back()->with('error', 'No award records found to download.');
+            return back()->with(
+                'error',
+                'No award records found to download.'
+            );
         }
 
+        $fileName = sprintf(
+            '%s-award-nomination-report-%s.xlsx',
+            $type,
+            now()->format('Y-m-d-His')
+        );
+
         $headers = [
-            'Nominee Name', 'Email Address', 'Phone Number', 'Chapter',
-            'Chapter Status', 'Zone Status', 'Field Status', 'Final Status',
-            'Final Approved By', 'Final Approved On', 'Submission Date'
+            'Nominee Name',
+            'Email Address',
+            'Phone Number',
+            'Chapter',
+            'Chapter Status',
+            'Zone Status',
+            'Field Status',
+            'National Status',
+            'Final Approved By',
+            'Final Approved On',
+            'Submission Date',
         ];
 
-        // Helper closure to translate status integers to professional string labels
-        $statusLabel = function($val) {
-            return match((int)$val) {
-                1 => 'Approved',
-                2 => 'Rejected',
-                default => 'Pending'
-            };
+        $statusLabel = fn ($status) => match ((int) $status) {
+            1       => 'Approved',
+            2       => 'Rejected',
+            default => 'Pending',
         };
 
         $allRows = [];
-        foreach ($awards as $award) {
-            // Resolve final approval meta-details safely (assumes national secretariat approval is the final stage)
-            $isFinalApproved = ($award->national_status == 1);
 
-            // Lookup final approval tracking trace parameters dynamically
-            $finalApprovedBy = $award->approvedBy?->name ?? '';
-            $finalApprovedOn = $award->national_approved_on ? Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—';
+        foreach ($awards as $award) {
 
             $allRows[] = [
-                'Nominee Name'      => $award->name ?? 'Unnamed Nominee',
+                'Nominee Name'      => $award->name,
                 'Email Address'     => $award->email,
                 'Phone Number'      => $award->phone,
-                'Chapter'           => $award->chapter->name ?? $award->entries->firstWhere('key', 'select_institution')?->value ?? '—',
+
+                'Chapter' => $award->chapter?->name
+                    ?? $award->entry?->select_institution
+                    ?? '—',
+
                 'Chapter Status'    => $statusLabel($award->chapter_status),
                 'Zone Status'       => $statusLabel($award->zone_status),
                 'Field Status'      => $statusLabel($award->field_status),
                 'National Status'   => $statusLabel($award->national_status),
-                'Final Approved By' => $finalApprovedBy,
-                'Final Approved On' => $finalApprovedOn,
-                'Submission Date'   => optional($award->created_at)->format('Y-m-d H:i A'),
 
-                // Raw values appended at the end solely for filtering out separate sheets cleanly
-                '_chapter_raw'  => (int)$award->chapter_status,
-                '_zone_raw'     => (int)$award->zone_status,
-                '_field_raw'    => (int)$award->field_status,
-                '_national_raw' => (int)$award->national_status,
+                'Final Approved By' => $award->approvedBy?->name ?? '—',
+
+                'Final Approved On' => $award->national_approved_on
+                    ? $award->national_approved_on->format('d M Y, h:i A')
+                    : '—',
+
+                'Submission Date' => $award->created_at?->format('Y-m-d h:i A'),
+
+                // Internal filtering fields
+                '_chapter_raw'  => (int) $award->chapter_status,
+                '_zone_raw'     => (int) $award->zone_status,
+                '_field_raw'    => (int) $award->field_status,
+                '_national_raw' => (int) $award->national_status,
             ];
         }
 
-        // 3. Segment Row Arrays into target sheets using internal flags
-        // Because the source collection ($allRows) is already perfectly sorted, these sub-collections inherit the same order!
         $sheetsData = [
             'All Nominees'             => collect($allRows),
             'Passed Chapter Clearance' => collect($allRows)->where('_chapter_raw', 1),
@@ -815,15 +706,29 @@ class AwardController extends Controller
             'Passed National Approval' => collect($allRows)->where('_national_raw', 1),
         ];
 
-        // 4. Clean up internal raw filter data from rows so they don't leak into Excel columns
-        foreach ($sheetsData as $sheetName => $collection) {
-            $sheetsData[$sheetName] = $collection->map(function ($row) {
-                unset($row['_chapter_raw'], $row['_zone_raw'], $row['_field_raw'], $row['_national_raw']);
-                return $row;
-            })->values()->toArray();
+        foreach ($sheetsData as $sheetName => $rows) {
+
+            $sheetsData[$sheetName] = $rows
+                ->map(function ($row) {
+
+                    unset(
+                        $row['_chapter_raw'],
+                        $row['_zone_raw'],
+                        $row['_field_raw'],
+                        $row['_national_raw']
+                    );
+
+                    return $row;
+                })
+                ->values()
+                ->toArray();
         }
 
-        return ExcelService::downloadMultipleSheets($sheetsData, $headers, $fileName);
+        return ExcelService::downloadMultipleSheets(
+            $sheetsData,
+            $headers,
+            $fileName
+        );
     }
 
     public function awardAssetsDownload()
@@ -1084,32 +989,140 @@ class AwardController extends Controller
     public function firstClassSubmission()
     {
         $type = 'go';
+        $settings = AwardSetting::first();
+
+        // Check if deadline exists and if it has passed
+        if ($settings && $settings->first_class_awards_deadline && Carbon::now()->greaterThan($settings->first_class_awards_deadline)) {
+            return view('frontend.' . frontendTemplate() . '.award-closed', compact('type'));
+        }
 
         $fields = collect(awardFormFields())
-            ->filter(fn ($field) => in_array(
-                $field['award_type'] ?? 'both',
-                ['both', $type]
-            ));
+            ->filter(fn ($field) => in_array($field['award_type'] ?? 'both', ['both', $type]));
 
-        return view(
-            'frontend.' . frontendTemplate() . '.award-submission',
-            compact('fields', 'type')
-        );
+        return view('frontend.' . frontendTemplate() . '.award-submission', compact('fields', 'type'));
     }
 
     public function etfEntrySubmission()
     {
         $type = 'etf';
+        $settings = AwardSetting::first();
+
+        if ($settings && $settings->etf_awards_deadline && Carbon::now()->greaterThan($settings->etf_awards_deadline)) {
+            return view('frontend.' . frontendTemplate() . '.award-closed', compact('type'));
+        }
 
         $fields = collect(awardFormFields())
-            ->filter(fn ($field) => in_array(
-                $field['award_type'] ?? 'both',
-                ['both', $type]
-            ));
+            ->filter(fn ($field) => in_array($field['award_type'] ?? 'both', ['both', $type]));
 
-        return view(
-            'frontend.' . frontendTemplate() . '.award-submission',
-            compact('fields', 'type')
-        );
+        return view('frontend.' . frontendTemplate() . '.award-submission', compact('fields', 'type'));
+    }
+
+    public function submitAwardEntry(Request $request)
+    {
+        $type = $request->type;
+
+        $settings = AwardSetting::first();
+
+        $deadlineColumn = $type === 'go'
+            ? 'first_class_awards_deadline'
+            : 'etf_awards_deadline';
+
+        if (
+            $settings &&
+            filled($settings->{$deadlineColumn}) &&
+            now()->greaterThan($settings->{$deadlineColumn})
+        ) {
+            return response()->view(
+                'frontend.' . frontendTemplate() . '.award-closed',
+                compact('type'),
+                403
+            );
+        }
+
+        $data = $request->input('entries', []);
+
+        $existing = Award::where('type', $type)
+            ->whereHas('entry', function ($query) use ($data) {
+                $query->whereRaw(
+                    'LOWER(email_address) = ?',
+                    [strtolower($data['email_address'])]
+                );
+            })
+            ->exists();
+
+        if ($existing) {
+            return back()
+                ->withInput()
+                ->with('error', 'You have already submitted an application for this award.');
+        }
+
+        try {
+
+            DB::beginTransaction();
+
+            foreach (['result_file', 'picture'] as $fileField) {
+                if (! $request->hasFile("entries.{$fileField}")) {
+                    continue;
+                }
+
+                $uploadedFile = $request->file("entries.{$fileField}");
+
+                if (! $uploadedFile->isValid()) {
+                    continue;
+                }
+
+                $data[$fileField] = app(FileUploadService::class)->secureUpload(
+                    $uploadedFile,
+                    'award-files'
+                );
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Resolve chapter hierarchy
+            |--------------------------------------------------------------------------
+            */
+            $chapterId = $data['chapter_id'] ?? null;
+
+            $chapter = $chapterId
+                ? Chapter::find($chapterId)
+                : null;
+
+            $award = Award::create([
+                'type'            => $type,
+                'chapter_id'      => $chapter->id,
+                'zone_id'         => $chapter->zone->id,
+                'field_id'        => $chapter->field->id,
+                'reference'       => strtoupper($type . '-' . uniqid()),
+                'zone_status'     => 0,
+                'field_status'    => 0,
+                'national_status' => 0,
+            ]);
+
+            $award->entry()->create($data);
+
+            DB::commit();
+
+            return redirect()
+                ->back()
+                ->with(
+                    'message',
+                    'Your application has been submitted successfully.'
+                );
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            report($e);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'An error occurred while submitting your application. Please try again.'
+                );
+        }
     }
 }

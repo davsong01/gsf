@@ -93,7 +93,7 @@
                             <div class="d-flex flex-column">
                                 @if(empty($award->chapter_id))
                                 <span class="font-sm lh-sm text-white" style="font-size: 1rem;">
-                                    <strong>{{ $award->entries->firstWhere('key', 'select_institution')->value ?? 'N/A' }}</strong>
+                                    <strong>{{ $award->entry->select_institution ?? 'N/A' }}</strong>
                                 </span>
                                 @else
                                 <span class="font-sm lh-sm text-white" style="font-size: 1rem;">

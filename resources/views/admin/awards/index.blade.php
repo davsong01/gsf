@@ -187,9 +187,6 @@
                     <div class="col-md-2 mb-2">
                         <a href="{{route('award.report.assets')}}" class="btn btn-danger w-100">Download Assets</a>
                     </div>
-                    <div class="col-md-2 mb-2">
-                        <a href="{{route('award.report.remove.duplicates')}}" class="btn btn-dark w-100">Remove Duplicates</a>
-                    </div>
                     @endif
                 </form>
             </div>
@@ -368,7 +365,7 @@
                                                         @if(empty($award->chapter_id))
                                                             <span class="font-sm lh-sm" style="font-size: 0.68rem;">
                                                                 <strong>
-                                                                    {{ $award->entries->firstWhere('key', 'select_institution')->value ?? 'N/A' }}
+                                                                    {{ $award->entry?->select_institution ?? 'N/A' }}
                                                                 </strong>
                                                             </span>
                                                         @endif

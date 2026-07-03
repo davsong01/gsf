@@ -178,7 +178,7 @@ Route::prefix('award')->as('award.')->group(function () {
     Route::get('first-class', [AwardController::class, 'firstClassSubmission'])->name('first-class-entry-submission');
     Route::get('etf-entry-submission', [AwardController::class, 'etfEntrySubmission'])->name('etf-entry-submission');
 
-    Route::post('submit-award', [StakeholderReportQuestionController::class, 'submitAwardEntry'])->name('submit');
+    Route::post('submit-award', [AwardController::class, 'submitAwardEntry'])->name('submit');
 });
 
 Route::controller(HomeController::class)->group(function () {
@@ -283,8 +283,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('download-award-report/{type}', 'awardReportsDownload')->name('award.report.download');
         Route::get('download-award-asset', 'awardAssetsDownload')->name('award.report.assets');
         Route::get('sync-asset/{id}', 'syncAsset')->name('award.sync.asset');
-        Route::get('remove-duplicates', 'removeDuplicates')->name('award.report.remove.duplicates');
-
         Route::resource('shortlist', AwardShortlistStageController::class);
 
 

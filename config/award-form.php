@@ -67,7 +67,7 @@ return [
     ],
 
     'chapter_id' => [
-        'label' => 'Chapter',
+        'label' => 'Institution',
         'type' => 'select',
         'award_type' => 'both',
     ],

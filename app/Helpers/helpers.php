@@ -1374,50 +1374,123 @@ if (!function_exists('resolveAwardPermissions')) {
         $rejectRoute    = '#';
         $tooltipApprove = '';
         $tooltipReject  = '';
-        // dd($settings, $settings->allow_chapter_edit);
-        try {
 
-            if (in_array($userRole, chapterStakeholders()) && in_array((int)$award->chapter_status, [0, 2])) {
-                $canAct         = $settings->allow_chapter_approval ?? true;
-                $canEdit        = $settings->allow_chapter_edit ?? 0;
-                $canComment     = $settings->allow_chapter_comment ?? 0;
+        // try {
+
+        //     if (in_array($userRole, chapterStakeholders()) && in_array((int)$award->chapter_status, [0, 2])) {
+        //         $canAct         = $settings->allow_chapter_approval ?? true;
+        //         $canEdit        = $settings->allow_chapter_edit ?? 0;
+        //         $canComment     = $settings->allow_chapter_comment ?? 0;
+        //         $approveRoute   = route('stakeholders.award.approve', $award->id);
+        //         $rejectRoute    = route('stakeholders.award.reject', $award->id);
+        //         $tooltipApprove = 'Approve for Chapter';
+        //         $tooltipReject  = 'Reject for Chapter';
+        //     }elseif (in_array($userRole, zoneStakeholders()) && in_array((int)$award->zone_status, [0, 2])) {
+        //         $canAct         = $settings->allow_zone_approval ?? true;
+        //         $canEdit        = (bool)($settings['allow_zone_edit'] ?? false);
+        //         $canComment     = $settings->allow_zone_comment ?? 0;
+        //         $approveRoute   = route('stakeholders.award.approve', $award->id);
+        //         $rejectRoute    = route('stakeholders.award.reject', $award->id);
+        //         $tooltipApprove = 'Approve for Zone';
+        //         $tooltipReject  = 'Reject for Zone';
+        //     // }elseif (in_array($userRole, fieldStakeholders()) && (int)$award->zone_status === 1 && in_array((int)$award->field_status, [0, 2])) {
+        //     }elseif (in_array($userRole, fieldStakeholders()) && in_array((int)$award->field_status, [0, 2])) {
+        //         $canAct         = $settings->allow_field_approval ?? true;
+        //         $canEdit        = (bool)($settings['allow_field_edit'] ?? false);
+        //         $canComment     = $settings->allow_field_comment ?? 0;
+        //         $approveRoute   = route('stakeholders.award.approve', $award->id);
+        //         $rejectRoute    = route('stakeholders.award.reject', $award->id);
+        //         $tooltipApprove = 'Approve for Field';
+        //         $tooltipReject  = 'Reject for Field';
+
+        //     }
+        //     // NATIONAL SECRETARIAT & NCP TIER EVALUATION (Requires Zone & Field Approval)
+        //     elseif ($isAdmin || in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders()))
+        //             && (int)$award->zone_status === 1
+        //             && (int)$award->field_status === 1
+        //             && in_array((int)$award->national_status, [0, 2])) {
+
+        //         $canAct         = true;
+        //         $canEdit        = true;
+        //         $canComment     = true;
+        //         $approveRoute   = route('award.approve', $award->id);
+        //         $rejectRoute    = route('award.reject', $award->id);
+        //         $tooltipApprove = 'Approve for National';
+        //         $tooltipReject  = 'Reject for National';
+        //     }
+        // } catch (\Throwable $e) {
+
+        //     report($e);
+        // }
+        try {
+            if (
+                in_array($userRole, chapterStakeholders())
+                && in_array((int) $award->chapter_status, [0, 2])
+            ) {
+
+                $canAct     = ! $settings->allow_chapter_approval?->isPast();
+                $canEdit    = ! $settings->allow_chapter_edit?->isPast();
+                $canComment = ! $settings->allow_chapter_comment?->isPast();
+
                 $approveRoute   = route('stakeholders.award.approve', $award->id);
                 $rejectRoute    = route('stakeholders.award.reject', $award->id);
                 $tooltipApprove = 'Approve for Chapter';
                 $tooltipReject  = 'Reject for Chapter';
-            }elseif (in_array($userRole, zoneStakeholders()) && in_array((int)$award->zone_status, [0, 2])) {
-                $canAct         = $settings->allow_zone_approval ?? true;
-                $canEdit        = (bool)($settings['allow_zone_edit'] ?? false);
-                $canComment     = $settings->allow_zone_comment ?? 0;
+
+            } elseif (
+                in_array($userRole, zoneStakeholders())
+                && in_array((int) $award->zone_status, [0, 2])
+            ) {
+
+                $canAct     = ! $settings->allow_zone_approval?->isPast();
+                $canEdit    = ! $settings->allow_zone_edit?->isPast();
+                $canComment = ! $settings->allow_zone_comment?->isPast();
+
                 $approveRoute   = route('stakeholders.award.approve', $award->id);
                 $rejectRoute    = route('stakeholders.award.reject', $award->id);
                 $tooltipApprove = 'Approve for Zone';
                 $tooltipReject  = 'Reject for Zone';
-            // }elseif (in_array($userRole, fieldStakeholders()) && (int)$award->zone_status === 1 && in_array((int)$award->field_status, [0, 2])) {
-            }elseif (in_array($userRole, fieldStakeholders()) && in_array((int)$award->field_status, [0, 2])) {
-                $canAct         = $settings->allow_field_approval ?? true;
-                $canEdit        = (bool)($settings['allow_field_edit'] ?? false);
-                $canComment     = $settings->allow_field_comment ?? 0;
+
+            } elseif (
+                in_array($userRole, fieldStakeholders())
+                && in_array((int) $award->field_status, [0, 2])
+            ) {
+
+                $canAct     = ! $settings->allow_field_approval?->isPast();
+                $canEdit    = ! $settings->allow_field_edit?->isPast();
+                $canComment = ! $settings->allow_field_comment?->isPast();
+
                 $approveRoute   = route('stakeholders.award.approve', $award->id);
                 $rejectRoute    = route('stakeholders.award.reject', $award->id);
                 $tooltipApprove = 'Approve for Field';
                 $tooltipReject  = 'Reject for Field';
 
-            }
-            // NATIONAL SECRETARIAT & NCP TIER EVALUATION (Requires Zone & Field Approval)
-            elseif ($isAdmin || in_array($userRole, array_merge(secretariatStakeholders(), ncpStakeholders()))
-                    && (int)$award->zone_status === 1
-                    && (int)$award->field_status === 1
-                    && in_array((int)$award->national_status, [0, 2])) {
+            } elseif (
+                $isAdmin
+                || (
+                    in_array(
+                        $userRole,
+                        array_merge(
+                            secretariatStakeholders(),
+                            ncpStakeholders()
+                        )
+                    )
+                    && (int) $award->zone_status === 1
+                    && (int) $award->field_status === 1
+                    && in_array((int) $award->national_status, [0, 2])
+                )
+            ) {
 
-                $canAct         = true;
-                $canEdit        = true;
-                $canComment     = true;
+                $canAct     = true;
+                $canEdit    = true;
+                $canComment = true;
+
                 $approveRoute   = route('award.approve', $award->id);
                 $rejectRoute    = route('award.reject', $award->id);
                 $tooltipApprove = 'Approve for National';
                 $tooltipReject  = 'Reject for National';
             }
+
         } catch (\Throwable $e) {
 
             report($e);

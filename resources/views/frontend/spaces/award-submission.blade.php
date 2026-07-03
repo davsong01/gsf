@@ -257,6 +257,7 @@ $meta = $awardMeta[$type];
                                     'award' => null,
                                     'canEdit' => true,
                                     'isAdmin' => false,
+                                    'required' => true,
                                 ]
                             )
 

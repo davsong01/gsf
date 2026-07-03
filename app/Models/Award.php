@@ -54,33 +54,37 @@ class Award extends Model
     protected function name(): Attribute
     {
         return Attribute::get(function () {
-            if (strtolower($this->type) === 'etf') {
-                $firstName  = $this->entries?->firstWhere('key', 'first_name')?->value;
-                $middleName = $this->entries?->firstWhere('key', 'middle_name')?->value;
-                $lastName   = $this->entries?->firstWhere('key', 'last_name')?->value;
 
-                // Filter out empty values and join them cleanly with a space
-                return implode(' ', array_filter([$firstName, $middleName, $lastName])) ?: 'Unnamed Nominee';
-            }
+            $firstName  = $this->entry?->first_name;
+            $middleName = $this->entry?->middle_name;
+            $lastName   = $this->entry?->last_name;
 
-            return $this->entries?->firstWhere('key', 'name_surname_first')?->value ?? 'Unnamed Nominee';
+            return implode(
+                ' ',
+                array_filter([
+                    $firstName,
+                    $middleName,
+                    $lastName,
+                ])
+            ) ?: 'Unnamed Nominee';
         });
     }
 
     protected function email(): Attribute
     {
         return Attribute::get(function () {
-            return $this->entries?->firstWhere('key', 'email')?->value
-                ?? $this->entries?->firstWhere('key', 'email_address')?->value
-                ?? 'Unnamed Email';
+
+            return $this->entry?->email_address
+                ?? $this->entry?->email
+                ?? 'No Email';
         });
     }
 
     protected function phone(): Attribute
     {
         return Attribute::get(function () {
-            return $this->entries?->firstWhere('key', 'phone_number')?->value
-                // ?? $this->entries?->firstWhere('key', 'email_address')?->value
+
+            return $this->entry?->phone_number
                 ?? '-';
         });
     }
