@@ -143,8 +143,8 @@ Route::get('/clear', function () {
     echo "<p>Fully optimized.*</p>";
 });
 
-Route:: get('cron/birthday-notification', [CronController::class, 'cron']);
-Route:: get('create-nec', [CronController::class, 'createNecDummyCredentials']);
+Route::get('cron/birthday-notification', [CronController::class, 'cron']);
+Route::get('create-nec', [CronController::class, 'createNecDummyCredentials']);
 Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
 Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
 Route::get('cron/send-report-reminders', [CronController::class, 'sendReportReminders']);
@@ -173,6 +173,13 @@ Route::get('/preview-email/{id}', function ($id) {
 });
 
 Route::get('/conference', [ConferenceController::class, 'index']);
+
+Route::prefix('award')->as('award.')->group(function () {
+    Route::get('first-class', [StakeholderReportQuestionController::class, 'firstClassSubmission'])->name('first-class-entry-submission');
+    Route::get('etf-entry-submission', [StakeholderReportQuestionController::class, 'etfEntrySubmission'])->name('etf-entry-submission');
+
+    Route::post('submit-award', [StakeholderReportQuestionController::class, 'submitAwardEntry'])->name('questions.clone');
+});
 
 Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index')->name('home.index');

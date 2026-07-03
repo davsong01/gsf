@@ -15,7 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Log;
+use Illuminate\Support\Facades\Log;
 use ZipArchive;
 
 class AwardController extends Controller
@@ -828,31 +828,50 @@ class AwardController extends Controller
 
     public function awardAssetsDownload()
     {
-        // 1. Initial Check to ensure we have data before opening a Zip archive
-        $totalAwards = Award::count();
-        if ($totalAwards === 0) {
-            return redirect()->back()->with('error', 'No award records found to download.');
+        if (! Award::exists()) {
+            return back()->with(
+                'error',
+                'No award records found to download.'
+            );
         }
 
-        // Identify and differentiate asset classification rules
-        $allFileFields = fileFields();
-        $images = ["picturesave_picture_as_your_name", "upload_a_clear_and_recent_picture_of_yourself"];
-        $documents = array_diff($allFileFields, $images);
+        $awardFields = awardFormFields();
 
-        // 2. Setup Temporary Zip Target File Archive
-        $zipFileName = now()->format('Y-m-d-His') . '-award-assets.zip';
+        $imageFields = collect($awardFields)
+            ->filter(fn ($field) => $field['type'] === 'image')
+            ->keys()
+            ->toArray();
 
-        $zipDirectory = base_path('protected_uploads/award-assets');
+        $documentFields = collect($awardFields)
+            ->filter(fn ($field) => $field['type'] === 'file')
+            ->keys()
+            ->toArray();
 
-        if (!file_exists($zipDirectory)) {
+        $zipFileName = now()->format('Y-m-d-His')
+            . '-award-assets.zip';
+
+        $zipDirectory = base_path(
+            'protected_uploads/award-assets'
+        );
+
+        if (! file_exists($zipDirectory)) {
             mkdir($zipDirectory, 0777, true);
         }
 
-        $zipFilePath = $zipDirectory . '/' . $zipFileName;
+        $zipFilePath = "{$zipDirectory}/{$zipFileName}";
 
         $zip = new ZipArchive();
-        if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            return redirect()->back()->with('error', 'Could not initialize compressed ZIP engine context.');
+
+        if (
+            $zip->open(
+                $zipFilePath,
+                ZipArchive::CREATE | ZipArchive::OVERWRITE
+            ) !== true
+        ) {
+            return back()->with(
+                'error',
+                'Could not create ZIP archive.'
+            );
         }
 
         $zip->addEmptyDir('images');
@@ -860,77 +879,126 @@ class AwardController extends Controller
 
         $hasAddedFiles = false;
 
-        // 3. Expand Execution Limits Safely
-        @set_time_limit(300); // Extends script lifetime window up to 5 minutes
-        ini_set('memory_limit', '512M'); // Allocates plenty of headspace workspace buffer
+        @set_time_limit(300);
+        ini_set('memory_limit', '512M');
 
-        // 4. Stream and download records using memory-safe Chunks
-        Award::with('entries')->where('national_status', 1)->latest()->chunk(20, function ($awards) use ($images, $documents, $zip, &$hasAddedFiles) {
-            foreach ($awards as $award) {
-                $nomineeSlug = str_replace([' ', '/', '\\'], '_', $award->name ?? 'Unnamed_Nominee');
+        Award::with('entry')
+            // ->where('national_status', 0)
+            ->latest()
+            ->chunk(20, function ($awards) use (
+                $zip,
+                $imageFields,
+                $documentFields,
+                &$hasAddedFiles
+            ) {
 
-                foreach ($award->entries as $entry) {
-                    if (empty($entry->value) || str_starts_with($entry->value, 'Download Failed:')) {
+                foreach ($awards as $award) {
+
+                    if (! $award->entry) {
                         continue;
                     }
 
-                    $isImage = in_array($entry->key, $images);
-                    $isDocument = in_array($entry->key, $documents);
+                    $nomineeSlug = str($award->name ?? 'Unnamed')
+                        ->replace([' ', '/', '\\'], '_');
 
-                    if ($isImage || $isDocument) {
+                    foreach (
+                        array_merge($imageFields, $documentFields)
+                        as $field
+                    ) {
+
+                        $value = $award->entry->{$field};
+
+                        if (
+                            blank($value)
+                            || str_starts_with(
+                                $value,
+                                'Download Failed:'
+                            )
+                        ) {
+                            continue;
+                        }
+
                         try {
-                            $decodedPath = base64_decode(ltrim($entry->value, '/'));
-                            $fullPath = base_path('protected_uploads/' . ltrim($decodedPath, '/'));
 
-                            if (!file_exists($fullPath)) {
-                                Log::warning("Missing file: {$fullPath}");
+                            $decodedPath = base64_decode(
+                                ltrim($value, '/')
+                            );
+
+                            $fullPath = base_path(
+                                'protected_uploads/'
+                                . ltrim($decodedPath, '/')
+                            );
+
+                            if (! file_exists($fullPath)) {
+                                Log::warning(
+                                    "Missing file: {$fullPath}"
+                                );
+
                                 continue;
                             }
 
+                            $extension = pathinfo(
+                                $fullPath,
+                                PATHINFO_EXTENSION
+                            );
 
-                            $sanitizedKey = str_replace(['_file_id', 'upload_a_'], '', $entry->key);
+                            $fileName = sprintf(
+                                '%s_%s.%s',
+                                $nomineeSlug,
+                                $field,
+                                $extension
+                            );
 
-                            $extension = pathinfo($fullPath, PATHINFO_EXTENSION);
+                            $folder = in_array(
+                                $field,
+                                $imageFields
+                            )
+                                ? 'images/'
+                                : 'documents/';
 
-                            $finalFileName = "{$nomineeSlug}_{$sanitizedKey}.{$extension}";
-                            $targetFolder = $isImage ? 'images/' : 'documents/';
-
-                            // Most memory-efficient method
-                            $zip->addFile($fullPath, $targetFolder . $finalFileName);
+                            $zip->addFile(
+                                $fullPath,
+                                $folder . $fileName
+                            );
 
                             $hasAddedFiles = true;
 
-                        } catch (\Exception $e) {
-                            dd($e->getMessage());
+                        } catch (\Throwable $e) {
+
                             Log::error(
-                                "Failed adding asset for Award ID [{$award->id}], Key [{$entry->key}]: " . $e->getMessage()
+                                "Failed adding asset for Award ID [{$award->id}], Field [{$field}]: {$e->getMessage()}"
                             );
                         }
                     }
                 }
-            }
 
-            // Force PHP to wipe finished Eloquent models from RAM before moving to the next chunk
-            unset($awards);
-            gc_collect_cycles();
-        });
+                unset($awards);
 
-        // Save and finalize our tracking container archive pointers
+                gc_collect_cycles();
+            });
+
         $zip->close();
 
-        // 5. Deliver complete file stream to frontend browser
-        if ($hasAddedFiles && file_exists($zipFilePath)) {
-            return response()->download($zipFilePath, $zipFileName)->deleteFileAfterSend(true);
+        if (
+            $hasAddedFiles
+            && file_exists($zipFilePath)
+        ) {
+            return response()
+                ->download($zipFilePath, $zipFileName)
+                ->deleteFileAfterSend(true);
         }
 
         if (file_exists($zipFilePath)) {
             @unlink($zipFilePath);
         }
 
-        return redirect()->back()->with('error', 'No binary attachments were found to include in the ZIP package.');
+        return back()->with(
+            'error',
+            'No binary attachments were found to include in the ZIP package.'
+        );
     }
 
-   public function adjustAwardStatus(
+    public function adjustAwardStatus(
         Request $request,
         Award $award
     ) {
