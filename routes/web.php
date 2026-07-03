@@ -68,7 +68,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 
-Route::get('migrate-award-entries', [CronController::class, 'migrateAwardEntries'])->name('verify.registration.show');
+// Route::get('migrate-award-entries', [CronController::class, 'migrateAwardEntries'])->name('verify.registration.show');
 
 Route::get('/queue', function () {
     // Artisan::call('queue:retry all');
@@ -175,10 +175,10 @@ Route::get('/preview-email/{id}', function ($id) {
 Route::get('/conference', [ConferenceController::class, 'index']);
 
 Route::prefix('award')->as('award.')->group(function () {
-    Route::get('first-class', [StakeholderReportQuestionController::class, 'firstClassSubmission'])->name('first-class-entry-submission');
-    Route::get('etf-entry-submission', [StakeholderReportQuestionController::class, 'etfEntrySubmission'])->name('etf-entry-submission');
+    Route::get('first-class', [AwardController::class, 'firstClassSubmission'])->name('first-class-entry-submission');
+    Route::get('etf-entry-submission', [AwardController::class, 'etfEntrySubmission'])->name('etf-entry-submission');
 
-    Route::post('submit-award', [StakeholderReportQuestionController::class, 'submitAwardEntry'])->name('questions.clone');
+    Route::post('submit-award', [StakeholderReportQuestionController::class, 'submitAwardEntry'])->name('submit');
 });
 
 Route::controller(HomeController::class)->group(function () {

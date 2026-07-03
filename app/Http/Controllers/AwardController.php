@@ -1081,5 +1081,35 @@ class AwardController extends Controller
         );
     }
 
+    public function firstClassSubmission()
+    {
+        $type = 'go';
 
+        $fields = collect(awardFormFields())
+            ->filter(fn ($field) => in_array(
+                $field['award_type'] ?? 'both',
+                ['both', $type]
+            ));
+
+        return view(
+            'frontend.' . frontendTemplate() . '.award-submission',
+            compact('fields', 'type')
+        );
+    }
+
+    public function etfEntrySubmission()
+    {
+        $type = 'etf';
+
+        $fields = collect(awardFormFields())
+            ->filter(fn ($field) => in_array(
+                $field['award_type'] ?? 'both',
+                ['both', $type]
+            ));
+
+        return view(
+            'frontend.' . frontendTemplate() . '.award-submission',
+            compact('fields', 'type')
+        );
+    }
 }
