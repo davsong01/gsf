@@ -67,6 +67,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
+
+Route::get('migrate-award-entries', [CronController::class, 'migrateAwardEntries'])->name('verify.registration.show');
+
 Route::get('/queue', function () {
     // Artisan::call('queue:retry all');
     Artisan::call('queue:work --tries=2');

@@ -228,8 +228,8 @@
                                             Reject
                                         </option>
                                     @endif
-                                           
-                                    @if($isAdmin && $user->email == 'davsong@gmail.com')
+
+                                    @if($isAdmin || $user->email == 'davsong@gmail.com')
                                         <option value="delete"
                                                 data-url="{{ route($isAdmin ? 'awards.bulk-delete' : 'stakeholders.awards.bulk-delete') }}"
                                                 data-method="DELETE"

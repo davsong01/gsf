@@ -13,16 +13,25 @@ use App\Models\StakeholderReport;
 use App\Models\TempUser;
 use App\Models\UtilityCronTask;
 use App\Models\UtilityTracker;
+use App\Services\AwardService;
 use App\Services\EmailService;
 use App\Services\ReportNotificationService;
 use Carbon\Carbon;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class CronController extends Controller
 {
+    public function migrateAwardEntries(): string
+    {
+        return app(AwardService::class)->migrateAwardEntries();
+    }
+
     public function cron(){
         //All Notifiable emails
         $notifiables = ['princedamab19057@gmail.com', 'oyedepokds@gmail.com', 'gsfnationalpublicity@gmail.com'];
