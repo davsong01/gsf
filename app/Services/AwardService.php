@@ -23,161 +23,161 @@ use Illuminate\Support\Facades\Schema;
 
 
 class AwardService{
-    public function storeFromGoogle(array $data)
-    {
-        $type = $data['type'] ?? 'Default Google Form';
+    // public function storeFromGoogle(array $data)
+    // {
+    //     $type = $data['type'] ?? 'Default Google Form';
 
-        // Grab our structured fields array from the data array input
-        $formFields = $data['fields'] ?? [];
+    //     // Grab our structured fields array from the data array input
+    //     $formFields = $data['fields'] ?? [];
 
-        try {
-            DB::transaction(function () use ($formFields, $type) {
+    //     try {
+    //         DB::transaction(function () use ($formFields, $type) {
 
-                // Create parent record
-                $award = Award::create([
-                    'type'            => $type,
-                    'reference'       => strtoupper($type . '-' . uniqid()),
-                    'zone_status'     => 0,
-                    'field_status'    => 0,
-                    'national_status' => 0,
-                ]);
+    //             // Create parent record
+    //             $award = Award::create([
+    //                 'type'            => $type,
+    //                 'reference'       => strtoupper($type . '-' . uniqid()),
+    //                 'zone_status'     => 0,
+    //                 'field_status'    => 0,
+    //                 'national_status' => 0,
+    //             ]);
 
-                // Loop through the array of field items
-                foreach ($formFields as $field) {
-                    $key   = $field['key'] ?? null;
-                    $name  = $field['name'] ?? null;
-                    $value = $field['value'] ?? null;
+    //             // Loop through the array of field items
+    //             foreach ($formFields as $field) {
+    //                 $key   = $field['key'] ?? null;
+    //                 $name  = $field['name'] ?? null;
+    //                 $value = $field['value'] ?? null;
 
-                    if (!$key || $value === null || $value === '') {
-                        continue;
-                    }
+    //                 if (!$key || $value === null || $value === '') {
+    //                     continue;
+    //                 }
 
-                    if (in_array($key, ['column_38'])) {
-                        continue;
-                    }
+    //                 if (in_array($key, ['column_38'])) {
+    //                     continue;
+    //                 }
 
-                    if ($key === 'select_institution') {
-                        // Look up the database to instantly grab the matching ID record
-                        $chapter = DB::table('chapters')
-                                        ->where('name', $value)
-                                        ->first();
+    //                 if ($key === 'select_institution') {
+    //                     // Look up the database to instantly grab the matching ID record
+    //                     $chapter = DB::table('chapters')
+    //                                     ->where('name', $value)
+    //                                     ->first();
 
-                        if ($chapter) {
-                            $value = $chapter->id;
-                            $key = 'chapter_id';
+    //                     if ($chapter) {
+    //                         $value = $chapter->id;
+    //                         $key = 'chapter_id';
 
-                            $award->update([
-                                'chapter_id' => $chapter->id,
-                                'zone_id'    => $chapter->zone_id,
-                                'field_id'   => $chapter->field_id
-                            ]);
-                        }
-                    }elseif ($key === 'timestamp') {
-                        $award->update([
-                            'created_at' => \Carbon\Carbon::parse($value),
-                            'updated_at' => \Carbon\Carbon::parse($value)
-                        ]);
+    //                         $award->update([
+    //                             'chapter_id' => $chapter->id,
+    //                             'zone_id'    => $chapter->zone_id,
+    //                             'field_id'   => $chapter->field_id
+    //                         ]);
+    //                     }
+    //                 }elseif ($key === 'timestamp') {
+    //                     $award->update([
+    //                         'created_at' => \Carbon\Carbon::parse($value),
+    //                         'updated_at' => \Carbon\Carbon::parse($value)
+    //                     ]);
 
-                        continue;
-                    }elseif (str_ends_with($key, '_file_id') || in_array($key, ['upload_a_clear_and_recent_picture_of_yourself', 'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature', 'picturesave_picture_as_your_name', 'upload_result'])) {
-                        try {
-                            if (filter_var($value, FILTER_VALIDATE_URL)) {
+    //                     continue;
+    //                 }elseif (str_ends_with($key, '_file_id') || in_array($key, ['upload_a_clear_and_recent_picture_of_yourself', 'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature', 'picturesave_picture_as_your_name', 'upload_result'])) {
+    //                     try {
+    //                         if (filter_var($value, FILTER_VALIDATE_URL)) {
 
-                                // Upgraded regex to cleanly extract exactly 28-57 characters of a standard Google Drive ID
-                                // without picking up trailing parameters like /view, ?usp=sharing, etc.
-                                preg_match('/(?:id=|\/d\/)([a-zA-Z0-9-_]{28,57})/', $value, $matches);
+    //                             // Upgraded regex to cleanly extract exactly 28-57 characters of a standard Google Drive ID
+    //                             // without picking up trailing parameters like /view, ?usp=sharing, etc.
+    //                             preg_match('/(?:id=|\/d\/)([a-zA-Z0-9-_]{28,57})/', $value, $matches);
 
-                                if (!empty($matches[1])) {
-                                    $value = $matches[1];
-                                } else {
-                                    // If it's a URL but NOT a Google Drive link, skip the API entirely
-                                    // and just keep the URL as the text value so data isn't lost.
-                                    $key = str_replace('_file_id', '', $key);
-                                    continue;
-                                }
-                            }
+    //                             if (!empty($matches[1])) {
+    //                                 $value = $matches[1];
+    //                             } else {
+    //                                 // If it's a URL but NOT a Google Drive link, skip the API entirely
+    //                                 // and just keep the URL as the text value so data isn't lost.
+    //                                 $key = str_replace('_file_id', '', $key);
+    //                                 continue;
+    //                             }
+    //                         }
 
-                            // if (filter_var($value, FILTER_VALIDATE_URL)) {
-                            //     preg_match('/(?:id=|\/d\/)([a-zA-Z0-9-_]{25,})/', $value, $matches);
+    //                         // if (filter_var($value, FILTER_VALIDATE_URL)) {
+    //                         //     preg_match('/(?:id=|\/d\/)([a-zA-Z0-9-_]{25,})/', $value, $matches);
 
-                            //     if (!empty($matches[1])) {
-                            //         // Transform the full URL string into just the clean alphanumeric Drive ID
-                            //         $value = $matches[1];
-                            //     } else {
-                            //         throw new \Exception("Could not extract a valid Google Drive File ID from URL: {$value}");
-                            //     }
+    //                         //     if (!empty($matches[1])) {
+    //                         //         // Transform the full URL string into just the clean alphanumeric Drive ID
+    //                         //         $value = $matches[1];
+    //                         //     } else {
+    //                         //         throw new \Exception("Could not extract a valid Google Drive File ID from URL: {$value}");
+    //                         //     }
 
-                            // }
-                            // ==========================================
-                            // LIVE GOOGLE FORMS: GOOGLE DRIVE API ACCESS
-                            // ==========================================
-                            $client = new Client();
-                            $client->setAuthConfig(storage_path('app/google-credentials.json'));
-                            $client->addScope(Drive::DRIVE_READONLY);
-                            $driveService = new Drive($client);
+    //                         // }
+    //                         // ==========================================
+    //                         // LIVE GOOGLE FORMS: GOOGLE DRIVE API ACCESS
+    //                         // ==========================================
+    //                         $client = new Client();
+    //                         $client->setAuthConfig(storage_path('app/google-credentials.json'));
+    //                         $client->addScope(Drive::DRIVE_READONLY);
+    //                         $driveService = new Drive($client);
 
-                            // 1. Fetch metadata first to get original name & mimeType
-                            $fileMetadata = $driveService->files->get($value, ['fields' => 'name, mimeType']);
-                            $originalName = $fileMetadata->getName();
-                            $mimeType = $fileMetadata->getMimeType();
+    //                         // 1. Fetch metadata first to get original name & mimeType
+    //                         $fileMetadata = $driveService->files->get($value, ['fields' => 'name, mimeType']);
+    //                         $originalName = $fileMetadata->getName();
+    //                         $mimeType = $fileMetadata->getMimeType();
 
-                            // 2. Stream download the file bytes from Drive
-                            $response = $driveService->files->get($value, ['alt' => 'media']);
-                            $fileContents = $response->getBody()->getContents();
+    //                         // 2. Stream download the file bytes from Drive
+    //                         $response = $driveService->files->get($value, ['alt' => 'media']);
+    //                         $fileContents = $response->getBody()->getContents();
 
-                            // 3. Keep memory clean by saving to a temp file path
-                            $tmpFilePath = tempnam(sys_get_temp_dir(), 'gdrive_');
-                            file_put_contents($tmpFilePath, $fileContents);
+    //                         // 3. Keep memory clean by saving to a temp file path
+    //                         $tmpFilePath = tempnam(sys_get_temp_dir(), 'gdrive_');
+    //                         file_put_contents($tmpFilePath, $fileContents);
 
-                            // 4. Instantiate object for FileUploadService validation parameters
-                            $uploadedFile = new \Illuminate\Http\UploadedFile(
-                                $tmpFilePath,
-                                $originalName,
-                                $mimeType,
-                                UPLOAD_ERR_OK,
-                                true
-                            );
+    //                         // 4. Instantiate object for FileUploadService validation parameters
+    //                         $uploadedFile = new \Illuminate\Http\UploadedFile(
+    //                             $tmpFilePath,
+    //                             $originalName,
+    //                             $mimeType,
+    //                             UPLOAD_ERR_OK,
+    //                             true
+    //                         );
 
-                            $uploadedUrl = app(FileUploadService::class)->secureUpload(
-                                $uploadedFile,
-                                'award-files'
-                            );
+    //                         $uploadedUrl = app(FileUploadService::class)->secureUpload(
+    //                             $uploadedFile,
+    //                             'award-files'
+    //                         );
 
-                            if (file_exists($tmpFilePath)) {
-                                @unlink($tmpFilePath);
-                            }
+    //                         if (file_exists($tmpFilePath)) {
+    //                             @unlink($tmpFilePath);
+    //                         }
 
-                            $key = str_replace('_file_id', '', $key);
-                            $value = $uploadedUrl;
+    //                         $key = str_replace('_file_id', '', $key);
+    //                         $value = $uploadedUrl;
 
-                        } catch (\Exception $e) {
-                            if (isset($tmpFilePath) && file_exists($tmpFilePath)) {
-                                @unlink($tmpFilePath);
-                            }
+    //                     } catch (\Exception $e) {
+    //                         if (isset($tmpFilePath) && file_exists($tmpFilePath)) {
+    //                             @unlink($tmpFilePath);
+    //                         }
 
-                            Log::error("File Ingestion processing failed for key [{$key}]: " . $e->getMessage());
-                            $key = str_replace('_file_id', '', $key);
-                            $value = 'Download Failed: ' . $e->getMessage();
-                        }
-                    }
+    //                         Log::error("File Ingestion processing failed for key [{$key}]: " . $e->getMessage());
+    //                         $key = str_replace('_file_id', '', $key);
+    //                         $value = 'Download Failed: ' . $e->getMessage();
+    //                     }
+    //                 }
 
-                    // Store everything cleanly matching your precise mapping schema layout
-                    AwardEntries::create([
-                        'award_id' => $award->id,
-                        'key'      => $key,
-                        'name'     => $name,
-                        'value'    => is_array($value) ? json_encode($value) : (string)$value,
-                    ]);
-                }
-            });
+    //                 // Store everything cleanly matching your precise mapping schema layout
+    //                 AwardEntries::create([
+    //                     'award_id' => $award->id,
+    //                     'key'      => $key,
+    //                     'name'     => $name,
+    //                     'value'    => is_array($value) ? json_encode($value) : (string)$value,
+    //                 ]);
+    //             }
+    //         });
 
-            return ['status' => 'success', 'message' => 'Structured entry items processed!', 'code' => 201];
+    //         return ['status' => 'success', 'message' => 'Structured entry items processed!', 'code' => 201];
 
-        } catch (\Exception $e) {
-            Log::error("Google Webhook Transaction Failed: " . $e->getMessage());
-            return ['status' => 'error', 'message' => $e->getMessage(), 'code' => 500];
-        }
-    }
+    //     } catch (\Exception $e) {
+    //         Log::error("Google Webhook Transaction Failed: " . $e->getMessage());
+    //         return ['status' => 'error', 'message' => $e->getMessage(), 'code' => 500];
+    //     }
+    // }
 
     public function migrateAwardEntries(): string
     {
@@ -321,9 +321,6 @@ class AwardService{
     {
         $role = $user->role_id ?? $user->role;
 
-        /** =====================
-         * BASE MODELS
-         * ===================== */
         $chaptersQuery = Chapter::query();
         $zonesQuery    = Zone::query();
         $fieldsQuery   = Field::query();

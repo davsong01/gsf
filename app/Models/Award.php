@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\AwardEntries;
 use App\Models\AwardEntry;
 use App\Models\AwardShortlist;
 use App\Models\Chapter;
@@ -21,10 +20,6 @@ class Award extends Model
     // Optional: If you want to automatically cast it or treat it explicitly
     protected $dates = ['deleted_at'];
     protected $guarded = [];
-
-    public function entries(){
-        return $this->hasMany(AwardEntries::class);
-    }
 
     public function entry(){
         return $this->hasOne(AwardEntry::class);
