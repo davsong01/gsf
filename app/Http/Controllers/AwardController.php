@@ -548,7 +548,7 @@ class AwardController extends Controller
         try {
             DB::transaction(function () use ($award) {
                 // 1. Delete all associated form input entries first
-                $award->entries()->delete();
+                $award->entry()->delete();
 
                 // 2. Delete the parent award record
                 $award->delete();
@@ -568,10 +568,10 @@ class AwardController extends Controller
     {
         try {
             DB::transaction(function () use ($award) {
-                if (method_exists($award->entries(), 'forceDelete')) {
-                    $award->entries()->forceDelete();
+                if (method_exists($award->entry(), 'forceDelete')) {
+                    $award->entry()->forceDelete();
                 } else {
-                    $award->entries()->delete();
+                    $award->entry()->delete();
                 }
 
                 $award->forceDelete();
