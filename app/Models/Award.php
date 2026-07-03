@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\AwardEntries;
+use App\Models\AwardEntry;
 use App\Models\AwardShortlist;
 use App\Models\Chapter;
 use App\Models\Field;
@@ -23,6 +24,10 @@ class Award extends Model
 
     public function entries(){
         return $this->hasMany(AwardEntries::class);
+    }
+
+    public function entry(){
+        return $this->hasOne(AwardEntry::class);
     }
 
     public function chapter(){

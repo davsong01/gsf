@@ -2,10 +2,12 @@
 namespace App\Services;
 
 
+use App\Http\Controllers\AwardController;
 use App\Models\Award;
 use App\Models\AwardEntries;
 use App\Models\AwardShortlist;
 use App\Models\AwardShortlistHistory;
+use App\Models\AwardShortlistStage;
 use App\Models\Chapter;
 use App\Models\Field;
 use App\Models\Zone;
@@ -23,7 +25,6 @@ use Illuminate\Support\Facades\Schema;
 class AwardService{
     public function storeFromGoogle(array $data)
     {
-
         $type = $data['type'] ?? 'Default Google Form';
 
         // Grab our structured fields array from the data array input
@@ -289,38 +290,22 @@ class AwardService{
             'give_a_brief_testimony_of_your_salvation_here' => 'salvation_testimony',
             'facultyschool' => 'faculty_name',
             'proposed_degreediploma' => 'proposed_degree_diploma',
-
             'name_branch_assembly_of_your_localhome_church' => 'local_church_name',
-
             'phone_number_of_your_local_assembly_pastor' => 'local_pastor_phone_number',
-
             'your_cumulative_grade_point_average_cgpa' => 'cgpa',
-
-            'enter_your_account_details_note_this_does_not_guarantee_automatic_qualification_its_simply_to_help_streamline_the_process' => 'account_details',
-
+            'enter_your_account_details_note_this_does_not_guarantee_automatic_qualification_its_simply_to_help_streamline_the_process' => 'bank_name',
             'upload_a_clear_and_recent_picture_of_yourself' => 'picture',
             'picturesave_picture_as_your_name' => 'picture',
-
             'enter_institution_if_you_selected_others_above' => 'other_institution_name',
-
             'home_town_' => 'home_town',
-
             'permanent_home_address_' => 'permanent_home_address',
-
             'facultyschool_' => 'faculty_name',
-
             'course_of_study_' => 'course_of_study',
-
             'proposed_degreediploma_' => 'proposed_degree_diploma',
-
             'matric_no_' => 'matric_no',
-
             'proposed_year_of_completion_' => 'proposed_year_of_completion',
-
             'name_branch_assembly_of_your_localhome_church_' => 'local_church_name',
-
             'local_church_address_' => 'local_church_address',
-
             'first_semester_gpa_'  => 'first_semester_gpa',
 
             // Miscellaneous
@@ -329,7 +314,6 @@ class AwardService{
             'upload_result' => 'result_file',
             'result_file' => 'result_file',
             'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature' => 'result_file'
-
         ];
     }
 
@@ -406,7 +390,7 @@ class AwardService{
          * ===================== */
         $awardsQuery = Award::whereYear('created_at', now()->year)
             ->with([
-                'entries',
+                'entry',
                 'chapter',
                 'zone',
                 'field',
@@ -474,9 +458,15 @@ class AwardService{
             );
         }
 
-        if ($request->filled('name')) {
-            $awardsQuery->whereHas('entries', function ($query) use ($request) {
-                $query->where('value', 'like', '%' . $request->name . '%');
+        $n = trim($request->name);
+
+        if ($n !== '') {
+            $awardsQuery->whereHas('entry', function ($q) use ($n) {
+                $q->where(function ($q) use ($n) {
+                    $q->where('first_name', 'like', "%{$n}%")
+                    ->orWhere('middle_name', 'like', "%{$n}%")
+                    ->orWhere('last_name', 'like', "%{$n}%");
+                });
             });
         }
 
@@ -635,7 +625,8 @@ class AwardService{
             throw new \Exception('No entries selected.');
         }
 
-        DB::beginTransaction();
+        $isFinalStage = AwardShortlistStage::where('id', $stageId)->where('mark_as_final', 1)->exists();
+
 
         try {
             $awards = Award::withTrashed()
@@ -650,16 +641,29 @@ class AwardService{
 
                 // optional: if you already have history table
                 $this->logStageChange($award->id, $stageId, $remarks);
+
+                if($isFinalStage){
+                    app(AwardController::class)->approveEntry(
+                        new Request([
+                            'comment' => $remarks,
+                        ]),
+                        $award->fresh()
+                    );
+                }else{
+                    $award->update([
+                        'national_status' => 0,
+                        'national_rejected_on' => null,
+                        'national_rejected_by' => null,
+                        'national_approved_by' => null,
+                        'national_approved_on' => null,
+                    ]);
+                }
             }
 
-            DB::commit();
-
         } catch (\Exception $e) {
-            DB::rollBack();
             throw $e;
         }
     }
-
 
     protected function logStageChange(int $awardId, int $stageId, ?string $remarks = null): void
     {

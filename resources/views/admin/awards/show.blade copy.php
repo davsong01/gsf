@@ -1,6 +1,13 @@
 @php
     // Dynamically find a profile photo or primary image from key-value pairs to feature on the header banner
-    $headerImageEntry = $award?->entry->picture;
+    $fileFields = fileFields();;
+    $headerImageEntry = $award->entries->first(function($entry) {
+        return in_array(strtolower($entry->key), [
+            'upload_a_clear_and_recent_picture_of_yourself_file_id',
+            'upload_a_clear_and_recent_picture_of_yourself',
+            'picturesave_picture_as_your_name'
+        ]) && !empty($entry->value);
+    });
 
     $permissions = resolveAwardPermissions($award);
     $canAct = $permissions->canAct;
@@ -29,9 +36,9 @@
             <!-- Left Column: Avatar Picture Matrix Container -->
             <div class="col-auto">
                 @if($headerImageEntry)
-                    <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry]) }}"
+                    <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry->value]) }}"
                          class="header-avatar-preview trigger-zoom-modal"
-                         data-file-url="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry]) }}"
+                         data-file-url="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $headerImageEntry->value]) }}"
                          data-label="Nominee Profile Photo"
                          title="Click to expand snapshot portrait"
                          alt="Nominee Picture">
@@ -272,7 +279,133 @@
 
         <div class="section-card">
             <h4 class="text-dark fw-bold mb-2 border-bottom pb-2">Nomination Entry Form Values</h4>
-            @include('admin.awards.award_form')
+            <div class="row g-4">
+               
+                @foreach($award->entries as $entry)
+                    @php
+                        $isInstitutionKey = in_array($entry->key, ['select_institution', 'chapter_id']);
+
+                        $cleanKey = strtolower($entry->key);
+
+                        $isFieldFile = in_array($entry->key, $fileFields) || str_contains(strtolower($entry->key), 'file') || str_contains(strtolower($entry->key), 'image');
+
+                        $specialFields = specialFormFields();
+                        $hasSpecialSchema = array_key_exists($cleanKey, $specialFields);
+                        $fieldSchema = $hasSpecialSchema ? $specialFields[$cleanKey] : null;
+                        // dd($hasSpecialSchema);
+                    @endphp
+
+                    @if($isInstitutionKey && !$isAdmin)
+                        @continue
+                    @endif
+
+                    <div class="col-12 col-md-6">
+                        <div class="form-field-group border-0 h-100 justify-content-end">
+
+                            <label for="entry-{{ $entry->id }}"
+                                class="form-label text-dark fw-semibold font-sm mb-1 d-flex align-items-center gap-2">
+
+                                <span>{{ $entry->name }}</span>
+
+                                @if($isFieldFile)
+                                    <a href="{{route('award.sync.asset', $entry->id)}}" class="ml-1 badge bg-light text-primary border fw-normal d-inline-flex align-items-center gap-1"
+                                        style="font-size: 0.7rem; cursor: pointer;">
+                                        <i class="fa fa-sync-alt"></i>
+                                        Re-sync
+                                    </a>
+                                @endif
+
+                            </label>
+
+                            <div class="w-100">
+                                @if($isFieldFile)
+                                    <div class="d-flex align-items-center gap-3 border rounded-3 p-2 bg-white" style="min-height: 70px;">
+                                        @if(!empty($entry->value))
+                                            <img src="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download', ['file' => $entry->value]) }}"
+                                                class="file-thumbnail-preview trigger-zoom-modal"
+                                                data-file-url="{{ route(($isAdmin ? 'admin.protected.download' : 'protected.download'), ['file' => $entry->value]) }}"
+                                                data-label="{{ str_replace('_', ' ', $entry->key) }}"
+                                                title="Click to zoom file context"
+                                                alt="Attachment">
+                                        @else
+                                            <div class="bg-light text-muted rounded d-flex align-items-center justify-content-center" style="width:50px; height:50px; flex-shrink: 0;">
+                                                <i class="fa fa-file-image-o font-medium"></i>
+                                            </div>
+                                        @endif
+
+                                        <div class="flex-grow-1">
+                                            {{-- Hide file uploader entirely if form is not editable --}}
+                                            @if($canEdit == 1)
+                                                <input type="file"
+                                                    class="form-control form-control-sm border-0 p-0 shadow-none mb-1"
+                                                    id="entry-{{ $entry->id }}"
+                                                    name="entries[{{ $entry->key }}]"
+                                                    accept=".jpg,.jpeg,.png">
+                                                <div class="font-xs text-muted mt-0.5">Upload to replace file asset (Accepts: JPG, JPEG, PNG)</div>
+                                            @else
+                                                <span class="text-muted font-xs d-block"><i class="bx bx-lock-alt me-0.5"></i> Document locked for review</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @elseif($hasSpecialSchema)
+                                    {{-- Handle Custom Select Dropdown Options --}}
+                                    @if($fieldSchema['type'] === 'select')
+                                        <select class="form-select w-100 mb-1"
+                                                id="entry-{{ $entry->id }}"
+                                                name="entries[{{ $entry->key }}]"
+                                                {{ $canEdit == 0 ? 'disabled' : '' }}>
+                                            <option value="">-- Choose Option --</option>
+                                            @foreach($fieldSchema['options'] as $option)
+                                                <option value="{{ $option }}" {{ (string)$entry->value === (string)$option ? 'selected' : '' }}>
+                                                    {{ $option }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+
+                                    {{-- Handle Native HTML Date Inputs --}}
+                                    @elseif($fieldSchema['type'] === 'date')
+                                        <input type="date"
+                                            class="form-control w-100 mb-1"
+                                            id="entry-{{ $entry->id }}"
+                                            name="entries[{{ $entry->key }}]"
+                                            value="{{ !empty($entry->value) ? date('Y-m-d', strtotime($entry->value)) : '' }}"
+                                            {{ $canEdit == 0 ? 'disabled' : '' }}>
+                                    @endif
+                                @elseif($isInstitutionKey)
+                                    <select class="form-select w-100 mb-1"
+                                            id="entry-{{ $entry->id }}"
+                                            name="entries[{{ $entry->key }}]"
+                                            {{ $canEdit == 0 ? 'disabled' : '' }}>
+                                        <option value="">-- Select or Search Institution --</option>
+                                        @foreach($chapters as $chapter)
+                                            <option value="{{ $chapter->id }}" {{ (string)$entry->value === (string)$chapter->id ? 'selected' : '' }}>
+                                                {{ $chapter->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                @else
+                                    @if(strlen($entry->value) > 100)
+                                        <textarea class="form-control w-100"
+                                                id="entry-{{ $entry->id }}"
+                                                name="entries[{{ $entry->key }}]"
+                                                rows="3"
+                                                {{ $canEdit == 0 ? 'disabled' : '' }}>{{ $entry->value }}</textarea>
+                                    @else
+                                        <input type="text"
+                                            class="form-control w-100 mb-1"
+                                            id="entry-{{ $entry->id }}"
+                                            name="entries[{{ $entry->key }}]"
+                                            value="{{ $entry->value }}"
+                                            {{ $canEdit == 0 ? 'disabled' : '' }}>
+                                    @endif
+                                @endif
+                            </div>
+
+                        </div>
+                    </div>
+                @endforeach
+            </div>
             <input type="hidden" name="award_id" value="{{ $award->id }}">
             <div class="row g-4 mt-2  pt-2 mt-2 border-top">
                 @php

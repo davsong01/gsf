@@ -439,14 +439,14 @@
                                                 <td class="text-end pe-4 align-middle">
                                                     <div class="d-inline-flex align-items-center justify-content-end gap-1">
                                                         @if($isAdmin)
-                                                        <button type="button" class="btn btn-action-icon text-secondary bg-transparent border-0 p-1" data-toggle="modal" data-target="#statusAdjustModal{{ $award->id }}" title="Adjust Status">
+                                                        <button type="button" class="btn btn-action-icon text-secondary bg-transparent border-0 p-1" data-toggle="modal" data-target="#awardStatusAdjustModal{{ $award->id }}" title="Adjust Status">
                                                             <i class="fa fa-cog font-sm"></i>
                                                         </button>
                                                         @endif
 
                                                         <a href="{{ route($isAdmin ? 'awards.show' : 'stakeholders.awards.show', $award->id) }}" class="btn btn-action-icon text-warning p-1" title="Edit Entry" onclick="return confirm('Modify this record?');"><i class="fa fa-edit font-sm"></i></a>
 
-                                                        @if($isAdmin && $user->email == 'davsong@gmail.com')
+                                                        @if($isAdmin || $user->email == 'davsong@gmail.com')
                                                         <a href="#" class="btn btn-action-icon text-danger p-1" title="Delete Submission" onclick="event.preventDefault(); if (confirm('Remove this submission record?')) { document.getElementById('delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-trash font-sm"></i></a>
                                                         @endif
                                                     </div>

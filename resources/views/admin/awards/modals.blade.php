@@ -1,19 +1,70 @@
+@php
+    $award_approval_statuses = [
+        'chapter_pending'     => 'Chapter Pending',
+        'chapter_approved'    => 'Chapter Approved',
+        'chapter_rejected'    => 'Chapter Rejected',
+
+        'zone_pending'     => 'Zone Pending',
+        'zone_approved'    => 'Zone Approved',
+        'zone_rejected'    => 'Zone Rejected',
+
+        'field_pending'    => 'Field Pending',
+        'field_approved'   => 'Field Approved',
+        'field_rejected'   => 'Field Rejected',
+
+        'national_pending' => 'National Pending',
+        'national_approved'=> 'National Approved',
+        'national_rejected'=> 'National Rejected',
+    ];
+@endphp
 @foreach($awards as $awardGroup)
     @foreach($awardGroup as $award)
 
         {{-- Status Adjustment Modal --}}
-        <div class="modal fade" id="statusAdjustModal{{ $award->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal fade" id="awardStatusAdjustModal{{ $award->id }}" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <!-- Status setting operations form content can be structured inside this container -->
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title fw-bold">Adjust Status: {{ $award->reference }}</h5>
+                        <h5 class="modal-title fw-bold">Adjust Approval Status: {{ $award->reference }}</h5>
                         <button type="button" class="btn-close border-0 bg-transparent" data-dismiss="modal" aria-label="Close">&times;</button>
                     </div>
-                    <div class="modal-body">
-                        <!-- Custom settings inputs matching controller handlers -->
-                        <p class="font-sm text-muted">Modify verification markers for this nomination context profile.</p>
-                    </div>
+                    <form method="POST" action="{{ route('awards.adjust.status', $award->id) }}">
+                        @csrf
+                        <input type="hidden" name="award_id" value="{{$award->id}}">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>Approval Status</label>
+                                <select name="approval_status" class="form-control" required>
+                                    <option value="">-- Select Status --</option>
+                                    @foreach($award_approval_statuses as $key => $label)
+                                        @if(!in_array($key, ['zone_pending','field_pending', 'national_pending']))
+                                        <option value="{{ $key }}" @selected(request('approval_status') == $key)>
+                                            {{ $label }}
+                                        </option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Reason</label>
+                                <textarea
+                                    name="rejection_reason"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="Enter reason (optional)">
+                                </textarea>
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success">Submit</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        </div>
+
+                    </form>
                 </div>
             </div>
         </div>

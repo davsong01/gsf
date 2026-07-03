@@ -164,7 +164,7 @@ class AwardController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -260,117 +260,118 @@ class AwardController extends Controller
 
     public function updateAward(Request $request)
     {
-        $award = Award::with('entries')->where('id', $request->award_id)->first();
+        $award = Award::with('entry')->find($request->award_id);
 
-        if (!$award) {
+        if (! $award) {
             return back()->with('error', 'Award record not found.');
         }
 
         $permissions = resolveAwardPermissions($award);
 
-        $canComment = $permissions->canComment;
-
-        if (!$permissions->canEdit && !$permissions->canComment) {
-            return back()->with('error', 'Invalid Action: You do not have permission to modify this form.');
+        if (! $permissions->canEdit && ! $permissions->canComment) {
+            return back()->with(
+                'error',
+                'Invalid Action: You do not have permission to modify this form.'
+            );
         }
-
-        // 3. Establish lookup assets
-        $fileFields = fileFields();
-        $entries = $request->entries;
 
         $adminDetails = isAdmin();
         $isAdmin = $adminDetails['status'];
         $userRole = $adminDetails['userRole'];
 
-        // dd($entries, $request->all());
         try {
-            if($isAdmin){
-                $pdates = $request->only(["chapter_comment", "zone_comment", "field_comment", "national_comment"]);
-            }
+            $awardUpdates = [];
 
-            if(in_array($userRole, chapterStakeholders()) && $canComment){
-                $pdates = $request->only(["chapter_comment"]);
-            }
+            if ($permissions->canComment) {
 
-            if(in_array($userRole, zoneStakeholders())  && $canComment){
-                $pdates = $request->only(["zone_comment"]);
-            }
-
-            if(in_array($userRole, fieldStakeholders())  && $canComment){
-                $pdates = $request->only(["field_comment"]);
-            }
-
-            if(!empty($pdates)){
-                $award->update($pdates);
-            }
-
-            if(!empty($entries)){
-                foreach ($entries as $key => $value) {
-                    // Find the matching entry row relative to this award
-                    $toUpdate = $award->entries->firstWhere('key', $key);
-
-                    if (!$toUpdate) {
-                        continue;
-                    }
-
-                    $cleanKey = strtolower($key);
-
-                    // Check if the current payload key maps to a recognized file type
-                    if (in_array($cleanKey, $fileFields) || str_contains($cleanKey, 'file') || str_contains($cleanKey, 'image')) {
-
-                        // Ensure a physical file asset was actually attached inside the request payload
-                        if ($request->hasFile("entries.{$key}")) {
-                            $uploadedFile = $request->file("entries.{$key}");
-
-                            // Validate file integrity before shipping to the upload pipeline
-                            if ($uploadedFile->isValid()) {
-
-                                // Execute your secure upload service structure
-                                $value = app(FileUploadService::class)->secureUpload(
-                                    $uploadedFile,
-                                    'award-files'
-                                );
-
-                                // Grab the temp file path from the upload to handle cleaning downstream
-                                $tmpFilePath = $uploadedFile->getRealPath();
-                                if ($tmpFilePath && file_exists($tmpFilePath)) {
-                                    @unlink($tmpFilePath);
-                                }
-                            }
-                        } else {
-                            // Critical Safe Fallback: If no new file was uploaded, bypass rewriting
-                            // the field so we don't overwrite the existing filename with a null/empty string.
-                            continue;
-                        }
-                    }
-
-                    if(isAdmin()['status']){
-                        if(in_array($cleanKey, ['chapter_id', 'select_institution'])){
-                            $chapter = Chapter::where('id', $value)->first();
-                            if($chapter){
-                                $award->update([
-                                    'chapter_id' => $chapter->id,
-                                    'zone_id' => $chapter->zone_id,
-                                    'field_id' => $chapter->field_id,
-                                ]);
-                            }
-                        }
-                    }
-
-                    // Corrected: Set the database attribute column 'value' as the key wrapper target
-                    $toUpdate->update([
-                        'value' => $value,
+                if ($isAdmin) {
+                    $awardUpdates = $request->only([
+                        'chapter_comment',
+                        'zone_comment',
+                        'field_comment',
+                        'national_comment',
                     ]);
+                } elseif (in_array($userRole, chapterStakeholders())) {
+                    $awardUpdates = $request->only(['chapter_comment']);
+                } elseif (in_array($userRole, zoneStakeholders())) {
+                    $awardUpdates = $request->only(['zone_comment']);
+                } elseif (in_array($userRole, fieldStakeholders())) {
+                    $awardUpdates = $request->only(['field_comment']);
+                }
+
+                if (! empty(array_filter($awardUpdates, fn ($value) => filled($value)))) {
+                    $award->update($awardUpdates);
                 }
             }
 
-            return back()->with('message', 'Award entries updated successfully.');
+            if ($permissions->canEdit) {
+
+                $entryUpdates = [];
+
+                foreach (awardFormFields() as $key => $field) {
+
+                    if (! $request->has("entries.{$key}") && ! $request->hasFile("entries.{$key}")) {
+                        continue;
+                    }
+
+                    $type = $field['type'];
+
+                    if (in_array($type, ['file', 'image'])) {
+
+                        if (! $request->hasFile("entries.{$key}")) {
+                            continue;
+                        }
+
+                        $file = $request->file("entries.{$key}");
+
+                        if (! $file->isValid()) {
+                            continue;
+                        }
+
+                        $entryUpdates[$key] = app(FileUploadService::class)
+                            ->secureUpload($file, 'award-files');
+
+                        continue;
+                    }
+
+                    $value = $request->input("entries.{$key}");
+
+                    $entryUpdates[$key] = $value;
+
+                    if ($isAdmin && $key === 'chapter_id') {
+
+                        $chapter = Chapter::find($value);
+
+                        if ($chapter) {
+                            $award->update([
+                                'chapter_id' => $chapter->id,
+                                'zone_id' => $chapter->zone_id,
+                                'field_id' => $chapter->field_id,
+                            ]);
+                        }
+                    }
+                }
+
+                if (! empty($entryUpdates)) {
+                    $award->entry->update($entryUpdates);
+                }
+            }
+
+            return back()->with(
+                'message',
+                'Award entries updated successfully.'
+            );
+
         } catch (\Throwable $e) {
+
             report($e);
-            return back()->with('error', 'An error occurred while saving records: ' . $e->getMessage());
+
+            return back()->with(
+                'error',
+                'An error occurred while saving records: '.$e->getMessage()
+            );
         }
     }
-
 
     public function approveEntry(Request $request, Award $award)
     {
@@ -703,6 +704,18 @@ class AwardController extends Controller
         }
     }
 
+    public function shortlist(Request $request){
+
+        app(AwardService::class)->bulkShortlist(
+            $request->ids,
+            $request->shortlist_stage_id,
+            $request->remarks ?? null
+        );
+
+        return back()->with('message', 'Entry moved to stage successfully.');
+
+    }
+
     public function awardSettings()
     {
         // Fetches the first record or creates one with defaults if none exist
@@ -915,6 +928,89 @@ class AwardController extends Controller
         }
 
         return redirect()->back()->with('error', 'No binary attachments were found to include in the ZIP package.');
+    }
+
+   public function adjustAwardStatus(
+        Request $request,
+        Award $award
+    ) {
+        $status = $request->approval_status;
+
+        $updates = match ($status) {
+            'chapter_pending' => [
+                'chapter_status' => 0,
+            ],
+
+            'chapter_approved' => [
+                'chapter_status' => 1,
+                'chapter_comment' => null,
+            ],
+
+            'chapter_rejected' => [
+                'chapter_status' => 2,
+                'chapter_comment' => $request->rejection_reason,
+            ],
+
+            'zone_pending' => [
+                'zone_status' => 0,
+            ],
+
+            'zone_approved' => [
+                'zone_status' => 1,
+                'zone_comment' => null,
+            ],
+
+            'zone_rejected' => [
+                'zone_status' => 2,
+                'zone_comment' => $request->rejection_reason,
+            ],
+
+            'field_pending' => [
+                'field_status' => 0,
+            ],
+
+            'field_approved' => [
+                'field_status' => 1,
+                'field_comment' => null,
+            ],
+
+            'field_rejected' => [
+                'field_status' => 2,
+                'field_comment' => $request->rejection_reason,
+            ],
+
+            'national_pending' => [
+                'national_status' => 0,
+                'national_rejected_on' => now(),
+                'national_rejected_by' => auth()->user()->id
+            ],
+
+            'national_approved' => [
+                'national_status' => 1,
+                'national_comment' => null,
+                'national_approved_on' => now(),
+                'national_approved_by' => auth()->user()->id
+
+            ],
+
+            'national_rejected' => [
+                'national_status' => 2,
+                'national_comment' => $request->rejection_reason,
+                'national_rejected_on' => now(),
+                'national_rejected_by' => auth()->user()->id
+            ],
+
+            default => throw new \InvalidArgumentException(
+                'Invalid approval status supplied.'
+            ),
+        };
+
+        $award->update($updates);
+
+        return back()->with(
+            'success',
+            'Report status updated successfully.'
+        );
     }
 
 

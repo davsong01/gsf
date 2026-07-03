@@ -262,7 +262,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('award-enties-download/{award}', 'download')->name('awards.download');
         Route::delete('delete/{award}', 'destroy')->name('awards.delete');
         Route::get('delete/{award}', 'permanentDelete')->name('awards.permanent.delete');
-        Route::post('award-shortlist', 'Shortlist')->name('awards.shortlist');
+        Route::post('award-shortlist', 'shortlist')->name('awards.shortlist');
         Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
         Route::post('bulkpermanantdelete', 'bulkPermantDelete')->name('awards.bulk-permanent-delete');
         Route::post('bulkapprove', 'bulkApprove')->name('awards.bulk-approve');
@@ -283,7 +283,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     });
 
-    Route::post('adjust-award-status/{report}', [AdminReportsController::class, 'adjustAwardStatus'])->name('awards.adjust.status');
+    Route::post('adjust-award-status/{award}', [AwardController::class, 'adjustAwardStatus'])->name('awards.adjust.status');
 
     Route::post('stakeholderreports-adjust-status/{report}', [AdminReportsController::class, 'adjustReportStatus'])->name('stakeholderreports.adjust.status');
 

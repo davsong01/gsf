@@ -1274,6 +1274,26 @@ if (!function_exists('paginationIndex')) {
     }
 }
 
+
+if (! function_exists('awardFormFields')) {
+
+    function awardFormFields(): array
+    {
+        $fields = config('award-form');
+
+        $fields['chapter_id']['options'] = Chapter::query()
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Chapter $chapter) => [
+                'value' => $chapter->id,
+                'label' => $chapter->name,
+            ])
+            ->toArray();
+
+        return $fields;
+    }
+}
+
 if (!function_exists('isAdmin')){
     function isAdmin($user = null) : array
     {
@@ -1479,68 +1499,6 @@ if (!function_exists('resolveAwardIndexContext')) {
             'hierarchyCol'   => $hierarchyCol,
             'statuses'       => $approvalStatuses
         ];
-    }
-}
-
-if (!function_exists('fileFields')) {
-    /**
-     * Returns a lowercase collection array of recognized file upload form input keys.
-     *
-     * @return array
-     */
-    function fileFields(): array
-    {
-        return array_map('strtolower', [
-            'picturesave_picture_as_your_name',
-            'upload_a_clear_and_recent_picture_of_yourself',
-            'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature',
-            'attach_your_latest_official_school_result_with_your_departments_stamp_and_hod_signature_file_id',
-            'upload_a_clear_and_recent_picture_of_yourself_file_id',
-            'document',
-            'uploaded_file',
-            'image',
-            'attachment',
-            'signature',
-            'photo',
-            'picture',
-            'avatar',
-            'upload_result'
-        ]);
-    }
-
-    if (!function_exists('specialFormFields')) {
-        /**
-         * Defines custom input field exceptions, identifying their type,
-         * responsive behaviors, and collection configurations.
-         *
-         * @return array
-         */
-        function specialFormFields(): array
-        {
-            return [
-                'gender' => [
-                    'type'    => 'select',
-                    'options' => ['Male', 'Female']
-                ],
-                'are_you_born_again' => [
-                    'type'    => 'select',
-                    'options' => ['Yes', 'No']
-                ],
-                'marital_status' => [
-                    'type'    => 'select',
-                    'options' => ['Single', 'Married', 'Divorced', 'Widowed']
-                ],
-                'date_of_birth' => [
-                    'type' => 'date'
-                ],
-                'when' => [
-                    'type' => 'date'
-                ],
-                'graduation_year' => [
-                    'type' => 'date'
-                ],
-            ];
-        }
     }
 }
 

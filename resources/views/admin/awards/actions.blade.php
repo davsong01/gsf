@@ -209,66 +209,64 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <form method="POST" action="{{ route('awards.shortlist') }}">
+            <form method="POST" action="{{ route('awards.shortlist') }}" onsubmit="return confirm('Are you sure')">
                 @csrf
-
-                @foreach($shortlistStages as $stage)
-                <div class="form-check mb-1">
-
-                    <input
-                        class="form-check-input"
-                        type="radio"
-                        name="shortlist_stage_id"
-                        value="{{ $stage->id }}"
-                        id="stage_{{ $stage->id }}"
-                        {{ optional($award->currentShortlistStage)->award_shortlist_stage_id == $stage->id ? 'checked' : '' }}
-                    >
-
+                <div class="modal-body">
                     <input type="hidden" name="ids[]" value="{{$award->id}}">
-                    <input type="hidden" name="shortlist_stage_id" value="{{ $stage->id }}">
 
-                    <label class="form-check-label" for="stage_{{ $stage->id }}">
-                        {{ $stage->title }} @if($stage->mark_as_final)<span style="color:red">(Final Stage)</span>@endif
-                    </label>
+                    @foreach($shortlistStages as $stage)
+                    <div class="form-check mb-1">
 
-                </div>
-                @endforeach
-                <hr>
-                    <div class="form-group mt-1">
+                        <input
+                            class="form-check-input"
+                            type="radio"
+                            name="shortlist_stage_id"
+                            value="{{ $stage->id }}"
+                            id="stage_{{ $stage->id }}"
+                            {{ optional($award->currentShortlistStage)->award_shortlist_stage_id == $stage->id ? 'checked' : '' }}
+                        >
 
-                        <label for="remarks" class="font-sm text-muted">
-                            Remarks (optional)
+                        <label class="form-check-label" for="stage_{{ $stage->id }}">
+                            {{ $stage->title }} @if($stage->mark_as_final)<span style="color:red">(Final Stage)</span>@endif
                         </label>
 
-                        <textarea
-                            name="remarks"
-                            id="remarks"
-                            class="form-control"
-                            rows="3"
-                            placeholder="Add notes about this stage update..."></textarea>
-
                     </div>
-                </form>
-            </div>
+                    @endforeach
+                    <hr>
+                        <div class="form-group mt-1">
 
-            <div class="modal-footer">
+                            <label for="remarks" class="font-sm text-muted">
+                                Remarks (optional)
+                            </label>
 
-                <button
-                    type="button"
-                    class="btn btn-light"
-                    data-dismiss="modal">
-                    Cancel
-                </button>
+                            <textarea
+                                name="remarks"
+                                id="remarks"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Add notes about this stage update..."></textarea>
 
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    id="submit-shortlist-action">
-                    Update
-                </button>
+                        </div>
+                </div>
 
-            </div>
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-light"
+                        data-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="submit-shortlist-action">
+                        Update
+                    </button>
+
+                </div>
+            </form>
 
         </div>
 
