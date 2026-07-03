@@ -102,7 +102,7 @@ class AwardController extends Controller
         $isAdmin = $adminDetails['status'];
         $user = $adminDetails['user'];
 
-        $award->load('entries');
+        $award->load('entry');
         $chapters = Chapter::select('id', 'name')->get();
         $shortlistStages = AwardShortlistStage::where('active', 1)
             ->orderBy('position')
