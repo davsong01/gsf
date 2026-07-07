@@ -478,7 +478,7 @@ class HomeController extends Controller
     //     if($chapter->exists()){
     //         $related = Chapter::where('zone_id', $chapter->zone_id)->orWhere('field_id', $chapter->field->id)->get();
     //     }
-        
+
     //     return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents','chapter','related'));
     //     // return view('frontend.main.single-chapter', compact('chapter', 'nationalevents'));
     // }
@@ -508,7 +508,7 @@ class HomeController extends Controller
         }
 
         $nationalevents = Event::where('chapter_id', 0)->get();
-        
+
         // Since $chapter is verified as not null, you can safely query relationships
         $related = Chapter::where('zone_id', $chapter->zone_id)
             ->orWhere('field_id', $chapter->field?->id) // Using null-safe operator in case field is missing
@@ -572,7 +572,12 @@ class HomeController extends Controller
 
     public function singleUser($slug){
         $alumni = User::whereSlug($slug)->first();
-        $related = User::where('chapter_id', $alumni->chapter_id)->where('role', '<>', 1)->get();
+
+        if($alumni){
+            $related = User::where('chapter_id', $alumni->chapter_id)->where('role', '<>', 1)->get();
+        }else{
+            $related = null;
+        }
 
         // Check if this is an alumni
         return view('frontend.' . frontendTemplate() . '.single-alumni', compact('alumni', 'related'));
