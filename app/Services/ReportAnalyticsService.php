@@ -8,11 +8,8 @@ use App\Models\StakeholderReport;
 use App\Models\Zone;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use DateInterval;
-use DatePeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
 
 class ReportAnalyticsService
 {
@@ -46,7 +43,7 @@ class ReportAnalyticsService
         }
 
         $availableFieldIds = $scope['fieldIds']->toArray() ?? [];
-        $availableZoneIds  = $scope['zoneIds']->toArray() ?? [];
+        $availableZoneIds = $scope['zoneIds']->toArray() ?? [];
 
         // Apply user filters but intersect with available scope
         $fieldFilter = $request->filled('fields')
@@ -57,13 +54,12 @@ class ReportAnalyticsService
             ? array_intersect($request->zones, $availableZoneIds)
             : $availableZoneIds;
 
-
         $datasets = [];
 
         if ($groupBy === 'chapter') {
             $chapters = Chapter::query()
-                ->when($fieldFilter, fn($q) => $q->whereIn('field_id', $fieldFilter))
-                ->when($zoneFilter, fn($q) => $q->whereIn('zone_id', $zoneFilter))
+                ->when($fieldFilter, fn ($q) => $q->whereIn('field_id', $fieldFilter))
+                ->when($zoneFilter, fn ($q) => $q->whereIn('zone_id', $zoneFilter))
                 ->orderBy('name')
                 ->get();
 
@@ -83,14 +79,23 @@ class ReportAnalyticsService
 
                     $status = 0;
                     if ($report) {
-                        if ($report->national_rejected_at) $status = 7;
-                        elseif ($report->national_status) $status = 8;
-                        elseif ($report->field_rejected_at) $status = 5;
-                        elseif ($report->field_status) $status = 6;
-                        elseif ($report->zone_rejected_at) $status = 3;
-                        elseif ($report->zone_status) $status = 4;
-                        elseif ($report->edit_mode) $status = 1;
-                        else $status = 2;
+                        if ($report->national_rejected_at) {
+                            $status = 7;
+                        } elseif ($report->national_status) {
+                            $status = 8;
+                        } elseif ($report->field_rejected_at) {
+                            $status = 5;
+                        } elseif ($report->field_status) {
+                            $status = 6;
+                        } elseif ($report->zone_rejected_at) {
+                            $status = 3;
+                        } elseif ($report->zone_status) {
+                            $status = 4;
+                        } elseif ($report->edit_mode) {
+                            $status = 1;
+                        } else {
+                            $status = 2;
+                        }
                     }
 
                     $data[] = $status;
@@ -114,16 +119,15 @@ class ReportAnalyticsService
 
         } else {
 
-
             if ($groupBy === 'field') {
                 $groups = Field::query()
-                    ->when($fieldFilter, fn($q) => $q->whereIn('id', $fieldFilter))
+                    ->when($fieldFilter, fn ($q) => $q->whereIn('id', $fieldFilter))
                     ->orderBy('name')
                     ->get();
             } else {
                 $groups = Zone::query()
-                    ->when($zoneFilter, fn($q) => $q->whereIn('id', $zoneFilter))
-                    ->when($fieldFilter, fn($q) => $q->whereIn('field_id', $fieldFilter))
+                    ->when($zoneFilter, fn ($q) => $q->whereIn('id', $zoneFilter))
+                    ->when($fieldFilter, fn ($q) => $q->whereIn('field_id', $fieldFilter))
                     ->orderBy('name')
                     ->get();
             }
@@ -131,10 +135,10 @@ class ReportAnalyticsService
             foreach ($groups as $group) {
 
                 $chaptersInGroup = Chapter::query()
-                    ->when($groupBy === 'field', fn($q) => $q->where('field_id', $group->id))
-                    ->when($groupBy === 'zone', fn($q) => $q->where('zone_id', $group->id))
-                    ->when($fieldFilter, fn($q) => $q->whereIn('field_id', $fieldFilter))
-                    ->when($zoneFilter, fn($q) => $q->whereIn('zone_id', $zoneFilter))
+                    ->when($groupBy === 'field', fn ($q) => $q->where('field_id', $group->id))
+                    ->when($groupBy === 'zone', fn ($q) => $q->where('zone_id', $group->id))
+                    ->when($fieldFilter, fn ($q) => $q->whereIn('field_id', $fieldFilter))
+                    ->when($zoneFilter, fn ($q) => $q->whereIn('zone_id', $zoneFilter))
                     ->get();
 
                 $data = [];
@@ -156,14 +160,23 @@ class ReportAnalyticsService
 
                         $status = 0;
                         if ($report) {
-                            if ($report->national_rejected_at) $status = 7;
-                            elseif ($report->national_status) $status = 8;
-                            elseif ($report->field_rejected_at) $status = 5;
-                            elseif ($report->field_status) $status = 6;
-                            elseif ($report->zone_rejected_at) $status = 3;
-                            elseif ($report->zone_status) $status = 4;
-                            elseif ($report->edit_mode) $status = 1;
-                            else $status = 2;
+                            if ($report->national_rejected_at) {
+                                $status = 7;
+                            } elseif ($report->national_status) {
+                                $status = 8;
+                            } elseif ($report->field_rejected_at) {
+                                $status = 5;
+                            } elseif ($report->field_status) {
+                                $status = 6;
+                            } elseif ($report->zone_rejected_at) {
+                                $status = 3;
+                            } elseif ($report->zone_status) {
+                                $status = 4;
+                            } elseif ($report->edit_mode) {
+                                $status = 1;
+                            } else {
+                                $status = 2;
+                            }
                         }
 
                         $chapterStatuses[] = [
@@ -194,7 +207,7 @@ class ReportAnalyticsService
         }
 
         $labels = collect($months)
-            ->map(fn($m) => Carbon::createFromFormat('Y-m', $m)->format('M Y'))
+            ->map(fn ($m) => Carbon::createFromFormat('Y-m', $m)->format('M Y'))
             ->toArray();
 
         return [
@@ -246,7 +259,7 @@ class ReportAnalyticsService
                     $answer->question_id,
                 ]);
 
-                if (!isset($groupedRows[$key])) {
+                if (! isset($groupedRows[$key])) {
 
                     $groupedRows[$key] = [
                         'Chapter' => $report->chapter->name ?? '-',
@@ -270,7 +283,7 @@ class ReportAnalyticsService
         |--------------------------------------------------------------------------
         */
         uksort($periods, function ($a, $b) {
-            return strtotime('01 ' . $a) <=> strtotime('01 ' . $b);
+            return strtotime('01 '.$a) <=> strtotime('01 '.$b);
         });
 
         $periods = array_values($periods);
@@ -307,7 +320,7 @@ class ReportAnalyticsService
         ];
     }
 
-   protected function getNeverSubmitted($reports, $chapters, $fields): array
+    protected function getNeverSubmitted($reports, $chapters, $fields): array
     {
         // Build a fast lookup of chapters that HAVE reports in the period
         $hasReport = [];
@@ -326,7 +339,7 @@ class ReportAnalyticsService
             }
 
             $field = $fields[$chapter->field_id] ?? null;
-            if (!$field) {
+            if (! $field) {
                 continue;
             }
 
@@ -342,17 +355,21 @@ class ReportAnalyticsService
 
         foreach ($reports as $r) {
 
-            if (!$filter($r)) continue;
+            if (! $filter($r)) {
+                continue;
+            }
 
             $month = $this->normalizeMonth($r->month, $r->year);
-            if (!$month){
+            if (! $month) {
                 continue;
             }
 
             $chapter = $chapters[$r->chapter_id] ?? null;
-            $field   = $fields[$r->field_id] ?? null;
+            $field = $fields[$r->field_id] ?? null;
 
-            if (!$chapter || !$field) continue;
+            if (! $chapter || ! $field) {
+                continue;
+            }
 
             $result[$field->name][$chapter->name][] = $month;
         }
@@ -362,10 +379,12 @@ class ReportAnalyticsService
 
     protected function normalizeMonth($month, $year = null): ?string
     {
-        if (!$month) return null;
+        if (! $month) {
+            return null;
+        }
 
         if (is_numeric($month) && $year) {
-            return Carbon::createFromDate((int)$year, (int)$month, 1)
+            return Carbon::createFromDate((int) $year, (int) $month, 1)
                 ->format('Y-m');
         }
 
@@ -403,7 +422,9 @@ class ReportAnalyticsService
         foreach ($reports as $r) {
 
             $month = $this->normalizeMonth($r->month, $r->year);
-            if (!$month) continue;
+            if (! $month) {
+                continue;
+            }
 
             $reportMap[$r->chapter_id][$month] = true;
         }
@@ -413,11 +434,13 @@ class ReportAnalyticsService
         foreach ($chapters as $chapter) {
 
             $field = $fields[$chapter->field_id] ?? null;
-            if (!$field) continue;
+            if (! $field) {
+                continue;
+            }
 
             foreach ($expectedMonths as $month) {
 
-                if (!isset($reportMap[$chapter->id][$month])) {
+                if (! isset($reportMap[$chapter->id][$month])) {
 
                     $result[$field->name][$chapter->name][] = $month;
                 }
@@ -487,26 +510,26 @@ class ReportAnalyticsService
             [
                 'type' => $request->type ?? 'GSF REPORT',
                 'from' => $request->from_date,
-                'to'   => $request->to_date,
+                'to' => $request->to_date,
 
                 // MAIN DATA CONTRACT
-                'nationallyApproved'     => $data['nationallyApproved'] ?? [],
-                'nationalDeclined'       => $data['nationalDeclined'] ?? [],
-                'nationalPending'        => $data['nationalPending'] ?? [],
+                'nationallyApproved' => $data['nationallyApproved'] ?? [],
+                'nationalDeclined' => $data['nationalDeclined'] ?? [],
+                'nationalPending' => $data['nationalPending'] ?? [],
 
-                'zoneApproved'           => $data['zoneApproved'] ?? [],
-                'pendingZoneApproval'    => $data['pendingZoneApproval'] ?? [],
-                'zoneDeclined'           => $data['zoneDeclined'] ?? [],
+                'zoneApproved' => $data['zoneApproved'] ?? [],
+                'pendingZoneApproval' => $data['pendingZoneApproval'] ?? [],
+                'zoneDeclined' => $data['zoneDeclined'] ?? [],
 
-                'fieldApproved'          => $data['fieldApproved'] ?? [],
-                'pendingFieldApproval'   => $data['pendingFieldApproval'] ?? [],
-                'fieldDeclined'          => $data['fieldDeclined'] ?? [],
+                'fieldApproved' => $data['fieldApproved'] ?? [],
+                'pendingFieldApproval' => $data['pendingFieldApproval'] ?? [],
+                'fieldDeclined' => $data['fieldDeclined'] ?? [],
 
-                'monthsYetToSubmit'      => $data['monthsYetToSubmit'] ?? [],
+                'monthsYetToSubmit' => $data['monthsYetToSubmit'] ?? [],
                 // 'neverSubmitted'      => $data['neverSubmitted'] ?? [],
             ]
         )
-        ->setPaper('a4', 'portrait');
+            ->setPaper('a4', 'portrait');
 
         return $pdf->download('gsf_monthly_report.pdf');
     }
@@ -689,15 +712,16 @@ class ReportAnalyticsService
     // }
     public function getQuestionAnalysisData(Request $request): array
     {
+        $sectionIds = $this->selectedFilterIds($request->input('sections', []));
+        $subSectionIds = $this->selectedFilterIds($request->input('sub_sections', []));
+        $questionIds = $this->selectedFilterIds($request->input('questions', []));
+
         $query = StakeholderReport::query()
             ->with([
                 'stakeholder',
                 'chapter',
                 'zone',
                 'field',
-                'answers.section',
-                'answers.subSection',
-                'answers.question'
             ]);
 
         if ($request->filled('fields')) {
@@ -712,29 +736,23 @@ class ReportAnalyticsService
             $query->whereIn('chapter_id', $request->chapters);
         }
 
-        if ($request->filled('sections') && !in_array('all', (array) $request->sections)) {
-            $query->whereHas('answers', function ($q) use ($request) {
-                $q->whereIn('question_section_id', $request->sections);
-            });
+        $filterAnswers = function ($query) use ($sectionIds, $subSectionIds, $questionIds) {
+            $query
+                ->when($sectionIds, fn ($q) => $q->whereIn('question_section_id', $sectionIds))
+                ->when($subSectionIds, fn ($q) => $q->whereIn('question_sub_section_id', $subSectionIds))
+                ->when($questionIds, fn ($q) => $q->whereIn('question_id', $questionIds));
+        };
 
-            $query->with([
-                'answers' => function ($q) use ($request) {
-                    $q->whereIn('question_section_id', $request->sections);
-                }
-            ]);
+        if ($sectionIds || $subSectionIds || $questionIds) {
+            $query->whereHas('answers', $filterAnswers);
         }
 
-        if ($request->filled('sub_sections') && !in_array('all', (array) $request->sub_sections)) {
-            $query->whereHas('answers', function ($q) use ($request) {
-                $q->whereIn('question_sub_section_id', $request->sub_sections);
-            });
-
-            $query->with([
-                'answers' => function ($q) use ($request) {
-                    $q->whereIn('question_sub_section_id', $request->sub_sections);
-                }
-            ]);
-        }
+        $query->with([
+            'answers' => function ($query) use ($filterAnswers) {
+                $filterAnswers($query);
+                $query->with(['section', 'subSection', 'question']);
+            },
+        ]);
 
         if ($request->filled('from_date')) {
             $query->whereDate('created_at', '>=', $request->from_date);
@@ -746,74 +764,183 @@ class ReportAnalyticsService
 
         $reports = $query->get();
 
-        $periods = [];
-        $groupedRows = [];
+        $rows = $reports->map(function ($report) {
+            return [
+                'year' => $report->year,
+                'month' => $report->month,
+                'chapter_id' => $report->chapter_id,
+                'chapter_name' => $report->chapter->name ?? '-',
+                'answers' => $report->answers->map(function ($answer) {
+                    return [
+                        'question_id' => $answer->question_id,
+                        'question_label' => $answer->question->label ?? '-',
+                        'question_order' => $answer->question->order ?? PHP_INT_MAX,
+                        'value' => $this->decodeAnswer($answer->answer_value ?? $answer->answer),
+                    ];
+                })->all(),
+            ];
+        })->all();
+
+        return $this->buildQuestionAnalysisSheets($rows);
+    }
+
+    /**
+     * Build one worksheet per month where each row is a chapter and each column is a question item.
+     */
+    public function buildQuestionAnalysisSheets(array $reports): array
+    {
+        $monthOrder = [];
+        $questionMeta = [];
+        $chapterRows = [];
 
         foreach ($reports as $report) {
+            $period = Carbon::create((int) $report['year'], (int) $report['month'], 1)->format('M Y');
+            $monthOrder[$period] = Carbon::create((int) $report['year'], (int) $report['month'], 1)->timestamp;
 
-            $period = Carbon::create(
-                (int) $report->year,
-                (int) $report->month,
-                1
-            )->format('M Y');
+            $chapterKey = (string) ($report['chapter_id'] ?? $report['chapter_name'] ?? '-');
 
-            $periods[$period] = Carbon::create(
-                (int) $report->year,
-                (int) $report->month,
-                1
-            )->timestamp;
-
-            foreach ($report->answers as $answer) {
-
-                $key = $report->chapter_id . '|' . $answer->question_id;
-
-                if (!isset($groupedRows[$key])) {
-                    $groupedRows[$key] = [
-                        'Chapter' => $report->chapter->name ?? '-',
-                        'Item'    => $answer->question->label ?? '-',
-                    ];
-                }
-
-                $rawValue = $answer->answer_value ?? $answer->answer;
-
-                $groupedRows[$key][$period][] = $this->decodeAnswer($rawValue);
+            if (! isset($chapterRows[$period][$chapterKey])) {
+                $chapterRows[$period][$chapterKey] = [
+                    'Chapter' => $report['chapter_name'] ?? '-',
+                ];
             }
-        }
 
-        asort($periods);
-        $periodColumns = array_keys($periods);
+            foreach ($report['answers'] ?? [] as $answer) {
+                $questionId = (string) ($answer['question_id'] ?? '');
+                $questionLabel = $answer['question_label'] ?? '-';
 
-        $rows = [];
-
-        foreach ($groupedRows as $row) {
-
-            foreach ($periodColumns as $period) {
-
-                $value = $row[$period] ?? null;
-
-                if (empty($value)) {
-                    $row[$period] = '-';
+                if ($questionId === '') {
                     continue;
                 }
 
-                $row[$period] = $this->normalizeAnswerValue($value);
-            }
+                $questionMeta[$questionId] = [
+                    'label' => $questionLabel,
+                    'order' => $answer['question_order'] ?? PHP_INT_MAX,
+                ];
 
-            $rows[] = $row;
+                $chapterRows[$period][$chapterKey][$questionId][] = $answer['value'] ?? '-';
+            }
         }
 
-        return [
-            'headers' => array_merge(
-                [
-                    'Chapter',
-                    'Item',
+        if ($monthOrder === []) {
+            return [
+                'No Data' => [
+                    'headers' => ['Chapter'],
+                    'rows' => [],
                 ],
-                $periodColumns
-            ),
-            'rows' => $rows,
-        ];
+            ];
+        }
+
+        uasort($monthOrder, static fn ($left, $right) => $left <=> $right);
+        uasort($questionMeta, static function (array $left, array $right) {
+            $orderCompare = ($left['order'] ?? PHP_INT_MAX) <=> ($right['order'] ?? PHP_INT_MAX);
+
+            return $orderCompare !== 0
+                ? $orderCompare
+                : strcmp($left['label'] ?? '', $right['label'] ?? '');
+        });
+
+        $questionHeaders = array_map(static fn (array $meta) => $meta['label'] ?? '-', $questionMeta);
+        $sheets = [];
+
+        foreach (array_keys($monthOrder) as $period) {
+            $rows = [];
+
+            foreach ($chapterRows[$period] ?? [] as $row) {
+                foreach (array_keys($questionMeta) as $questionId) {
+                    $label = $questionMeta[$questionId]['label'] ?? '-';
+                    $row[$label] = $this->normalizeAnswerValue($row[$questionId] ?? null);
+                    unset($row[$questionId]);
+                }
+
+                $rows[] = $row;
+            }
+
+            usort($rows, static function (array $left, array $right) {
+                return strcmp((string) ($left['Chapter'] ?? ''), (string) ($right['Chapter'] ?? ''));
+            });
+
+            $sheets[$period] = [
+                'headers' => array_merge(['Chapter'], $questionHeaders),
+                'rows' => $rows,
+            ];
+        }
+
+        return $sheets;
     }
 
+    /**
+     * Backwards-compatible helper for the legacy "chapter/item/month columns" structure.
+     * Converts it into the new month-sheet layout used by both the blade table and Excel export.
+     */
+    public function splitQuestionAnalysisByMonth(array $report): array
+    {
+        $headers = $report['headers'] ?? [];
+        $rows = $report['rows'] ?? [];
+        $months = array_values(array_filter($headers, static fn ($header) => ! in_array($header, ['Chapter', 'Item'], true)));
+
+        if ($months === []) {
+            return [
+                'No Data' => [
+                    'headers' => ['Chapter'],
+                    'rows' => [],
+                ],
+            ];
+        }
+
+        $chapterQuestionMap = [];
+        $questionOrder = [];
+
+        foreach ($rows as $row) {
+            $chapter = $row['Chapter'] ?? '-';
+            $item = $row['Item'] ?? '-';
+
+            $questionOrder[$item] = $questionOrder[$item] ?? count($questionOrder);
+
+            foreach ($months as $month) {
+                if (! array_key_exists($month, $row) || $row[$month] === null || $row[$month] === '') {
+                    continue;
+                }
+
+                $chapterQuestionMap[$month][$chapter][$item][] = $row[$month];
+            }
+        }
+
+        $orderedQuestions = array_keys($questionOrder);
+        $sheets = [];
+
+        foreach ($months as $month) {
+            $sheetRows = [];
+
+            foreach ($chapterQuestionMap[$month] ?? [] as $chapter => $questionValues) {
+                $sheetRow = ['Chapter' => $chapter];
+
+                foreach ($orderedQuestions as $item) {
+                    $sheetRow[$item] = $this->normalizeAnswerValue($questionValues[$item] ?? null);
+                }
+
+                $sheetRows[] = $sheetRow;
+            }
+
+            $sheets[$month] = [
+                'headers' => array_merge(['Chapter'], $orderedQuestions),
+                'rows' => $sheetRows,
+            ];
+        }
+
+        return $sheets;
+    }
+
+    private function selectedFilterIds($values): array
+    {
+        $values = (array) $values;
+
+        if (in_array('all', $values, true)) {
+            return [];
+        }
+
+        return array_values(array_filter($values, static fn ($value) => is_numeric($value)));
+    }
 
     private function normalizeAnswerValue($value): string
     {
@@ -832,7 +959,7 @@ class ReportAnalyticsService
             return (string) $value;
         }
 
-        if (!is_array($value)) {
+        if (! is_array($value)) {
             return (string) $value;
         }
 
@@ -844,10 +971,10 @@ class ReportAnalyticsService
                 if (is_array($item)) {
                     return collect($item)->map(function ($v, $k) {
                         if (is_array($v)) {
-                            return $k . ': ' . collect($v)->map(function ($vv, $kk) {
+                            return $k.': '.collect($v)->map(function ($vv, $kk) {
 
                                 if (is_array($vv)) {
-                                    return $kk . ': ' . json_encode($vv);
+                                    return $kk.': '.json_encode($vv);
                                 }
 
                                 return "$kk: $vv";
@@ -869,8 +996,8 @@ class ReportAnalyticsService
         return collect($value)->map(function ($inner, $key) {
 
             if (is_array($inner)) {
-                return $key . ' → ' . collect($inner)
-                    ->map(fn($v, $k) => "$k: $v")
+                return $key.' → '.collect($inner)
+                    ->map(fn ($v, $k) => "$k: $v")
                     ->implode(', ');
             }
 
@@ -892,5 +1019,4 @@ class ReportAnalyticsService
 
         return $value;
     }
-
 }

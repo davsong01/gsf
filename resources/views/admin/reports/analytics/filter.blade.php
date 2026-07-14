@@ -40,6 +40,14 @@ if (!$isAdmin) {
                     </select>
                 </div>
 
+                {{-- Specific question items --}}
+                <div class="col-md-12">
+                    <label class="form-label">Question Items</label>
+                    <select name="questions[]" class="form-select select2 questions-select" multiple>
+                        {{-- filtered from the selected sections/subsections --}}
+                    </select>
+                </div>
+
             </div>
             @endif
             <div class="row g-3 align-items-end">

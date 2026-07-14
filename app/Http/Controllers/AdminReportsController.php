@@ -2,40 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Chapter;
 use App\Models\Field;
 use App\Models\Stakeholder;
 use App\Models\StakeholderQuestionSection;
 use App\Models\StakeholderQuestionSubSection;
 use App\Models\StakeholderReport;
+use App\Models\StakeholderReportQuestion;
 use App\Models\Zone;
 use App\Services\ExcelService;
 use App\Services\ReportAnalyticsService;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-
 
 class AdminReportsController extends Controller
 {
     private $reportAnalyticService;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->reportAnalyticService = new ReportAnalyticsService;
     }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-
     public function toggleEditMode(Request $request)
     {
         $request->validate([
-            'report_id'  => 'required|integer|exists:stakeholder_reports,id',
-            'edit_mode'  => 'required|boolean',
+            'report_id' => 'required|integer|exists:stakeholder_reports,id',
+            'edit_mode' => 'required|boolean',
         ]);
 
         $report = StakeholderReport::findOrFail($request->report_id);
@@ -44,7 +43,7 @@ class AdminReportsController extends Controller
         $report->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => $report->edit_mode
                 ? 'Edit mode enabled'
                 : 'Edit mode disabled',
@@ -64,13 +63,11 @@ class AdminReportsController extends Controller
             $data instanceof \Symfony\Component\HttpFoundation\Response) {
             return $data;
         }
+
         return view('admin.reports.index', array_merge($data, compact('user', 'isAdmin')));
     }
 
-
-    public function create()
-    {
-    }
+    public function create() {}
 
     public function fixOrphanReport()
     {
@@ -78,42 +75,42 @@ class AdminReportsController extends Controller
 
         StakeholderReport::with([
             'stakeholder:id,chapter_id,zone_id,field_id',
-            'chapter:id,zone_id,field_id'
+            'chapter:id,zone_id,field_id',
         ])
-        ->where(function ($q) {
-            $q->whereNull('zone_id')
-            ->orWhereNull('field_id')
-            ->orWhereNull('chapter_id');
-        })
-        ->chunk(200, function ($reports) use (&$count) {
+            ->where(function ($q) {
+                $q->whereNull('zone_id')
+                    ->orWhereNull('field_id')
+                    ->orWhereNull('chapter_id');
+            })
+            ->chunk(200, function ($reports) use (&$count) {
 
-            foreach ($reports as $report) {
+                foreach ($reports as $report) {
 
-                $chapterId = $report->stakeholder?->chapter_id;
-                $zoneId    = $report->stakeholder?->zone_id ?? $report->chapter?->zone_id;
-                $fieldId   = $report->stakeholder?->field_id ?? $report->chapter?->field_id;
+                    $chapterId = $report->stakeholder?->chapter_id;
+                    $zoneId = $report->stakeholder?->zone_id ?? $report->chapter?->zone_id;
+                    $fieldId = $report->stakeholder?->field_id ?? $report->chapter?->field_id;
 
-                $data = [];
+                    $data = [];
 
-                if (is_null($report->chapter_id) && $chapterId) {
-                    $data['chapter_id'] = $chapterId;
+                    if (is_null($report->chapter_id) && $chapterId) {
+                        $data['chapter_id'] = $chapterId;
+                    }
+
+                    if (is_null($report->zone_id) && $zoneId) {
+                        $data['zone_id'] = $zoneId;
+                    }
+
+                    if (is_null($report->field_id) && $fieldId) {
+                        $data['field_id'] = $fieldId;
+                    }
+
+                    if (! empty($data)) {
+                        $report->update($data);
+                        $count++;
+                    }
                 }
 
-                if (is_null($report->zone_id) && $zoneId) {
-                    $data['zone_id'] = $zoneId;
-                }
-
-                if (is_null($report->field_id) && $fieldId) {
-                    $data['field_id'] = $fieldId;
-                }
-
-                if (!empty($data)) {
-                    $report->update($data);
-                    $count++;
-                }
-            }
-
-        });
+            });
 
         return back()->with('message', "{$count} reports fixed");
     }
@@ -128,7 +125,7 @@ class AdminReportsController extends Controller
         $result = app(ReportService::class)
             ->saveReport($stakeholder, $stakeholderreport, $validated, $isAdmin);
 
-        if (!$result['status']) {
+        if (! $result['status']) {
             return back()->with('error', $result['message']);
         }
 
@@ -141,23 +138,23 @@ class AdminReportsController extends Controller
         $data = app(ReportService::class)->prepareViewData($stakeholderreport, true);
 
         return view('reports.pdf_template', [
-            'isAdmin'     => true,
-            'report'     => $stakeholderreport,
-            'sections'   => $data['sections']
+            'isAdmin' => true,
+            'report' => $stakeholderreport,
+            'sections' => $data['sections'],
         ]);
     }
 
-   public function edit(StakeholderReport $stakeholderreport)
+    public function edit(StakeholderReport $stakeholderreport)
     {
         $user = auth()->user();
         $isAdmin = true;
+
         return view(
             'admin.reports.create',
             app(ReportService::class)->prepareEditData($stakeholderreport, $user, true)
             + compact('user', 'isAdmin')
         );
     }
-
 
     public function destroy(StakeholderReport $stakeholderreport)
     {
@@ -176,7 +173,8 @@ class AdminReportsController extends Controller
         return back()->with('message', 'Report actors have been nudged successfully!');
     }
 
-    public function reportAnalyticsIndex(){
+    public function reportAnalyticsIndex()
+    {
         $isAdmin = true;
         $data = [];
 
@@ -200,6 +198,9 @@ class AdminReportsController extends Controller
             'fields' => $fields,
             'zones' => $zones,
             'sections' => StakeholderQuestionSection::orderBy('name')->get(),
+            'questions' => StakeholderReportQuestion::isActive()
+                ->orderBy('order')
+                ->get(['id', 'label', 'section_id', 'sub_section_id']),
             'chapters' => Chapter::orderBy('name')->get(),
             'legends' => Chapter::orderBy('name')->get(),
             'isAdmin' => isAdmin()['status'],
@@ -209,14 +210,8 @@ class AdminReportsController extends Controller
 
             if ($request->filter_type === 'excel') {
 
-                $exportData = $this->reportAnalyticService
-                    ->getQuestionAnalysisData(
-                        $request
-                    );
-
-                return ExcelService::download(
-                    $exportData['rows'],
-                    $exportData['headers'],
+                return ExcelService::downloadMultipleSheetsWithHeaders(
+                    $this->reportAnalyticService->getQuestionAnalysisData($request),
                     'question_analysis_report.xlsx'
                 );
             }
@@ -245,7 +240,7 @@ class AdminReportsController extends Controller
 
                 $chapter = Chapter::with([
                     'field',
-                    'zone'
+                    'zone',
                 ])->find($chapterData['legend_id']);
 
                 $row = [
@@ -314,7 +309,7 @@ class AdminReportsController extends Controller
 
         if (
             $request->filled('sections') &&
-            !in_array('all', (array) $request->sections)
+            ! in_array('all', (array) $request->sections)
         ) {
             $query->whereIn('section_id', $request->sections);
         }
@@ -328,11 +323,12 @@ class AdminReportsController extends Controller
             collect([
                 [
                     'id' => 'all',
-                    'name' => 'All'
-                ]
+                    'name' => 'All',
+                ],
             ])->merge($subSections)->values()
         );
     }
+
     public function getQuestionAnalysisData(Request $request): array
     {
         $query = StakeholderReport::query()
@@ -340,7 +336,7 @@ class AdminReportsController extends Controller
                 'stakeholder',
                 'chapter',
                 'zone',
-                'field'
+                'field',
             ]);
 
         if ($request->filled('chapters')) {
@@ -388,27 +384,28 @@ class AdminReportsController extends Controller
         ];
     }
 
-    public function adjustReportStatus(Request $request, StakeholderReport $report){
+    public function adjustReportStatus(Request $request, StakeholderReport $report)
+    {
         $status = $request->approval_status;
 
         $statusMap = [
-            'zone_approved'     => fn () => $report->chapter?->zone?->zonalCord,
-            'zone_rejected'     => fn () => $report->chapter?->zone?->zonalCord,
+            'zone_approved' => fn () => $report->chapter?->zone?->zonalCord,
+            'zone_rejected' => fn () => $report->chapter?->zone?->zonalCord,
 
-            'field_approved'    => fn () => $report->chapter?->field?->fieldCord,
-            'field_rejected'    => fn () => $report->chapter?->field?->fieldCord,
+            'field_approved' => fn () => $report->chapter?->field?->fieldCord,
+            'field_rejected' => fn () => $report->chapter?->field?->fieldCord,
 
             'national_approved' => fn () => Stakeholder::whereIn('role_id', secretariatStakeholders())->first(),
             'national_rejected' => fn () => Stakeholder::whereIn('role_id', secretariatStakeholders())->first(),
         ];
 
-        if (!isset($statusMap[$status])) {
+        if (! isset($statusMap[$status])) {
             abort(400, 'Invalid approval status');
         }
 
         $user = $statusMap[$status]();
 
-        if (!$user) {
+        if (! $user) {
             abort(404, 'Approver not found');
         }
 
@@ -422,5 +419,4 @@ class AdminReportsController extends Controller
 
         return back()->with('success', 'Report status updated successfully');
     }
-
 }

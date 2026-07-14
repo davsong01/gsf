@@ -20,7 +20,7 @@
 
 @section('content')
 <style>
-    #reportTable {
+    .report-table {
         table-layout: fixed;
         width: 100%;
         border-collapse: separate; /* IMPORTANT for sticky headers */
@@ -28,8 +28,8 @@
     }
 
     /* cells */
-    #reportTable th,
-    #reportTable td {
+    .report-table th,
+    .report-table td {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -37,7 +37,7 @@
     }
 
     /* sticky header */
-    #reportTable thead th {
+    .report-table thead th {
         position: sticky;
         top: 0;
         z-index: 100;
@@ -46,7 +46,7 @@
     }
 
     /* hover expansion */
-    #reportTable td:hover {
+    .report-table td:hover {
         white-space: normal;
         position: relative;
         z-index: 50;
@@ -63,36 +63,46 @@
     <div class="col-12">
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
-                <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
-                    <table class="table table-bordered table-sm mb-0" id="reportTable">
-                            {{-- {{dd($reports)}} --}}
-                        <thead class="table-light">
-                            <tr>
-                                @foreach($reports['headers'] as $header)
-                                    <th>{{ $header }}</th>
-                                @endforeach
-                            </tr>
-                        </thead>
+                @forelse($reports as $month => $sheet)
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h6 class="mb-0">{{ $month }}</h6>
+                        </div>
 
-                        <tbody>
-                            @forelse($reports['rows'] as $row)
-                                <tr>
-                                    @foreach($row as $value)
-                                        <td>{{ $value }}</td>
-                                    @endforeach
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="{{ count($reports['headers']) }}"
-                                        class="text-center text-muted">
-                                        No records found
-                                    </td>
-                                </tr>
-                            @endforelse
-                            </tbody>
+                        <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                            <table class="table table-bordered table-sm mb-0 report-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        @foreach($sheet['headers'] as $header)
+                                            <th>{{ $header }}</th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
 
-                    </table>
-                </div>
+                                <tbody>
+                                    @forelse($sheet['rows'] as $row)
+                                        <tr>
+                                            @foreach($sheet['headers'] as $header)
+                                                <td>{{ $row[$header] ?? '-' }}</td>
+                                            @endforeach
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="{{ count($sheet['headers']) }}"
+                                                class="text-center text-muted">
+                                                No records found
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center text-muted py-4">
+                        No records found
+                    </div>
+                @endforelse
 
             </div>
         </div>
@@ -104,7 +114,33 @@
 <script>
 $(document).ready(function () {
 
-    function loadSubSections(sectionIds = [], selected = []) {
+    const questions = @json($questions ?? []);
+    const initiallySelectedQuestions = @json(array_map('strval', (array) request('questions', [])));
+
+    function loadQuestions(sectionIds = [], subSectionIds = [], selected = []) {
+        const questionSelect = $('.questions-select');
+        const sectionValues = (sectionIds || []).map(String);
+        const subSectionValues = (subSectionIds || []).map(String);
+        const selectedSections = sectionValues.includes('all') ? [] : sectionValues;
+        const selectedSubSections = subSectionValues.includes('all') ? [] : subSectionValues;
+
+        questionSelect.empty();
+
+        questions
+            .filter(function (question) {
+                const sectionMatches = selectedSections.length === 0 || selectedSections.includes(String(question.section_id));
+                const subSectionMatches = selectedSubSections.length === 0 || selectedSubSections.includes(String(question.sub_section_id));
+                return sectionMatches && subSectionMatches;
+            })
+            .forEach(function (question) {
+                const id = String(question.id);
+                questionSelect.append(new Option(question.label, id, selected.includes(id), selected.includes(id)));
+            });
+
+        questionSelect.trigger('change.select2');
+    }
+
+    function loadSubSections(sectionIds = [], selected = [], selectedQuestions = []) {
 
         let subSelect = $('.sub-sections-select');
 
@@ -145,6 +181,7 @@ $(document).ready(function () {
                 });
 
                 subSelect.prop('disabled', false);
+                loadQuestions(sectionIds, subSelect.val() || [], selectedQuestions);
             },
             error: function (xhr) {
                 console.error('Subsection load failed:', xhr.responseText);
@@ -157,13 +194,23 @@ $(document).ready(function () {
 
     sectionSelect.on('change', function () {
         let selected = $(this).val() || [];
-        loadSubSections(selected);
+        loadSubSections(selected, [], $('.questions-select').val() || []);
+    });
+
+    $('.sub-sections-select').on('change', function () {
+        loadQuestions(sectionSelect.val() || [], $(this).val() || [], $('.questions-select').val() || []);
     });
 
     // initial load
     loadSubSections(
         sectionSelect.val() || [],
         @json(request('sub_sections', []))
+    );
+
+    loadQuestions(
+        sectionSelect.val() || [],
+        @json(request('sub_sections', [])),
+        initiallySelectedQuestions
     );
 
 });
