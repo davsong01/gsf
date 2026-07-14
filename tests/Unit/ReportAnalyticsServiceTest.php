@@ -91,4 +91,14 @@ class ReportAnalyticsServiceTest extends TestCase
         $this->assertSame(['No Data'], array_keys($sheets));
         $this->assertSame(['Chapter'], $sheets['No Data']['headers']);
     }
+
+    public function test_it_matches_report_months_against_the_requested_date_range(): void
+    {
+        $service = new ReportAnalyticsService;
+
+        $this->assertTrue($service->reportMonthMatchesFilters(2026, 7, '2026-07-01', '2026-07-31'));
+        $this->assertTrue($service->reportMonthMatchesFilters(2026, 7, '2026-06-15', '2026-07-10'));
+        $this->assertFalse($service->reportMonthMatchesFilters(2026, 6, '2026-07-01', '2026-07-31'));
+        $this->assertFalse($service->reportMonthMatchesFilters(2026, 8, '2026-07-01', '2026-07-31'));
+    }
 }

@@ -351,23 +351,27 @@ class AdminReportsController extends Controller
             $query->whereIn('zone_id', $request->zones);
         }
 
-        if ($request->filled('from_date')) {
-            $query->whereDate(
-                'created_at',
-                '>=',
-                $request->from_date
-            );
-        }
+        $reports = $query->get()->filter(function ($report) use ($request) {
+            $reportMonth = \Carbon\Carbon::create((int) $report->year, (int) $report->month, 1)->startOfMonth();
 
-        if ($request->filled('to_date')) {
-            $query->whereDate(
-                'created_at',
-                '<=',
-                $request->to_date
-            );
-        }
+            if ($request->filled('from_date')) {
+                $from = \Carbon\Carbon::parse($request->from_date)->startOfMonth();
 
-        $reports = $query->get();
+                if ($reportMonth->lt($from)) {
+                    return false;
+                }
+            }
+
+            if ($request->filled('to_date')) {
+                $to = \Carbon\Carbon::parse($request->to_date)->endOfMonth();
+
+                if ($reportMonth->gt($to)) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
 
         return [
             'headers' => [

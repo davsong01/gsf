@@ -754,15 +754,14 @@ class ReportAnalyticsService
             },
         ]);
 
-        if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->from_date);
-        }
-
-        if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->to_date);
-        }
-
-        $reports = $query->get();
+        $reports = $query->get()->filter(function ($report) use ($request) {
+            return $this->reportMonthMatchesFilters(
+                (int) $report->year,
+                (int) $report->month,
+                $request->from_date,
+                $request->to_date
+            );
+        });
 
         $rows = $reports->map(function ($report) {
             return [
@@ -940,6 +939,29 @@ class ReportAnalyticsService
         }
 
         return array_values(array_filter($values, static fn ($value) => is_numeric($value)));
+    }
+
+    public function reportMonthMatchesFilters(int $year, int $month, ?string $fromDate, ?string $toDate): bool
+    {
+        $reportMonth = Carbon::create($year, $month, 1)->startOfMonth();
+
+        if ($fromDate) {
+            $from = Carbon::parse($fromDate)->startOfMonth();
+
+            if ($reportMonth->lt($from)) {
+                return false;
+            }
+        }
+
+        if ($toDate) {
+            $to = Carbon::parse($toDate)->endOfMonth();
+
+            if ($reportMonth->gt($to)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function normalizeAnswerValue($value): string
