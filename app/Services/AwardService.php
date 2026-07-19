@@ -397,9 +397,7 @@ class AwardService{
                 'currentShortlistStage'
             ]);
 
-        if ($request->boolean('archived')) {
-            $awardsQuery->onlyTrashed();
-        }
+        $awardsQuery->where('is_archive', $request->boolean('archived'));
 
         if ($request->filled('current_shortlist_stage_id')) {
 
@@ -676,6 +674,7 @@ class AwardService{
 
         $awards = Award::query()
             ->whereYear('created_at', now()->year)
+            ->where('is_archive', false)
             ->where(function ($query) use ($stage) {
                 $query->whereNull('current_shortlist_stage_id')
                     ->orWhere('current_shortlist_stage_id', '!=', $stage->id);

@@ -258,21 +258,27 @@
                                                     data-confirm="Reject selected entries?">
                                                 Reject
                                             </option>
-                                            <option value="delete"
-                                                    data-url="{{ route($isAdmin ? 'awards.bulk-delete' : 'stakeholders.awards.bulk-delete') }}"
+                                            <option value="archive"
+                                                    data-url="{{ route('awards.bulk-archive') }}"
                                                     data-method="POST"
                                                     data-confirm="Archive selected entries?">
                                                 Archive
+                                            </option>
+                                            <option value="delete"
+                                                    data-url="{{ route('awards.bulk-delete') }}"
+                                                    data-method="POST"
+                                                    data-confirm="Delete selected entries and their submitted data? This cannot be undone.">
+                                                Delete
                                             </option>
                                         @endif
                                     @endif
 
                                     @if($isAdmin && $isArchivedView)
-                                        <option value="permanent-delete"
+                                        <option value="delete"
                                                 data-url="{{ route('awards.bulk-permanent-delete') }}"
                                                 data-method="POST"
-                                                data-confirm="Permanently Delete selected entries? This action cannot be undone.">
-                                            Permanent Delete
+                                                data-confirm="Delete selected archived entries and their submitted data? This cannot be undone.">
+                                            Delete
                                         </option>
                                     @endif
                                 </select>
@@ -480,12 +486,13 @@
                                                         @endif
 
                                                         @if(($isAdmin || $user->email == 'davsong@gmail.com') && !$isArchivedView)
-                                                            <a href="#" class="btn btn-action-icon text-danger p-1" title="Archive Submission" onclick="event.preventDefault(); if (confirm('Archive this submission record?')) { document.getElementById('delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-archive font-sm"></i></a>
+                                                            <a href="#" class="btn btn-action-icon text-secondary p-1" title="Archive Submission" onclick="event.preventDefault(); if (confirm('Archive this submission record?')) { document.getElementById('archive-award-{{ $award->id }}').submit(); }"><i class="fa fa-archive font-sm"></i></a>
+                                                            <a href="#" class="btn btn-action-icon text-danger p-1" title="Delete Submission" onclick="event.preventDefault(); if (confirm('Delete this submission and its submitted data? This cannot be undone.')) { document.getElementById('delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-trash font-sm"></i></a>
                                                         @endif
 
                                                         @if($isAdmin && $isArchivedView)
                                                             <a href="#" class="btn btn-action-icon text-success p-1" title="Restore Submission" onclick="event.preventDefault(); if (confirm('Restore this award nomination?')) { document.getElementById('restore-award-{{ $award->id }}').submit(); }"><i class="fa fa-undo font-sm"></i></a>
-                                                            <a href="#" class="btn btn-action-icon text-danger p-1" title="Permanently Delete Submission" onclick="event.preventDefault(); if (confirm('Permanently delete this award nomination? This cannot be undone.')) { document.getElementById('permanent-delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-trash font-sm"></i></a>
+                                                            <a href="#" class="btn btn-action-icon text-danger p-1" title="Delete Submission" onclick="event.preventDefault(); if (confirm('Delete this archived award nomination and its submitted data? This cannot be undone.')) { document.getElementById('permanent-delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-trash font-sm"></i></a>
                                                         @endif
                                                     </div>
                                                 </td>

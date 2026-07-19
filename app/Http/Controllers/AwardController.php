@@ -435,11 +435,26 @@ class AwardController extends Controller
     {
         try {
             DB::transaction(function () use ($award) {
-                $award->delete();
+                $award->entry()->delete();
+                $award->forceDelete();
             });
 
-            return redirect()->back()->with('message', 'Award nomination archived successfully.');
+            return redirect()->back()->with('message', 'Award nomination and associated entry data deleted successfully.');
 
+        } catch (\Exception $e) {
+            Log::error("Failed to delete Award ID [{$award->id}]: " . $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', 'An error occurred while trying to delete the award nomination.');
+        }
+    }
+
+    public function archive(Award $award)
+    {
+        try {
+            $award->update(['is_archive' => true]);
+
+            return redirect()->back()->with('message', 'Award nomination archived successfully.');
         } catch (\Exception $e) {
             Log::error("Failed to archive Award ID [{$award->id}]: " . $e->getMessage());
 
@@ -451,8 +466,8 @@ class AwardController extends Controller
     public function restore($id)
     {
         try {
-            $award = Award::withTrashed()->findOrFail($id);
-            $award->restore();
+            $award = Award::findOrFail($id);
+            $award->update(['is_archive' => false]);
 
             return redirect()->back()->with('message', 'Award nomination restored successfully.');
         } catch (\Exception $e) {
@@ -466,9 +481,9 @@ class AwardController extends Controller
     public function permanentDelete($id)
     {
         try {
-            $award = Award::withTrashed()->findOrFail($id);
+            $award = Award::findOrFail($id);
 
-            if (!$award->trashed()) {
+            if (!$award->is_archive) {
                 return redirect()->back()->with('error', 'Archive this award nomination before permanently deleting it.');
             }
 
@@ -543,9 +558,27 @@ class AwardController extends Controller
             DB::transaction(function () use ($ids) {
                 $awards = Award::whereIn('id', $ids)->get();
                 foreach ($awards as $award) {
-                    $award->delete();
+                    $award->entry()->delete();
+                    $award->forceDelete();
                 }
             });
+
+            return back()->with('message', 'Selected nominations and associated entry data deleted successfully.');
+        } catch (\Exception $e) {
+            \Log::error("Bulk deletion loop failure: " . $e->getMessage());
+            return back()->with('error', 'An error occurred while deleting the selected nominations.');
+        }
+    }
+
+    public function bulkArchive(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return back()->with('error', 'No entries selected for archiving.');
+        }
+
+        try {
+            Award::whereIn('id', $ids)->update(['is_archive' => true]);
 
             return back()->with('message', 'Selected nominations archived successfully.');
         } catch (\Exception $e) {
@@ -562,10 +595,7 @@ class AwardController extends Controller
         }
 
         try {
-            Award::withTrashed()
-                ->whereIn('id', $ids)
-                ->onlyTrashed()
-                ->restore();
+            Award::whereIn('id', $ids)->update(['is_archive' => false]);
 
             return back()->with('message', 'Selected nominations restored successfully.');
         } catch (\Exception $e) {
@@ -583,7 +613,9 @@ class AwardController extends Controller
 
         try {
             DB::transaction(function () use ($ids) {
-                $awards = Award::onlyTrashed()->whereIn('id', $ids)->get();
+                $awards = Award::whereIn('id', $ids)
+                    ->where('is_archive', true)
+                    ->get();
                 foreach ($awards as $award) {
                     $award->entry()->delete();
                     $award->forceDelete();

@@ -27,6 +27,7 @@ class AwardShortlistStage extends Model
 
     public function awards()
     {
-        return $this->hasMany(Award::class, 'current_shortlist_stage_id');
+        return $this->hasMany(Award::class, 'current_shortlist_stage_id')
+            ->where('is_archive', false);
     }
 }

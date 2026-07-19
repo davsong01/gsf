@@ -20,6 +20,9 @@ class Award extends Model
     // Optional: If you want to automatically cast it or treat it explicitly
     protected $dates = ['deleted_at'];
     protected $guarded = [];
+    protected $casts = [
+        'is_archive' => 'boolean',
+    ];
 
     public function entry(){
         return $this->hasOne(AwardEntry::class);
