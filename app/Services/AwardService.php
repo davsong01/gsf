@@ -320,10 +320,6 @@ class AwardService{
 
     public function index(Request $request, $user, $type, $isAdmin)
     {
-        if ($isAdmin) {
-            $this->applySystemShortlistStages($type);
-        }
-
         $role = $user->role_id ?? $user->role;
 
         $chaptersQuery = Chapter::query();
