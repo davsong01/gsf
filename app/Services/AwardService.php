@@ -10,6 +10,7 @@ use App\Models\AwardShortlistHistory;
 use App\Models\AwardShortlistStage;
 use App\Models\Chapter;
 use App\Models\Field;
+use App\Models\StakeholderReport;
 use App\Models\Zone;
 use App\Services\FileUploadService; // Assuming this is the correct namespace
 use Carbon\Carbon;
@@ -319,6 +320,10 @@ class AwardService{
 
     public function index(Request $request, $user, $type, $isAdmin)
     {
+        if ($isAdmin) {
+            $this->applySystemShortlistStages($type);
+        }
+
         $role = $user->role_id ?? $user->role;
 
         $chaptersQuery = Chapter::query();
@@ -622,44 +627,254 @@ class AwardService{
             throw new \Exception('No entries selected.');
         }
 
-        $isFinalStage = AwardShortlistStage::where('id', $stageId)->where('mark_as_final', 1)->exists();
-
-
         try {
+            $stage = AwardShortlistStage::findOrFail($stageId);
             $awards = Award::withTrashed()
                 ->whereIn('id', $ids)
                 ->get();
 
             foreach ($awards as $award) {
-
-                $award->update([
-                    'current_shortlist_stage_id' => $stageId,
-                ]);
-
-                // optional: if you already have history table
-                $this->logStageChange($award->id, $stageId, $remarks);
-
-                if($isFinalStage){
-                    app(AwardController::class)->approveEntry(
-                        new Request([
-                            'comment' => $remarks,
-                        ]),
-                        $award->fresh()
-                    );
-                }else{
-                    $award->update([
-                        'national_status' => 0,
-                        'national_rejected_on' => null,
-                        'national_rejected_by' => null,
-                        'national_approved_by' => null,
-                        'national_approved_on' => null,
-                    ]);
-                }
+                $this->moveAwardToStage($award, $stage, $remarks);
             }
 
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    public function applySystemShortlistStages(?string $awardType = null): int
+    {
+        $stages = AwardShortlistStage::query()
+            ->where('active', 1)
+            ->where('stage_engine', 'system')
+            ->when($awardType, function ($query) use ($awardType) {
+                $query->where(function ($query) use ($awardType) {
+                    $query->whereNull('award_type')
+                        ->orWhere('award_type', 'both')
+                        ->orWhere('award_type', $awardType);
+                });
+            })
+            ->orderBy('position')
+            ->get();
+
+        $moved = 0;
+
+        foreach ($stages as $stage) {
+            $moved += $this->applySystemShortlistStage($stage);
+        }
+
+        return $moved;
+    }
+
+    public function applySystemShortlistStage(AwardShortlistStage $stage): int
+    {
+        if (!$stage->active || $stage->stage_engine !== 'system') {
+            return 0;
+        }
+
+        $awards = Award::query()
+            ->whereYear('created_at', now()->year)
+            ->where(function ($query) use ($stage) {
+                $query->whereNull('current_shortlist_stage_id')
+                    ->orWhere('current_shortlist_stage_id', '!=', $stage->id);
+            })
+            ->when($stage->award_type && $stage->award_type !== 'both', function ($query) use ($stage) {
+                $query->where('type', $stage->award_type);
+            })
+            ->with('chapter')
+            ->get();
+
+        $moved = 0;
+
+        foreach ($awards as $award) {
+            if (!$this->awardMatchesSystemStage($award, $stage)) {
+                continue;
+            }
+
+            $this->moveAwardToStage(
+                $award,
+                $stage,
+                'Automatically moved by system shortlist conditions.'
+            );
+
+            $moved++;
+        }
+
+        return $moved;
+    }
+
+    protected function awardMatchesSystemStage(Award $award, AwardShortlistStage $stage): bool
+    {
+        if ($stage->award_type && $stage->award_type !== 'both' && $award->type !== $stage->award_type) {
+            return false;
+        }
+
+        $conditions = $stage->system_conditions ?? [];
+
+        if (!$this->hasSystemConditions($conditions)) {
+            return false;
+        }
+
+        if (!$this->matchesApprovalConditions($award, $conditions)) {
+            return false;
+        }
+
+        if (!empty($conditions['uses_report_metrics'])) {
+            return $this->matchesReportMetricConditions($award, $conditions);
+        }
+
+        return true;
+    }
+
+    protected function hasSystemConditions(array $conditions): bool
+    {
+        foreach (['chapter_status', 'zone_status', 'field_status', 'uses_report_metrics'] as $field) {
+            if (!empty($conditions[$field])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function matchesApprovalConditions(Award $award, array $conditions): bool
+    {
+        $fields = collect([
+            'chapter_status',
+            'zone_status',
+            'field_status',
+        ])->filter(fn ($field) => !empty($conditions[$field]))
+            ->values()
+            ->all();
+
+        if (empty($fields)) {
+            return true;
+        }
+
+        $approvedCount = collect($fields)
+            ->filter(fn ($field) => (int) $award->{$field} === 1)
+            ->count();
+
+        return $this->matchesCountRule(
+            $approvedCount,
+            count($fields),
+            $conditions['approval_match'] ?? 'all',
+            (int) ($conditions['approval_count'] ?? 1)
+        );
+    }
+
+    protected function matchesReportMetricConditions(Award $award, array $conditions): bool
+    {
+        if (empty($award->chapter_id)) {
+            return false;
+        }
+
+        $months = filled($conditions['report_metric_months'] ?? null)
+            ? max(1, (int) $conditions['report_metric_months'])
+            : null;
+        $periodKey = null;
+
+        if ($months) {
+            $periodStart = now()->subMonths($months - 1)->startOfMonth();
+            $periodKey = ((int) $periodStart->year * 100) + (int) $periodStart->month;
+        }
+
+        $reports = StakeholderReport::query()
+            ->where('chapter_id', $award->chapter_id)
+            ->get()
+            ->filter(function ($report) use ($periodKey) {
+                if (!$report->year || !$report->month) {
+                    return false;
+                }
+
+                if (!$periodKey) {
+                    return true;
+                }
+
+                $reportKey = ((int) $report->year * 100) + (int) $report->month;
+
+                return $reportKey >= $periodKey;
+            });
+
+        $reportStatuses = array_filter(
+            $conditions['report_statuses'] ?? [],
+            fn ($enabled) => (bool) $enabled
+        );
+
+        if (!empty($reportStatuses)) {
+            $reports = $reports->filter(function ($report) use ($conditions, $reportStatuses) {
+                $approvedCount = collect(array_keys($reportStatuses))
+                    ->filter(fn ($field) => (int) $report->{$field} === 1)
+                    ->count();
+
+                return $this->matchesCountRule(
+                    $approvedCount,
+                    count($reportStatuses),
+                    $conditions['report_approval_match'] ?? 'all',
+                    (int) ($conditions['report_approval_count'] ?? 1)
+                );
+            });
+        }
+
+        $reportMonthCount = $reports
+            ->map(fn ($report) => ((int) $report->year * 100) + (int) $report->month)
+            ->unique()
+            ->count();
+
+        return $months
+            ? $reportMonthCount >= $months
+            : $reportMonthCount > 0;
+    }
+
+    protected function matchesCountRule(int $approvedCount, int $total, string $match, int $requiredCount): bool
+    {
+        return match ($match) {
+            'any' => $approvedCount >= 1,
+            'at_least' => $approvedCount >= min($requiredCount, $total),
+            'exactly' => $approvedCount === min($requiredCount, $total),
+            default => $approvedCount === $total,
+        };
+    }
+
+    protected function moveAwardToStage(Award $award, AwardShortlistStage $stage, ?string $remarks = null): void
+    {
+        $award->update([
+            'current_shortlist_stage_id' => $stage->id,
+        ]);
+
+        $this->logStageChange($award->id, $stage->id, $remarks);
+
+        if ($stage->mark_as_final) {
+            if (isAdmin()['status'] ?? false) {
+                app(AwardController::class)->approveEntry(
+                    new Request([
+                        'comment' => $remarks,
+                    ]),
+                    $award->fresh()
+                );
+
+                return;
+            }
+
+            $award->update([
+                'national_status' => 1,
+                'national_comment' => $remarks,
+                'national_approved_on' => now(),
+                'national_approved_by' => auth()->id(),
+                'national_rejected_on' => null,
+                'national_rejected_by' => null,
+            ]);
+
+            return;
+        }
+
+        $award->update([
+            'national_status' => 0,
+            'national_rejected_on' => null,
+            'national_rejected_by' => null,
+            'national_approved_by' => null,
+            'national_approved_on' => null,
+        ]);
     }
 
     protected function logStageChange(int $awardId, int $stageId, ?string $remarks = null): void

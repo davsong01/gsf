@@ -31,12 +31,51 @@ class AwardShortlistStageRequest extends FormRequest
                 'string',
                 'max:255'
             ],
+            'description' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
             'slug' => [
                 'nullable',
                 'string',
                 'max:255',
                 // Keeps uniqueness intact but ignores this record during an update route execution
                 Rule::unique('award_shortlist_stages', 'slug')->ignore($stageId),
+            ],
+            'award_type' => [
+                'nullable',
+                'in:go,etf,both'
+            ],
+            'stage_engine' => [
+                'required',
+                'in:manual,system'
+            ],
+            'approval_match' => [
+                'nullable',
+                'in:any,all,at_least,exactly'
+            ],
+            'approval_count' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:3'
+            ],
+            'report_metric_months' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:60'
+            ],
+            'report_approval_match' => [
+                'nullable',
+                'in:any,all,at_least,exactly'
+            ],
+            'report_approval_count' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:3'
             ],
             'position' => [
                 'required',
@@ -62,6 +101,9 @@ class AwardShortlistStageRequest extends FormRequest
         return [
             'mark_as_final' => 'pipeline finality flag',
             'position'      => 'sort order position',
+            'award_type'    => 'award type',
+            'stage_engine'  => 'stage engine',
+            'description'   => 'short description',
         ];
     }
 }

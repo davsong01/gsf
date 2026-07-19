@@ -50,6 +50,11 @@ class AwardController extends Controller
 
         $entries = $this->awardService->index($request, $user, $type, $isAdmin);
         $shortlistStages = AwardShortlistStage::where('active', 1)
+            ->where(function ($query) use ($type) {
+                $query->whereNull('award_type')
+                    ->orWhere('award_type', 'both')
+                    ->orWhere('award_type', $type);
+            })
             ->orderBy('position')
             ->get();
 
@@ -71,6 +76,11 @@ class AwardController extends Controller
         $entries = $this->awardService->index($request, $user, $type , $isAdmin);
         $title = 'EducationTrust Fund (E.T.F.) Award Submissions';
         $shortlistStages = AwardShortlistStage::where('active', 1)
+            ->where(function ($query) use ($type) {
+                $query->whereNull('award_type')
+                    ->orWhere('award_type', 'both')
+                    ->orWhere('award_type', $type);
+            })
             ->orderBy('position')
             ->get();
 
@@ -105,6 +115,11 @@ class AwardController extends Controller
         $award->load('entry');
         $chapters = Chapter::select('id', 'name')->get();
         $shortlistStages = AwardShortlistStage::where('active', 1)
+            ->where(function ($query) use ($award) {
+                $query->whereNull('award_type')
+                    ->orWhere('award_type', 'both')
+                    ->orWhere('award_type', $award->type);
+            })
             ->orderBy('position')
             ->get();
 
@@ -297,6 +312,10 @@ class AwardController extends Controller
 
         if (!empty($updateData)) {
             $award->update($updateData);
+        }
+
+        if (!$isAdmin) {
+            $this->awardService->applySystemShortlistStages($award->type);
         }
 
         if ($isAdmin) {
@@ -978,6 +997,8 @@ class AwardController extends Controller
         };
 
         $award->update($updates);
+
+        $this->awardService->applySystemShortlistStages($award->type);
 
         return back()->with(
             'success',

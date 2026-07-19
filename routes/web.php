@@ -283,6 +283,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('download-award-report/{type}', 'awardReportsDownload')->name('award.report.download');
         Route::get('download-award-asset', 'awardAssetsDownload')->name('award.report.assets');
         Route::get('sync-asset/{id}', 'syncAsset')->name('award.sync.asset');
+        Route::post('shortlist/{shortlist}/move-matching-awards', [AwardShortlistStageController::class, 'moveMatchingAwards'])->name('shortlist.move-matching-awards');
         Route::resource('shortlist', AwardShortlistStageController::class);
 
 

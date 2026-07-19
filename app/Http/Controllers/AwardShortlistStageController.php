@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\AwardShortlistStage;
 use App\Http\Controllers\Controller;
 use App\Services\HttpResponseService;
+use App\Services\AwardService;
 use App\Http\Requests\AwardShortlistStageRequest;
 use App\Http\Resources\AwardShortlistStageResource;
 
@@ -58,9 +59,21 @@ class AwardShortlistStageController extends Controller
             $validated['slug'] = Str::slug($validated['title']);
         }
 
-        // Handle structural boolean parameters explicitly if absent from standard input structures
-        $validated['active'] = $request->has('active');
-        $validated['mark_as_final'] = $request->has('mark_as_final');
+        $validated['award_type'] = $request->input('award_type') ?: null;
+        $validated['active'] = $request->boolean('active');
+        $validated['mark_as_final'] = $request->boolean('mark_as_final');
+        $validated['system_conditions'] = $this->buildSystemConditions($request);
+        $validated = array_intersect_key($validated, array_flip([
+            'title',
+            'description',
+            'slug',
+            'award_type',
+            'stage_engine',
+            'system_conditions',
+            'position',
+            'active',
+            'mark_as_final',
+        ]));
 
         AwardShortlistStage::create($validated);
 
@@ -105,6 +118,19 @@ class AwardShortlistStageController extends Controller
 
         $validated['active'] = $request->boolean('active');
         $validated['mark_as_final'] = $request->boolean('mark_as_final');
+        $validated['award_type'] = $request->input('award_type') ?: null;
+        $validated['system_conditions'] = $this->buildSystemConditions($request);
+        $validated = array_intersect_key($validated, array_flip([
+            'title',
+            'description',
+            'slug',
+            'award_type',
+            'stage_engine',
+            'system_conditions',
+            'position',
+            'active',
+            'mark_as_final',
+        ]));
         
         $shortlist->update($validated);
 
@@ -122,5 +148,49 @@ class AwardShortlistStageController extends Controller
         $shortlist->delete();
 
         return back()->with('message', 'Deleted successfully');
+    }
+
+    public function moveMatchingAwards(AwardShortlistStage $shortlist, AwardService $awardService)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (!$shortlist->active) {
+            return back()->with('error', 'Only active shortlist stages can move matching awards.');
+        }
+
+        if ($shortlist->stage_engine !== 'system') {
+            return back()->with('error', 'Only system-powered stages can move awards by criteria.');
+        }
+
+        $moved = $awardService->applySystemShortlistStage($shortlist);
+
+        return back()->with(
+            'message',
+            "{$moved} award entr" . ($moved === 1 ? 'y was' : 'ies were') . " moved into {$shortlist->title}."
+        );
+    }
+
+    protected function buildSystemConditions(AwardShortlistStageRequest $request): array
+    {
+        return [
+            'chapter_status' => $request->boolean('chapter_status'),
+            'zone_status' => $request->boolean('zone_status'),
+            'field_status' => $request->boolean('field_status'),
+            'approval_match' => $request->input('approval_match', 'all'),
+            'approval_count' => (int) $request->input('approval_count', 1),
+            'uses_report_metrics' => $request->boolean('uses_report_metrics'),
+            'report_metric_months' => $request->filled('report_metric_months')
+                ? (int) $request->input('report_metric_months')
+                : null,
+            'report_statuses' => [
+                'zone_status' => $request->boolean('report_zone_status'),
+                'field_status' => $request->boolean('report_field_status'),
+                'national_status' => $request->boolean('report_national_status'),
+            ],
+            'report_approval_match' => $request->input('report_approval_match', 'all'),
+            'report_approval_count' => (int) $request->input('report_approval_count', 1),
+        ];
     }
 }

@@ -25,6 +25,8 @@
                                             <th style="width: 60px;">S/N</th>
                                             <th>Stage Title</th>
                                             <th>Slug</th>
+                                            <th>Award Type</th>
+                                            <th>Engine</th>
                                             <th class="text-center">Position</th>
                                             <th>Status</th>
                                             <th>Pipeline Finality</th>
@@ -40,10 +42,21 @@
 
                                                 <td>
                                                     <strong>{{ $stage->title }}</strong>
+                                                    @if($stage->description)
+                                                        <small class="text-muted d-block mt-25">{{ $stage->description }}</small>
+                                                    @endif
                                                 </td>
 
                                                 <td>
                                                     <span class="font-monospace text-muted font-sm">{{ $stage->slug }}</span>
+                                                </td>
+
+                                                <td>{{ strtoupper($stage->award_type ?: 'both') }}</td>
+
+                                                <td>
+                                                    <span class="badge badge-{{ $stage->stage_engine === 'system' ? 'info' : 'light' }}">
+                                                        {{ ucfirst($stage->stage_engine ?? 'manual') }}
+                                                    </span>
                                                 </td>
 
                                                 <td class="text-center">
@@ -72,6 +85,29 @@
 
                                                 <td>
                                                     <div class="btn-group">
+                                                        @if($stage->stage_engine === 'system')
+                                                            <form method="POST"
+                                                                  action="{{ route('shortlist.move-matching-awards', $stage->id) }}"
+                                                                  onsubmit="return confirm('Move all awards that currently meet this stage criteria into this stage?');"
+                                                                  style="display: inline;">
+                                                                @csrf
+                                                                <button type="submit"
+                                                                        class="btn btn-sm btn-outline-success"
+                                                                        data-toggle="tooltip"
+                                                                        title="Move matching awards into this stage">
+                                                                    <i class="bx bx-transfer-alt"></i>
+                                                                </button>
+                                                            </form>
+                                                        @else
+                                                            <button type="button"
+                                                                    class="btn btn-sm btn-outline-secondary"
+                                                                    disabled
+                                                                    data-toggle="tooltip"
+                                                                    title="Set this stage engine to System before moving awards by criteria">
+                                                                <i class="bx bx-transfer-alt"></i>
+                                                            </button>
+                                                        @endif
+
                                                         <a href="{{ route('shortlist.edit', $stage->id) }}"
                                                            class="btn btn-sm btn-outline-primary"
                                                            data-toggle="tooltip" title="Edit">
@@ -95,7 +131,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="8" class="text-center text-muted py-4">
+                                                <td colspan="10" class="text-center text-muted py-4">
                                                     <i class="bx bx-layer-plus d-block font-large-1 mb-1 text-light"></i>
                                                     No award shortlist configurations found in parameters.
                                                 </td>
