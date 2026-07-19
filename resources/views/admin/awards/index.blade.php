@@ -15,6 +15,11 @@
     $hierarchyCount = $permissions->hierarchyCount;
     $hierarchyCol = $permissions->hierarchyCol;
     $approval_statuses = $permissions->statuses;
+    $isArchivedView = request()->boolean('archived');
+    $activeQuery = request()->except(['archived', 'page']);
+    $archivedQuery = array_merge($activeQuery, ['archived' => 1]);
+    $activeUrl = url()->current() . (count($activeQuery) ? '?' . http_build_query($activeQuery) : '');
+    $archivedUrl = url()->current() . '?' . http_build_query($archivedQuery);
 
 @endphp
 
@@ -96,16 +101,37 @@
 <div class="content-body">
     <section id="awards-dashboard">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="card-title mb-0">{{ $title }}</h4>
-            <span class="badge bg-primary rounded-pill font-sm fw-bold px-2 py-0.5">
-                    {{ method_exists($awards, 'total') ? $awards->total() : $awards->count() }} Total
+            <div>
+                <h4 class="card-title mb-0">{{ $title }}</h4>
+                @if($isArchivedView)
+                    <small class="text-muted">Viewing archived award nominations.</small>
+                @endif
+            </div>
+            <span class="badge {{ $isArchivedView ? 'bg-secondary' : 'bg-primary' }} rounded-pill font-sm fw-bold px-2 py-0.5">
+                    {{ method_exists($awards, 'total') ? $awards->total() : $awards->count() }} {{ $isArchivedView ? 'Archived' : 'Active' }}
                 </span>
         </div>
+
+        @if($isAdmin)
+            <div class="d-flex justify-content-end mb-2">
+                <div class="btn-group">
+                    <a href="{{ $activeUrl }}" class="btn btn-sm {{ $isArchivedView ? 'btn-outline-primary' : 'btn-primary' }}">
+                        Active Awards
+                    </a>
+                    <a href="{{ $archivedUrl }}" class="btn btn-sm {{ $isArchivedView ? 'btn-primary' : 'btn-outline-primary' }}">
+                        Archived Awards
+                    </a>
+                </div>
+            </div>
+        @endif
 
         <!-- Filters Form Panel -->
         <div class="row">
             <div class="col-12">
                 <form method="GET" class="row g-2 align-items-end">
+                    @if($isArchivedView)
+                        <input type="hidden" name="archived" value="1">
+                    @endif
                     <div class="col-md-4 mb-2">
                         <label class="form-label">Name</label>
                         <input type="text" name="name" class="form-control" value="{{ request('name') }}">
@@ -206,37 +232,45 @@
                                 <select id="wp-bulk-action-select" class="form-select" style="width: 250px; height: 38px;">
                                     <option value="">Select Bulk Action</option>
                                     @if($isAdmin)
-                                        <option value="shortlist"
-                                                data-url="{{ route('awards.bulk.shortlist') }}"
-                                                data-method="POST"
-                                                data-confirm="Shortlist all selected entries?">
-                                            Shortlist
-                                        </option>
-                                        <option value="approve"
-                                                data-url="{{ route('awards.bulk-approve') }}"
-                                                data-method="POST"
-                                                data-confirm="Approve selected entries?">
-                                            Approve
-                                        </option>
-                                        <option value="reject"
-                                                data-url="{{ route('awards.bulk-reject') }}"
-                                                data-method="POST"
-                                                data-confirm="Reject selected entries?">
-                                            Reject
-                                        </option>
+                                        @if($isArchivedView)
+                                            <option value="restore"
+                                                    data-url="{{ route('awards.bulk-restore') }}"
+                                                    data-method="POST"
+                                                    data-confirm="Restore selected archived entries?">
+                                                Restore
+                                            </option>
+                                        @else
+                                            <option value="shortlist"
+                                                    data-url="{{ route('awards.bulk.shortlist') }}"
+                                                    data-method="POST"
+                                                    data-confirm="Shortlist all selected entries?">
+                                                Shortlist
+                                            </option>
+                                            <option value="approve"
+                                                    data-url="{{ route('awards.bulk-approve') }}"
+                                                    data-method="POST"
+                                                    data-confirm="Approve selected entries?">
+                                                Approve
+                                            </option>
+                                            <option value="reject"
+                                                    data-url="{{ route('awards.bulk-reject') }}"
+                                                    data-method="POST"
+                                                    data-confirm="Reject selected entries?">
+                                                Reject
+                                            </option>
+                                            <option value="delete"
+                                                    data-url="{{ route($isAdmin ? 'awards.bulk-delete' : 'stakeholders.awards.bulk-delete') }}"
+                                                    data-method="POST"
+                                                    data-confirm="Archive selected entries?">
+                                                Archive
+                                            </option>
+                                        @endif
                                     @endif
 
-                                    @if($isAdmin || $user->email == 'davsong@gmail.com')
-                                        <option value="delete"
-                                                data-url="{{ route($isAdmin ? 'awards.bulk-delete' : 'stakeholders.awards.bulk-delete') }}"
-                                                data-method="DELETE"
-                                                data-confirm="Delete selected entries?">
-                                            Delete
-                                        </option>
-
+                                    @if($isAdmin && $isArchivedView)
                                         <option value="permanent-delete"
-                                                data-url="{{ route($isAdmin ? 'awards.bulk-permanent-delete' : 'stakeholders.awards.bulk-permanent-delete') }}"
-                                                data-method="DELETE"
+                                                data-url="{{ route('awards.bulk-permanent-delete') }}"
+                                                data-method="POST"
                                                 data-confirm="Permanently Delete selected entries? This action cannot be undone.">
                                             Permanent Delete
                                         </option>
@@ -435,16 +469,23 @@
 
                                                 <td class="text-end pe-4 align-middle">
                                                     <div class="d-inline-flex align-items-center justify-content-end gap-1">
-                                                        @if($isAdmin)
+                                                        @if($isAdmin && !$isArchivedView)
                                                         <button type="button" class="btn btn-action-icon text-secondary bg-transparent border-0 p-1" data-toggle="modal" data-target="#awardStatusAdjustModal{{ $award->id }}" title="Adjust Status">
                                                             <i class="fa fa-cog font-sm"></i>
                                                         </button>
                                                         @endif
 
-                                                        <a href="{{ route($isAdmin ? 'awards.show' : 'stakeholders.awards.show', $award->id) }}" class="btn btn-action-icon text-warning p-1" title="Edit Entry" onclick="return confirm('Modify this record?');"><i class="fa fa-edit font-sm"></i></a>
+                                                        @if(!$isArchivedView)
+                                                            <a href="{{ route($isAdmin ? 'awards.show' : 'stakeholders.awards.show', $award->id) }}" class="btn btn-action-icon text-warning p-1" title="Edit Entry" onclick="return confirm('Modify this record?');"><i class="fa fa-edit font-sm"></i></a>
+                                                        @endif
 
-                                                        @if($isAdmin || $user->email == 'davsong@gmail.com')
-                                                        <a href="#" class="btn btn-action-icon text-danger p-1" title="Delete Submission" onclick="event.preventDefault(); if (confirm('Remove this submission record?')) { document.getElementById('delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-trash font-sm"></i></a>
+                                                        @if(($isAdmin || $user->email == 'davsong@gmail.com') && !$isArchivedView)
+                                                            <a href="#" class="btn btn-action-icon text-danger p-1" title="Archive Submission" onclick="event.preventDefault(); if (confirm('Archive this submission record?')) { document.getElementById('delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-archive font-sm"></i></a>
+                                                        @endif
+
+                                                        @if($isAdmin && $isArchivedView)
+                                                            <a href="#" class="btn btn-action-icon text-success p-1" title="Restore Submission" onclick="event.preventDefault(); if (confirm('Restore this award nomination?')) { document.getElementById('restore-award-{{ $award->id }}').submit(); }"><i class="fa fa-undo font-sm"></i></a>
+                                                            <a href="#" class="btn btn-action-icon text-danger p-1" title="Permanently Delete Submission" onclick="event.preventDefault(); if (confirm('Permanently delete this award nomination? This cannot be undone.')) { document.getElementById('permanent-delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-trash font-sm"></i></a>
                                                         @endif
                                                     </div>
                                                 </td>

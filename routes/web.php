@@ -268,10 +268,12 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('award-enties-single/{award}', 'show')->name('awards.show');
         Route::get('award-enties-download/{award}', 'download')->name('awards.download');
         Route::delete('delete/{award}', 'destroy')->name('awards.delete');
-        Route::get('delete/{award}', 'permanentDelete')->name('awards.permanent.delete');
+        Route::post('restore-award/{id}', 'restore')->name('awards.restore');
+        Route::delete('permanent-delete/{id}', 'permanentDelete')->name('awards.permanent.delete');
         Route::post('award-shortlist', 'shortlist')->name('awards.shortlist');
         Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
-        Route::post('bulkpermanantdelete', 'bulkPermantDelete')->name('awards.bulk-permanent-delete');
+        Route::post('bulkrestore', 'bulkRestore')->name('awards.bulk-restore');
+        Route::post('bulkpermanantdelete', 'bulkPermanentDelete')->name('awards.bulk-permanent-delete');
         Route::post('bulkapprove', 'bulkApprove')->name('awards.bulk-approve');
         Route::post('bulkreject', 'bulkReject')->name('awards.bulk-reject');
         Route::post('bulkshortlist', 'bulkShortlist')->name('awards.bulk.shortlist');

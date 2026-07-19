@@ -386,7 +386,8 @@ class AwardService{
         /** =====================
          * AWARDS QUERY
          * ===================== */
-        $awardsQuery = Award::whereYear('created_at', now()->year)
+        $awardsQuery = Award::query()
+            ->whereYear('created_at', now()->year)
             ->with([
                 'entry',
                 'chapter',
@@ -395,6 +396,10 @@ class AwardService{
                 'shortlists',
                 'currentShortlistStage'
             ]);
+
+        if ($request->boolean('archived')) {
+            $awardsQuery->onlyTrashed();
+        }
 
         if ($request->filled('current_shortlist_stage_id')) {
 
@@ -570,7 +575,8 @@ class AwardService{
          * ===================== */
         $paginatedAwards = $awardsQuery
             ->orderByDesc('created_at')
-            ->paginate(200);
+            ->paginate(200)
+            ->withQueryString();
 
         /** =====================
          * GROUPING

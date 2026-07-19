@@ -94,6 +94,13 @@
             @csrf
             @method('DELETE')
         </form>
+        <form id="restore-award-{{ $award->id }}" action="{{ route('awards.restore', $award->id) }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+        <form id="permanent-delete-award-{{ $award->id }}" action="{{ route('awards.permanent.delete', $award->id) }}" method="POST" style="display: none;">
+            @csrf
+            @method('DELETE')
+        </form>
         @endif
     @endforeach
 @endforeach

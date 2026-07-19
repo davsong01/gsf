@@ -27,6 +27,7 @@
                                             <th>Slug</th>
                                             <th>Award Type</th>
                                             <th>Engine</th>
+                                            <th class="text-center">Entries</th>
                                             <th class="text-center">Position</th>
                                             <th>Status</th>
                                             <th>Pipeline Finality</th>
@@ -56,6 +57,12 @@
                                                 <td>
                                                     <span class="badge badge-{{ $stage->stage_engine === 'system' ? 'info' : 'light' }}">
                                                         {{ ucfirst($stage->stage_engine ?? 'manual') }}
+                                                    </span>
+                                                </td>
+
+                                                <td class="text-center">
+                                                    <span class="badge badge-light-primary font-weight-bold">
+                                                        {{ $stage->awards_count }}
                                                     </span>
                                                 </td>
 
@@ -131,7 +138,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="10" class="text-center text-muted py-4">
+                                                <td colspan="11" class="text-center text-muted py-4">
                                                     <i class="bx bx-layer-plus d-block font-large-1 mb-1 text-light"></i>
                                                     No award shortlist configurations found in parameters.
                                                 </td>

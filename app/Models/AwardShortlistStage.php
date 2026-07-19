@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Award;
 use Illuminate\Database\Eloquent\Model;
 
 class AwardShortlistStage extends Model
@@ -23,4 +24,9 @@ class AwardShortlistStage extends Model
         'active',
         'mark_as_final'
     ];
+
+    public function awards()
+    {
+        return $this->hasMany(Award::class, 'current_shortlist_stage_id');
+    }
 }

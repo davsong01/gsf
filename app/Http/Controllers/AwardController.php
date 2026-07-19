@@ -435,32 +435,45 @@ class AwardController extends Controller
     {
         try {
             DB::transaction(function () use ($award) {
-                // 1. Delete all associated form input entries first
-                $award->entry()->delete();
-
-                // 2. Delete the parent award record
                 $award->delete();
             });
 
-            return redirect()->back()->with('message', 'Delete Successful')->with('message', 'Award nomination and all associated entries deleted successfully.');
+            return redirect()->back()->with('message', 'Award nomination archived successfully.');
 
         } catch (\Exception $e) {
-            Log::error("Failed to delete Award ID [{$award->id}]: " . $e->getMessage());
+            Log::error("Failed to archive Award ID [{$award->id}]: " . $e->getMessage());
 
             return redirect()->back()
-                ->with('error', 'An error occurred while trying to delete the award nomination.');
+                ->with('error', 'An error occurred while trying to archive the award nomination.');
         }
     }
 
-    public function permanentDelete(Award $award)
+    public function restore($id)
     {
         try {
+            $award = Award::withTrashed()->findOrFail($id);
+            $award->restore();
+
+            return redirect()->back()->with('message', 'Award nomination restored successfully.');
+        } catch (\Exception $e) {
+            Log::error("Failed to restore Award ID [{$id}]: " . $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', 'An error occurred while trying to restore the award nomination.');
+        }
+    }
+
+    public function permanentDelete($id)
+    {
+        try {
+            $award = Award::withTrashed()->findOrFail($id);
+
+            if (!$award->trashed()) {
+                return redirect()->back()->with('error', 'Archive this award nomination before permanently deleting it.');
+            }
+
             DB::transaction(function () use ($award) {
-                if (method_exists($award->entry(), 'forceDelete')) {
-                    $award->entry()->forceDelete();
-                } else {
-                    $award->entry()->delete();
-                }
+                $award->entry()->delete();
 
                 $award->forceDelete();
             });
@@ -468,7 +481,7 @@ class AwardController extends Controller
             return redirect()->back()->with('message', 'Award nomination and all associated entries permanently deleted.');
 
         } catch (\Exception $e) {
-            \Log::error("Failed to permanently delete Award ID [{$award->id}]: " . $e->getMessage());
+            \Log::error("Failed to permanently delete Award ID [{$id}]: " . $e->getMessage());
 
             return redirect()->back()
                 ->with('error', 'An error occurred while trying to permanently delete the award nomination.');
@@ -528,18 +541,36 @@ class AwardController extends Controller
 
         try {
             DB::transaction(function () use ($ids) {
-                // If using soft deletes, make sure we can find them normally
                 $awards = Award::whereIn('id', $ids)->get();
                 foreach ($awards as $award) {
-                    // Call your existing single destroy method
-                    $this->destroy($award);
+                    $award->delete();
                 }
             });
 
-            return back()->with('message', 'Selected nominations processed for deletion.');
+            return back()->with('message', 'Selected nominations archived successfully.');
         } catch (\Exception $e) {
-            \Log::error("Bulk deletion loop failure: " . $e->getMessage());
-            return back()->with('error', 'An error occurred while deleting the selected nominations.');
+            \Log::error("Bulk archive loop failure: " . $e->getMessage());
+            return back()->with('error', 'An error occurred while archiving the selected nominations.');
+        }
+    }
+
+    public function bulkRestore(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return back()->with('error', 'No entries selected for restoration.');
+        }
+
+        try {
+            Award::withTrashed()
+                ->whereIn('id', $ids)
+                ->onlyTrashed()
+                ->restore();
+
+            return back()->with('message', 'Selected nominations restored successfully.');
+        } catch (\Exception $e) {
+            \Log::error("Bulk restore loop failure: " . $e->getMessage());
+            return back()->with('error', 'An error occurred while restoring the selected nominations.');
         }
     }
 
@@ -552,11 +583,10 @@ class AwardController extends Controller
 
         try {
             DB::transaction(function () use ($ids) {
-                // Use withTrashed() in case entries are already soft-deleted
-                $awards = Award::withTrashed()->whereIn('id', $ids)->get();
+                $awards = Award::onlyTrashed()->whereIn('id', $ids)->get();
                 foreach ($awards as $award) {
-                    // Call your existing single permanentDelete method
-                    $this->permanentDelete($award);
+                    $award->entry()->delete();
+                    $award->forceDelete();
                 }
             });
 

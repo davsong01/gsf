@@ -22,7 +22,8 @@ class AwardShortlistStageController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $stages = AwardShortlistStage::query();
+        $stages = AwardShortlistStage::query()
+            ->withCount('awards');
 
         // Filter by structural parameters defined in your blueprint
         if ($request->has('active')) {
