@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Intervention\Image\Facades\Image;
 
 class OfficialController extends Controller
@@ -38,6 +39,7 @@ class OfficialController extends Controller
             'gender'      => 'required|in:Male,Female',
             'passport'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'password'    => 'nullable|string',
+            'status'      => 'required|in:active,inactive',
             'permissions' => 'nullable|array',
         ]);
 
@@ -54,7 +56,6 @@ class OfficialController extends Controller
 
         $data['slug'] = Str::slug($data['name']);
         $data['role'] = 1;
-        $data['status'] = 'active';
 
         $user = User::create($data);
 
@@ -74,7 +75,16 @@ class OfficialController extends Controller
 
    public function update(User $official, Request $request)
     {
-        $data = $request->except('passport');
+        $data = $request->validate([
+            'name'        => 'required|string|min:3',
+            'email'       => ['required', 'email', Rule::unique('users', 'email')->ignore($official->id)],
+            'phone'       => 'required|string',
+            'gender'      => 'required|in:Male,Female',
+            'passport'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'password'    => 'nullable|string',
+            'status'      => 'required|in:active,inactive',
+            'permissions' => 'nullable|array',
+        ]);
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);

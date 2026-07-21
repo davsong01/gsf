@@ -107,22 +107,22 @@
                                             <input type="file" class="form-control" name="passport" accept="image/*">
                                         </div>
                                     </div>
-                                    {{-- <div class="col-md-6">
+                                    <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Status</label>
                                             <select class="form-control" name="status" required>
                                                 <option value="">-- Select --</option>
-                                                <option value="1"
-                                                    {{ old('status', $official->status ?? '') === '1' ? 'selected' : '' }}>
+                                                <option value="active"
+                                                    {{ old('status', $official->status ?? 'active') === 'active' ? 'selected' : '' }}>
                                                     Active
                                                 </option>
-                                                <option value="0"
-                                                    {{ old('status', $official->status ?? '') === '0' ? 'selected' : '' }}>
+                                                <option value="inactive"
+                                                    {{ old('status', $official->status ?? '') === 'inactive' ? 'selected' : '' }}>
                                                     Inactive
                                                 </option>
                                             </select>
                                         </div>
-                                    </div> --}}
+                                    </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Password</label>

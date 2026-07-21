@@ -205,6 +205,24 @@ if (!function_exists('rootPermissions')) {
                 'icon' => 'fa fa-users'
             ],
             [
+                'id' => 91,
+                'slug' => 'system-logs',
+                'name' => 'System Logs',
+                'icon' => 'fa fa-exclamation-triangle',
+                'children' => [
+                    [
+                        'id' => 92,
+                        'slug' => 'errors.index',
+                        'name' => 'Database Logs',
+                    ],
+                    [
+                        'id' => 93,
+                        'slug' => 'error-files.index',
+                        'name' => 'Error Log Files',
+                    ],
+                ],
+            ],
+            [
                 'id' => 17,
                 'slug' => 'listing-pending',
                 'name' => 'Pending Listing',
@@ -1574,4 +1592,3 @@ if (!function_exists('resolveAwardIndexContext')) {
         ];
     }
 }
-

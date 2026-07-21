@@ -1,5 +1,7 @@
 <?php
 
+use App\Errors\Controllers\ErrorLogFileController;
+use App\Errors\Controllers\SystemLogController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AlumniController;
@@ -538,6 +540,22 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('zones/delete/{id}', [ZoneController::class, 'destroy'])->name('zones.delete');
 
     Route::get('officials/delete/{official}', [OfficialController::class, 'delete'])->name('officials.delete');
+
+    Route::controller(SystemLogController::class)->group(function () {
+        Route::get('errors', 'index')->name('errors.index');
+        Route::post('errors/clear', 'clearDatabaseLogs')->name('errors.clear');
+        Route::get('errors/recent', 'recentLogs')->name('errors.recent');
+        Route::get('errors/recurring', 'recurringErrors')->name('errors.recurring');
+        Route::get('delete-error/{id}', 'delete')->name('error.delete');
+    });
+
+    Route::controller(ErrorLogFileController::class)->group(function () {
+        Route::get('error-log-files', 'index')->name('error-files.index');
+        Route::get('error-log-files/download/{file}', 'download')->name('error-files.download');
+        Route::delete('error-log-files/delete/{file}', 'delete')->name('error-files.delete');
+        Route::post('error-log-files/delete-all', 'deleteAll')->name('error-files.deleteAll');
+    });
+
     Route::resource('moderators', ModeratorController::class);
     Route::get('moderators/delete/{id}', [ModeratorController::class, 'destroy'])->name('moderators.delete');
 

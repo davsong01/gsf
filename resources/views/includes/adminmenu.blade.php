@@ -205,6 +205,24 @@
     </li>
     @endif
 
+    @if(in_array('errors.index', $userPermissions) || in_array('error-files.index', $userPermissions))
+    <li class="nav-item has-sub {{ Request::is('errors*') || Request::is('error-log-files*') ? 'open is_shown' : '' }}">
+        <a href="#"><i class="fa fa-exclamation-triangle"></i><span class="menu-title">System Logs</span></a>
+        <ul class="menu-content">
+            @if(in_array('errors.index', $userPermissions))
+            <li class="{{ Request::is('errors*') ? 'active' : '' }}">
+                <a href="{{ route('errors.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Database Logs</span></a>
+            </li>
+            @endif
+            @if(in_array('error-files.index', $userPermissions))
+            <li class="{{ Request::is('error-log-files*') ? 'active' : '' }}">
+                <a href="{{ route('error-files.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Error Log Files</span></a>
+            </li>
+            @endif
+        </ul>
+    </li>
+    @endif
+
     {{-- PENDING LISTING --}}
     @if(in_array('listing-pending', $userPermissions))
     <li class="nav-item {{ Request::is('listing-pending*') ? 'active' : '' }}">
@@ -275,4 +293,3 @@
 <a href="{{ route('users.show', auth()->user()->id) }}"><i class="fa fa-user-circle-o"></i><span class="menu-title"
 data-i18n="Kanban">My Profile</span></a>
 </li>
-
