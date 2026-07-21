@@ -54,6 +54,7 @@ class OfficialController extends Controller
 
         $data['slug'] = Str::slug($data['name']);
         $data['role'] = 1;
+        $data['status'] = 'active';
 
         $user = User::create($data);
 
@@ -75,9 +76,11 @@ class OfficialController extends Controller
     {
         $data = $request->except('passport');
 
-        $data['password'] = $request->filled('password')
-            ? Hash::make($request->password)
-            : Hash::make($request->phone);
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        } else {
+            unset($data['password']);
+        }
 
         if ($request->hasFile('passport')) {
             $data['passport'] = $this->uploadImage(

@@ -90,6 +90,9 @@
 
         {{-- Single Record Destructive Action Execution Target Handler --}}
         @if($isAdmin)
+        <form id="archive-award-{{ $award->id }}" action="{{ route('awards.archive', $award->id) }}" method="POST" style="display: none;">
+            @csrf
+        </form>
         <form id="delete-award-{{ $award->id }}" action="{{ route($isAdmin ? 'awards.delete' : 'stakeholders.awards.delete', $award->id) }}" method="POST" style="display: none;">
             @csrf
             @method('DELETE')

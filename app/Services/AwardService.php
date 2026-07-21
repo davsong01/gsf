@@ -629,7 +629,8 @@ class AwardService{
 
         try {
             $stage = AwardShortlistStage::findOrFail($stageId);
-            $awards = Award::withTrashed()
+            $awards = Award::query()
+                ->where('is_archive', false)
                 ->whereIn('id', $ids)
                 ->get();
 
