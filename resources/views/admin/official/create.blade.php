@@ -39,6 +39,7 @@
 
                                 $permissions = rootPermissions();
                                 $actionPermissions = rootActionPermissions();
+                                $actionPermissionsByParent = $actionPermissions->groupBy('parent_slug');
 
                                 $parentsWithChildren = $permissions->filter(
                                     fn ($p) => isset($p['children']) && count($p['children'])
@@ -174,6 +175,35 @@
                                                     </div>
                                                 @endforeach
 
+                                                @if($actionPermissionsByParent->has($child['slug']))
+                                                    <div class="col-12 ms-3 fw-semibold" style="margin-top: 10px; margin-bottom: 5px;">
+                                                        Permissions
+                                                    </div>
+
+                                                    @foreach($actionPermissionsByParent->get($child['slug']) as $actionPermission)
+                                                        @php $id = 'perm_'.$actionPermission['slug']; @endphp
+
+                                                        <div class="col-md-4 ms-4" style="margin-bottom: 8px">
+                                                            <div class="form-check">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    class="form-check-input"
+                                                                    id="{{ $id }}"
+                                                                    name="permissions[]"
+                                                                    value="{{ $actionPermission['slug'] }}"
+                                                                    {{ in_array($actionPermission['slug'], $userPermissions) ? 'checked' : '' }}
+                                                                >
+                                                                <label class="form-check-label" for="{{ $id }}">
+                                                                    {{ $actionPermission['name'] }}
+                                                                </label>
+                                                                @if(!empty($actionPermission['description']))
+                                                                    <small class="text-muted d-block">{{ $actionPermission['description'] }}</small>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                @endif
+
                                             @else
                                                 @php $id = 'perm_'.$child['slug']; @endphp
                                                     <div class="col-md-4 ms-3">
@@ -191,6 +221,35 @@
                                                             </label>
                                                         </div>
                                                     </div>
+
+                                                    @if($actionPermissionsByParent->has($child['slug']))
+                                                        <div class="col-12 ms-3 fw-semibold" style="margin-top: 10px; margin-bottom: 5px;">
+                                                            Permissions
+                                                        </div>
+
+                                                        @foreach($actionPermissionsByParent->get($child['slug']) as $actionPermission)
+                                                            @php $id = 'perm_'.$actionPermission['slug']; @endphp
+
+                                                            <div class="col-md-4 ms-4" style="margin-bottom: 8px">
+                                                                <div class="form-check">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        class="form-check-input"
+                                                                        id="{{ $id }}"
+                                                                        name="permissions[]"
+                                                                        value="{{ $actionPermission['slug'] }}"
+                                                                        {{ in_array($actionPermission['slug'], $userPermissions) ? 'checked' : '' }}
+                                                                    >
+                                                                    <label class="form-check-label" for="{{ $id }}">
+                                                                        {{ $actionPermission['name'] }}
+                                                                    </label>
+                                                                    @if(!empty($actionPermission['description']))
+                                                                        <small class="text-muted d-block">{{ $actionPermission['description'] }}</small>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
 
                                             @endif
 
@@ -222,36 +281,6 @@
                                         </div>
                                     @endforeach
 
-                                </div>
-
-                                <h6 class="mt-4">Permissions</h6>
-                                <p class="text-muted mb-2">
-                                    These control what the official can do inside sections they already have access to.
-                                </p>
-
-                                <div class="row">
-                                    @foreach($actionPermissions as $permission)
-                                        @php $id = 'perm_'.$permission['slug']; @endphp
-
-                                        <div class="col-md-6 mb-2">
-                                            <div class="form-check">
-                                                <input
-                                                    type="checkbox"
-                                                    class="form-check-input"
-                                                    id="{{ $id }}"
-                                                    name="permissions[]"
-                                                    value="{{ $permission['slug'] }}"
-                                                    {{ in_array($permission['slug'], $userPermissions) ? 'checked' : '' }}
-                                                >
-                                                <label class="form-check-label" for="{{ $id }}">
-                                                    {{ $permission['name'] }}
-                                                </label>
-                                                @if(!empty($permission['description']))
-                                                    <small class="text-muted d-block">{{ $permission['description'] }}</small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @endforeach
                                 </div>
 
                                 {{-- SUBMIT --}}

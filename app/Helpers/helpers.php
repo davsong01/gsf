@@ -290,18 +290,21 @@ if (!function_exists('rootActionPermissions')) {
                 'id' => 1001,
                 'slug' => 'awards.archive-submission',
                 'name' => 'Archive Submission',
+                'parent_slug' => 'awards.etf',
                 'description' => 'Can archive active award submissions so they no longer appear in current award operations.'
             ],
             [
                 'id' => 1002,
                 'slug' => 'awards.delete-submission',
                 'name' => 'Delete Submission',
+                'parent_slug' => 'awards.etf',
                 'description' => 'Can delete award submissions and their submitted entry data.'
             ],
             [
                 'id' => 1003,
                 'slug' => 'awards.adjust-approval-status',
                 'name' => 'Adjust Approval Status',
+                'parent_slug' => 'awards.etf',
                 'description' => 'Can manually change chapter, zone, field, or national approval status on award submissions.'
             ],
         ]);
