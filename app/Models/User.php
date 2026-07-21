@@ -81,7 +81,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	public function getRolenameAttribute(){
 		$attributes = getCommunityPortfolios();
-		return $attributes[$this->role];
+		return $attributes[$this->role] ?? ($this->role == 1 ? 'Admin' : 'Unknown Role');
 	}
 
 	public function scopeAlumni()
