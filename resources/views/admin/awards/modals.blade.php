@@ -21,6 +21,7 @@
     @foreach($awardGroup as $award)
 
         {{-- Status Adjustment Modal --}}
+        @if($canAdjustApprovalStatus ?? false)
         <div class="modal fade" id="awardStatusAdjustModal{{ $award->id }}" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <!-- Status setting operations form content can be structured inside this container -->
@@ -68,6 +69,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         {{-- Dynamic Feedback Comment Partials Backdrops --}}
         @foreach([
@@ -90,20 +92,26 @@
 
         {{-- Single Record Destructive Action Execution Target Handler --}}
         @if($isAdmin)
+        @if($canArchiveSubmission ?? false)
         <form id="archive-award-{{ $award->id }}" action="{{ route('awards.archive', $award->id) }}" method="POST" style="display: none;">
             @csrf
         </form>
+        @endif
+        @if($canDeleteSubmission ?? false)
         <form id="delete-award-{{ $award->id }}" action="{{ route($isAdmin ? 'awards.delete' : 'stakeholders.awards.delete', $award->id) }}" method="POST" style="display: none;">
             @csrf
             @method('DELETE')
         </form>
+        @endif
         <form id="restore-award-{{ $award->id }}" action="{{ route('awards.restore', $award->id) }}" method="POST" style="display: none;">
             @csrf
         </form>
+        @if($canDeleteSubmission ?? false)
         <form id="permanent-delete-award-{{ $award->id }}" action="{{ route('awards.permanent.delete', $award->id) }}" method="POST" style="display: none;">
             @csrf
             @method('DELETE')
         </form>
+        @endif
         @endif
     @endforeach
 @endforeach

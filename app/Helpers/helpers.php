@@ -282,6 +282,45 @@ if (!function_exists('rootPermissions')) {
     }
 }
 
+if (!function_exists('rootActionPermissions')) {
+    function rootActionPermissions()
+    {
+        return collect([
+            [
+                'id' => 1001,
+                'slug' => 'awards.archive-submission',
+                'name' => 'Archive Submission',
+                'description' => 'Can archive active award submissions so they no longer appear in current award operations.'
+            ],
+            [
+                'id' => 1002,
+                'slug' => 'awards.delete-submission',
+                'name' => 'Delete Submission',
+                'description' => 'Can delete award submissions and their submitted entry data.'
+            ],
+            [
+                'id' => 1003,
+                'slug' => 'awards.adjust-approval-status',
+                'name' => 'Adjust Approval Status',
+                'description' => 'Can manually change chapter, zone, field, or national approval status on award submissions.'
+            ],
+        ]);
+    }
+}
+
+if (!function_exists('userHasPermission')) {
+    function userHasPermission(string $permission, $user = null): bool
+    {
+        $user = $user ?? auth()->guard('web')->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return in_array($permission, $user->permissions ?? [], true);
+    }
+}
+
 // work on this later
 // if (!function_exists('renderMenu')) {
 //     function renderMenu($menus = null, $userPermissions = null)

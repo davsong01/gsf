@@ -38,6 +38,7 @@
                                     : old('permissions', []);
 
                                 $permissions = rootPermissions();
+                                $actionPermissions = rootActionPermissions();
 
                                 $parentsWithChildren = $permissions->filter(
                                     fn ($p) => isset($p['children']) && count($p['children'])
@@ -221,6 +222,36 @@
                                         </div>
                                     @endforeach
 
+                                </div>
+
+                                <h6 class="mt-4">Permissions</h6>
+                                <p class="text-muted mb-2">
+                                    These control what the official can do inside sections they already have access to.
+                                </p>
+
+                                <div class="row">
+                                    @foreach($actionPermissions as $permission)
+                                        @php $id = 'perm_'.$permission['slug']; @endphp
+
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input
+                                                    type="checkbox"
+                                                    class="form-check-input"
+                                                    id="{{ $id }}"
+                                                    name="permissions[]"
+                                                    value="{{ $permission['slug'] }}"
+                                                    {{ in_array($permission['slug'], $userPermissions) ? 'checked' : '' }}
+                                                >
+                                                <label class="form-check-label" for="{{ $id }}">
+                                                    {{ $permission['name'] }}
+                                                </label>
+                                                @if(!empty($permission['description']))
+                                                    <small class="text-muted d-block">{{ $permission['description'] }}</small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
 
                                 {{-- SUBMIT --}}

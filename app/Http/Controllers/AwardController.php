@@ -433,6 +433,10 @@ class AwardController extends Controller
      */
     public function destroy(Award $award)
     {
+        if (! userHasPermission('awards.delete-submission')) {
+            return back()->with('error', 'You do not have permission to delete award submissions.');
+        }
+
         try {
             DB::transaction(function () use ($award) {
                 $award->entry()->delete();
@@ -451,6 +455,10 @@ class AwardController extends Controller
 
     public function archive(Award $award)
     {
+        if (! userHasPermission('awards.archive-submission')) {
+            return back()->with('error', 'You do not have permission to archive award submissions.');
+        }
+
         try {
             $award->update(['is_archive' => true]);
 
@@ -480,6 +488,10 @@ class AwardController extends Controller
 
     public function permanentDelete($id)
     {
+        if (! userHasPermission('awards.delete-submission')) {
+            return back()->with('error', 'You do not have permission to delete award submissions.');
+        }
+
         try {
             $award = Award::findOrFail($id);
 
@@ -549,6 +561,10 @@ class AwardController extends Controller
 
     public function bulkDelete(Request $request)
     {
+        if (! userHasPermission('awards.delete-submission')) {
+            return back()->with('error', 'You do not have permission to delete award submissions.');
+        }
+
         $ids = $request->input('ids', []);
         if (empty($ids)) {
             return back()->with('error', 'No entries selected for deletion.');
@@ -572,6 +588,10 @@ class AwardController extends Controller
 
     public function bulkArchive(Request $request)
     {
+        if (! userHasPermission('awards.archive-submission')) {
+            return back()->with('error', 'You do not have permission to archive award submissions.');
+        }
+
         $ids = $request->input('ids', []);
         if (empty($ids)) {
             return back()->with('error', 'No entries selected for archiving.');
@@ -606,6 +626,10 @@ class AwardController extends Controller
 
     public function bulkPermanentDelete(Request $request)
     {
+        if (! userHasPermission('awards.delete-submission')) {
+            return back()->with('error', 'You do not have permission to delete award submissions.');
+        }
+
         $ids = $request->input('ids', []);
         if (empty($ids)) {
             return back()->with('error', 'No entries selected for permanent purge.');
@@ -987,6 +1011,10 @@ class AwardController extends Controller
         Request $request,
         Award $award
     ) {
+        if (! userHasPermission('awards.adjust-approval-status')) {
+            return back()->with('error', 'You do not have permission to adjust award approval statuses.');
+        }
+
         $status = $request->approval_status;
 
         $updates = match ($status) {
