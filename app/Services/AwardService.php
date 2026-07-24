@@ -860,7 +860,7 @@ class AwardService{
 
             $award->update([
                 'national_status' => 1,
-                'national_comment' => $remarks,
+                'national_comment' => $remarks ?? $award->national_comment,
                 'national_approved_on' => now(),
                 'national_approved_by' => auth()->id(),
                 'national_rejected_on' => null,
@@ -871,11 +871,11 @@ class AwardService{
         }
 
         $award->update([
-            'national_status' => 0,
-            'national_rejected_on' => null,
-            'national_rejected_by' => null,
-            'national_approved_by' => null,
-            'national_approved_on' => null,
+            // 'national_status' => 0,
+            // 'national_rejected_on' => null,
+            // 'national_rejected_by' => null,
+            // 'national_approved_by' => null,
+            // 'national_approved_on' => null,
         ]);
     }
 
