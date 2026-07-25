@@ -200,6 +200,9 @@ class AwardShortlistStageController extends Controller
     public function downloadEntries(AwardShortlistStage $shortlist){
         $awards = Award::with([
                 'chapter',
+                'zone',
+                'field',
+                'entry',
             ])
             ->where('current_shortlist_stage_id', $shortlist->id)
             ->orderBy('chapter_id')
@@ -223,6 +226,14 @@ class AwardShortlistStageController extends Controller
             'Email Address',
             'Phone Number',
             'Chapter',
+            'Zone',
+            'Field',
+            'Gender',
+            'Faculty',
+            'Department',
+            'Course',
+            'CGPA',
+            'Account Details',
             'Submission Date',
             'National Status',
         ];
@@ -238,6 +249,14 @@ class AwardShortlistStageController extends Controller
                 'Chapter' => $award->chapter?->name
                     ?? $award->entry?->select_institution
                     ?? '—',
+                'Zone' => $award->zone?->name ?? '—',
+                'Field' => $award->field?->name ?? '—',
+                'Gender' => $award->entry->gender ?? - '',
+                'Faculty' => $award->entry->faculty_name,
+                'Department' => $award->entry->department ?? '-',
+                'Course' => $award->entry->course_of_study ?? '-',
+                'CGPA' => $award->entry->cgpa ?? '-',
+                'Account Details' => $award->account,
 
                 'Submission Date' => $award->created_at?->format('Y-m-d h:i A'),
 

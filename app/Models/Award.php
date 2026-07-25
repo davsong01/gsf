@@ -87,6 +87,63 @@ class Award extends Model
         });
     }
 
+    protected function faculty(): Attribute
+    {
+        return Attribute::get(function () {
+
+            return $this->entry?->faculty_name
+                ?? '-';
+        });
+    }
+
+    protected function department(): Attribute
+    {
+        return Attribute::get(function () {
+
+            return $this->entry?->department
+                ?? '-';
+        });
+    }
+
+    protected function course(): Attribute
+    {
+        return Attribute::get(function () {
+
+            return $this->entry?->course_of_study
+                ?? '-';
+        });
+    }
+
+    protected function account(): Attribute
+    {
+        return Attribute::get(function () {
+            if (!empty($this->entry?->account_details)) {
+                return $this->entry->account_details;
+            }
+
+            $details = [];
+
+            if (!empty($this->entry?->account_name)) {
+                $details[] = 'Account Name: ' . $this->entry->account_name;
+            }
+
+            if (!empty($this->entry?->account_number)) {
+                $details[] = 'Account Number: ' . $this->entry->account_number;
+            }
+
+            if (!empty($this->entry?->bank_name)) {
+                $details[] = empty($this->entry?->account_name)
+                    && empty($this->entry?->account_number)
+                        ? $this->entry->bank_name
+                        : 'Bank Name: ' . $this->entry->bank_name;
+            }
+
+            return !empty($details)
+                ? implode(' | ', $details)
+                : '-';
+        });
+    }
+
     public function shortlists()
     {
         return $this->hasMany(AwardShortlist::class);
