@@ -133,6 +133,11 @@
                                                                 <i class="fa fa-trash"></i>
                                                             </button>
                                                         </form>
+                                                        <a href="{{ route('shortlist.download-entries', $stage->id) }}"
+                                                           class="btn btn-sm btn-outline-primary"
+                                                           data-toggle="tooltip" title="Download Entries">
+                                                            <i class="bx bxs-download"></i>
+                                                        </a>
                                                     </div>
                                                 </td>
                                             </tr>

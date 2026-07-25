@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Models\AwardShortlistStage;
 use App\Http\Controllers\Controller;
-use App\Services\HttpResponseService;
-use App\Services\AwardService;
 use App\Http\Requests\AwardShortlistStageRequest;
 use App\Http\Resources\AwardShortlistStageResource;
+use App\Models\Award;
+use App\Models\AwardShortlistStage;
+use App\Services\AwardService;
+use App\Services\ExcelService;
+use App\Services\HttpResponseService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AwardShortlistStageController extends Controller
 {
@@ -132,7 +134,7 @@ class AwardShortlistStageController extends Controller
             'active',
             'mark_as_final',
         ]));
-        
+
         $shortlist->update($validated);
 
         return redirect()
@@ -193,5 +195,66 @@ class AwardShortlistStageController extends Controller
             'report_approval_match' => $request->input('report_approval_match', 'all'),
             'report_approval_count' => (int) $request->input('report_approval_count', 1),
         ];
+    }
+
+    public function downloadEntries(AwardShortlistStage $shortlist){
+        $awards = Award::with([
+                'chapter',
+            ])
+            ->where('current_shortlist_stage_id', $shortlist->id)
+            ->orderBy('chapter_id')
+            ->get()
+            ->sortBy(fn ($award) => $award->chapter?->name
+                ?? $award->entry?->select_institution
+                ?? 'ZZZ')
+            ->values();
+
+        if ($awards->isEmpty()) {
+            return back()->with(
+                'error',
+                'No award records found to download.'
+            );
+        }
+
+        $fileName = $shortlist->title. '-' .now()->format('Y-m-d-His').'.xlsx';
+
+        $headers = [
+            'Nominee Name',
+            'Email Address',
+            'Phone Number',
+            'Chapter',
+            'Submission Date',
+            'National Status',
+        ];
+
+        $allRows = [];
+
+        foreach ($awards as $award) {
+            $allRows[] = [
+                'Nominee Name' => $award->name,
+                'Email Address' => $award->email,
+                'Phone Number' => $award->phone,
+
+                'Chapter' => $award->chapter?->name
+                    ?? $award->entry?->select_institution
+                    ?? '—',
+
+                'Submission Date' => $award->created_at?->format('Y-m-d h:i A'),
+
+                'National Status' => match ((int) $award->national_status) {
+                    0 => 'Pending',
+                    1 => 'Approved',
+                    2 => 'Rejected',
+                    default => 'Unknown',
+                },
+            ];
+        }
+
+        return ExcelService::download(
+            $allRows,
+            $headers,
+            $fileName
+        );
+
     }
 }
