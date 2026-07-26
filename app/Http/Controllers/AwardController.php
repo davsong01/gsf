@@ -788,11 +788,15 @@ class AwardController extends Controller
 
                 'Final Approved By' => $award->approvedBy?->name ?? '—',
 
+                use Illuminate\Support\Carbon; // Make sure Carbon is imported at the top of your controller
+
                 'Final Approved On' => $award->national_approved_on
-                    ? $award->national_approved_on->format('d M Y, h:i A')
+                    ? Carbon::parse($award->national_approved_on)->format('d M Y, h:i A')
                     : '—',
 
-                'Submission Date' => $award->created_at?->format('Y-m-d h:i A'),
+                'Submission Date' => $award->created_at
+                    ? Carbon::parse($award->created_at)->format('Y-m-d h:i A')
+                    : '—',
 
                 // Internal filtering fields
                 '_chapter_raw'  => (int) $award->chapter_status,
