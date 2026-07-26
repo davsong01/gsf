@@ -251,7 +251,7 @@ class AwardShortlistStageController extends Controller
                     ?? '—',
                 'Zone' => $award->zone?->name ?? '—',
                 'Field' => $award->field?->name ?? '—',
-                'Gender' => $award->entry->gender ?? - '',
+                'Gender' => $award->entry->gender ?? '-',
                 'Faculty' => $award->entry->faculty_name,
                 'Department' => $award->entry->department ?? '-',
                 'Course' => $award->entry->course_of_study ?? '-',
