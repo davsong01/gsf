@@ -788,8 +788,6 @@ class AwardController extends Controller
 
                 'Final Approved By' => $award->approvedBy?->name ?? '—',
 
-                use Illuminate\Support\Carbon; // Make sure Carbon is imported at the top of your controller
-
                 'Final Approved On' => $award->national_approved_on
                     ? Carbon::parse($award->national_approved_on)->format('d M Y, h:i A')
                     : '—',
