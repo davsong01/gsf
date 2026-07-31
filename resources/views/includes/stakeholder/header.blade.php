@@ -16,6 +16,11 @@
                             <div class="user-nav d-sm-flex"><span class="user-name">Hi, {{ Auth::guard('stakeholder')->user()->name }}</span><span class="user-status text-muted"></span></div>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right pb-0">
+                                @if(session('switchuser_guard') === 'stakeholder' && session()->has('switchuser'))
+                                    <a class="dropdown-item" href="{{ route('stop.switchuser') }}">
+                                        <i class="bx bx-arrow-back mr-50"></i>Back to Admin
+                                    </a>
+                                @endif
                                 
                             <div class="dropdown-divider mb-0"></div>
                                 <a class="dropdown-item" href="{{ route('stakeholders.logout') }}" onclick="return alert('You are about to log out')">

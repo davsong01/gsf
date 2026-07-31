@@ -58,7 +58,7 @@
                         <li class="nav-item">
                           <a onclick="return confirm('Are you sure?')" class="nav-link {{ Request::is('conferenceusers/export*') ? 'active' : '' }}" href="{{ route('conferenceusers.export',['edition'=>$edition->id]) }}">Export</a>
                         </li>
-                        @if(auth()->user()->role == 1 && auth()->user()->conference_role == 'superadmin')
+                        @if(auth()->user()->role == 1 && in_array(auth()->user()->conference_role, ['superadmin', 'admin']))
                         <li class="nav-item">
                           <a class="nav-link {{ Request::is('conferencestaff*') ? 'active' : '' }}" href="{{ route('conference.staff', $edition->id) }}">Conference Staff</a>
                         </li>

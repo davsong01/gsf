@@ -61,6 +61,12 @@
                                                         Edit
                                                     </a>
 
+                                                    <a href="{{ route('switchuser', $participant->id) }}"
+                                                       class="btn btn-sm btn-warning"
+                                                       onclick="return confirm('Login as this official?');">
+                                                        Login as
+                                                    </a>
+
                                                     {{-- Delete Button --}}
                                                     <a href="{{ route('officials.delete', $participant->id) }}" class="btn btn-sm btn-danger"
                                                     onclick="return confirm('Are you really sure?');">

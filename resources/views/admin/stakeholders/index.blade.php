@@ -112,6 +112,13 @@
                                                 </a>
 
                                                 <a class="actions" data-toggle="tooltip"
+                                                title="Login as stakeholder"
+                                                onclick="return confirm('Login as this stakeholder?');"
+                                                href="{{ route('switchuser', ['id' => $stakeholder->id, 'type' => 'stakeholder']) }}">
+                                                    <i class="fa fa-unlock actions"></i>
+                                                </a>
+
+                                                <a class="actions" data-toggle="tooltip"
                                                 onclick="return confirm('Are you really sure?');"
                                                 title="Delete stakeholder"
                                                 href="{{ route('stakeholderpersonnel.delete', $stakeholder->id) }}">

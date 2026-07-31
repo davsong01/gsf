@@ -562,7 +562,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('moderators/delete/{id}', [ModeratorController::class, 'destroy'])->name('moderators.delete');
 
     Route::controller(SwitchUserController::class)->group(function () {
-        Route::get('/switch/{id}', 'index')->name('switchuser');
+        Route::get('/switch/{id}/{type?}', 'index')->name('switchuser');
         Route::get('/stopswitching', 'stopSwitching')->name('stop.switchuser');
     });
 
