@@ -19,10 +19,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\StakeholderDesignation;
 use App\Traits\UserDatatableFeaturesTrait;
+use App\Http\Controllers\Concerns\LogsStakeholderAccessDenials;
 
 class StakeholderAccountController extends Controller
 {
 	use UserDatatableFeaturesTrait;
+    use LogsStakeholderAccessDenials;
     protected $userService;
     protected $user;
 
@@ -170,6 +172,11 @@ class StakeholderAccountController extends Controller
     public function memberEdit(User $user)
 	{
         if($user->chapter_id != auth()->guard('stakeholder')->user()->chapter_id){
+            $this->logStakeholderAccessDenied(request(), 'member edit denied: user belongs to another chapter', [
+                'target_user_id' => $user->id ?? null,
+                'target_chapter_id' => $user->chapter_id ?? null,
+            ]);
+
             return back()->with('error', 'Invalid route');
         }
 
@@ -219,6 +226,10 @@ class StakeholderAccountController extends Controller
     public function chapterEdit(Chapter $chapter)
     {
         if($chapter->id != auth()->guard('stakeholder')->user()->chapter_id){
+            $this->logStakeholderAccessDenied(request(), 'chapter edit denied: stakeholder attempted to access another chapter', [
+                'target_chapter_id' => $chapter->id ?? null,
+            ]);
+
             return back()->with('error', 'Invalid route');
         }
 
@@ -245,6 +256,11 @@ class StakeholderAccountController extends Controller
 
     public function memberUpdate(Request $request, User $user){
         if($user->chapter_id != auth()->guard('stakeholder')->user()->chapter_id){
+            $this->logStakeholderAccessDenied($request, 'member update denied: user belongs to another chapter', [
+                'target_user_id' => $user->id ?? null,
+                'target_chapter_id' => $user->chapter_id ?? null,
+            ]);
+
             return back()->with('error', 'Invalid route');
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -13,6 +14,11 @@ class AwardShortlistStageRequest extends FormRequest
     public function authorize(): bool
     {
         return auth()->check() && auth()->user()->isAdmin();
+    }
+
+    protected function failedAuthorization()
+    {
+        throw new AuthorizationException('Only admin users can manage shortlist stages.');
     }
 
     /**

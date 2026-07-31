@@ -86,7 +86,7 @@ class ConferenceEditionController extends Controller
     public function show(ConferenceEdition $conferenceEdition, $id)
     {
         if (auth()->user()->role != 1) {
-            abort(403);
+            abort(403, 'Conference edition management is restricted to admin users.');
         }
 
         $edition = ConferenceEdition::with(['transactions', 'donations'])

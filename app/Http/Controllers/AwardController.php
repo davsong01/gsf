@@ -1144,11 +1144,7 @@ class AwardController extends Controller
             filled($settings->{$deadlineColumn}) &&
             now()->greaterThan($settings->{$deadlineColumn})
         ) {
-            return response()->view(
-                'frontend.' . frontendTemplate() . '.award-closed',
-                compact('type'),
-                403
-            );
+            abort(403, 'Award submissions are closed for this award type.');
         }
 
         $data = $request->input('entries', []);

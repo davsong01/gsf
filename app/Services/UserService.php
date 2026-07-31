@@ -361,7 +361,7 @@ class UserService
     {
         // Only Admins or SubAdmins who are Members can create/update users
         if (!auth()->user()->isAdmin() && !(auth()->user()->isSubAdmin() && auth()->user()->isMember())) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'User management requires an admin or eligible sub-admin account.');
         }
     }
 

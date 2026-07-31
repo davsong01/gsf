@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\LogsStakeholderAccessDenials;
 use App\Models\Chapter;
 use Illuminate\Http\Request;
 use App\Services\ExcelService;
@@ -17,6 +18,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class StakeholderReportsController extends Controller
 {
+    use LogsStakeholderAccessDenials;
+
     private $reportAnalyticService;
 
     public function __construct(){
@@ -171,11 +174,23 @@ class StakeholderReportsController extends Controller
             ->get();
 
         if(!in_array($user->role_id, chapterStakeholders())){
+            $this->logStakeholderAccessDenied($request, 'create report denied: stakeholder role is not allowed to create chapter reports', [
+                'user_role_id' => $user->role_id,
+                'allowed_roles' => chapterStakeholders(),
+            ]);
+
             return back()->with('error', 'Unauthorized Access');
         }
 
         $eligibleMonth = canAddReport($user->chapter_id);
-        if(!($eligibleMonth['eligible'])) return redirect()->route('stakeholders.reports.index')->with('error', 'You cannot submit report for requested month.');
+        if(!($eligibleMonth['eligible'])) {
+            $this->logStakeholderAccessDenied($request, 'create report denied: requested month is not eligible', [
+                'chapter_id' => $user->chapter_id,
+                'eligibility' => $eligibleMonth,
+            ]);
+
+            return redirect()->route('stakeholders.reports.index')->with('error', 'You cannot submit report for requested month.');
+        }
 
         $prefillData = [
             'chapter_name' => $chapter->name ?? '',
@@ -196,6 +211,11 @@ class StakeholderReportsController extends Controller
         $canEdit = app(ReportService::class)->canEditReport($report, $user);
 
         if(!$canEdit['canEdit']){
+            $this->logStakeholderAccessDenied(request(), 'edit report denied: report is not editable for stakeholder', [
+                'report_id' => $report->id ?? null,
+                'can_edit' => $canEdit,
+            ]);
+
             return back()->with('error', 'You are not authorized to edit this report');
         }
 
@@ -211,7 +231,14 @@ class StakeholderReportsController extends Controller
         $stakeholder = Auth::guard('stakeholder')->user();
         $eligibleMonth = canAddReport($stakeholder->chapter_id);
 
-        if(!($eligibleMonth['eligible'])) return redirect()->route('stakeholders.reports.index')->with('error', 'You cannot submit report for requested month.');
+        if(!($eligibleMonth['eligible'])) {
+            $this->logStakeholderAccessDenied($request, 'store report denied: requested month is not eligible', [
+                'chapter_id' => $stakeholder->chapter_id,
+                'eligibility' => $eligibleMonth,
+            ]);
+
+            return redirect()->route('stakeholders.reports.index')->with('error', 'You cannot submit report for requested month.');
+        }
         $validated = app(ReportService::class)->validateRequest($request);
         $validated['month_number'] = $eligibleMonth['month_number'];
         $validated['year'] = $eligibleMonth['year'];

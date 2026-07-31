@@ -101,7 +101,7 @@ class FileUploadService
         $decoded = base64_decode($encodedPath, true);
 
         if ($decoded === false || str_contains($decoded, '..') || trim($decoded) === '') {
-            abort(403, 'Invalid file path.');
+            abort(403, 'The requested file path is invalid or not allowed.');
         }
 
         if (!Storage::disk($disk)->exists($decoded)) {

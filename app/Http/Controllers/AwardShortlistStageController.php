@@ -21,7 +21,7 @@ class AwardShortlistStageController extends Controller
     public function index(Request $request)
     {
         if (!auth()->user()->isAdmin()) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'Only admin users can manage shortlist stages.');
         }
 
         $stages = AwardShortlistStage::query()
@@ -156,7 +156,7 @@ class AwardShortlistStageController extends Controller
     public function moveMatchingAwards(AwardShortlistStage $shortlist, AwardService $awardService)
     {
         if (!auth()->user()->isAdmin()) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'Only admin users can move awards by shortlist stage.');
         }
 
         if (!$shortlist->active) {
