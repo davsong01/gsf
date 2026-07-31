@@ -914,6 +914,15 @@ class ReportService
             return $returnPayload;
         }
 
+        if (!in_array($roleSlug, ['zonal-pastor', 'field-pastor', 'secretariat', 'ncp'], true)) {
+            $this->logStakeholderActionDenied($user, 'approve', 'role not allowed to approve this report', [
+                'report_id' => $report->id ?? null,
+                'role_slug' => $roleSlug,
+            ]);
+
+            return $returnPayload;
+        }
+
         $report->save();
 
         ReportNotificationService::handleReportAction($report, $user, 'approve');
@@ -979,6 +988,15 @@ class ReportService
                     'field_status' => $report->field_status ?? null,
                     'national_status' => $report->national_status ?? null,
                 ],
+                'role_slug' => $role,
+            ]);
+
+            return $returnPayload;
+        }
+
+        if (!in_array($role, ['zonal-pastor', 'field-pastor', 'secretariat', 'ncp'], true)) {
+            $this->logStakeholderActionDenied($user, 'reject', 'role not allowed to reject this report', [
+                'report_id' => $report->id ?? null,
                 'role_slug' => $role,
             ]);
 

@@ -433,14 +433,6 @@
             }
         }
 
-        // OPTIONAL: edit mode override (only chapter if you want)
-        if ($inEditMode && in_array($userRole, chapterStakeholders())) {
-            $canAct = true;
-            $approveRoute = route('stakeholders.reports.approve', $report->id);
-            $rejectRoute  = route('stakeholders.reports.reject', $report->id);
-            $tooltipApprove = 'Edit Mode Action';
-            $tooltipReject = 'Edit Mode Action';
-        }
     }
 @endphp
 @if($canAct && $approveRoute)
