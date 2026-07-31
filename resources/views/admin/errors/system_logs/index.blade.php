@@ -79,13 +79,13 @@
                                                 @if(!empty($log->context))
                                                     <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#contextModal{{ $log->id }}">View</button>
                                                     <div class="modal fade" id="contextModal{{ $log->id }}" tabindex="-1" role="dialog">
-                                                        <div class="modal-dialog modal-lg" role="document">
+                                                        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
                                                                     <h5 class="modal-title">Error Context</h5>
                                                                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                                                                 </div>
-                                                                <div class="modal-body">
+                                                                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                                                                     <pre style="white-space: pre-wrap; word-break: break-word;">{{ json_encode($log->context, JSON_PRETTY_PRINT) }}</pre>
                                                                 </div>
                                                             </div>
@@ -99,13 +99,13 @@
                                                 @if($log->stack_trace)
                                                     <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#stackModal{{ $log->id }}">View</button>
                                                     <div class="modal fade" id="stackModal{{ $log->id }}" tabindex="-1" role="dialog">
-                                                        <div class="modal-dialog modal-xl" role="document">
+                                                        <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
                                                                     <h5 class="modal-title">Stack Trace</h5>
                                                                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                                                                 </div>
-                                                                <div class="modal-body">
+                                                                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                                                                     <pre style="white-space: pre-wrap; word-break: break-word;">{{ $log->stack_trace }}</pre>
                                                                 </div>
                                                             </div>
