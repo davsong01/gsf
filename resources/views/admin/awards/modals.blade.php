@@ -122,7 +122,7 @@
      aria-labelledby="shortlistStageModalLabel"
      aria-hidden="true">
 
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
 
         <div class="modal-content">
 
@@ -139,9 +139,9 @@
                 </button>
             </div>
 
-            <div class="modal-body">
+            <div class="modal-body py-2" style="max-height: 60vh; overflow-y: auto;">
                 @foreach($shortlistStages as $stage)
-                <div class="form-check mb-3">
+                <div class="form-check mb-2 pb-1">
 
                     <input
                         class="form-check-input"
@@ -151,7 +151,7 @@
                         id="stage_{{ $stage->id }}">
 
                     <label
-                        class="form-check-label"
+                        class="form-check-label mb-0"
                         for="stage_{{ $stage->id }}">
 
                         {{ $stage->title }}
@@ -161,7 +161,7 @@
                 </div>
                 @endforeach
                 <hr>
-                <div class="form-group mt-1">
+                <div class="form-group mt-1 mb-0">
 
                     <label for="remarks" class="font-sm text-muted">
                         Remarks (optional)

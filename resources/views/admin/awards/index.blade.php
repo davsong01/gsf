@@ -125,7 +125,7 @@
 @section('content')
 <div class="content-body">
     <section id="awards-dashboard">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
             <div>
                 <h4 class="card-title mb-0">{{ $title }}</h4>
                 @if($isArchivedView)
@@ -153,30 +153,30 @@
         <!-- Filters Form Panel -->
         <div class="row">
             <div class="col-12">
-                <form method="GET" class="row g-2 align-items-end">
+                <form method="GET" class="row gx-2 gy-1 align-items-end">
                     @if($isArchivedView)
                         <input type="hidden" name="archived" value="1">
                     @endif
-                    <div class="col-md-4 mb-2">
-                        <label class="form-label">Name</label>
+                    <div class="col-md-4 mb-1">
+                        <label class="form-label mb-1 small">Name</label>
                         <input type="text" name="name" class="form-control" value="{{ request('name') }}">
                     </div>
-                    <div class="col-md-4 mb-2">
-                        <label class="form-label">Reference</label>
+                    <div class="col-md-4 mb-1">
+                        <label class="form-label mb-1 small">Reference</label>
                         <input type="text" name="reference" class="form-control" value="{{ request('reference') }}">
                     </div>
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label">From</label>
+                    <div class="col-md-2 mb-1">
+                        <label class="form-label mb-1 small">From</label>
                         <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
                     </div>
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label">To</label>
+                    <div class="col-md-2 mb-1">
+                        <label class="form-label mb-1 small">To</label>
                         <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
                     </div>
 
                     @if($canViewField || $isAdmin)
-                        <div class="col-md-{{ $hierarchyCol }} mb-2">
-                            <label class="form-label">Field</label>
+                        <div class="col-md-{{ $hierarchyCol }} mb-1">
+                            <label class="form-label mb-1 small">Field</label>
                             <select name="field_id" class="form-control">
                                 <option value="">All Fields</option>
                                 @foreach($fields as $field)
@@ -187,8 +187,8 @@
                     @endif
 
                     @if($canViewZone || $isAdmin)
-                        <div class="col-md-{{ $hierarchyCol }} mb-2">
-                            <label class="form-label">Zone</label>
+                        <div class="col-md-{{ $hierarchyCol }} mb-1">
+                            <label class="form-label mb-1 small">Zone</label>
                             <select name="zone_id" class="form-control">
                                 <option value="">All Zones</option>
                                 @foreach($zones as $zone)
@@ -199,8 +199,8 @@
                     @endif
 
                     @if($canViewChapter || $isAdmin)
-                        <div class="col-md-{{ $hierarchyCol }} mb-2">
-                            <label class="form-label">Chapter</label>
+                        <div class="col-md-{{ $hierarchyCol }} mb-1">
+                            <label class="form-label mb-1 small">Chapter</label>
                             <select name="chapter_id" class="form-control">
                                 <option value="">All Chapters</option>
                                 @foreach($chapters as $chapter)
@@ -210,8 +210,8 @@
                         </div>
                     @endif
 
-                    <div class="col-md-3 mb-2">
-                        <label class="form-label">Approval Status</label>
+                    <div class="col-md-3 mb-1">
+                        <label class="form-label mb-1 small">Approval Status</label>
                         <select name="status_filter[]" class="form-control select2-award-status-filter" multiple>
                             @foreach($approval_status_groups as $groupLabel => $statuses)
                                 <optgroup label="{{ $groupLabel }}">
@@ -223,8 +223,8 @@
                         </select>
                     </div>
                     @if($isAdmin)
-                        <div class="col-md-2 mb-2">
-                            <label class="form-label">Shortlist Stages</label>
+                        <div class="col-md-2 mb-1">
+                            <label class="form-label mb-1 small">Shortlist Stages</label>
                             <select name="current_shortlist_stage_id" class="form-control">
                                 <option value="">All Stages</option>
                                 @foreach($shortlistStages as $stage)
@@ -233,16 +233,16 @@
                             </select>
                         </div>
                     @endif
-                    <div class="col-md-2 mb-2">
+                    <div class="col-md-2 mb-1">
                         <button class="btn btn-secondary btn-sm w-100">Filter</button>
                     </div>
                     @if($isAdmin)
-                        <div class="col-md-4 mb-2">
-                            <div class="d-flex gap-2 flex-wrap">
-                                <a href="{{ route('award.report.download', $type) }}" class="btn btn-info btn-sm px-3">
+                        <div class="col-md-4 mb-1">
+                            <div class="d-flex gap-1 flex-wrap">
+                                <a href="{{ route('award.report.download', $type) }}" class="btn btn-info btn-sm px-2 py-1">
                                     Download Report
                                 </a>
-                                <a href="{{ route('award.report.assets') }}" class="btn btn-danger btn-sm px-3">
+                                <a href="{{ route('award.report.assets') }}" class="btn btn-danger btn-sm px-2 py-1">
                                     Download Assets
                                 </a>
                             </div>
@@ -427,13 +427,15 @@
                                                                     <span class="badge bg-success w-fit">
                                                                         {{ $award->currentShortlistStage->stage->title }}
                                                                     </span>
-                                                                    <a href="shortlistHistoryModal_{{ $award->id }}"
-                                                                        class="view-shortlist-history text-decoration-none font-xs text-muted"
-                                                                        data-award="{{ $award->id }}"
-                                                                        data-bs-toggle="modal"
-                                                                        data-bs-target="#shortlistHistoryModal">
-                                                                        View History
-                                                                    </a>
+                                                                    @if($isAdmin)
+                                                                        <a href="shortlistHistoryModal_{{ $award->id }}"
+                                                                            class="view-shortlist-history text-decoration-none font-xs text-muted"
+                                                                            data-award="{{ $award->id }}"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#shortlistHistoryModal">
+                                                                            View History
+                                                                        </a>
+                                                                    @endif
                                                                 </div>
                                                             @else
                                                                 <span class="text-danger font-xs fw-semibold">
@@ -459,20 +461,22 @@
                                                             {{ $award->reference }}
                                                         </span>
 
-                                                        @if($award->national_status == 1)
-                                                            <span class="font-xs mt-1">
-                                                                <strong>Approved By:</strong>
-                                                                {{ $award->approvedBy?->name ?? 'System' }}
-                                                                on {{ $award->national_approved_on ? \Carbon\Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—' }}
-                                                            </span>
-                                                        @endif
+                                                        @if($isAdmin)
+                                                            @if($award->national_status == 1)
+                                                                <span class="font-xs mt-1">
+                                                                    <strong>Approved By:</strong>
+                                                                    {{ $award->approvedBy?->name ?? 'System' }}
+                                                                    on {{ $award->national_approved_on ? \Carbon\Carbon::parse($award->national_approved_on)->format('d M Y, h:i A') : '—' }}
+                                                                </span>
+                                                            @endif
 
-                                                        @if($award->national_status == 2)
-                                                            <span class="font-xs mt-1">
-                                                                <strong>Rejected By:</strong>
-                                                                {{ $award->rejectedBy?->name ?? 'System' }}
-                                                                on {{ $award->national_rejected_on ? \Carbon\Carbon::parse($award->national_rejected_on)->format('d M Y, h:i A') : '—' }}
-                                                            </span>
+                                                            @if($award->national_status == 2)
+                                                                <span class="font-xs mt-1">
+                                                                    <strong>Rejected By:</strong>
+                                                                    {{ $award->rejectedBy?->name ?? 'System' }}
+                                                                    on {{ $award->national_rejected_on ? \Carbon\Carbon::parse($award->national_rejected_on)->format('d M Y, h:i A') : '—' }}
+                                                                </span>
+                                                            @endif
                                                         @endif
 
                                                         <span class="badge badge-modern bg-soft-primary text-primary mt-1 w-fit">

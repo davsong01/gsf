@@ -314,7 +314,13 @@ if (!function_exists('rootActionPermissions')) {
 if (!function_exists('userHasPermission')) {
     function userHasPermission(string $permission, $user = null): bool
     {
-        $user = $user ?? auth()->guard('web')->user();
+        if (!$user) {
+            $user = session('switchuser_guard') === 'stakeholder'
+                ? auth()->guard('stakeholder')->user()
+                : (auth()->user()
+                    ?? auth()->guard('web')->user()
+                    ?? auth()->guard('stakeholder')->user());
+        }
 
         if (!$user) {
             return false;
@@ -1357,10 +1363,14 @@ if (! function_exists('awardFormFields')) {
 if (!function_exists('isAdmin')){
     function isAdmin($user = null) : array
     {
+        $impersonatingStakeholder = session('switchuser_guard') === 'stakeholder';
+
         if (!$user) {
-            $user = auth()->user()
-                ?? auth()->guard('stakeholder')->user()
-                ?? auth()->guard('web')->user();
+            $user = $impersonatingStakeholder
+                ? (auth()->guard('stakeholder')->user() ?? auth()->user())
+                : (auth()->user()
+                    ?? auth()->guard('stakeholder')->user()
+                    ?? auth()->guard('web')->user());
         }
 
 
@@ -1387,7 +1397,7 @@ if (!function_exists('isAdmin')){
         $isAdmin = (!is_null($roleValue) && (int)$roleValue === 1);
 
         return [
-            'status' => $isAdmin && auth()->guard('web')->user(),
+            'status' => $isAdmin && ! $impersonatingStakeholder && auth()->guard('web')->user(),
             'user' => $user,
             'userRole' => (int)($user->role_id ?? $user->role ?? 0)
         ];

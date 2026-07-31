@@ -12,6 +12,10 @@ class StakeholderMiddleware
      */
     public function handle($request, Closure $next)
     {
+        if ($request->session()->get('switchuser_guard') === 'stakeholder') {
+            Auth::shouldUse('stakeholder');
+        }
+
         $guard = Auth::guard('stakeholder');
 
         // 1. Auth check
