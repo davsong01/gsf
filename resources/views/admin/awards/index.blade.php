@@ -15,6 +15,28 @@
     $hierarchyCount = $permissions->hierarchyCount;
     $hierarchyCol = $permissions->hierarchyCol;
     $approval_statuses = $permissions->statuses;
+    $approval_status_groups = [
+        'Chapter' => [
+            'chapter_pending' => 'Chapter Pending',
+            'chapter_approved' => 'Chapter Approved',
+            'chapter_rejected' => 'Chapter Rejected',
+        ],
+        'Zone' => [
+            'zone_pending' => 'Zone Pending',
+            'zone_approved' => 'Zone Approved',
+            'zone_rejected' => 'Zone Rejected',
+        ],
+        'Field' => [
+            'field_pending' => 'Field Pending',
+            'field_approved' => 'Field Approved',
+            'field_rejected' => 'Field Rejected',
+        ],
+        'National' => [
+            'national_pending' => 'National Pending',
+            'national_approved' => 'National Approved',
+            'national_rejected' => 'National Rejected',
+        ],
+    ];
     $isArchivedView = request()->boolean('archived');
     $activeQuery = request()->except(['archived', 'page']);
     $archivedQuery = array_merge($activeQuery, ['archived' => 1]);
@@ -188,13 +210,15 @@
                         </div>
                     @endif
 
-                    <div class="col-md-2 mb-2">
+                    <div class="col-md-3 mb-2">
                         <label class="form-label">Approval Status</label>
                         <select name="status_filter[]" class="form-control select2-award-status-filter" multiple>
-                            @foreach($approval_statuses as $key => $label)
-                                @if(!in_array($key, ['zone_pending','field_pending', 'national_pending']))
-                                    <option value="{{ $key }}" @selected(in_array($key, (array) request('status_filter', [])))>{{ $label }}</option>
-                                @endif
+                            @foreach($approval_status_groups as $groupLabel => $statuses)
+                                <optgroup label="{{ $groupLabel }}">
+                                    @foreach($statuses as $key => $label)
+                                        <option value="{{ $key }}" @selected(in_array($key, (array) request('status_filter', [])))>{{ $label }}</option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
                         </select>
                     </div>
