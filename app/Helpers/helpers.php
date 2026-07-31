@@ -780,25 +780,42 @@ if (!function_exists('canAddReport')) {
     function canAddReport(?int $chapterId = null, ?int $daysBeforeEnd = null, ?int $daysAfterStart = null): array
     {
         if (empty($chapterId)) {
-            return ['eligible' => false, 'month' => null];
+            return [
+                'eligible' => false,
+                'month' => null,
+                'reason' => 'missing_chapter_id',
+            ];
         }
 
         // First: check window only
         $window = reportWindowStatus($chapterId, $daysBeforeEnd, $daysAfterStart);
 
         if (!$window['eligible']) {
-            return ['eligible' => false, 'month' => null];
+            return [
+                'eligible' => false,
+                'month' => null,
+                'reason' => 'report_window_closed',
+            ];
         }
 
         // Chapter + stakeholder checks
         $chapter = Chapter::with('stakeholder')->find($chapterId);
 
         if (!$chapter || !$chapter->stakeholder) {
-            return ['eligible' => false, 'month' => null];
+            return [
+                'eligible' => false,
+                'month' => null,
+                'reason' => !$chapter ? 'chapter_not_found' : 'chapter_missing_stakeholder',
+            ];
         }
 
         if (!in_array($chapter->stakeholder->role_id, chapterStakeholders())) {
-            return ['eligible' => false, 'month' => null];
+            return [
+                'eligible' => false,
+                'month' => null,
+                'reason' => 'stakeholder_role_not_allowed',
+                'stakeholder_role_id' => $chapter->stakeholder->role_id,
+            ];
         }
 
         $reportMonthDate = $window['reportMonthDate'];
@@ -812,7 +829,8 @@ if (!function_exists('canAddReport')) {
         if ($reportExists) {
             return [
                 'eligible' => false,
-                'month' => $reportMonthDate->format('F')
+                'month' => $reportMonthDate->format('F'),
+                'reason' => 'duplicate_report_exists',
             ];
         }
 

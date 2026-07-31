@@ -187,6 +187,7 @@ class StakeholderReportsController extends Controller
             $this->logStakeholderAccessDenied($request, 'create report denied: requested month is not eligible', [
                 'chapter_id' => $user->chapter_id,
                 'eligibility' => $eligibleMonth,
+                'reason' => $eligibleMonth['reason'] ?? null,
             ]);
 
             return redirect()->route('stakeholders.reports.index')->with('error', 'You cannot submit report for requested month.');
@@ -214,6 +215,7 @@ class StakeholderReportsController extends Controller
             $this->logStakeholderAccessDenied(request(), 'edit report denied: report is not editable for stakeholder', [
                 'report_id' => $report->id ?? null,
                 'can_edit' => $canEdit,
+                'reason' => $canEdit['reason'] ?? null,
             ]);
 
             return back()->with('error', 'You are not authorized to edit this report');
@@ -235,6 +237,7 @@ class StakeholderReportsController extends Controller
             $this->logStakeholderAccessDenied($request, 'store report denied: requested month is not eligible', [
                 'chapter_id' => $stakeholder->chapter_id,
                 'eligibility' => $eligibleMonth,
+                'reason' => $eligibleMonth['reason'] ?? null,
             ]);
 
             return redirect()->route('stakeholders.reports.index')->with('error', 'You cannot submit report for requested month.');

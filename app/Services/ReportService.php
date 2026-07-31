@@ -589,6 +589,7 @@ class ReportService
         if ($inEditMode) {
             return [
                 'allApproved' => $allApproved,
+                'reason' => null,
                 'canEdit' =>
                     $isAdmin ||
                     in_array($role, chapterStakeholders()),
@@ -600,6 +601,7 @@ class ReportService
         ) {
             return [
                 'allApproved' => $allApproved,
+                'reason' => $isAdmin ? null : (!in_array($zone, [0,2], true) ? 'zone_not_editable_for_chapter' : null),
                 'canEdit' => $isAdmin || in_array($zone, [0,2], true),
             ];
         }
@@ -614,6 +616,7 @@ class ReportService
         ) {
             return [
                 'allApproved' => $allApproved,
+                'reason' => $isAdmin ? null : (!in_array($zone, [0,2], true) ? 'zone_not_editable_for_zone_role' : null),
                 'canEdit' => $isAdmin || in_array($zone, [0,2], true),
             ];
         }
@@ -628,6 +631,7 @@ class ReportService
         ) {
             return [
                 'allApproved' => $allApproved,
+                'reason' => $isAdmin ? null : ($zone != 1 ? 'zone_not_approved_for_field' : (!in_array($field, [0,2], true) ? 'field_not_editable_for_field_role' : null)),
                 'canEdit' =>
                     $isAdmin || ($zone == 1 &&
                     in_array($field, [0,2], true)),
@@ -646,6 +650,13 @@ class ReportService
         ) {
             return [
                 'allApproved' => $allApproved,
+                'reason' => $isAdmin ? null : (
+                    $zone != 1
+                        ? 'zone_not_approved_for_national'
+                        : ($field != 1
+                            ? 'field_not_approved_for_national'
+                            : (!in_array($national, [0,2], true) ? 'national_not_editable_for_national_role' : null))
+                ),
                 'canEdit' =>
                 $isAdmin || ($zone == 1 && $field == 1 && in_array($national, [0,2], true)),
             ];
@@ -660,6 +671,7 @@ class ReportService
         if ($isFinance) {
             return [
                 'allApproved' => $allApproved,
+                'reason' => $isAdmin ? null : (!$inEditMode ? null : 'finance_cannot_edit_in_edit_mode'),
                 'canEdit' => $isAdmin || !$inEditMode,
             ];
         }
@@ -667,6 +679,7 @@ class ReportService
         if ($inEditMode) {
             return [
                 'allApproved' => $allApproved,
+                'reason' => $isAdmin ? null : null,
                 'canEdit' =>
                     $isAdmin ||
                     in_array($role, chapterStakeholders()),
@@ -675,6 +688,7 @@ class ReportService
 
         return [
             'allApproved' => $allApproved,
+            'reason' => 'role_not_allowed_to_edit_report',
             'canEdit' => false,
         ];
     }
