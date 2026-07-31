@@ -364,55 +364,57 @@
 
                                         </td>
                                     </tr>
-                                    <div class="modal fade" id="statusAdjustModal{{ $report->id }}" tabindex="-1" role="dialog">
-                                        <div class="modal-dialog" role="document">
-                                            <form method="POST" action="{{ route('stakeholderreports.adjust.status', $report->id) }}">
-                                                @csrf
+                                    @if($isAdmin)
+                                        <div class="modal fade" id="statusAdjustModal{{ $report->id }}" tabindex="-1" role="dialog">
+                                            <div class="modal-dialog" role="document">
+                                                <form method="POST" action="{{ route('stakeholderreports.adjust.status', $report->id) }}">
+                                                    @csrf
 
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Adjust Approval Status</h5>
-                                                        <button type="button" class="close" data-dismiss="modal">
-                                                            <span>&times;</span>
-                                                        </button>
-                                                    </div>
-
-                                                    <div class="modal-body">
-                                                        <div class="form-group">
-                                                            <label>Approval Status</label>
-                                                            <select name="approval_status" class="form-control" required>
-                                                                <option value="">-- Select Status --</option>
-                                                                @foreach($approval_statuses as $key => $label)
-                                                                    @if(!in_array($key, ['zone_pending','field_pending', 'national_pending']))
-                                                                    <option value="{{ $key }}" @selected(request('approval_status') == $key)>
-                                                                        {{ $label }}
-                                                                    </option>
-                                                                    @endif
-                                                                @endforeach
-                                                            </select>
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Adjust Approval Status</h5>
+                                                            <button type="button" class="close" data-dismiss="modal">
+                                                                <span>&times;</span>
+                                                            </button>
                                                         </div>
 
-                                                        <div class="form-group">
-                                                            <label>Reason</label>
-                                                            <textarea
-                                                                name="rejection_reason"
-                                                                class="form-control"
-                                                                rows="3"
-                                                                placeholder="Enter reason (optional)">
-                                                            </textarea>
+                                                        <div class="modal-body">
+                                                            <div class="form-group">
+                                                                <label>Approval Status</label>
+                                                                <select name="approval_status" class="form-control" required>
+                                                                    <option value="">-- Select Status --</option>
+                                                                    @foreach($approval_statuses as $key => $label)
+                                                                        @if(!in_array($key, ['zone_pending','field_pending', 'national_pending']))
+                                                                        <option value="{{ $key }}" @selected(request('approval_status') == $key)>
+                                                                            {{ $label }}
+                                                                        </option>
+                                                                        @endif
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label>Reason</label>
+                                                                <textarea
+                                                                    name="rejection_reason"
+                                                                    class="form-control"
+                                                                    rows="3"
+                                                                    placeholder="Enter reason (optional)">
+                                                                </textarea>
+                                                            </div>
+
+                                                        </div>
+
+                                                        <div class="modal-footer">
+                                                            <button type="submit" class="btn btn-success">Submit</button>
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                                                         </div>
 
                                                     </div>
-
-                                                    <div class="modal-footer">
-                                                        <button type="submit" class="btn btn-success">Submit</button>
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                    </div>
-
-                                                </div>
-                                            </form>
+                                                </form>
+                                            </div>
                                         </div>
-                                        </div>
+                                    @endif
                                     @endforeach
                                 </tbody>
                             </table>

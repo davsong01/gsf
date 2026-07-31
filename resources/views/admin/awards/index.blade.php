@@ -222,25 +222,31 @@
                             @endforeach
                         </select>
                     </div>
+                    @if($isAdmin)
+                        <div class="col-md-2 mb-2">
+                            <label class="form-label">Shortlist Stages</label>
+                            <select name="current_shortlist_stage_id" class="form-control">
+                                <option value="">All Stages</option>
+                                @foreach($shortlistStages as $stage)
+                                    <option value="{{ $stage->id }}" @selected(request('current_shortlist_stage_id') == $stage->id)>{{ $stage->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                     <div class="col-md-2 mb-2">
-                        <label class="form-label">Shortlist Stages</label>
-                        <select name="current_shortlist_stage_id" class="form-control">
-                            <option value="">All Stages</option>
-                            @foreach($shortlistStages as $stage)
-                                <option value="{{ $stage->id }}" @selected(request('current_shortlist_stage_id') == $stage->id)>{{ $stage->title }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <button class="btn btn-secondary w-100">Filter</button>
+                        <button class="btn btn-secondary btn-sm w-100">Filter</button>
                     </div>
                     @if($isAdmin)
-                    <div class="col-md-2 mb-2">
-                        <a href="{{route('award.report.download', $type)}}" class="btn btn-info w-100">Download Report</a>
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <a href="{{route('award.report.assets')}}" class="btn btn-danger w-100">Download Assets</a>
-                    </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="{{ route('award.report.download', $type) }}" class="btn btn-info btn-sm px-3">
+                                    Download Report
+                                </a>
+                                <a href="{{ route('award.report.assets') }}" class="btn btn-danger btn-sm px-3">
+                                    Download Assets
+                                </a>
+                            </div>
+                        </div>
                     @endif
                 </form>
             </div>
@@ -249,17 +255,19 @@
         <!-- Master Data Render Table Component -->
         <div class="row">
             <div class="col-12">
-                <form id="bulk-actions-form" method="POST" action="">
-                    @csrf
-                    <input type="hidden" name="_method" id="bulk-form-method" value="POST">
+                @if($isAdmin)
+                    <form id="bulk-actions-form" method="POST" action="">
+                        @csrf
+                        <input type="hidden" name="_method" id="bulk-form-method" value="POST">
+                @endif
 
                     <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-                        <div class="card-body table-toolbar d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center gap-2">
+                        @if($isAdmin)
+                            <div class="card-body table-toolbar d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
 
-                                <select id="wp-bulk-action-select" class="form-select" style="width: 350px; height: 38px;">
-                                    <option value="">Select Bulk Action</option>
-                                    @if($isAdmin)
+                                    <select id="wp-bulk-action-select" class="form-select" style="width: 350px; height: 38px;">
+                                        <option value="">Select Bulk Action</option>
                                         @if($isArchivedView)
                                             <option value="restore"
                                                     data-url="{{ route('awards.bulk-restore') }}"
@@ -303,40 +311,41 @@
                                                 </option>
                                             @endif
                                         @endif
-                                    @endif
 
-                                    @if($canDeleteSubmission && $isArchivedView)
-                                        <option value="delete"
-                                                data-url="{{ route('awards.bulk-permanent-delete') }}"
-                                                data-method="POST"
-                                                data-confirm="Delete selected archived entries and their submitted data? This cannot be undone.">
-                                            Delete
-                                        </option>
-                                    @endif
-                                </select>
+                                        @if($canDeleteSubmission && $isArchivedView)
+                                            <option value="delete"
+                                                    data-url="{{ route('awards.bulk-permanent-delete') }}"
+                                                    data-method="POST"
+                                                    data-confirm="Delete selected archived entries and their submitted data? This cannot be undone.">
+                                                Delete
+                                            </option>
+                                        @endif
+                                    </select>
 
-                                <button type="button" id="wp-bulk-action-apply" class="btn btn-primary px-4" style="height: 38px;" disabled>
-                                    Apply
-                                </button>
+                                    <button type="button" id="wp-bulk-action-apply" class="btn btn-primary px-4" style="height: 38px;" disabled>
+                                        Apply
+                                    </button>
 
+                                </div>
+
+                                <div class="small text-muted">
+                                    <span id="selected-counter">0 selected</span>
+                                </div>
                             </div>
-
-                            <div class="small text-muted">
-                                <span id="selected-counter">0 selected</span>
-                            </div>
-
-                        </div>
+                        @endif
 
                         <div class="card-body p-0">
                             <div class="table-responsive" style="max-height: 75vh; overflow-y: auto;">
                                 <table class="table table-align-middle mb-0 custom-modern-table">
                                     <thead>
                                         <tr class="bg-light border-bottom">
-                                            <th class="ps-4 align-middle" style="width: 45px;">
-                                                <div class="form-check custom-checkbox">
-                                                    <input type="checkbox" class="form-check-input cursor-pointer shadow-none" id="master-checkbox">
-                                                </div>
-                                            </th>
+                                            @if($isAdmin)
+                                                <th class="ps-4 align-middle" style="width: 45px;">
+                                                    <div class="form-check custom-checkbox">
+                                                        <input type="checkbox" class="form-check-input cursor-pointer shadow-none" id="master-checkbox">
+                                                    </div>
+                                                </th>
+                                            @endif
                                             <th class="text-uppercase text-muted tracking-wider align-middle" style="width: 60px;">S/N</th>
                                             <th class="text-uppercase text-muted tracking-wider align-middle">Nominee & Ref</th>
                                             <th class="text-uppercase text-muted tracking-wider align-middle" style="min-width: 160px;">Approval Progress</th>
@@ -348,7 +357,9 @@
                                     <tbody>
                                         @forelse($awards as $groupKey => $awardGroup)
                                             <tr class="sticky-chapter-row table-sm bg-light-subtle">
-                                                <td class="ps-4 align-middle"></td>
+                                                @if($isAdmin)
+                                                    <td class="ps-4 align-middle"></td>
+                                                @endif
                                                 <td></td>
                                                 <td colspan="2" class="align-middle pt-2 pb-2">
                                                     <div class="d-flex flex-column">
@@ -390,11 +401,13 @@
 
                                             @foreach($awardGroup as $award)
                                             <tr class="award-row-item">
-                                                <td class="ps-4 align-middle">
-                                                    <div class="form-check custom-checkbox">
-                                                        <input type="checkbox" name="ids[]" value="{{ $award->id }}" class="form-check-input row-checkbox cursor-pointer shadow-none">
-                                                    </div>
-                                                </td>
+                                                @if($isAdmin)
+                                                    <td class="ps-4 align-middle">
+                                                        <div class="form-check custom-checkbox">
+                                                            <input type="checkbox" name="ids[]" value="{{ $award->id }}" class="form-check-input row-checkbox cursor-pointer shadow-none">
+                                                        </div>
+                                                    </td>
+                                                @endif
 
                                                 <td class="text-secondary fw-medium align-middle">
                                                     {{ $loop->iteration }}
@@ -536,9 +549,9 @@
                                                 </td>
                                             </tr>
                                             @endforeach {{-- Properly trailing internal items loop iterator --}}
-                                        @empty
+                                                @empty
                                             <tr>
-                                                <td colspan="6" class="text-center py-5 text-muted">
+                                                <td colspan="{{ $isAdmin ? 6 : 5 }}" class="text-center py-5 text-muted">
                                                     <i class="bx bx-file-blank display-4 d-block mb-2 text-light"></i>
                                                     No award submissions matched your parameters.
                                                 </td>
@@ -555,13 +568,17 @@
                             </div>
                         @endif
                     </div>
-                </form>
+                @if($isAdmin)
+                    </form>
+                @endif
             </div>
         </div>
     </section>
 </div>
 
-@include('admin.awards.modals')
+@if($isAdmin)
+    @include('admin.awards.modals')
+@endif
 @endsection
 
 @section('extra_scripts')
@@ -572,6 +589,10 @@
             placeholder: 'Filter approval status',
             closeOnSelect: false
         });
+
+        @if(!$isAdmin)
+            return;
+        @endif
 
         const masterCheckbox = $('#master-checkbox');
         const rowCheckboxes = $('.row-checkbox');

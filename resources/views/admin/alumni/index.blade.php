@@ -56,8 +56,10 @@
 											<td style="padding-left: 5px;padding-right: 5px;">
 												<a class="actions" data-toggle="tooltip" title="View/Edit User"
 													href="{{ route('alumni.edit', $participant->id) }}"> <i class="bx bxs-edit actions"></i></
-														</a> <a class="actions" data-toggle="tooltip" data-placement="top" title="Switch To"
-														href="{{ route('switchuser', $participant->id) }}"><i class="fa fa-unlock actions"></i>
+													</a> <a class="actions" data-toggle="tooltip" data-placement="top" title="Login as alumni"
+															href="{{ route('switchuser', $participant->id) }}">
+														<i class="fa fa-unlock actions"></i>
+														<span class="ml-25">Login as</span>
 												</a>
 
 												<a class="actions" data-toggle="tooltip" onclick="return confirm('Are you really sure?');"
