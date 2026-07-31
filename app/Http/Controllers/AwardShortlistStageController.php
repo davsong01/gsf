@@ -235,8 +235,17 @@ class AwardShortlistStageController extends Controller
             'CGPA',
             'Account Details',
             'Submission Date',
+            'Chapter Status',
+            'Zone Status',
+            'Field Status',
             'National Status',
         ];
+
+        $statusLabel = fn ($status) => match ((int) $status) {
+            1       => 'Approved',
+            2       => 'Rejected',
+            default => 'Pending',
+        };
 
         $allRows = [];
 
@@ -260,6 +269,9 @@ class AwardShortlistStageController extends Controller
 
                 'Submission Date' => $award->created_at?->format('Y-m-d h:i A'),
 
+                'Chapter Status' => $statusLabel($award->chapter_status),
+                'Zone Status' => $statusLabel($award->zone_status),
+                'Field Status' => $statusLabel($award->field_status),
                 'National Status' => match ((int) $award->national_status) {
                     0 => 'Pending',
                     1 => 'Approved',
