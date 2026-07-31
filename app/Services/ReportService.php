@@ -16,11 +16,35 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use ZipArchive;
 
 
 class ReportService
 {
+    protected function logStakeholderActionDenied($user, string $action, string $reason, array $context = []): void
+    {
+        Log::warning('Stakeholder report action denied.', array_merge([
+            'action' => $action,
+            'reason' => $reason,
+            'user' => $user ? [
+                'id' => $user->id ?? null,
+                'email' => $user->email ?? null,
+                'name' => $user->name ?? null,
+                'role_id' => $user->role_id ?? null,
+                'role_slug' => $user->role->slug ?? null,
+            ] : null,
+            'impersonation' => [
+                'impersonator_guard' => session('impersonator_guard') ?? session('switchuser_guard'),
+                'impersonator_id' => session('impersonator_id') ?? session('switchuser'),
+            ],
+            'route_name' => request()->route()?->getName(),
+            'route_action' => request()->route()?->getActionName(),
+            'method' => request()->method(),
+            'url' => request()->fullUrl(),
+        ], $context));
+    }
+
     public function sessionRange(): array
     {
         $sessions = [];
@@ -862,6 +886,20 @@ class ReportService
                 $returnPayload['message'] = 'Unauthorized action';
         }
 
+        if ($returnPayload['message']) {
+            $this->logStakeholderActionDenied($user, 'approve', $returnPayload['message'], [
+                'report_id' => $report->id ?? null,
+                'report_status' => [
+                    'zone_status' => $report->zone_status ?? null,
+                    'field_status' => $report->field_status ?? null,
+                    'national_status' => $report->national_status ?? null,
+                ],
+                'role_slug' => $roleSlug,
+            ]);
+
+            return $returnPayload;
+        }
+
         $report->save();
 
         ReportNotificationService::handleReportAction($report, $user, 'approve');
@@ -917,6 +955,20 @@ class ReportService
 
             default:
                 $returnPayload['message'] = 'Unauthorized action';
+        }
+
+        if ($returnPayload['message']) {
+            $this->logStakeholderActionDenied($user, 'reject', $returnPayload['message'], [
+                'report_id' => $report->id ?? null,
+                'report_status' => [
+                    'zone_status' => $report->zone_status ?? null,
+                    'field_status' => $report->field_status ?? null,
+                    'national_status' => $report->national_status ?? null,
+                ],
+                'role_slug' => $role,
+            ]);
+
+            return $returnPayload;
         }
 
         $report->save();
