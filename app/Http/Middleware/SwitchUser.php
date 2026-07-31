@@ -9,14 +9,22 @@ use Illuminate\Support\Facades\Auth;
 
 class SwitchUser
 {
+    private const IMPERSONATOR_ID_SESSION_KEY = 'impersonator_id';
+
     public function handle($request, Closure $next)
     {
       
         if(Auth::user()->level == 'Admin'){
  
-            if($request->session()->has('switchuser'))
+            if(
+                $request->session()->has(self::IMPERSONATOR_ID_SESSION_KEY)
+                || $request->session()->has('switchuser')
+            )
             {
-               $d = Auth::onceUsingId($request->session()->get('switchuser'));
+               $d = Auth::onceUsingId(
+                   $request->session()->get(self::IMPERSONATOR_ID_SESSION_KEY)
+                   ?? $request->session()->get('switchuser')
+               );
               
             }
         }

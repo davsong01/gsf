@@ -23,7 +23,7 @@
                 </li>
 
                 
-                @if(auth::user()->role == 1)
+                @if((isAdmin()['status'] ?? false))
                 
                 <li class=" nav-item {{ Request::is('staff') ? 'active' : '' }}"><a href="{{ route('staff.index') }}"><i class="fa fa-group"></i><span class="menu-title">Staff</span></a>
                 </li>

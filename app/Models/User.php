@@ -23,6 +23,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
+    private const IMPERSONATOR_ID_SESSION_KEY = 'impersonator_id';
+    private const IMPERSONATOR_GUARD_SESSION_KEY = 'impersonator_guard';
 
 	use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
@@ -66,7 +68,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function setSwitchingUser($id)
     {
-        Session::put('switchuser', $id);
+        Session::put(self::IMPERSONATOR_ID_SESSION_KEY, $id);
     }
 
     public function stopSwitchingUser()
@@ -76,7 +78,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isSwitchingUser()
     {
-        return Session::get('switchuser_guard') === 'web' && Session::has('switchuser');
+        return (
+                Session::get(self::IMPERSONATOR_GUARD_SESSION_KEY) === 'web'
+                && Session::has(self::IMPERSONATOR_ID_SESSION_KEY)
+            )
+            || (Session::get('switchuser_guard') === 'web' && Session::has('switchuser'));
     }
 
 	public function getRolenameAttribute(){

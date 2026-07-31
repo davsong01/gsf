@@ -315,7 +315,10 @@ if (!function_exists('userHasPermission')) {
     function userHasPermission(string $permission, $user = null): bool
     {
         if (!$user) {
-            $user = session('switchuser_guard') === 'stakeholder'
+            $isStakeholderImpersonation = session('impersonator_guard') === 'stakeholder'
+                || session('switchuser_guard') === 'stakeholder';
+
+            $user = $isStakeholderImpersonation
                 ? auth()->guard('stakeholder')->user()
                 : (auth()->user()
                     ?? auth()->guard('web')->user()
@@ -1363,7 +1366,8 @@ if (! function_exists('awardFormFields')) {
 if (!function_exists('isAdmin')){
     function isAdmin($user = null) : array
     {
-        $impersonatingStakeholder = session('switchuser_guard') === 'stakeholder';
+        $impersonatingStakeholder = session('impersonator_guard') === 'stakeholder'
+            || session('switchuser_guard') === 'stakeholder';
 
         if (!$user) {
             $user = $impersonatingStakeholder

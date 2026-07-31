@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Session;
 
 class SwitchUserController extends Controller
 {
+    private const IMPERSONATOR_ID_SESSION_KEY = 'impersonator_id';
+    private const IMPERSONATOR_GUARD_SESSION_KEY = 'impersonator_guard';
+
     public function index(Request $request, $id, $type = null)
     {
         if(Auth::user()->role <> 1)
@@ -23,8 +26,8 @@ class SwitchUserController extends Controller
         if ($type === 'stakeholder') {
             $stakeholder = Stakeholder::findOrFail($id);
 
-            Session::put('switchuser', $admin);
-            Session::put('switchuser_guard', 'stakeholder');
+            Session::put(self::IMPERSONATOR_ID_SESSION_KEY, $admin);
+            Session::put(self::IMPERSONATOR_GUARD_SESSION_KEY, 'stakeholder');
 
             Auth::guard('stakeholder')->loginUsingId($stakeholder->id);
             $stakeholder->update(['last_login' => now()]);
@@ -34,8 +37,8 @@ class SwitchUserController extends Controller
 
         $user = User::findOrFail($id);
 
-        Session::put('switchuser', $admin);
-        Session::put('switchuser_guard', 'web');
+        Session::put(self::IMPERSONATOR_ID_SESSION_KEY, $admin);
+        Session::put(self::IMPERSONATOR_GUARD_SESSION_KEY, 'web');
 
         Auth::user()->setSwitchingUser($admin);
         Auth::loginUsingId($user->id);
@@ -54,8 +57,13 @@ class SwitchUserController extends Controller
 
     public function stopSwitching(Request $request)
     {
-        $admin = Session::pull('switchuser');
-        $guard = Session::pull('switchuser_guard', 'web');
+        $admin = Session::pull(self::IMPERSONATOR_ID_SESSION_KEY);
+        $guard = Session::pull(self::IMPERSONATOR_GUARD_SESSION_KEY, 'web');
+
+        if (!$admin) {
+            $admin = Session::pull('switchuser');
+            $guard = Session::pull('switchuser_guard', 'web');
+        }
 
         if (!$admin) {
             return redirect()->route('users.index');

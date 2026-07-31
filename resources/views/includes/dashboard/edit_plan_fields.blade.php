@@ -1,6 +1,6 @@
 @php
-    $isDisabled = (auth()->user()->role != 1 ? 'disabled' : '');
-    $participantAllowed = participantAllowedUpdateFields()
+    $isDisabled = ((isAdmin()['status'] ?? false) ? '' : 'disabled');
+    $participantAllowed = participantAllowedUpdateFields();
 @endphp
 
 @foreach($registrationFields as $field)

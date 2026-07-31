@@ -7,12 +7,14 @@ use Illuminate\Support\Facades\Auth;
 
 class StakeholderMiddleware
 {
+    private const IMPERSONATOR_GUARD_SESSION_KEY = 'impersonator_guard';
+
     /**
      * Handle an incoming request.
      */
     public function handle($request, Closure $next)
     {
-        if ($request->session()->get('switchuser_guard') === 'stakeholder') {
+        if ($request->session()->get(self::IMPERSONATOR_GUARD_SESSION_KEY) === 'stakeholder') {
             Auth::shouldUse('stakeholder');
         }
 
