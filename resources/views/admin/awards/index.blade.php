@@ -190,10 +190,11 @@
 
                     <div class="col-md-2 mb-2">
                         <label class="form-label">Approval Status</label>
-                        <select name="status_filter" class="form-control">
-                            <option value="">All Statuses</option>
+                        <select name="status_filter[]" class="form-control select2-award-status-filter" multiple>
                             @foreach($approval_statuses as $key => $label)
-                                <option value="{{ $key }}" @selected(request('status_filter') == $key)>{{ $label }}</option>
+                                @if(!in_array($key, ['zone_pending','field_pending', 'national_pending']))
+                                    <option value="{{ $key }}" @selected(in_array($key, (array) request('status_filter', [])))>{{ $label }}</option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
@@ -542,6 +543,12 @@
 @section('extra_scripts')
 <script>
     $(document).ready(function() {
+        $('.select2-award-status-filter').select2({
+            width: '100%',
+            placeholder: 'Filter approval status',
+            closeOnSelect: false
+        });
+
         const masterCheckbox = $('#master-checkbox');
         const rowCheckboxes = $('.row-checkbox');
         const actionSelect = $('#wp-bulk-action-select');

@@ -544,7 +544,15 @@ class AwardService{
         /** =====================
          * STATUS FILTERS
          * ===================== */
-        if ($request->filled('status_filter')) {
+        $statusFilters = $request->input('status_filter', []);
+
+        if (is_string($statusFilters)) {
+            $statusFilters = [$statusFilters];
+        }
+
+        $statusFilters = array_values(array_filter((array) $statusFilters));
+
+        if (! empty($statusFilters)) {
 
             $statusMap = [
                 'field_pending'      => ['field_status', 0],
@@ -560,9 +568,12 @@ class AwardService{
                 'national_rejected'  => ['national_status', 2],
             ];
 
-            if (isset($statusMap[$request->status_filter])) {
+            foreach ($statusFilters as $statusFilter) {
+                if (! isset($statusMap[$statusFilter])) {
+                    continue;
+                }
 
-                [$column, $value] = $statusMap[$request->status_filter];
+                [$column, $value] = $statusMap[$statusFilter];
 
                 $awardsQuery->where($column, $value);
             }
