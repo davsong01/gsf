@@ -141,7 +141,7 @@
 
             <div class="modal-body py-2" style="max-height: 60vh; overflow-y: auto;">
                 @foreach($shortlistStages as $stage)
-                <div class="form-check mb-2 pb-1">
+                <div class="shortlist-stage-option form-check">
 
                     <input
                         class="form-check-input"
@@ -151,7 +151,7 @@
                         id="stage_{{ $stage->id }}">
 
                     <label
-                        class="form-check-label mb-0"
+                        class="form-check-label"
                         for="stage_{{ $stage->id }}">
 
                         {{ $stage->title }}

@@ -119,6 +119,38 @@
     .bulk-control {
         height: 38px;
     }
+
+    .shortlist-stage-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        padding: 0.55rem 0.75rem;
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .shortlist-stage-option:hover {
+        background-color: #f8fafc;
+        border-color: #e2e8f0;
+        box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.45);
+    }
+
+    .shortlist-stage-option:not(:last-child) {
+        margin-bottom: 0.35rem;
+    }
+
+    .shortlist-stage-option .form-check-input {
+        margin-top: 0.2rem;
+        flex: 0 0 auto;
+    }
+
+    .shortlist-stage-option .form-check-label {
+        margin-bottom: 0;
+        cursor: pointer;
+        width: 100%;
+        line-height: 1.25;
+    }
 </style>
 @endsection
 

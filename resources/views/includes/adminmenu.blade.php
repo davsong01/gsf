@@ -1,6 +1,10 @@
 <li class="nav-item {{ Request::is('account*') ? 'active' : '' }}"><a href="/account"><i class="fa fa-bars"></i><span class="menu-title" data-i18n="Kanban">Dashboard</span></a></li>
 
-@if(auth()->user()->role == 1 && in_array(auth()->user()->conference_role, ['superadmin', 'admin']))
+@php
+    $isAdmin = isAdmin()['status'] ?? false;
+@endphp
+
+@if($isAdmin && in_array(auth()->user()->conference_role, ['superadmin', 'admin']))
     <li class="nav-item {{(Request::is('conferenceeditions*') || Request::is('showedition*') || Request::is('conferencemanagement*') || Request::is('conference-transactions*') || Request::is('conferenceparticipants*') || Request::is('ministry*')) ? 'open is_shown' : '' }}"><a href="#"><i class="fa fa-desktop"></i><span class="menu-title" data-i18n="Content">Conference Mgt</span></a>
         <ul class="menu-content">
             <li class="is_shown"><a href="{{ route('ministry.index') }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item" data-i18n="Grid">Ministries</span></a>

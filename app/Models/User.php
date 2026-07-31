@@ -76,7 +76,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isSwitchingUser()
     {
-        return Session::has('switchuser');
+        return Session::get('switchuser_guard') === 'web' && Session::has('switchuser');
     }
 
 	public function getRolenameAttribute(){
