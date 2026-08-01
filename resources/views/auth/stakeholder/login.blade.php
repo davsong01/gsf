@@ -23,6 +23,14 @@
                 <div class="divider-text text-uppercase text-muted"><small></small></div>
             </div>
 
+            @if(session('error'))
+                <div class="col-12 col-md-8 mb-3">
+                    <div class="alert alert-warning text-center mb-0">
+                        {{ session('error') }}
+                    </div>
+                </div>
+            @endif
+
             <div class="col-12 d-flex align-items-center justify-content-center" style="margin-bottom:20px">
                 <div class="signin-inner mt-3 mt-lg-0 bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-500">
 
