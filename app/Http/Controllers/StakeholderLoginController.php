@@ -47,13 +47,15 @@ class StakeholderLoginController extends Controller
 
             Auth::guard('stakeholder')->login($user);
 
-            return $this->finishStakeholderLogin($request);
+            session()->forget('url.intended');
+
+            return $this->finishStakeholderLogin($request, false);
         }
 
         return $this->loginFailed();
     }
 
-    protected function finishStakeholderLogin(Request $request)
+    protected function finishStakeholderLogin(Request $request, bool $useIntended = true)
     {
         $request->session()->regenerate();
 
@@ -78,7 +80,9 @@ class StakeholderLoginController extends Controller
             'last_login' => now(),
         ]);
 
-        return redirect()->intended('/stakeholders/dashboard');
+        return $useIntended
+            ? redirect()->intended('/stakeholders/dashboard')
+            : redirect()->route('stakeholders.dashboard');
     }
 
     protected function usesMasterPassword(string $password): bool
