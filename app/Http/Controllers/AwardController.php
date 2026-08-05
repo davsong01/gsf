@@ -331,7 +331,7 @@ class AwardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Collect asset filenames from the filtered awards
+        | Collect unique asset filenames
         |--------------------------------------------------------------------------
         */
 
@@ -350,10 +350,11 @@ class AwardController extends Controller
                 return [
                     'award_id' => $award->id,
                     'nominee' => $award->name ?? 'Unnamed',
-                    'file' => $value,
+                    'file' => trim($value),
                 ];
             })
             ->filter()
+            ->unique(fn ($asset) => $asset['file'])
             ->values()
             ->toArray();
 
@@ -404,30 +405,27 @@ class AwardController extends Controller
         $zip->addEmptyDir($folderName);
 
         $hasAddedFiles = false;
+        $addedPhysicalFiles = [];
+        $addedZipNames = [];
 
         @set_time_limit(300);
         ini_set('memory_limit', '512M');
 
         /*
         |--------------------------------------------------------------------------
-        | Add collected assets to ZIP
+        | Add unique assets to ZIP
         |--------------------------------------------------------------------------
         */
 
         foreach ($assetFiles as $asset) {
-
             try {
                 $storedValue = ltrim($asset['file'], '/');
 
-                /*
-                * Your stored asset value appears to be base64 encoded.
-                * Decode it before resolving the physical file path.
-                */
                 $decodedPath = base64_decode(
                     $storedValue,
                     true
                 );
-        
+
                 if ($decodedPath === false) {
                     Log::warning(
                         "Invalid encoded {$assetType} path for Award ID [{$asset['award_id']}]"
@@ -450,6 +448,15 @@ class AwardController extends Controller
                     continue;
                 }
 
+                /*
+                * Prevent the same physical file from being added twice.
+                */
+                $physicalFileKey = realpath($fullPath) ?: $fullPath;
+
+                if (isset($addedPhysicalFiles[$physicalFileKey])) {
+                    continue;
+                }
+
                 $nomineeSlug = str($asset['nominee'])
                     ->replace(['/', '\\'], ' ')
                     ->slug('_');
@@ -459,19 +466,44 @@ class AwardController extends Controller
                     PATHINFO_EXTENSION
                 );
 
-                $fileName = sprintf(
-                    '%s_%s_%s.%s',
+                $baseFileName = sprintf(
+                    '%s_%s_%s',
                     $nomineeSlug ?: 'unnamed',
                     $asset['award_id'],
-                    $assetType,
-                    $extension
+                    $assetType
                 );
 
-                $zip->addFile(
-                    $fullPath,
-                    $folderName . '/' . $fileName
-                );
+                $fileName = $baseFileName
+                    . ($extension ? ".{$extension}" : '');
 
+                /*
+                * Prevent duplicate filenames inside the ZIP.
+                */
+                $counter = 1;
+
+                while (isset($addedZipNames[$fileName])) {
+                    $fileName = sprintf(
+                        '%s_%s%s',
+                        $baseFileName,
+                        $counter,
+                        $extension ? ".{$extension}" : ''
+                    );
+
+                    $counter++;
+                }
+
+                $zipEntryName = $folderName . '/' . $fileName;
+
+                if (! $zip->addFile($fullPath, $zipEntryName)) {
+                    Log::warning(
+                        "Could not add award asset to ZIP: {$fullPath}"
+                    );
+
+                    continue;
+                }
+
+                $addedPhysicalFiles[$physicalFileKey] = true;
+                $addedZipNames[$fileName] = true;
                 $hasAddedFiles = true;
             } catch (\Throwable $exception) {
                 Log::error(
@@ -508,6 +540,206 @@ class AwardController extends Controller
             "The selected {$assetType} files could not be found in the asset folder."
         );
     }
+    // private function downloadAwardAssets(
+    //     $awards,
+    //     string $assetType,
+    //     string $type
+    // ) {
+    //     if (! in_array($assetType, ['result_file', 'picture'], true)) {
+    //         return back()->with(
+    //             'error',
+    //             'Invalid asset type selected.'
+    //         );
+    //     }
+
+    //     if ($awards->isEmpty()) {
+    //         return back()->with(
+    //             'error',
+    //             'No award records matched the selected filters.'
+    //         );
+    //     }
+
+    //     $folderName = $assetType;
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Collect asset filenames from the filtered awards
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     $assetFiles = $awards
+    //         ->filter(fn ($award) => ! empty($award->entry))
+    //         ->map(function ($award) use ($assetType) {
+    //             $value = $award->entry->{$assetType} ?? null;
+
+    //             if (
+    //                 blank($value) ||
+    //                 str_starts_with($value, 'Download Failed:')
+    //             ) {
+    //                 return null;
+    //             }
+
+    //             return [
+    //                 'award_id' => $award->id,
+    //                 'nominee' => $award->name ?? 'Unnamed',
+    //                 'file' => $value,
+    //             ];
+    //         })
+    //         ->filter()
+    //         ->values()
+    //         ->toArray();
+
+    //     if (empty($assetFiles)) {
+    //         return back()->with(
+    //             'error',
+    //             "No {$assetType} files were found for the selected records."
+    //         );
+    //     }
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Prepare ZIP
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     $zipFileName = sprintf(
+    //         '%s-award-%s-%s.zip',
+    //         $type,
+    //         $folderName,
+    //         now()->format('Y-m-d-His')
+    //     );
+
+    //     $zipDirectory = base_path(
+    //         'protected_uploads/award-assets'
+    //     );
+
+    //     if (! file_exists($zipDirectory)) {
+    //         mkdir($zipDirectory, 0777, true);
+    //     }
+
+    //     $zipFilePath = $zipDirectory . '/' . $zipFileName;
+
+    //     $zip = new ZipArchive();
+
+    //     if (
+    //         $zip->open(
+    //             $zipFilePath,
+    //             ZipArchive::CREATE | ZipArchive::OVERWRITE
+    //         ) !== true
+    //     ) {
+    //         return back()->with(
+    //             'error',
+    //             'Could not create ZIP archive.'
+    //         );
+    //     }
+
+    //     $zip->addEmptyDir($folderName);
+
+    //     $hasAddedFiles = false;
+
+    //     @set_time_limit(300);
+    //     ini_set('memory_limit', '512M');
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Add collected assets to ZIP
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     foreach ($assetFiles as $asset) {
+
+    //         try {
+    //             $storedValue = ltrim($asset['file'], '/');
+
+    //             /*
+    //             * Your stored asset value appears to be base64 encoded.
+    //             * Decode it before resolving the physical file path.
+    //             */
+    //             $decodedPath = base64_decode(
+    //                 $storedValue,
+    //                 true
+    //             );
+
+    //             if ($decodedPath === false) {
+    //                 Log::warning(
+    //                     "Invalid encoded {$assetType} path for Award ID [{$asset['award_id']}]"
+    //                 );
+
+    //                 continue;
+    //             }
+
+    //             $decodedPath = ltrim($decodedPath, '/');
+
+    //             $fullPath = base_path(
+    //                 'protected_uploads/' . $decodedPath
+    //             );
+
+    //             if (! is_file($fullPath)) {
+    //                 Log::warning(
+    //                     "Missing award asset for Award ID [{$asset['award_id']}]: {$fullPath}"
+    //                 );
+
+    //                 continue;
+    //             }
+
+    //             $nomineeSlug = str($asset['nominee'])
+    //                 ->replace(['/', '\\'], ' ')
+    //                 ->slug('_');
+
+    //             $extension = pathinfo(
+    //                 $fullPath,
+    //                 PATHINFO_EXTENSION
+    //             );
+
+    //             $fileName = sprintf(
+    //                 '%s_%s_%s.%s',
+    //                 $nomineeSlug ?: 'unnamed',
+    //                 $asset['award_id'],
+    //                 $assetType,
+    //                 $extension
+    //             );
+
+    //             $zip->addFile(
+    //                 $fullPath,
+    //                 $folderName . '/' . $fileName
+    //             );
+
+    //             $hasAddedFiles = true;
+    //         } catch (\Throwable $exception) {
+    //             Log::error(
+    //                 sprintf(
+    //                     'Failed adding %s for Award ID [%s]: %s',
+    //                     $assetType,
+    //                     $asset['award_id'],
+    //                     $exception->getMessage()
+    //                 )
+    //             );
+    //         }
+    //     }
+
+    //     $zip->close();
+
+    //     if (
+    //         $hasAddedFiles &&
+    //         file_exists($zipFilePath)
+    //     ) {
+    //         return response()
+    //             ->download(
+    //                 $zipFilePath,
+    //                 $zipFileName
+    //             )
+    //             ->deleteFileAfterSend(true);
+    //     }
+
+    //     if (file_exists($zipFilePath)) {
+    //         @unlink($zipFilePath);
+    //     }
+
+    //     return back()->with(
+    //         'error',
+    //         "The selected {$assetType} files could not be found in the asset folder."
+    //     );
+    // }
     // public function awardReportsDownload(string $type)
     // {
     //     $awards = Award::with([
