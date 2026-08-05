@@ -185,34 +185,91 @@
         <!-- Filters Form Panel -->
         <div class="row">
             <div class="col-12">
-                <form method="GET" class="row gx-2 gy-1 align-items-end">
+                <form
+                    method="GET"
+                    action="{{ url()->current() }}"
+                    class="row gx-2 gy-1 align-items-end"
+                    id="awardEntriesFilterForm"
+                >
                     @if($isArchivedView)
                         <input type="hidden" name="archived" value="1">
                     @endif
+
                     <div class="col-md-4 mb-1">
-                        <label class="form-label mb-1 small">Name</label>
-                        <input type="text" name="name" class="form-control" value="{{ request('name') }}">
+                        <label class="form-label mb-1 small">
+                            Name
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            value="{{ request('name') }}"
+                        >
                     </div>
+
                     <div class="col-md-4 mb-1">
-                        <label class="form-label mb-1 small">Reference</label>
-                        <input type="text" name="reference" class="form-control" value="{{ request('reference') }}">
+                        <label class="form-label mb-1 small">
+                            Reference
+                        </label>
+
+                        <input
+                            type="text"
+                            name="reference"
+                            class="form-control"
+                            value="{{ request('reference') }}"
+                        >
                     </div>
+
                     <div class="col-md-2 mb-1">
-                        <label class="form-label mb-1 small">From</label>
-                        <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
+                        <label class="form-label mb-1 small">
+                            From
+                        </label>
+
+                        <input
+                            type="date"
+                            name="from_date"
+                            class="form-control"
+                            value="{{ request('from_date') }}"
+                        >
                     </div>
+
                     <div class="col-md-2 mb-1">
-                        <label class="form-label mb-1 small">To</label>
-                        <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
+                        <label class="form-label mb-1 small">
+                            To
+                        </label>
+
+                        <input
+                            type="date"
+                            name="to_date"
+                            class="form-control"
+                            value="{{ request('to_date') }}"
+                        >
                     </div>
 
                     @if($canViewField || $isAdmin)
                         <div class="col-md-{{ $hierarchyCol }} mb-1">
-                            <label class="form-label mb-1 small">Field</label>
-                            <select name="field_id" class="form-control">
-                                <option value="">All Fields</option>
+                            <label class="form-label mb-1 small">
+                                Field
+                            </label>
+
+                            <select
+                                name="field_id"
+                                class="form-control"
+                            >
+                                <option value="">
+                                    All Fields
+                                </option>
+
                                 @foreach($fields as $field)
-                                    <option value="{{ $field->id }}" @selected(request('field_id') == $field->id)>{{ $field->name }}</option>
+                                    <option
+                                        value="{{ $field->id }}"
+                                        @selected(
+                                            (string) request('field_id') === (string) $field->id
+                                        )
+                                    >
+                                        {{ $field->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -220,11 +277,27 @@
 
                     @if($canViewZone || $isAdmin)
                         <div class="col-md-{{ $hierarchyCol }} mb-1">
-                            <label class="form-label mb-1 small">Zone</label>
-                            <select name="zone_id" class="form-control">
-                                <option value="">All Zones</option>
+                            <label class="form-label mb-1 small">
+                                Zone
+                            </label>
+
+                            <select
+                                name="zone_id"
+                                class="form-control"
+                            >
+                                <option value="">
+                                    All Zones
+                                </option>
+
                                 @foreach($zones as $zone)
-                                    <option value="{{ $zone->id }}" @selected(request('zone_id') == $zone->id)>{{ $zone->name }}</option>
+                                    <option
+                                        value="{{ $zone->id }}"
+                                        @selected(
+                                            (string) request('zone_id') === (string) $zone->id
+                                        )
+                                    >
+                                        {{ $zone->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -232,51 +305,235 @@
 
                     @if($canViewChapter || $isAdmin)
                         <div class="col-md-{{ $hierarchyCol }} mb-1">
-                            <label class="form-label mb-1 small">Chapter</label>
-                            <select name="chapter_id" class="form-control">
-                                <option value="">All Chapters</option>
+                            <label class="form-label mb-1 small">
+                                Chapter
+                            </label>
+
+                            <select
+                                name="chapter_id"
+                                class="form-control"
+                            >
+                                <option value="">
+                                    All Chapters
+                                </option>
+
                                 @foreach($chapters as $chapter)
-                                    <option value="{{ $chapter->id }}" @selected(request('chapter_id') == $chapter->id)>{{ $chapter->name }}</option>
+                                    <option
+                                        value="{{ $chapter->id }}"
+                                        @selected(
+                                            (string) request('chapter_id') === (string) $chapter->id
+                                        )
+                                    >
+                                        {{ $chapter->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
                     @endif
 
                     <div class="col-md-3 mb-1">
-                        <label class="form-label mb-1 small">Approval Status</label>
-                        <select name="status_filter[]" class="form-control select2-award-status-filter" multiple>
+                        <label class="form-label mb-1 small">
+                            Approval Status
+                        </label>
+
+                        <select
+                            name="status_filter[]"
+                            class="form-control select2-award-status-filter"
+                            multiple
+                        >
                             @foreach($approval_status_groups as $groupLabel => $statuses)
                                 <optgroup label="{{ $groupLabel }}">
                                     @foreach($statuses as $key => $label)
-                                        <option value="{{ $key }}" @selected(in_array($key, (array) request('status_filter', [])))>{{ $label }}</option>
+                                        <option
+                                            value="{{ $key }}"
+                                            @selected(
+                                                in_array(
+                                                    $key,
+                                                    (array) request('status_filter', []),
+                                                    true
+                                                )
+                                            )
+                                        >
+                                            {{ $label }}
+                                        </option>
                                     @endforeach
                                 </optgroup>
                             @endforeach
                         </select>
                     </div>
+
                     @if($isAdmin)
                         <div class="col-md-2 mb-1">
-                            <label class="form-label mb-1 small">Shortlist Stages</label>
-                            <select name="current_shortlist_stage_id" class="form-control">
-                                <option value="">All Stages</option>
+                            <label class="form-label mb-1 small">
+                                Shortlist Stages
+                            </label>
+
+                            <select
+                                name="current_shortlist_stage_id"
+                                class="form-control"
+                            >
+                                <option value="">
+                                    All Stages
+                                </option>
+
                                 @foreach($shortlistStages as $stage)
-                                    <option value="{{ $stage->id }}" @selected(request('current_shortlist_stage_id') == $stage->id)>{{ $stage->title }}</option>
+                                    <option
+                                        value="{{ $stage->id }}"
+                                        @selected(
+                                            (string) request('current_shortlist_stage_id')
+                                            === (string) $stage->id
+                                        )
+                                    >
+                                        {{ $stage->title }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
                     @endif
+
                     <div class="col-md-2 mb-1">
-                        <button class="btn btn-secondary btn-sm w-100">Filter</button>
+                        <button
+                            type="submit"
+                            name="action"
+                            value="view"
+                            class="btn btn-secondary btn-sm w-100"
+                        >
+                            Filter
+                        </button>
                     </div>
+
                     @if($isAdmin)
-                        <div class="col-md-4 mb-1">
-                            <div class="d-flex gap-1 flex-wrap">
-                                <a href="{{ route('award.report.download', $type) }}" class="btn btn-info btn-sm px-2 py-1">
+                        <div class="col-md-5 mb-1">
+                            <div class="d-flex flex-wrap gap-1">
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="download_report"
+                                    class="btn btn-info btn-sm px-2 py-1"
+                                >
                                     Download Report
-                                </a>
-                                <a href="{{ route('award.report.assets') }}" class="btn btn-danger btn-sm px-2 py-1">
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-danger btn-sm px-2 py-1"
+                                    data-toggle="modal"
+                                    data-target="#downloadAssetsModal"
+                                >
                                     Download Assets
-                                </a>
+                                </button>
+
+                                @if(request()->hasAny([
+                                    'name',
+                                    'reference',
+                                    'from_date',
+                                    'to_date',
+                                    'field_id',
+                                    'zone_id',
+                                    'chapter_id',
+                                    'status_filter',
+                                    'current_shortlist_stage_id',
+                                ]))
+                                    <a
+                                        href="{{ url()->current() }}{{ $isArchivedView ? '?archived=1' : '' }}"
+                                        class="btn btn-light btn-sm px-2 py-1"
+                                    >
+                                        Clear Filters
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div
+                            class="modal fade"
+                            id="downloadAssetsModal"
+                            tabindex="-1"
+                            role="dialog"
+                            aria-labelledby="downloadAssetsModalLabel"
+                            aria-hidden="true"
+                        >
+                            <div
+                                class="modal-dialog modal-dialog-centered"
+                                role="document"
+                            >
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5
+                                            class="modal-title"
+                                            id="downloadAssetsModalLabel"
+                                        >
+                                            Download Award Assets
+                                        </h5>
+
+                                        <button
+                                            type="button"
+                                            class="close"
+                                            data-dismiss="modal"
+                                            aria-label="Close"
+                                        >
+                                            <span aria-hidden="true">
+                                                &times;
+                                            </span>
+                                        </button>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        <div class="form-group mb-0">
+                                            <label for="assetType">
+                                                Select Asset
+                                            </label>
+
+                                            <select
+                                                name="asset_type"
+                                                id="assetType"
+                                                class="form-control"
+                                            >
+                                                <option value="">
+                                                    Choose an asset
+                                                </option>
+
+                                                <option
+                                                    value="result_file"
+                                                    @selected(request('asset_type') === 'result_file')
+                                                >
+                                                    Result
+                                                </option>
+
+                                                <option
+                                                    value="picture"
+                                                    @selected(request('asset_type') === 'picture')
+                                                >
+                                                    Picture
+                                                </option>
+                                            </select>
+
+                                            <small class="form-text text-muted">
+                                                Only assets belonging to records matching the
+                                                current filters will be downloaded.
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button
+                                            type="button"
+                                            class="btn btn-secondary"
+                                            data-dismiss="modal"
+                                        >
+                                            Cancel
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            name="action"
+                                            value="download_assets"
+                                            class="btn btn-danger"
+                                            id="downloadAssetsSubmitButton"
+                                        >
+                                            Download
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -618,6 +875,31 @@
 @endsection
 
 @section('extra_scripts')
+
+<script>
+    $(function () {
+        $('#downloadAssetsSubmitButton').on('click', function (event) {
+            var assetType = $('#assetType').val();
+
+            if (!assetType) {
+                event.preventDefault();
+
+                $('#assetType').addClass('is-invalid');
+
+                return false;
+            }
+
+            $('#assetType').removeClass('is-invalid');
+
+            return true;
+        });
+
+        $('#assetType').on('change', function () {
+            $(this).removeClass('is-invalid');
+        });
+    });
+</script>
+
 <script>
     $(document).ready(function() {
         $('.select2-award-status-filter').select2({

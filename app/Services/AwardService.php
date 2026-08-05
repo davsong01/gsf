@@ -318,221 +318,499 @@ class AwardService{
         ];
     }
 
+    // public function index(Request $request, $user, $type, $isAdmin)
+    // {
+    //     $role = $user->role_id ?? $user->role;
+
+    //     $chaptersQuery = Chapter::query();
+    //     $zonesQuery    = Zone::query();
+    //     $fieldsQuery   = Field::query();
+
+    //     $chapterIds = collect();
+    //     $zoneIds    = collect();
+    //     $fieldIds   = collect();
+
+    //     /** =====================
+    //      * ROLE-BASED ACCESS
+    //      * ===================== */
+    //     if ($isAdmin || finStakeholders($user)) {
+
+    //         // Full access
+    //         $chapterIds = Chapter::pluck('id');
+    //         $zoneIds    = Zone::pluck('id');
+    //         $fieldIds   = Field::pluck('id');
+
+    //     } else {
+
+    //         // Chapter Stakeholder
+    //         if (in_array($role, chapterStakeholders())) {
+
+    //             $chapterIds = collect([$user->chapter_id])->filter();
+    //             $zoneIds    = collect([$user->zone_id])->filter();
+    //             $fieldIds   = collect([$user->field_id])->filter();
+    //         }
+
+    //         // Zone Stakeholder
+    //         elseif (in_array($role, zoneStakeholders())) {
+
+    //             $zoneIds = collect([$user->zone_id])->filter();
+
+    //             $chapterIds = Chapter::where('zone_id', $user->zone_id)
+    //                 ->pluck('id');
+
+    //             $fieldIds = Zone::where('id', $user->zone_id)
+    //                 ->pluck('field_id');
+    //         }
+
+    //         // Field Stakeholder
+    //         elseif (in_array($role, fieldStakeholders())) {
+
+    //             $fieldIds = collect([$user->field_id])->filter();
+
+    //             $zoneIds = Zone::where('field_id', $user->field_id)
+    //                 ->pluck('id');
+
+    //             $chapterIds = Chapter::whereIn('zone_id', $zoneIds)
+    //                 ->pluck('id');
+    //         }
+
+    //         // Secretariat
+    //         elseif (in_array($role, secretariatStakeholders())) {
+
+    //             $chapterIds = Chapter::pluck('id');
+    //             $zoneIds    = Zone::pluck('id');
+    //             $fieldIds   = Field::pluck('id');
+    //         }
+    //     }
+
+    //     /** =====================
+    //      * AWARDS QUERY
+    //      * ===================== */
+    //     $awardsQuery = Award::query()
+    //         ->whereYear('created_at', now()->year)
+    //         ->with([
+    //             'entry',
+    //             'chapter',
+    //             'zone',
+    //             'field',
+    //             'shortlists',
+    //             'currentShortlistStage'
+    //         ]);
+
+    //     $awardsQuery->where('is_archive', $request->boolean('archived'));
+
+    //     if ($request->filled('current_shortlist_stage_id')) {
+
+    //         $awardsQuery->where(
+    //             'current_shortlist_stage_id',
+    //             $request->current_shortlist_stage_id
+    //         );
+    //     }
+
+    //     /** =====================
+    //      * ROLE SCOPE
+    //      * ===================== */
+
+    //     // Chapter Stakeholder
+    //     if (
+    //         !$isAdmin &&
+    //         in_array($role, chapterStakeholders())
+    //     ) {
+
+    //         $awardsQuery->whereIn(
+    //             'chapter_id',
+    //             $chapterIds
+    //         );
+    //     }
+
+    //     // Zone Stakeholder
+    //     elseif (
+    //         !$isAdmin &&
+    //         in_array($role, zoneStakeholders())
+    //     ) {
+
+    //         $awardsQuery->whereIn(
+    //             'zone_id',
+    //             $zoneIds
+    //         );
+    //     }
+
+    //     // Field Stakeholder
+    //     elseif (
+    //         !$isAdmin &&
+    //         in_array($role, fieldStakeholders())
+    //     ) {
+
+    //         $awardsQuery->whereIn(
+    //             'field_id',
+    //             $fieldIds
+    //         );
+    //     }
+
+    //     /** =====================
+    //      * BASIC FILTERS
+    //      * ===================== */
+
+    //     if ($request->filled('reference')) {
+
+    //         $awardsQuery->where(
+    //             'reference',
+    //             $request->reference
+    //         );
+    //     }
+
+    //     $n = trim($request->name);
+
+    //     if ($n !== '') {
+    //         $awardsQuery->whereHas('entry', function ($q) use ($n) {
+    //             $q->where(function ($q) use ($n) {
+    //                 $q->where('first_name', 'like', "%{$n}%")
+    //                 ->orWhere('middle_name', 'like', "%{$n}%")
+    //                 ->orWhere('last_name', 'like', "%{$n}%");
+    //             });
+    //         });
+    //     }
+
+    //     if ($request->filled('type')) {
+
+    //         $awardsQuery->where(
+    //             'type',
+    //             $request->type
+    //         );
+    //     }
+
+    //     /** =====================
+    //      * LOCATION FILTERS
+    //      * ===================== */
+
+    //     // Chapter Filter
+    //     if (
+    //         $request->filled('chapter_id') &&
+    //         $chapterIds->contains($request->chapter_id)
+    //     ) {
+
+    //         $awardsQuery->where(
+    //             'chapter_id',
+    //             $request->chapter_id
+    //         );
+    //     }
+
+    //     // Zone Filter
+    //     if (
+    //         $request->filled('zone_id') &&
+    //         $zoneIds->contains($request->zone_id)
+    //     ) {
+
+    //         $awardsQuery->where(
+    //             'zone_id',
+    //             $request->zone_id
+    //         );
+    //     }
+
+    //     // Field Filter
+    //     if (
+    //         $request->filled('field_id') &&
+    //         $fieldIds->contains($request->field_id)
+    //     ) {
+
+    //         $awardsQuery->where(
+    //             'field_id',
+    //             $request->field_id
+    //         );
+    //     }
+
+    //     /** =====================
+    //      * DATE FILTERS
+    //      * ===================== */
+    //     if (
+    //         $request->filled('from_date') ||
+    //         $request->filled('to_date')
+    //     ) {
+
+    //         $from = $request->filled('from_date')
+    //             ? Carbon::parse($request->from_date)->startOfDay()
+    //             : Carbon::parse('1970-01-01')->startOfDay();
+
+    //         $to = $request->filled('to_date')
+    //             ? Carbon::parse($request->to_date)->endOfDay()
+    //             : now()->endOfDay();
+
+    //         $awardsQuery->whereBetween(
+    //             'created_at',
+    //             [$from, $to]
+    //         );
+    //     }
+
+    //     /** =====================
+    //      * STATUS FILTERS
+    //      * ===================== */
+    //     $statusFilters = $request->input('status_filter', []);
+
+    //     if (is_string($statusFilters)) {
+    //         $statusFilters = [$statusFilters];
+    //     }
+
+    //     $statusFilters = array_values(array_filter((array) $statusFilters));
+
+    //     if (! empty($statusFilters)) {
+
+    //         $statusMap = [
+    //             'field_pending'      => ['field_status', 0],
+    //             'field_approved'     => ['field_status', 1],
+    //             'field_rejected'     => ['field_status', 2],
+
+    //             'zone_pending'       => ['zone_status', 0],
+    //             'zone_approved'      => ['zone_status', 1],
+    //             'zone_rejected'      => ['zone_status', 2],
+
+    //             'national_pending'   => ['national_status', 0],
+    //             'national_approved'  => ['national_status', 1],
+    //             'national_rejected'  => ['national_status', 2],
+    //         ];
+
+    //         foreach ($statusFilters as $statusFilter) {
+    //             if (! isset($statusMap[$statusFilter])) {
+    //                 continue;
+    //             }
+
+    //             [$column, $value] = $statusMap[$statusFilter];
+
+    //             $awardsQuery->where($column, $value);
+    //         }
+    //     }
+
+    //     /** =====================
+    //      * PAGINATION
+    //      * ===================== */
+    //     $paginatedAwards = $awardsQuery
+    //         ->orderByDesc('created_at')
+    //         ->paginate(200)
+    //         ->withQueryString();
+
+    //     /** =====================
+    //      * GROUPING
+    //      * ===================== */
+    //     $groupedAwards = $paginatedAwards->getCollection()
+    //         ->groupBy(function ($award) {
+
+    //             if (empty($award->chapter_id)) {
+    //                 return 'No Official Chapter';
+    //             }
+
+    //             return $award->chapter->name ?? 'Unmapped Chapter';
+    //         })
+    //         ->sortBy(function ($value, $key) {
+
+    //             return $key === 'No Official Chapter'
+    //                 ? 1
+    //                 : 0;
+    //         });
+
+    //     $paginatedAwards->setCollection($groupedAwards);
+
+    //     /** =====================
+    //      * RESPONSE
+    //      * ===================== */
+    //     return [
+
+    //         'awards' => $paginatedAwards,
+
+    //         'chapters' => $chaptersQuery
+    //             ->whereIn('id', $chapterIds)
+    //             ->orderBy('name')
+    //             ->get(),
+
+    //         'zones' => $zonesQuery
+    //             ->whereIn('id', $zoneIds)
+    //             ->orderBy('name')
+    //             ->get(),
+
+    //         'fields' => $fieldsQuery
+    //             ->whereIn('id', $fieldIds)
+    //             ->orderBy('name')
+    //             ->get(),
+    //     ];
+    // }
+
     public function index(Request $request, $user, $type, $isAdmin)
     {
         $role = $user->role_id ?? $user->role;
 
-        $chaptersQuery = Chapter::query();
-        $zonesQuery    = Zone::query();
-        $fieldsQuery   = Field::query();
-
         $chapterIds = collect();
-        $zoneIds    = collect();
-        $fieldIds   = collect();
+        $zoneIds = collect();
+        $fieldIds = collect();
 
-        /** =====================
-         * ROLE-BASED ACCESS
-         * ===================== */
+        /*
+        |--------------------------------------------------------------------------
+        | Role-based access
+        |--------------------------------------------------------------------------
+        */
+
         if ($isAdmin || finStakeholders($user)) {
-
-            // Full access
             $chapterIds = Chapter::pluck('id');
-            $zoneIds    = Zone::pluck('id');
-            $fieldIds   = Field::pluck('id');
+            $zoneIds = Zone::pluck('id');
+            $fieldIds = Field::pluck('id');
+        } elseif (in_array($role, chapterStakeholders())) {
+            $chapterIds = collect([$user->chapter_id])->filter();
+            $zoneIds = collect([$user->zone_id])->filter();
+            $fieldIds = collect([$user->field_id])->filter();
+        } elseif (in_array($role, zoneStakeholders())) {
+            $zoneIds = collect([$user->zone_id])->filter();
 
-        } else {
+            $chapterIds = Chapter::whereIn('zone_id', $zoneIds)
+                ->pluck('id');
 
-            // Chapter Stakeholder
-            if (in_array($role, chapterStakeholders())) {
+            $fieldIds = Zone::whereIn('id', $zoneIds)
+                ->pluck('field_id')
+                ->filter()
+                ->unique()
+                ->values();
+        } elseif (in_array($role, fieldStakeholders())) {
+            $fieldIds = collect([$user->field_id])->filter();
 
-                $chapterIds = collect([$user->chapter_id])->filter();
-                $zoneIds    = collect([$user->zone_id])->filter();
-                $fieldIds   = collect([$user->field_id])->filter();
-            }
+            $zoneIds = Zone::whereIn('field_id', $fieldIds)
+                ->pluck('id');
 
-            // Zone Stakeholder
-            elseif (in_array($role, zoneStakeholders())) {
-
-                $zoneIds = collect([$user->zone_id])->filter();
-
-                $chapterIds = Chapter::where('zone_id', $user->zone_id)
-                    ->pluck('id');
-
-                $fieldIds = Zone::where('id', $user->zone_id)
-                    ->pluck('field_id');
-            }
-
-            // Field Stakeholder
-            elseif (in_array($role, fieldStakeholders())) {
-
-                $fieldIds = collect([$user->field_id])->filter();
-
-                $zoneIds = Zone::where('field_id', $user->field_id)
-                    ->pluck('id');
-
-                $chapterIds = Chapter::whereIn('zone_id', $zoneIds)
-                    ->pluck('id');
-            }
-
-            // Secretariat
-            elseif (in_array($role, secretariatStakeholders())) {
-
-                $chapterIds = Chapter::pluck('id');
-                $zoneIds    = Zone::pluck('id');
-                $fieldIds   = Field::pluck('id');
-            }
+            $chapterIds = Chapter::whereIn('zone_id', $zoneIds)
+                ->pluck('id');
+        } elseif (in_array($role, secretariatStakeholders())) {
+            $chapterIds = Chapter::pluck('id');
+            $zoneIds = Zone::pluck('id');
+            $fieldIds = Field::pluck('id');
         }
 
-        /** =====================
-         * AWARDS QUERY
-         * ===================== */
+        /*
+        |--------------------------------------------------------------------------
+        | Award query
+        |--------------------------------------------------------------------------
+        */
+
         $awardsQuery = Award::query()
             ->whereYear('created_at', now()->year)
+            ->where('type', $type)
+            ->where(
+                'is_archive',
+                $request->boolean('archived')
+            )
             ->with([
                 'entry',
                 'chapter',
                 'zone',
                 'field',
+                'approvedBy',
                 'shortlists',
-                'currentShortlistStage'
+                'currentShortlistStage',
             ]);
 
-        $awardsQuery->where('is_archive', $request->boolean('archived'));
+        /*
+        |--------------------------------------------------------------------------
+        | Role scope
+        |--------------------------------------------------------------------------
+        */
 
-        if ($request->filled('current_shortlist_stage_id')) {
-
-            $awardsQuery->where(
-                'current_shortlist_stage_id',
-                $request->current_shortlist_stage_id
-            );
+        if (! $isAdmin && in_array($role, chapterStakeholders())) {
+            $awardsQuery->whereIn('chapter_id', $chapterIds);
+        } elseif (! $isAdmin && in_array($role, zoneStakeholders())) {
+            $awardsQuery->whereIn('zone_id', $zoneIds);
+        } elseif (! $isAdmin && in_array($role, fieldStakeholders())) {
+            $awardsQuery->whereIn('field_id', $fieldIds);
         }
 
-        /** =====================
-         * ROLE SCOPE
-         * ===================== */
-
-        // Chapter Stakeholder
-        if (
-            !$isAdmin &&
-            in_array($role, chapterStakeholders())
-        ) {
-
-            $awardsQuery->whereIn(
-                'chapter_id',
-                $chapterIds
-            );
-        }
-
-        // Zone Stakeholder
-        elseif (
-            !$isAdmin &&
-            in_array($role, zoneStakeholders())
-        ) {
-
-            $awardsQuery->whereIn(
-                'zone_id',
-                $zoneIds
-            );
-        }
-
-        // Field Stakeholder
-        elseif (
-            !$isAdmin &&
-            in_array($role, fieldStakeholders())
-        ) {
-
-            $awardsQuery->whereIn(
-                'field_id',
-                $fieldIds
-            );
-        }
-
-        /** =====================
-         * BASIC FILTERS
-         * ===================== */
+        /*
+        |--------------------------------------------------------------------------
+        | Basic filters
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->filled('reference')) {
-
             $awardsQuery->where(
                 'reference',
-                $request->reference
+                trim($request->input('reference'))
             );
         }
 
-        $n = trim($request->name);
+        $name = trim((string) $request->input('name', ''));
 
-        if ($n !== '') {
-            $awardsQuery->whereHas('entry', function ($q) use ($n) {
-                $q->where(function ($q) use ($n) {
-                    $q->where('first_name', 'like', "%{$n}%")
-                    ->orWhere('middle_name', 'like', "%{$n}%")
-                    ->orWhere('last_name', 'like', "%{$n}%");
+        if ($name !== '') {
+            $awardsQuery->whereHas('entry', function ($query) use ($name) {
+                $query->where(function ($query) use ($name) {
+                    $query->where(
+                        'first_name',
+                        'like',
+                        "%{$name}%"
+                    )
+                        ->orWhere(
+                            'middle_name',
+                            'like',
+                            "%{$name}%"
+                        )
+                        ->orWhere(
+                            'last_name',
+                            'like',
+                            "%{$name}%"
+                        );
                 });
             });
         }
 
-        if ($request->filled('type')) {
-
+        if ($request->filled('current_shortlist_stage_id')) {
             $awardsQuery->where(
-                'type',
-                $request->type
+                'current_shortlist_stage_id',
+                $request->input('current_shortlist_stage_id')
             );
         }
 
-        /** =====================
-         * LOCATION FILTERS
-         * ===================== */
+        /*
+        |--------------------------------------------------------------------------
+        | Location filters
+        |--------------------------------------------------------------------------
+        */
 
-        // Chapter Filter
+        $chapterId = $request->input('chapter_id');
+        $zoneId = $request->input('zone_id');
+        $fieldId = $request->input('field_id');
+
         if (
             $request->filled('chapter_id') &&
-            $chapterIds->contains($request->chapter_id)
+            $chapterIds->contains(fn ($id) => (int) $id === (int) $chapterId)
         ) {
-
-            $awardsQuery->where(
-                'chapter_id',
-                $request->chapter_id
-            );
+            $awardsQuery->where('chapter_id', $chapterId);
         }
 
-        // Zone Filter
         if (
             $request->filled('zone_id') &&
-            $zoneIds->contains($request->zone_id)
+            $zoneIds->contains(fn ($id) => (int) $id === (int) $zoneId)
         ) {
-
-            $awardsQuery->where(
-                'zone_id',
-                $request->zone_id
-            );
+            $awardsQuery->where('zone_id', $zoneId);
         }
 
-        // Field Filter
         if (
             $request->filled('field_id') &&
-            $fieldIds->contains($request->field_id)
+            $fieldIds->contains(fn ($id) => (int) $id === (int) $fieldId)
         ) {
-
-            $awardsQuery->where(
-                'field_id',
-                $request->field_id
-            );
+            $awardsQuery->where('field_id', $fieldId);
         }
 
-        /** =====================
-         * DATE FILTERS
-         * ===================== */
+        /*
+        |--------------------------------------------------------------------------
+        | Date filters
+        |--------------------------------------------------------------------------
+        */
+
         if (
             $request->filled('from_date') ||
             $request->filled('to_date')
         ) {
-
             $from = $request->filled('from_date')
-                ? Carbon::parse($request->from_date)->startOfDay()
-                : Carbon::parse('1970-01-01')->startOfDay();
+                ? Carbon::parse(
+                    $request->input('from_date')
+                )->startOfDay()
+                : Carbon::create(1970, 1, 1)->startOfDay();
 
             $to = $request->filled('to_date')
-                ? Carbon::parse($request->to_date)->endOfDay()
+                ? Carbon::parse(
+                    $request->input('to_date')
+                )->endOfDay()
                 : now()->endOfDay();
 
             $awardsQuery->whereBetween(
@@ -541,97 +819,145 @@ class AwardService{
             );
         }
 
-        /** =====================
-         * STATUS FILTERS
-         * ===================== */
-        $statusFilters = $request->input('status_filter', []);
+        /*
+        |--------------------------------------------------------------------------
+        | Status filters
+        |--------------------------------------------------------------------------
+        */
+
+        $statusFilters = $request->input(
+            'status_filter',
+            []
+        );
 
         if (is_string($statusFilters)) {
             $statusFilters = [$statusFilters];
         }
 
-        $statusFilters = array_values(array_filter((array) $statusFilters));
+        $statusFilters = array_values(
+            array_filter((array) $statusFilters)
+        );
 
-        if (! empty($statusFilters)) {
+        $statusMap = [
+            'chapter_pending' => ['chapter_status', 0],
+            'chapter_approved' => ['chapter_status', 1],
+            'chapter_rejected' => ['chapter_status', 2],
 
-            $statusMap = [
-                'field_pending'      => ['field_status', 0],
-                'field_approved'     => ['field_status', 1],
-                'field_rejected'     => ['field_status', 2],
+            'zone_pending' => ['zone_status', 0],
+            'zone_approved' => ['zone_status', 1],
+            'zone_rejected' => ['zone_status', 2],
 
-                'zone_pending'       => ['zone_status', 0],
-                'zone_approved'      => ['zone_status', 1],
-                'zone_rejected'      => ['zone_status', 2],
+            'field_pending' => ['field_status', 0],
+            'field_approved' => ['field_status', 1],
+            'field_rejected' => ['field_status', 2],
 
-                'national_pending'   => ['national_status', 0],
-                'national_approved'  => ['national_status', 1],
-                'national_rejected'  => ['national_status', 2],
-            ];
+            'national_pending' => ['national_status', 0],
+            'national_approved' => ['national_status', 1],
+            'national_rejected' => ['national_status', 2],
+        ];
 
-            foreach ($statusFilters as $statusFilter) {
-                if (! isset($statusMap[$statusFilter])) {
-                    continue;
-                }
-
-                [$column, $value] = $statusMap[$statusFilter];
-
-                $awardsQuery->where($column, $value);
+        foreach ($statusFilters as $statusFilter) {
+            if (! isset($statusMap[$statusFilter])) {
+                continue;
             }
+
+            [$column, $value] = $statusMap[$statusFilter];
+
+            $awardsQuery->where($column, $value);
         }
 
-        /** =====================
-         * PAGINATION
-         * ===================== */
+        /*
+        |--------------------------------------------------------------------------
+        | Download response
+        |--------------------------------------------------------------------------
+        |
+        | The same filtered query is used for report and asset downloads.
+        | No pagination is applied when downloading.
+        |
+        */
+
+        $action = $request->input('action', 'view');
+        
+        if (
+            in_array(
+                $action,
+                ['download_report', 'download_assets'],
+                true
+            )
+        ) {
+            return [
+                'download_awards' => $awardsQuery
+                    ->orderByDesc('created_at')
+                    ->get(),
+
+                'chapters' => collect(),
+                'zones' => collect(),
+                'fields' => collect(),
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pagination
+        |--------------------------------------------------------------------------
+        */
+
         $paginatedAwards = $awardsQuery
             ->orderByDesc('created_at')
             ->paginate(200)
             ->withQueryString();
 
-        /** =====================
-         * GROUPING
-         * ===================== */
-        $groupedAwards = $paginatedAwards->getCollection()
-            ->groupBy(function ($award) {
+        /*
+        |--------------------------------------------------------------------------
+        | Group awards by chapter
+        |--------------------------------------------------------------------------
+        */
 
+        $groupedAwards = $paginatedAwards
+            ->getCollection()
+            ->groupBy(function ($award) {
                 if (empty($award->chapter_id)) {
                     return 'No Official Chapter';
                 }
 
-                return $award->chapter->name ?? 'Unmapped Chapter';
+                return $award->chapter?->name
+                    ?? 'Unmapped Chapter';
             })
-            ->sortBy(function ($value, $key) {
-
-                return $key === 'No Official Chapter'
+            ->sortBy(function ($awards, $chapterName) {
+                return $chapterName === 'No Official Chapter'
                     ? 1
                     : 0;
             });
 
-        $paginatedAwards->setCollection($groupedAwards);
+        $paginatedAwards->setCollection(
+            $groupedAwards
+        );
 
-        /** =====================
-         * RESPONSE
-         * ===================== */
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
+
         return [
-
             'awards' => $paginatedAwards,
 
-            'chapters' => $chaptersQuery
+            'chapters' => Chapter::query()
                 ->whereIn('id', $chapterIds)
                 ->orderBy('name')
                 ->get(),
 
-            'zones' => $zonesQuery
+            'zones' => Zone::query()
                 ->whereIn('id', $zoneIds)
                 ->orderBy('name')
                 ->get(),
 
-            'fields' => $fieldsQuery
+            'fields' => Field::query()
                 ->whereIn('id', $fieldIds)
                 ->orderBy('name')
                 ->get(),
         ];
     }
-
     public function bulkShortlist(array $ids, int $stageId, ?string $remarks = null): void
     {
         if (empty($ids)) {

@@ -38,18 +38,119 @@ class AwardController extends Controller
      * Display a listing of the resource.
      */
 
-    public function goAwardEntries(Request $request){
+    // public function goAwardEntries(Request $request){
+    //     $adminDetails = isAdmin();
+    //     $isAdmin = $adminDetails['status'];
+    //     $user = $adminDetails['user'];
+    //     $type = 'go';
+
+    //     $request->merge([
+    //         'type' => $type
+    //     ]);
+
+    //     $entries = $this->awardService->index($request, $user, $type, $isAdmin);
+    //     $shortlistStages = AwardShortlistStage::where('active', 1)
+    //         ->where(function ($query) use ($type) {
+    //             $query->whereNull('award_type')
+    //                 ->orWhere('award_type', 'both')
+    //                 ->orWhere('award_type', $type);
+    //         })
+    //         ->orderBy('position')
+    //         ->get();
+
+    //     $title = 'General Overseer (G.O.) Award Submissions';
+    //     return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type', 'shortlistStages')));
+    // }
+
+    // public function etfAwardEntries(Request $request){
+    //     $adminDetails = isAdmin();
+    //     $isAdmin = $adminDetails['status'];
+    //     $user = $adminDetails['user'];
+
+    //     $type = 'etf';
+
+    //     $request->merge([
+    //         'type' => $type
+    //     ]);
+
+    //     $entries = $this->awardService->index($request, $user, $type , $isAdmin);
+    //     $title = 'EducationTrust Fund (E.T.F.) Award Submissions';
+    //     $shortlistStages = AwardShortlistStage::where('active', 1)
+    //         ->where(function ($query) use ($type) {
+    //             $query->whereNull('award_type')
+    //                 ->orWhere('award_type', 'both')
+    //                 ->orWhere('award_type', $type);
+    //         })
+    //         ->orderBy('position')
+    //         ->get();
+
+    //     return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type', 'shortlistStages')));
+    // }
+    public function goAwardEntries(Request $request)
+    {
+        return $this->handleAwardEntries(
+            $request,
+            'go',
+            'General Overseer (G.O.) Award Submissions'
+        );
+    }
+
+    public function etfAwardEntries(Request $request)
+    {
+        return $this->handleAwardEntries(
+            $request,
+            'etf',
+            'Education Trust Fund (E.T.F.) Award Submissions'
+        );
+    }
+
+    private function handleAwardEntries(
+        Request $request,
+        string $type,
+        string $title
+    ) {
         $adminDetails = isAdmin();
         $isAdmin = $adminDetails['status'];
         $user = $adminDetails['user'];
-        $type = 'go';
 
         $request->merge([
-            'type' => $type
+            'type' => $type,
         ]);
 
-        $entries = $this->awardService->index($request, $user, $type, $isAdmin);
-        $shortlistStages = AwardShortlistStage::where('active', 1)
+        $entries = $this->awardService->index(
+            $request,
+            $user,
+            $type,
+            $isAdmin
+        );
+
+        $action = $request->input('action', 'view');
+
+        if ($action === 'download_report') {
+            if (! $isAdmin) {
+                abort(403);
+            }
+
+            return $this->downloadAwardReport(
+                $entries['download_awards'],
+                $type
+            );
+        }
+
+        if ($action === 'download_assets') {
+            if (! $isAdmin) {
+                abort(403);
+            }
+
+            return $this->downloadAwardAssets(
+                $entries['download_awards'],
+                $request->input('asset_type'),
+                $type
+            );
+        }
+
+        $shortlistStages = AwardShortlistStage::query()
+            ->where('active', 1)
             ->where(function ($query) use ($type) {
                 $query->whereNull('award_type')
                     ->orWhere('award_type', 'both')
@@ -58,34 +159,643 @@ class AwardController extends Controller
             ->orderBy('position')
             ->get();
 
-        $title = 'General Overseer (G.O.) Award Submissions';
-        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type', 'shortlistStages')));
+        return view(
+            'admin.awards.index',
+            compact(
+                'isAdmin',
+                'entries',
+                'user',
+                'title',
+                'type',
+                'shortlistStages'
+            )
+        );
     }
 
-    public function etfAwardEntries(Request $request){
-        $adminDetails = isAdmin();
-        $isAdmin = $adminDetails['status'];
-        $user = $adminDetails['user'];
+    private function downloadAwardReport(
+        $awards,
+        string $type
+    ) {
+        if ($awards->isEmpty()) {
+            return back()->with(
+                'error',
+                'No award records matched the selected filters.'
+            );
+        }
 
-        $type = 'etf';
+        $fileName = sprintf(
+            '%s-award-nomination-report-%s.xlsx',
+            $type,
+            now()->format('Y-m-d-His')
+        );
 
-        $request->merge([
-            'type' => $type
-        ]);
+        $headers = [
+            'Nominee Name',
+            'Email Address',
+            'Phone Number',
+            'Chapter',
+            'Chapter Status',
+            'Zone Status',
+            'Field Status',
+            'National Status',
+            'Final Approved By',
+            'Final Approved On',
+            'Submission Date',
+        ];
 
-        $entries = $this->awardService->index($request, $user, $type , $isAdmin);
-        $title = 'EducationTrust Fund (E.T.F.) Award Submissions';
-        $shortlistStages = AwardShortlistStage::where('active', 1)
-            ->where(function ($query) use ($type) {
-                $query->whereNull('award_type')
-                    ->orWhere('award_type', 'both')
-                    ->orWhere('award_type', $type);
+        $statusLabel = fn ($status) => match ((int) $status) {
+            1 => 'Approved',
+            2 => 'Rejected',
+            default => 'Pending',
+        };
+
+        $allRows = [];
+
+        foreach ($awards as $award) {
+            $allRows[] = [
+                'Nominee Name' => $award->name,
+                'Email Address' => $award->email,
+                'Phone Number' => $award->phone,
+
+                'Chapter' => $award->chapter?->name
+                    ?? $award->entry?->select_institution
+                    ?? '—',
+
+                'Chapter Status' => $statusLabel(
+                    $award->chapter_status
+                ),
+
+                'Zone Status' => $statusLabel(
+                    $award->zone_status
+                ),
+
+                'Field Status' => $statusLabel(
+                    $award->field_status
+                ),
+
+                'National Status' => $statusLabel(
+                    $award->national_status
+                ),
+
+                'Final Approved By' => $award->approvedBy?->name
+                    ?? '—',
+
+                'Final Approved On' => $award->national_approved_on
+                    ? Carbon::parse(
+                        $award->national_approved_on
+                    )->format('d M Y, h:i A')
+                    : '—',
+
+                'Submission Date' => $award->created_at
+                    ? Carbon::parse(
+                        $award->created_at
+                    )->format('Y-m-d h:i A')
+                    : '—',
+
+                '_chapter_raw' => (int) $award->chapter_status,
+                '_zone_raw' => (int) $award->zone_status,
+                '_field_raw' => (int) $award->field_status,
+                '_national_raw' => (int) $award->national_status,
+            ];
+        }
+
+        $rows = collect($allRows);
+
+        $sheetsData = [
+            'All Nominees' => $rows,
+
+            'Passed Chapter Clearance' => $rows->where(
+                '_chapter_raw',
+                1
+            ),
+
+            'Passed Zone Clearance' => $rows->where(
+                '_zone_raw',
+                1
+            ),
+
+            'Passed Field Clearance' => $rows->where(
+                '_field_raw',
+                1
+            ),
+
+            'Passed National Approval' => $rows->where(
+                '_national_raw',
+                1
+            ),
+        ];
+
+        foreach ($sheetsData as $sheetName => $sheetRows) {
+            $sheetsData[$sheetName] = $sheetRows
+                ->map(function ($row) {
+                    unset(
+                        $row['_chapter_raw'],
+                        $row['_zone_raw'],
+                        $row['_field_raw'],
+                        $row['_national_raw']
+                    );
+
+                    return $row;
+                })
+                ->values()
+                ->toArray();
+        }
+
+        return ExcelService::downloadMultipleSheets(
+            $sheetsData,
+            $headers,
+            $fileName
+        );
+    }
+
+    private function downloadAwardAssets(
+        $awards,
+        string $assetType,
+        string $type
+    ) {
+        if (! in_array($assetType, ['result_file', 'picture'], true)) {
+            return back()->with(
+                'error',
+                'Invalid asset type selected.'
+            );
+        }
+
+        if ($awards->isEmpty()) {
+            return back()->with(
+                'error',
+                'No award records matched the selected filters.'
+            );
+        }
+
+        $folderName = $assetType;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Collect asset filenames from the filtered awards
+        |--------------------------------------------------------------------------
+        */
+
+        $assetFiles = $awards
+            ->filter(fn ($award) => ! empty($award->entry))
+            ->map(function ($award) use ($assetType) {
+                $value = $award->entry->{$assetType} ?? null;
+
+                if (
+                    blank($value) ||
+                    str_starts_with($value, 'Download Failed:')
+                ) {
+                    return null;
+                }
+
+                return [
+                    'award_id' => $award->id,
+                    'nominee' => $award->name ?? 'Unnamed',
+                    'file' => $value,
+                ];
             })
-            ->orderBy('position')
-            ->get();
+            ->filter()
+            ->values()
+            ->toArray();
 
-        return view('admin.awards.index', array_merge(compact('isAdmin','entries', 'user', 'title', 'type', 'shortlistStages')));
+        if (empty($assetFiles)) {
+            return back()->with(
+                'error',
+                "No {$assetType} files were found for the selected records."
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prepare ZIP
+        |--------------------------------------------------------------------------
+        */
+
+        $zipFileName = sprintf(
+            '%s-award-%s-%s.zip',
+            $type,
+            $folderName,
+            now()->format('Y-m-d-His')
+        );
+
+        $zipDirectory = base_path(
+            'protected_uploads/award-assets'
+        );
+
+        if (! file_exists($zipDirectory)) {
+            mkdir($zipDirectory, 0777, true);
+        }
+
+        $zipFilePath = $zipDirectory . '/' . $zipFileName;
+
+        $zip = new ZipArchive();
+
+        if (
+            $zip->open(
+                $zipFilePath,
+                ZipArchive::CREATE | ZipArchive::OVERWRITE
+            ) !== true
+        ) {
+            return back()->with(
+                'error',
+                'Could not create ZIP archive.'
+            );
+        }
+
+        $zip->addEmptyDir($folderName);
+
+        $hasAddedFiles = false;
+
+        @set_time_limit(300);
+        ini_set('memory_limit', '512M');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Add collected assets to ZIP
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($assetFiles as $asset) {
+
+            try {
+                $storedValue = ltrim($asset['file'], '/');
+
+                /*
+                * Your stored asset value appears to be base64 encoded.
+                * Decode it before resolving the physical file path.
+                */
+                $decodedPath = base64_decode(
+                    $storedValue,
+                    true
+                );
+        
+                if ($decodedPath === false) {
+                    Log::warning(
+                        "Invalid encoded {$assetType} path for Award ID [{$asset['award_id']}]"
+                    );
+
+                    continue;
+                }
+
+                $decodedPath = ltrim($decodedPath, '/');
+
+                $fullPath = base_path(
+                    'protected_uploads/' . $decodedPath
+                );
+
+                if (! is_file($fullPath)) {
+                    Log::warning(
+                        "Missing award asset for Award ID [{$asset['award_id']}]: {$fullPath}"
+                    );
+
+                    continue;
+                }
+
+                $nomineeSlug = str($asset['nominee'])
+                    ->replace(['/', '\\'], ' ')
+                    ->slug('_');
+
+                $extension = pathinfo(
+                    $fullPath,
+                    PATHINFO_EXTENSION
+                );
+
+                $fileName = sprintf(
+                    '%s_%s_%s.%s',
+                    $nomineeSlug ?: 'unnamed',
+                    $asset['award_id'],
+                    $assetType,
+                    $extension
+                );
+
+                $zip->addFile(
+                    $fullPath,
+                    $folderName . '/' . $fileName
+                );
+
+                $hasAddedFiles = true;
+            } catch (\Throwable $exception) {
+                Log::error(
+                    sprintf(
+                        'Failed adding %s for Award ID [%s]: %s',
+                        $assetType,
+                        $asset['award_id'],
+                        $exception->getMessage()
+                    )
+                );
+            }
+        }
+
+        $zip->close();
+
+        if (
+            $hasAddedFiles &&
+            file_exists($zipFilePath)
+        ) {
+            return response()
+                ->download(
+                    $zipFilePath,
+                    $zipFileName
+                )
+                ->deleteFileAfterSend(true);
+        }
+
+        if (file_exists($zipFilePath)) {
+            @unlink($zipFilePath);
+        }
+
+        return back()->with(
+            'error',
+            "The selected {$assetType} files could not be found in the asset folder."
+        );
     }
+    // public function awardReportsDownload(string $type)
+    // {
+    //     $awards = Award::with([
+    //             'entry',
+    //             'chapter',
+    //             'approvedBy',
+    //         ])
+    //         ->where('type', $type)
+    //         ->orderBy('chapter_id')
+    //         ->get()
+    //         ->sortBy(fn ($award) => $award->chapter?->name
+    //             ?? $award->entry?->select_institution
+    //             ?? 'ZZZ')
+    //         ->values();
+
+    //     if ($awards->isEmpty()) {
+    //         return back()->with(
+    //             'error',
+    //             'No award records found to download.'
+    //         );
+    //     }
+
+    //     $fileName = sprintf(
+    //         '%s-award-nomination-report-%s.xlsx',
+    //         $type,
+    //         now()->format('Y-m-d-His')
+    //     );
+
+    //     $headers = [
+    //         'Nominee Name',
+    //         'Email Address',
+    //         'Phone Number',
+    //         'Chapter',
+    //         'Chapter Status',
+    //         'Zone Status',
+    //         'Field Status',
+    //         'National Status',
+    //         'Final Approved By',
+    //         'Final Approved On',
+    //         'Submission Date',
+    //     ];
+
+    //     $statusLabel = fn ($status) => match ((int) $status) {
+    //         1       => 'Approved',
+    //         2       => 'Rejected',
+    //         default => 'Pending',
+    //     };
+
+    //     $allRows = [];
+
+    //     foreach ($awards as $award) {
+
+    //         $allRows[] = [
+    //             'Nominee Name'      => $award->name,
+    //             'Email Address'     => $award->email,
+    //             'Phone Number'      => $award->phone,
+
+    //             'Chapter' => $award->chapter?->name
+    //                 ?? $award->entry?->select_institution
+    //                 ?? '—',
+
+    //             'Chapter Status'    => $statusLabel($award->chapter_status),
+    //             'Zone Status'       => $statusLabel($award->zone_status),
+    //             'Field Status'      => $statusLabel($award->field_status),
+    //             'National Status'   => $statusLabel($award->national_status),
+
+    //             'Final Approved By' => $award->approvedBy?->name ?? '—',
+
+    //             'Final Approved On' => $award->national_approved_on
+    //                 ? Carbon::parse($award->national_approved_on)->format('d M Y, h:i A')
+    //                 : '—',
+
+    //             'Submission Date' => $award->created_at
+    //                 ? Carbon::parse($award->created_at)->format('Y-m-d h:i A')
+    //                 : '—',
+
+    //             // Internal filtering fields
+    //             '_chapter_raw'  => (int) $award->chapter_status,
+    //             '_zone_raw'     => (int) $award->zone_status,
+    //             '_field_raw'    => (int) $award->field_status,
+    //             '_national_raw' => (int) $award->national_status,
+    //         ];
+    //     }
+
+    //     $sheetsData = [
+    //         'All Nominees'             => collect($allRows),
+    //         'Passed Chapter Clearance' => collect($allRows)->where('_chapter_raw', 1),
+    //         'Passed Zone Clearance'    => collect($allRows)->where('_zone_raw', 1),
+    //         'Passed Field Clearance'   => collect($allRows)->where('_field_raw', 1),
+    //         'Passed National Approval' => collect($allRows)->where('_national_raw', 1),
+    //     ];
+
+    //     foreach ($sheetsData as $sheetName => $rows) {
+
+    //         $sheetsData[$sheetName] = $rows
+    //             ->map(function ($row) {
+
+    //                 unset(
+    //                     $row['_chapter_raw'],
+    //                     $row['_zone_raw'],
+    //                     $row['_field_raw'],
+    //                     $row['_national_raw']
+    //                 );
+
+    //                 return $row;
+    //             })
+    //             ->values()
+    //             ->toArray();
+    //     }
+
+    //     return ExcelService::downloadMultipleSheets(
+    //         $sheetsData,
+    //         $headers,
+    //         $fileName
+    //     );
+    // }
+
+    // public function awardAssetsDownload(Request $request)
+    // {
+    //     if (! Award::exists()) {
+    //         return back()->with(
+    //             'error',
+    //             'No award records found to download.'
+    //         );
+    //     }
+
+    //     $awardFields = awardFormFields();
+
+    //     $imageFields = collect($awardFields)
+    //         ->filter(fn ($field) => $field['type'] === 'image')
+    //         ->keys()
+    //         ->toArray();
+
+    //     $documentFields = collect($awardFields)
+    //         ->filter(fn ($field) => $field['type'] === 'file')
+    //         ->keys()
+    //         ->toArray();
+
+    //     $zipFileName = now()->format('Y-m-d-His')
+    //         . '-award-assets.zip';
+
+    //     $zipDirectory = base_path(
+    //         'protected_uploads/award-assets'
+    //     );
+
+    //     if (! file_exists($zipDirectory)) {
+    //         mkdir($zipDirectory, 0777, true);
+    //     }
+
+    //     $zipFilePath = "{$zipDirectory}/{$zipFileName}";
+
+    //     $zip = new ZipArchive();
+
+    //     if (
+    //         $zip->open(
+    //             $zipFilePath,
+    //             ZipArchive::CREATE | ZipArchive::OVERWRITE
+    //         ) !== true
+    //     ) {
+    //         return back()->with(
+    //             'error',
+    //             'Could not create ZIP archive.'
+    //         );
+    //     }
+
+    //     $zip->addEmptyDir('images');
+    //     $zip->addEmptyDir('documents');
+
+    //     $hasAddedFiles = false;
+
+    //     @set_time_limit(300);
+    //     ini_set('memory_limit', '512M');
+
+    //     Award::with('entry')
+    //         // ->where('national_status', 0)
+    //         ->latest()
+    //         ->chunk(20, function ($awards) use (
+    //             $zip,
+    //             $imageFields,
+    //             $documentFields,
+    //             &$hasAddedFiles
+    //         ) {
+
+    //             foreach ($awards as $award) {
+
+    //                 if (! $award->entry) {
+    //                     continue;
+    //                 }
+
+    //                 $nomineeSlug = str($award->name ?? 'Unnamed')
+    //                     ->replace([' ', '/', '\\'], '_');
+
+    //                 foreach (
+    //                     array_merge($imageFields, $documentFields)
+    //                     as $field
+    //                 ) {
+
+    //                     $value = $award->entry->{$field};
+
+    //                     if (
+    //                         blank($value)
+    //                         || str_starts_with(
+    //                             $value,
+    //                             'Download Failed:'
+    //                         )
+    //                     ) {
+    //                         continue;
+    //                     }
+
+    //                     try {
+
+    //                         $decodedPath = base64_decode(
+    //                             ltrim($value, '/')
+    //                         );
+
+    //                         $fullPath = base_path(
+    //                             'protected_uploads/'
+    //                             . ltrim($decodedPath, '/')
+    //                         );
+
+    //                         if (! file_exists($fullPath)) {
+    //                             Log::warning(
+    //                                 "Missing file: {$fullPath}"
+    //                             );
+
+    //                             continue;
+    //                         }
+
+    //                         $extension = pathinfo(
+    //                             $fullPath,
+    //                             PATHINFO_EXTENSION
+    //                         );
+
+    //                         $fileName = sprintf(
+    //                             '%s_%s.%s',
+    //                             $nomineeSlug,
+    //                             $field,
+    //                             $extension
+    //                         );
+
+    //                         $folder = in_array(
+    //                             $field,
+    //                             $imageFields
+    //                         )
+    //                             ? 'images/'
+    //                             : 'documents/';
+
+    //                         $zip->addFile(
+    //                             $fullPath,
+    //                             $folder . $fileName
+    //                         );
+
+    //                         $hasAddedFiles = true;
+
+    //                     } catch (\Throwable $e) {
+
+    //                         Log::error(
+    //                             "Failed adding asset for Award ID [{$award->id}], Field [{$field}]: {$e->getMessage()}"
+    //                         );
+    //                     }
+    //                 }
+    //             }
+
+    //             unset($awards);
+
+    //             gc_collect_cycles();
+    //         });
+
+    //     $zip->close();
+
+    //     if (
+    //         $hasAddedFiles
+    //         && file_exists($zipFilePath)
+    //     ) {
+    //         return response()
+    //             ->download($zipFilePath, $zipFileName)
+    //             ->deleteFileAfterSend(true);
+    //     }
+
+    //     if (file_exists($zipFilePath)) {
+    //         @unlink($zipFilePath);
+    //     }
+
+    //     return back()->with(
+    //         'error',
+    //         'No binary attachments were found to include in the ZIP package.'
+    //     );
+    // }
 
     /**
      * Show the form for creating a new resource.
@@ -719,295 +1429,6 @@ class AwardController extends Controller
         return redirect()->back()->with('message', 'System configurations saved successfully.');
     }
 
-
-    public function awardReportsDownload(string $type)
-    {
-        $awards = Award::with([
-                'entry',
-                'chapter',
-                'approvedBy',
-            ])
-            ->where('type', $type)
-            ->orderBy('chapter_id')
-            ->get()
-            ->sortBy(fn ($award) => $award->chapter?->name
-                ?? $award->entry?->select_institution
-                ?? 'ZZZ')
-            ->values();
-
-        if ($awards->isEmpty()) {
-            return back()->with(
-                'error',
-                'No award records found to download.'
-            );
-        }
-
-        $fileName = sprintf(
-            '%s-award-nomination-report-%s.xlsx',
-            $type,
-            now()->format('Y-m-d-His')
-        );
-
-        $headers = [
-            'Nominee Name',
-            'Email Address',
-            'Phone Number',
-            'Chapter',
-            'Chapter Status',
-            'Zone Status',
-            'Field Status',
-            'National Status',
-            'Final Approved By',
-            'Final Approved On',
-            'Submission Date',
-        ];
-
-        $statusLabel = fn ($status) => match ((int) $status) {
-            1       => 'Approved',
-            2       => 'Rejected',
-            default => 'Pending',
-        };
-
-        $allRows = [];
-
-        foreach ($awards as $award) {
-
-            $allRows[] = [
-                'Nominee Name'      => $award->name,
-                'Email Address'     => $award->email,
-                'Phone Number'      => $award->phone,
-
-                'Chapter' => $award->chapter?->name
-                    ?? $award->entry?->select_institution
-                    ?? '—',
-
-                'Chapter Status'    => $statusLabel($award->chapter_status),
-                'Zone Status'       => $statusLabel($award->zone_status),
-                'Field Status'      => $statusLabel($award->field_status),
-                'National Status'   => $statusLabel($award->national_status),
-
-                'Final Approved By' => $award->approvedBy?->name ?? '—',
-
-                'Final Approved On' => $award->national_approved_on
-                    ? Carbon::parse($award->national_approved_on)->format('d M Y, h:i A')
-                    : '—',
-
-                'Submission Date' => $award->created_at
-                    ? Carbon::parse($award->created_at)->format('Y-m-d h:i A')
-                    : '—',
-
-                // Internal filtering fields
-                '_chapter_raw'  => (int) $award->chapter_status,
-                '_zone_raw'     => (int) $award->zone_status,
-                '_field_raw'    => (int) $award->field_status,
-                '_national_raw' => (int) $award->national_status,
-            ];
-        }
-
-        $sheetsData = [
-            'All Nominees'             => collect($allRows),
-            'Passed Chapter Clearance' => collect($allRows)->where('_chapter_raw', 1),
-            'Passed Zone Clearance'    => collect($allRows)->where('_zone_raw', 1),
-            'Passed Field Clearance'   => collect($allRows)->where('_field_raw', 1),
-            'Passed National Approval' => collect($allRows)->where('_national_raw', 1),
-        ];
-
-        foreach ($sheetsData as $sheetName => $rows) {
-
-            $sheetsData[$sheetName] = $rows
-                ->map(function ($row) {
-
-                    unset(
-                        $row['_chapter_raw'],
-                        $row['_zone_raw'],
-                        $row['_field_raw'],
-                        $row['_national_raw']
-                    );
-
-                    return $row;
-                })
-                ->values()
-                ->toArray();
-        }
-
-        return ExcelService::downloadMultipleSheets(
-            $sheetsData,
-            $headers,
-            $fileName
-        );
-    }
-
-    public function awardAssetsDownload()
-    {
-        if (! Award::exists()) {
-            return back()->with(
-                'error',
-                'No award records found to download.'
-            );
-        }
-
-        $awardFields = awardFormFields();
-
-        $imageFields = collect($awardFields)
-            ->filter(fn ($field) => $field['type'] === 'image')
-            ->keys()
-            ->toArray();
-
-        $documentFields = collect($awardFields)
-            ->filter(fn ($field) => $field['type'] === 'file')
-            ->keys()
-            ->toArray();
-
-        $zipFileName = now()->format('Y-m-d-His')
-            . '-award-assets.zip';
-
-        $zipDirectory = base_path(
-            'protected_uploads/award-assets'
-        );
-
-        if (! file_exists($zipDirectory)) {
-            mkdir($zipDirectory, 0777, true);
-        }
-
-        $zipFilePath = "{$zipDirectory}/{$zipFileName}";
-
-        $zip = new ZipArchive();
-
-        if (
-            $zip->open(
-                $zipFilePath,
-                ZipArchive::CREATE | ZipArchive::OVERWRITE
-            ) !== true
-        ) {
-            return back()->with(
-                'error',
-                'Could not create ZIP archive.'
-            );
-        }
-
-        $zip->addEmptyDir('images');
-        $zip->addEmptyDir('documents');
-
-        $hasAddedFiles = false;
-
-        @set_time_limit(300);
-        ini_set('memory_limit', '512M');
-
-        Award::with('entry')
-            // ->where('national_status', 0)
-            ->latest()
-            ->chunk(20, function ($awards) use (
-                $zip,
-                $imageFields,
-                $documentFields,
-                &$hasAddedFiles
-            ) {
-
-                foreach ($awards as $award) {
-
-                    if (! $award->entry) {
-                        continue;
-                    }
-
-                    $nomineeSlug = str($award->name ?? 'Unnamed')
-                        ->replace([' ', '/', '\\'], '_');
-
-                    foreach (
-                        array_merge($imageFields, $documentFields)
-                        as $field
-                    ) {
-
-                        $value = $award->entry->{$field};
-
-                        if (
-                            blank($value)
-                            || str_starts_with(
-                                $value,
-                                'Download Failed:'
-                            )
-                        ) {
-                            continue;
-                        }
-
-                        try {
-
-                            $decodedPath = base64_decode(
-                                ltrim($value, '/')
-                            );
-
-                            $fullPath = base_path(
-                                'protected_uploads/'
-                                . ltrim($decodedPath, '/')
-                            );
-
-                            if (! file_exists($fullPath)) {
-                                Log::warning(
-                                    "Missing file: {$fullPath}"
-                                );
-
-                                continue;
-                            }
-
-                            $extension = pathinfo(
-                                $fullPath,
-                                PATHINFO_EXTENSION
-                            );
-
-                            $fileName = sprintf(
-                                '%s_%s.%s',
-                                $nomineeSlug,
-                                $field,
-                                $extension
-                            );
-
-                            $folder = in_array(
-                                $field,
-                                $imageFields
-                            )
-                                ? 'images/'
-                                : 'documents/';
-
-                            $zip->addFile(
-                                $fullPath,
-                                $folder . $fileName
-                            );
-
-                            $hasAddedFiles = true;
-
-                        } catch (\Throwable $e) {
-
-                            Log::error(
-                                "Failed adding asset for Award ID [{$award->id}], Field [{$field}]: {$e->getMessage()}"
-                            );
-                        }
-                    }
-                }
-
-                unset($awards);
-
-                gc_collect_cycles();
-            });
-
-        $zip->close();
-
-        if (
-            $hasAddedFiles
-            && file_exists($zipFilePath)
-        ) {
-            return response()
-                ->download($zipFilePath, $zipFileName)
-                ->deleteFileAfterSend(true);
-        }
-
-        if (file_exists($zipFilePath)) {
-            @unlink($zipFilePath);
-        }
-
-        return back()->with(
-            'error',
-            'No binary attachments were found to include in the ZIP package.'
-        );
-    }
 
     public function adjustAwardStatus(
         Request $request,

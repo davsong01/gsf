@@ -80,13 +80,19 @@
                                                     <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#contextModal{{ $log->id }}">View</button>
                                                     <div class="modal fade" id="contextModal{{ $log->id }}" tabindex="-1" role="dialog">
                                                         <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title">Error Context</h5>
-                                                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                                            <div class="modal-content shadow-sm border-0">
+                                                                <div class="modal-header bg-light border-bottom-0 py-3">
+                                                                    <div>
+                                                                        <h5 class="modal-title mb-0">Error Context</h5>
+                                                                        <small class="text-muted">Raw log payload for this entry</small>
+                                                                    </div>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
                                                                 </div>
                                                                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                                                                     <pre style="white-space: pre-wrap; word-break: break-word;">{{ json_encode($log->context, JSON_PRETTY_PRINT) }}</pre>
+                                                                </div>
+                                                                <div class="modal-footer bg-light border-top-0 py-3">
+                                                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -100,13 +106,19 @@
                                                     <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#stackModal{{ $log->id }}">View</button>
                                                     <div class="modal fade" id="stackModal{{ $log->id }}" tabindex="-1" role="dialog">
                                                         <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title">Stack Trace</h5>
-                                                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                                            <div class="modal-content shadow-sm border-0">
+                                                                <div class="modal-header bg-light border-bottom-0 py-3">
+                                                                    <div>
+                                                                        <h5 class="modal-title mb-0">Stack Trace</h5>
+                                                                        <small class="text-muted">Scrollable trace for debugging</small>
+                                                                    </div>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
                                                                 </div>
                                                                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                                                                     <pre style="white-space: pre-wrap; word-break: break-word;">{{ $log->stack_trace }}</pre>
+                                                                </div>
+                                                                <div class="modal-footer bg-light border-top-0 py-3">
+                                                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>
                                                                 </div>
                                                             </div>
                                                         </div>
