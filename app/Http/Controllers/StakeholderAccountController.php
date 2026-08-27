@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Excel;
 use App\Services\UserService;
 use App\Services\ExcelService;
 use App\Models\StakeholderReport;
+use App\Services\AppraisalService;
 use App\Services\FileUploadService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -62,8 +63,10 @@ class StakeholderAccountController extends Controller
         }
 
         $reports = collect([]);
+        $appraisalAccess = app(AppraisalService::class)->dashboardAccess($user);
+        $appraisalSummary = app(AppraisalService::class)->summary($user);
         
-        return view('stakeholder.dashboard', compact('reports', 'chapter', 'user'));
+        return view('stakeholder.dashboard', compact('reports', 'chapter', 'user', 'appraisalAccess', 'appraisalSummary'));
     }
 
     public function profile()

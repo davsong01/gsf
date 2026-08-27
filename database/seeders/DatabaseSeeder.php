@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\AppraisalQuestionSeeder;
+use Database\Seeders\AppraisalRolePermissionSeeder;
 use Database\Seeders\StakeholderQuestionSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -14,7 +16,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            StakeholderQuestionSeeder::class,
+            // StakeholderQuestionSeeder::class,
+            AppraisalQuestionSeeder::class,
+            AppraisalRolePermissionSeeder::class,
         ]);
     }
 }

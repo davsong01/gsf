@@ -76,6 +76,39 @@ if (!function_exists('rootPermissions')) {
     {
         $menus = [
             [
+                'id' => 30,
+                'slug' => 'conference.management',
+                'name' => 'Conference Mgt',
+                'icon' => 'fa fa-desktop',
+                'children' => [
+                    [
+                        'id' => 31,
+                        'slug' => 'ministry.index',
+                        'name' => 'Ministries',
+                    ],
+                    [
+                        'id' => 32,
+                        'slug' => 'paymentproviders.index',
+                        'name' => 'Payment Providers',
+                    ],
+                    [
+                        'id' => 33,
+                        'slug' => 'conference_speakers.index',
+                        'name' => 'Conference Speakers',
+                    ],
+                    [
+                        'id' => 34,
+                        'slug' => 'conference_faqs.index',
+                        'name' => 'Conference FAQs',
+                    ],
+                    [
+                        'id' => 35,
+                        'slug' => 'conferencemanagement.index',
+                        'name' => 'Conferences',
+                    ],
+                ],
+            ],
+            [
                 'id' => 1,
                 'slug' => 'stakeholder*',
                 'name' => 'Digital Portal Mgt',
@@ -123,9 +156,32 @@ if (!function_exists('rootPermissions')) {
                         ]
                     ],
                     [
+                        'id' => 24,
+                        'slug' => 'appraisal-structure',
+                        'name' => 'Appraisal',
+                        'icon' => 'fa fa-clipboard-check',
+                        'children' => [
+                            [
+                                'id' => 25,
+                                'slug' => 'appraisal.sections',
+                                'name' => 'Sections'
+                            ],
+                            [
+                                'id' => 26,
+                                'slug' => 'appraisal.subsections',
+                                'name' => 'Sub Sections'
+                            ],
+                            [
+                                'id' => 27,
+                                'slug' => 'appraisal.questions',
+                                'name' => 'Items'
+                            ]
+                        ]
+                    ],
+                    [
                         'id' => 4,
                         'slug' => 'report-structure',
-                        'name' => 'Report Structure',
+                        'name' => 'Form Structure',
                         'icon' => 'bx bx-layer',
                         'children' => [
                             [
@@ -330,6 +386,46 @@ if (!function_exists('userHasPermission')) {
         }
 
         return in_array($permission, $user->permissions ?? [], true);
+    }
+}
+
+if (!function_exists('appraisalInstructionProfile')) {
+    function appraisalInstructionProfile(?string $stakeholderKey = null): array
+    {
+        $key = Str::of((string) $stakeholderKey)
+            ->lower()
+            ->trim()
+            ->replace([' ', '_'], '-')
+            ->toString();
+
+        $profiles = [
+            'field-pastor' => [
+                'title' => 'Field Pastors',
+                'purpose' => "This appraisal is designed to assess the performance, commitment, leadership effectiveness, pastoral oversight, and developmental needs of Field Pastors within GOFAMINT Students' Fellowship.",
+                'instruction' => 'Please respond objectively. Where applicable, tick the most appropriate rating and provide comments and recommendations.',
+                'rating_scale' => '5 = Excellent | 4 = Very Good | 3 = Good | 2 = Fair | 1 = Poor',
+            ],
+            'zonal-pastor' => [
+                'title' => 'Zonal Pastors and Assistant Zonal Pastors',
+                'purpose' => "This appraisal is designed to assess the effectiveness of Zonal Pastors and Assistant Zonal Pastors in spiritual supervision, coordination, leadership development, reporting, and growth of GOFAMINT Students' Fellowship within their zones.",
+                'instruction' => 'Please respond objectively. Where applicable, tick the most appropriate rating and provide comments or recommendations.',
+                'rating_scale' => '5 = Excellent | 4 = Very Good | 3 = Good | 2 = Fair | 1 = Poor',
+            ],
+            'national-officer' => [
+                'title' => 'National Officers',
+                'purpose' => "This appraisal is designed to assess the leadership performance, administrative effectiveness, accountability, teamwork, and contribution of National Officers to the growth and development of GOFAMINT Students' Fellowship.",
+                'instruction' => 'Please respond objectively. Where applicable, tick [√] the most appropriate rating and provide comments or recommendations.',
+                'rating_scale' => '5 = Excellent | 4 = Very Good | 3 = Good | 2 = Fair | 1 = Poor',
+            ],
+            'national-president' => [
+                'title' => 'National President Review',
+                'purpose' => 'This official-use section is completed by the National President to document strengths, concerns, and recommendations for the National Officer being reviewed.',
+                'instruction' => 'Please respond objectively and provide clear observations, recommendations, and areas for improvement.',
+                'rating_scale' => '5 = Excellent | 4 = Very Good | 3 = Good | 2 = Fair | 1 = Poor',
+            ],
+        ];
+
+        return $profiles[$key] ?? [];
     }
 }
 
@@ -1394,7 +1490,6 @@ if (!function_exists('isAdmin')){
                     ?? auth()->guard('stakeholder')->user()
                     ?? auth()->guard('web')->user());
         }
-
 
         if (!$user) {
             return [

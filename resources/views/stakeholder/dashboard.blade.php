@@ -414,6 +414,42 @@
                 </div>
             </a>
         </div>
+
+        @if(($appraisalAccess['my_appraisal'] ?? false) || ($appraisalAccess['evaluations'] ?? false))
+            {{-- My Appraisal --}}
+            @if($appraisalAccess['my_appraisal'] ?? false)
+                <div class="col-md-3 col-sm-6 mb-2">
+                    <a href="{{ route('stakeholders.appraisal.my') }}" class="text-decoration-none">
+                        <div class="card h-100 shadow border-0 text-white" style="background: linear-gradient(135deg, #12355b, #1f6aa5);">
+                            <div class="card-body d-flex flex-column align-items-center text-center">
+                                <div class="mb-2">
+                                    <i class="fa fa-pen-to-square fa-2x"></i>
+                                </div>
+                                <h6 class="mb-1">Self Appraisal</h6>
+                                <small>Open your self appraisal</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            @endif
+
+            {{-- Evaluations --}}
+            @if($appraisalAccess['evaluations'] ?? false)
+                <div class="col-md-3 col-sm-6 mb-2">
+                    <a href="{{ route('stakeholders.appraisal.evaluations') }}" class="text-decoration-none">
+                        <div class="card h-100 shadow border-0 text-white" style="background: linear-gradient(135deg, #2c3e50, #4b79a1);">
+                            <div class="card-body d-flex flex-column align-items-center text-center">
+                                <div class="mb-2">
+                                    <i class="fa fa-users-gear fa-2x"></i>
+                                </div>
+                                <h6 class="mb-1">Evaluations</h6>
+                                <small>Review assigned officers</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            @endif
+        @endif
     </div>
 </div>
 @endsection

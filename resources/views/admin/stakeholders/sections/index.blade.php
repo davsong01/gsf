@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'Stakeholder Sections')
+@section('title', ucfirst($moduleType ?? 'report') . ' Sections')
 @section('active')
-<li class="breadcrumb-item">Stakeholder Sections</li>
+<li class="breadcrumb-item">{{ ucfirst($moduleType ?? 'report') }} Sections</li>
 @endsection
 
 @section('content')
@@ -11,8 +11,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="card-title">All Sections</h4>
-                        <a href="{{ route('stakeholderreportsection.create') }}" class="btn btn-primary mt-1">Add Section</a>
+                        <h4 class="card-title">All {{ ucfirst($moduleType ?? 'report') }} Sections</h4>
+                        <a href="{{ route('stakeholderreportsection.create', ['module_type' => $moduleType ?? 'report']) }}" class="btn btn-primary mt-1">Add Section</a>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -50,8 +50,8 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('stakeholderreportsection.edit', $section->id) }}" class="btn btn-sm btn-info">Edit</a>
-                                                <form action="{{ route('stakeholderreportsection.destroy', $section->id) }}" method="POST" style="display:inline-block">
+                                                <a href="{{ route('stakeholderreportsection.edit', ['stakeholderreportsection' => $section->id, 'module_type' => $moduleType ?? 'report']) }}" class="btn btn-sm btn-info">Edit</a>
+                                                <form action="{{ route('stakeholderreportsection.destroy', ['stakeholderreportsection' => $section->id, 'module_type' => $moduleType ?? 'report']) }}" method="POST" style="display:inline-block">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button onclick="return confirm('Are you sure?')" class="btn btn-sm btn-danger">Delete</button>

@@ -17,6 +17,11 @@ class StakeholderReportQuestion extends Model
         'access_roles' => 'array',
     ];
 
+    public function scopeForModule($query, string $moduleType = 'report')
+    {
+        return $query->where('module_type', $moduleType);
+    }
+
     public function answers()
     {
         return $this->hasMany(StakeholderReportAnswer::class, 'question_id');

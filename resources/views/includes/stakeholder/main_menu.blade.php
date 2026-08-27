@@ -74,6 +74,33 @@
                     </a>
                 </li>
             @endif
+
+            @php
+                $appraisalProfile = app(\App\Services\AppraisalService::class)->appraisalPermissionProfile($user);
+                $canAccessMyAppraisal = ! empty($appraisalProfile['fill'] ?? [])
+                    && collect($appraisalProfile['fill'])->contains(fn ($permission) => $user?->hasPermission($permission));
+                $canAccessEvaluations = ! empty($appraisalProfile['evaluate'] ?? [])
+                    && collect($appraisalProfile['evaluate'])->contains(fn ($permission) => $user?->hasPermission($permission));
+            @endphp
+
+            @if($canAccessMyAppraisal)
+                <li class="nav-item {{ $currentRoute === 'stakeholders.appraisal.my' ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.appraisal.my') }}">
+                        <i class="fa fa-pen-to-square" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Self Appraisal</span>
+                    </a>
+                </li>
+            @endif
+
+            @if($canAccessEvaluations)
+                <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.appraisal.evaluations') ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.appraisal.evaluations') }}">
+                        <i class="fa fa-users-gear" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Evaluations</span>
+                    </a>
+                </li>
+            @endif
+
             @if(in_array($user->role_id, chapterStakeholders()))
                 <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.users') ? 'active' : '' }}">
                     <a href="{{ route('stakeholders.users.index') }}">

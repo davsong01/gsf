@@ -1,16 +1,16 @@
 @extends('layouts.dashboard')
 
-@section('title', isset($subSection) ? 'Update SubSection' : 'Create SubSection')
+@section('title', isset($subSection) ? 'Update ' . ucfirst($moduleType ?? 'report') . ' Sub Section' : 'Create ' . ucfirst($moduleType ?? 'report') . ' Sub Section')
 
 @section('item')
 <li class="breadcrumb-item">
-    <a href="{{ route('stakeholderreportsubsection.index') }}">All Report SubSections</a>
+    <a href="{{ route('stakeholderreportsubsection.index', ['module_type' => $moduleType ?? 'report']) }}">All {{ ucfirst($moduleType ?? 'report') }} Sub Sections</a>
 </li>
 @endsection
 
 @section('active')
 <li class="breadcrumb-item">
-    {{ isset($subSection) ? 'Update' : 'Create' }} Report SubSection
+    {{ isset($subSection) ? 'Update' : 'Create' }} {{ ucfirst($moduleType ?? 'report') }} Sub Section
 </li>
 @endsection
 
@@ -23,10 +23,10 @@
                     <div class="card-header">@include('includes.alerts')</div>
 
                     <div class="card-body">
-                        <form
-                            action="{{ isset($subSection)
-                                ? route('stakeholderreportsubsection.update', $subSection->id)
-                                : route('stakeholderreportsubsection.store') }}"
+                            <form
+                                action="{{ isset($subSection)
+                                ? route('stakeholderreportsubsection.update', ['stakeholderreportsubsection' => $subSection->id, 'module_type' => $moduleType ?? 'report'])
+                                : route('stakeholderreportsubsection.store', ['module_type' => $moduleType ?? 'report']) }}"
                             method="POST">
                             @csrf
                             @isset($subSection)
@@ -44,6 +44,17 @@
                                            required>
                                 </div>
 
+                                <div class="col-md-6">
+                                    <label class="form-label">Slug</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           name="slug"
+                                           value="{{ old('slug', $subSection->slug ?? '') }}"
+                                           placeholder="auto-generated if left blank">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Status</label>
                                     <select class="form-control" name="status" required>
@@ -100,10 +111,11 @@
                             <div class="row mt-4">
                                 <div class="col-md-12">
                                     <button class="btn btn-primary w-100" type="submit">
-                                        {{ isset($subSection) ? 'Update SubSection' : 'Create SubSection' }}
+                                        {{ isset($subSection) ? 'Update Sub Section' : 'Create Sub Section' }}
                                     </button>
                                 </div>
                             </div>
+                            <input type="hidden" name="module_type" value="{{ $moduleType ?? 'report' }}">
 
                         </form>
                     </div>

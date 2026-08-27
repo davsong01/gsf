@@ -120,6 +120,35 @@
                     </li>
                 @endif
 
+                {{-- APPRAISAL --}}
+                @if(
+                    in_array('appraisal-structure', $userPermissions) ||
+                    in_array('appraisal.sections', $userPermissions) ||
+                    in_array('appraisal.subsections', $userPermissions) ||
+                    in_array('appraisal.questions', $userPermissions)
+                )
+                <li class="has-sub {{ Request::is('stakeholderreportsection*') || Request::is('stakeholderreportsubsection*') || Request::is('stakeholder.questions*') ? 'open is_shown' : '' }}">
+                    <a href="#"><i class="bx bx-clipboard"></i><span class="menu-item">Appraisal</span></a>
+                    <ul class="menu-content">
+                        @if(in_array('appraisal.sections', $userPermissions) || in_array('appraisal-structure', $userPermissions))
+                        <li>
+                            <a href="{{ route('stakeholderreportsection.index', ['module_type' => 'appraisal']) }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Sections</span></a>
+                        </li>
+                        @endif
+                        @if(in_array('appraisal.subsections', $userPermissions) || in_array('appraisal-structure', $userPermissions))
+                        <li>
+                            <a href="{{ route('stakeholderreportsubsection.index', ['module_type' => 'appraisal']) }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Sub Sections</span></a>
+                        </li>
+                        @endif
+                        @if(in_array('appraisal.questions', $userPermissions) || in_array('appraisal-structure', $userPermissions))
+                        <li>
+                            <a href="{{ route('stakeholder.questions.index', ['module_type' => 'appraisal']) }}"><i class="bx bx-right-arrow-alt"></i><span class="menu-item">Items</span></a>
+                        </li>
+                        @endif
+                    </ul>
+                </li>
+                @endif
+
                 {{-- REPORT STRUCTURE --}}
                 @if(
                     in_array('stakeholderreportsection.index', $userPermissions) ||
@@ -194,7 +223,6 @@
     </li>
     @endif
 
-
     {{-- USERS --}}
     @if(in_array('users.index', $userPermissions))
     <li class="nav-item {{ Request::is('users*') ? 'active' : '' }}">
@@ -224,71 +252,6 @@
             </li>
             @endif
         </ul>
-    </li>
-    @endif
-
-    {{-- PENDING LISTING --}}
-    @if(in_array('listing-pending', $userPermissions))
-    <li class="nav-item {{ Request::is('listing-pending*') ? 'active' : '' }}">
-        <a href="{{ route('listing-pending') }}"><i class="fa fa-user"></i><span class="menu-title">Pending Listing</span></a>
-    </li>
-    @endif
-
-    {{-- TRASHED USERS --}}
-    @if(in_array('users.trashed', $userPermissions))
-    <li class="nav-item {{ Request::is('trashedusers') ? 'active' : '' }}">
-        <a href="{{ route('users.trashed') }}"><i class="fa fa-trash-o"></i><span class="menu-title">Trashed Users</span></a>
-    </li>
-    @endif
-
-    {{-- EVENTS --}}
-    @if(in_array('events.index', $userPermissions))
-    <li class="nav-item {{ Request::is('events*') ? 'active' : '' }}">
-        <a href="{{ route('events.index') }}"><i class="fa fa-calendar" aria-hidden="true"></i><span class="menu-title">Events</span></a>
-    </li>
-    @endif
-
-    {{-- DONATIONS --}}
-    @if(in_array('donations.all', $userPermissions))
-    <li class="nav-item {{ Request::is('all-donations*') ? 'active' : '' }}">
-        <a href="{{ route('donations.all') }}"><i class="fa fa-money" aria-hidden="true"></i><span class="menu-title">Donations</span></a>
-    </li>
-    @endif
-
-    {{-- FIELDS --}}
-    @if(in_array('fields.index', $userPermissions))
-    <li class="nav-item {{ Request::is('fields*') ? 'active' : '' }}">
-        <a href="{{ route('fields.index') }}"><i class="fa fa-globe" aria-hidden="true"></i><span class="menu-title">Fields</span></a>
-    </li>
-    @endif
-
-    {{-- ZONES --}}
-    @if(in_array('zones.index', $userPermissions))
-    <li class="nav-item {{ Request::is('zones*') ? 'active' : '' }}">
-        <a href="{{ route('zones.index') }}"><i class="fa fa-flag" aria-hidden="true"></i><span class="menu-title">Zones</span></a>
-    </li>
-    @endif
-
-    {{-- CHAPTERS --}}
-    @if(in_array('chapters.index', $userPermissions))
-    <li class="nav-item {{ Request::is('chapters*') ? 'active' : '' }}">
-        <a href="{{ route('chapters.index') }}"><i class="fa fa-thumb-tack" aria-hidden="true"></i><span class="menu-title">Chapters</span></a>
-    </li>
-    @endif
-
-    {{-- EMAILS --}}
-    @if(in_array('useremails.index', $userPermissions))
-    <li class="nav-item {{ Request::is('useremails') ? 'active' : '' }}">
-        <a href="{{ route('useremails.index') }}"><i class="fa fa-envelope"></i><span class="menu-title">Emails</span></a>
-    </li>
-    @endif
-
-    {{-- LOGGED EMAILS --}}
-    @if(in_array('criticalEmail.index', $userPermissions))
-    <li class="nav-item">
-        <a class="nav-link {{ Request::is('criticalemails*') ? 'active' : '' }}" href="{{ route('criticalEmail.index') }}">
-            <i class="fa fa-envelope"></i><span class="menu-title">Logged Emails</span>
-        </a>
     </li>
     @endif
 @endif

@@ -1,15 +1,15 @@
 @extends('layouts.dashboard')
 
-@section('title', isset($question) ? 'Update Question' : 'Create Question')
+@section('title', isset($question) ? 'Update ' . ucfirst($moduleType ?? 'report') . ' Item' : 'Create ' . ucfirst($moduleType ?? 'report') . ' Item')
 
 @section('item')
 <li class="breadcrumb-item">
-    <a href="{{ route('stakeholder.questions.index') }}">All Questions</a>
+    <a href="{{ route('stakeholder.questions.index', ['module_type' => $moduleType ?? 'report']) }}">All {{ ucfirst($moduleType ?? 'report') }} Items</a>
 </li>
 @endsection
 
 @section('active')
-<li class="breadcrumb-item">{{ isset($question) ? 'Update' : 'Create' }} Question</li>
+<li class="breadcrumb-item">{{ isset($question) ? 'Update' : 'Create' }} {{ ucfirst($moduleType ?? 'report') }} Item</li>
 @endsection
 
 @section('content')
@@ -21,11 +21,12 @@
                     <div class="card-header">@include('includes.alerts')</div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ isset($question) ? route('stakeholder.questions.update', $question->id) : route('stakeholder.questions.store') }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ isset($question) ? route('stakeholder.questions.update', ['question' => $question->id, 'module_type' => $moduleType ?? 'report']) : route('stakeholder.questions.store', ['module_type' => $moduleType ?? 'report']) }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 @isset($question)
                                     @method('PATCH')
                                 @endisset
+                                <input type="hidden" name="module_type" value="{{ $moduleType ?? 'report' }}">
 
                                 <div class="row g-2">
 
@@ -303,7 +304,7 @@
                                     {{-- Permissions --}}
                                     <div class="col-md-12">
                                         <fieldset class="form-group">
-                                            <label class="mb-1">Access Permissions</label>
+                                            <label class="mb-1">{{ ucfirst($moduleType ?? 'report') }} Permissions</label>
                                             @php
                                                 $selectedPermissions = old(
                                                     'access_permissions',
@@ -339,7 +340,7 @@
                                             </div>
 
                                             <small class="text-muted d-block mt-1">
-                                                Leave unchecked to allow all
+                                                Leave unchecked to allow all {{ $moduleType ?? 'report' }} items
                                             </small>
                                         </fieldset>
                                     </div>

@@ -73,6 +73,11 @@ class Stakeholder extends Authenticatable
         return $this->belongsTo(StakeholderDesignation::class, 'designation_id');
     }
 
+    public function appraisal()
+    {
+        return $this->hasOne(StakeholderAppraisal::class, 'appraisee_id');
+    }
+
     // public function roles()
     // {
     //     return $this->belongsToMany(

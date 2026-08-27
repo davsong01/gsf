@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'Report Questions')
+@section('title', ucfirst($moduleType ?? 'report') . ' Items')
 @section('active')
-<li class="breadcrumb-item">Report Items</li>
+<li class="breadcrumb-item">{{ ucfirst($moduleType ?? 'report') }} Items</li>
 @endsection
 @section('content')
 <div class="content-body">
@@ -11,8 +11,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">All Report Items</h4>
-                        <a href="{{ route('stakeholder.questions.create') }}" class="btn btn-primary mt-1">Add New Item</a>
+                        <h4 class="card-title">All {{ ucfirst($moduleType ?? 'report') }} Items</h4>
+                        <a href="{{ route('stakeholder.questions.create', ['module_type' => $moduleType ?? 'report']) }}" class="btn btn-primary mt-1">Add New Item</a>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -62,12 +62,12 @@
                                             </td>
 
                                             <td>
-                                                <a href="{{ route('stakeholder.questions.edit', $question->id) }}"
+                                                <a href="{{ route('stakeholder.questions.edit', ['question' => $question->id, 'module_type' => $moduleType ?? 'report']) }}"
                                                 class="btn btn-sm btn-info mb-1">
                                                     Edit
                                                 </a>
 
-                                                <form action="{{ route('stakeholder.questions.destroy', $question->id) }}"
+                                                <form action="{{ route('stakeholder.questions.destroy', ['question' => $question->id, 'module_type' => $moduleType ?? 'report']) }}"
                                                     method="POST"
                                                     class="d-inline"
                                                     onsubmit="return confirm('Are you sure you want to delete this question?');">
@@ -76,7 +76,7 @@
                                                     <button class="btn btn-sm btn-danger mb-1">Delete</button>
                                                 </form>
 
-                                                <a href="{{ route('stakeholder.questions.clone', $question->id) }}"
+                                                <a href="{{ route('stakeholder.questions.clone', ['question' => $question->id, 'module_type' => $moduleType ?? 'report']) }}"
                                                 class="btn btn-sm btn-primary mb-1">
                                                     Clone
                                                 </a>

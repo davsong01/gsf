@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'Stakeholder subsections')
+@section('title', ucfirst($moduleType ?? 'report') . ' Sub Sections')
 @section('active')
-<li class="breadcrumb-item">Stakeholder subsections</li>
+<li class="breadcrumb-item">{{ ucfirst($moduleType ?? 'report') }} Sub Sections</li>
 @endsection
 
 @section('content')
@@ -11,8 +11,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="card-title">All subsections</h4>
-                        <a href="{{ route('stakeholderreportsubsection.create') }}" class="btn btn-primary mt-1">Add Sub Section</a>
+                        <h4 class="card-title">All {{ ucfirst($moduleType ?? 'report') }} Sub Sections</h4>
+                        <a href="{{ route('stakeholderreportsubsection.create', ['module_type' => $moduleType ?? 'report']) }}" class="btn btn-primary mt-1">Add Sub Section</a>
                     </div>
                     <div class="card-content">
                         <div class="card-body card-dashboard">
@@ -54,8 +54,8 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('stakeholderreportsubsection.edit', $section->id) }}" class="btn btn-sm btn-info">Edit</a>
-                                                <form action="{{ route('stakeholderreportsubsection.destroy', $section->id) }}" method="POST" style="display:inline-block">
+                                                <a href="{{ route('stakeholderreportsubsection.edit', ['stakeholderreportsubsection' => $section->id, 'module_type' => $moduleType ?? 'report']) }}" class="btn btn-sm btn-info">Edit</a>
+                                                <form action="{{ route('stakeholderreportsubsection.destroy', ['stakeholderreportsubsection' => $section->id, 'module_type' => $moduleType ?? 'report']) }}" method="POST" style="display:inline-block">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button onclick="return confirm('Are you sure?')" class="btn btn-sm btn-danger">Delete</button>

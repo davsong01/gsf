@@ -12,29 +12,43 @@ use App\Models\StakeholderQuestionSubSection;
 
 class StakeholderReportQuestionController extends Controller
 {
-    public function index()
+    protected function moduleType(Request $request): string
     {
-        $questions = StakeholderReportQuestion::with('permissions','section')->orderBy('section_id')->orderBy('sub_section_id')->get();
-
-        return view('admin.stakeholders.questions.index', compact('questions'));
+        return $request->query('module_type', 'report') === 'appraisal'
+            ? 'appraisal'
+            : 'report';
     }
 
-    public function create()
+    public function index(Request $request)
     {
-        $permissions = StakeholderPermission::latest()->get();
-        $sections = StakeholderQuestionSection::isActive()->get();
-        $subsections = StakeholderQuestionSubSection::isActive()->get();
+        $moduleType = $this->moduleType($request);
+        $questions = StakeholderReportQuestion::with('permissions', 'section')
+            ->forModule($moduleType)
+            ->orderBy('section_id')
+            ->orderBy('sub_section_id')
+            ->get();
 
-        return view('admin.stakeholders.questions.edit', compact('sections', 'subsections', 'permissions'));
+        return view('admin.stakeholders.questions.index', compact('questions', 'moduleType'));
     }
 
-    public function edit(StakeholderReportQuestion $question)
+    public function create(Request $request)
     {
-        $sections = StakeholderQuestionSection::isActive()->get();
-        $subsections = StakeholderQuestionSubSection::isActive()->get();
-        $permissions = StakeholderPermission::latest()->get();
+        $moduleType = $this->moduleType($request);
+        $permissions = $this->permissionsForModule($moduleType);
+        $sections = StakeholderQuestionSection::isActive()->forModule($moduleType)->get();
+        $subsections = StakeholderQuestionSubSection::isActive()->forModule($moduleType)->get();
 
-        return view('admin.stakeholders.questions.edit', compact('question','sections', 'permissions', 'subsections'));
+        return view('admin.stakeholders.questions.edit', compact('sections', 'subsections', 'permissions', 'moduleType'));
+    }
+
+    public function edit(Request $request, StakeholderReportQuestion $question)
+    {
+        $moduleType = $request->query('module_type') ?: ($question->module_type ?? 'report');
+        $sections = StakeholderQuestionSection::isActive()->forModule($moduleType)->get();
+        $subsections = StakeholderQuestionSubSection::isActive()->forModule($moduleType)->get();
+        $permissions = $this->permissionsForModule($moduleType);
+
+        return view('admin.stakeholders.questions.edit', compact('question', 'sections', 'permissions', 'subsections', 'moduleType'));
     }
 
     public function cloneQuestion(StakeholderReportQuestion $question)
@@ -45,6 +59,7 @@ class StakeholderReportQuestionController extends Controller
         $clone->order = $question->order;
         $clone->section_id = $question->section_id;
         $clone->sub_section_id = $question->sub_section_id;
+        $clone->module_type = $question->module_type ?? 'report';
         $clone->slug = Str::slug($label);
         $clone->status = 0;
 
@@ -196,12 +211,13 @@ class StakeholderReportQuestionController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateQuestion($request);
+        $validated['module_type'] = $this->moduleType($request);
 
         $question = StakeholderReportQuestion::create($validated);
 
         $this->syncPermissions($question, $request->input('access_permissions', []));
 
-        return redirect()->route('stakeholder.questions.index')
+        return redirect()->route('stakeholder.questions.index', ['module_type' => $validated['module_type']])
             ->with('message', 'Question created successfully.');
     }
 
@@ -209,12 +225,13 @@ class StakeholderReportQuestionController extends Controller
     {
         $validated = $this->validateQuestion($request, $question->id);
         // $validated['slug'] = Str::slug($validated['slug']);
+        $validated['module_type'] = $this->moduleType($request) ?: ($question->module_type ?? 'report');
 
         $question->update($validated);
 
         $this->syncPermissions($question, $request->input('access_permissions', []));
 
-        return redirect()->route('stakeholder.questions.index')
+        return redirect()->route('stakeholder.questions.index', ['module_type' => $validated['module_type']])
             ->with('message', 'Question updated successfully.');
     }
 
@@ -225,7 +242,7 @@ class StakeholderReportQuestionController extends Controller
     {
         $rules = [
             'label' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:stakeholder_report_questions,slug,' . $questionId,
+            'slug' => 'nullable|string|max:255|unique:stakeholder_report_questions,slug,' . $questionId . ',id,module_type,' . $this->moduleType($request),
             'type' => 'required|string|in:text,number,textarea,select,radio,checkbox,rating,dynamic_table,income_table,year,month,date,file',
             'is_required' => 'boolean',
             'is_quantifiable' => 'boolean',
@@ -236,6 +253,7 @@ class StakeholderReportQuestionController extends Controller
             'width_class' => 'nullable|string|max:255',
             'status' => 'nullable|boolean',
             'options' => 'nullable|array',
+            'module_type' => 'nullable|string|in:report,appraisal',
         ];
 
         $validated = $request->validate($rules);
@@ -249,6 +267,32 @@ class StakeholderReportQuestionController extends Controller
         $validated['options'] = $this->normalizeOptions($validated['type'], $request->input('options', []));
 
         return $validated;
+    }
+
+    protected function permissionsForModule(string $moduleType)
+    {
+        $permissions = StakeholderPermission::query()->orderBy('name')->get();
+
+        if ($moduleType === 'appraisal') {
+            $appraisalSlugs = [
+                'field-pastor-fill',
+                'zonal-pastor-fill',
+                'nec-member-fill',
+                'nec-member-evaluate',
+                'field-pastor-evaluate',
+                'national-president-fill',
+                'national-president-evaluate',
+                'ncp-evaluate',
+            ];
+
+            return $permissions
+                ->whereIn('slug', $appraisalSlugs)
+                ->values();
+        }
+
+        return $permissions
+            ->filter(fn ($permission) => str_starts_with((string) $permission->slug, 'report.'))
+            ->values();
     }
 
     /**
@@ -310,11 +354,12 @@ class StakeholderReportQuestionController extends Controller
 
     public function destroy(StakeholderReportQuestion $question)
     {
+        $moduleType = $question->module_type ?? 'report';
         $question->permissions()->sync([]);
 
         $question->delete();
 
-        return redirect()->route('stakeholder.questions.index')
+        return redirect()->route('stakeholder.questions.index', ['module_type' => $moduleType])
             ->with('message', 'Question item deleted successfully.');
     }
 }
