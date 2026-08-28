@@ -48,10 +48,7 @@
 
         {{-- Profile Image --}}
         <div class="profile-thumbnail mx-auto mt-n5">
-            <img
-                src="{{ !is_null($user->passport) ? asset($user->passport) : asset('frontend/passports/avatar.jpg') }}"
-                alt="{{ $user->name }}"
-                class="rounded-circle alumni-img">
+            {!! renderAvatar($user, 120, 'rounded-circle alumni-img') !!}
         </div>
 
         <div class="card-body pt-3">

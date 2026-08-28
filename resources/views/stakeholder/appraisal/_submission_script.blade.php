@@ -5,6 +5,13 @@
                 return true;
             }
 
+            const actionLabel = status === 'published' ? 'publish' : 'save this as a draft';
+            const confirmMessage = `Are you sure you want to ${actionLabel}?`;
+
+            if (!window.confirm(confirmMessage)) {
+                return false;
+            }
+
             const statusInput = form.querySelector('input[name="status"]');
             if (statusInput) {
                 statusInput.value = status;

@@ -1,6 +1,9 @@
 <div class="main-menu menu-fixed menu-light menu-accordion menu-shadow" data-scroll-to-active="true">
     @php
         $isAdmin = isAdmin()['status'] ?? false;
+        $userPermissions = auth()->user()->permissions ?? [];
+        $menuPermissionSlugs = flattenPermissionTree(rootPermissions()->toArray());
+        $hasMenuAccess = $isAdmin || !empty(array_intersect($menuPermissionSlugs, $userPermissions));
     @endphp
     <div class="navbar-header">
         <ul class="nav navbar-nav flex-row">
@@ -20,7 +23,7 @@
                 style="color:yellow !important; font-weight:bolder" href="{{ route('stop.switchuser') }}" aria-expanded="false"><i class="fa fa-arrow-left"></i><span
                     class="hide-menu">BACK TO ADMIN</span></a></li>
             @endif
-            @if($isAdmin)
+            @if($hasMenuAccess)
             {{-- Admin menus --}}
                 @include('includes.adminmenu')
             @elseif(auth()->user()->role == 3)

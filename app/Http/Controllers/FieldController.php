@@ -20,8 +20,9 @@ class FieldController extends Controller
 
     public function create()
     {
+        $field = null;
         $pastors = Stakeholder::whereNotIn('role_id', [1, 2, 5])->get();
-        return view('admin.fields.edit', compact('pastors'));
+        return view('admin.fields.edit', compact('field', 'pastors'));
     }
 
     public function edit(Field $field)

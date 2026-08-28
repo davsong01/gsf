@@ -38,7 +38,7 @@
                     @foreach($results as $alumni)
                     <div class="col-sm-4 mb30">
                         <div class="team-card">
-                            <img src="{{ !is_null($alumni->passport) ? asset($alumni->passport) : asset('frontend/passports/avatar.jpg') }}" alt="{{ $alumni->passport }}" class="img-responsive alumni-img">
+                            {!! renderAvatar($alumni, 96, 'img-responsive alumni-img') !!}
                             <div class="team-overlay">
                                 <ul class="list-inline">
                                     <li><a href="{{ $alumni->facebook }}" target="_blank"><i class="fa fa-facebook"></i></a></li>

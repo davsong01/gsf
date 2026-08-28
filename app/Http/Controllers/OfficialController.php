@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\StakeholderDesignation;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -28,13 +27,7 @@ class OfficialController extends Controller
             return back(404);
         }
 
-        $designations = StakeholderDesignation::where('type', 'nec')
-            ->orderByRaw("CASE WHEN name = 'National President' THEN 0 ELSE 1 END")
-            ->orderBy('order')
-            ->orderBy('name')
-            ->get();
-
-        return view('admin.official.create', compact('designations'));
+        return view('admin.official.create');
 	}
 
     public function store(Request $request)
@@ -44,7 +37,6 @@ class OfficialController extends Controller
             'email'       => 'required|email|unique:users,email',
             'phone'       => 'required|string',
             'gender'      => 'required|in:Male,Female',
-            'designation_id' => 'nullable|exists:stakeholder_designations,id',
             'passport'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'password'    => 'nullable|string',
             'status'      => 'required|in:active,inactive',
@@ -82,13 +74,7 @@ class OfficialController extends Controller
 
     public function edit(User $official)
 	{
-        $designations = StakeholderDesignation::where('type', 'nec')
-            ->orderByRaw("CASE WHEN name = 'National President' THEN 0 ELSE 1 END")
-            ->orderBy('order')
-            ->orderBy('name')
-            ->get();
-
-        return view('admin.official.create', compact('official', 'designations'));
+        return view('admin.official.create', compact('official'));
     }
 
    public function update(User $official, Request $request)
@@ -98,7 +84,6 @@ class OfficialController extends Controller
             'email'       => ['required', 'email', Rule::unique('users', 'email')->ignore($official->id)],
             'phone'       => 'required|string',
             'gender'      => 'required|in:Male,Female',
-            'designation_id' => 'nullable|exists:stakeholder_designations,id',
             'passport'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'password'    => 'nullable|string',
             'status'      => 'required|in:active,inactive',

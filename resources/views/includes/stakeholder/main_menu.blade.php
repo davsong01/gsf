@@ -76,11 +76,10 @@
             @endif
 
             @php
-                $appraisalProfile = app(\App\Services\AppraisalService::class)->appraisalPermissionProfile($user);
-                $canAccessMyAppraisal = ! empty($appraisalProfile['fill'] ?? [])
-                    && collect($appraisalProfile['fill'])->contains(fn ($permission) => $user?->hasPermission($permission));
-                $canAccessEvaluations = ! empty($appraisalProfile['evaluate'] ?? [])
-                    && collect($appraisalProfile['evaluate'])->contains(fn ($permission) => $user?->hasPermission($permission));
+                $appraisalService = app(\App\Services\AppraisalService::class);
+                $appraisalAccess = $appraisalService->dashboardAccess($user);
+                $canAccessMyAppraisal = (bool) ($appraisalAccess['my_appraisal'] ?? false);
+                $canAccessEvaluations = (bool) ($appraisalAccess['evaluations'] ?? false);
             @endphp
 
             @if($canAccessMyAppraisal)

@@ -153,10 +153,11 @@ class ChapterController extends Controller
 
     public function create()
     {
+        $chapter = null;
         $zones = Zone::all();
         $fields = Field::all();
         $chapters = Chapter::all();
-        return view('admin.chapters.edit', compact('zones', 'fields','chapters'));
+        return view('admin.chapters.edit', compact('chapter', 'zones', 'fields','chapters'));
     }
 
     public function store(Request $request)

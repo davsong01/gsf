@@ -25,7 +25,7 @@
             <div class="col-md-9 mb40">
                 <div class="row mb30">
                     <div class="col-sm-4 mb40">
-                        <img src="{{ !is_null($alumni->passport) ? asset($alumni->passport) : asset('frontend/passports/avatar.jpg') }}" alt="{{ $alumni->passport }}" class="img-responsive img-thumbnail">
+                        {!! renderAvatar($alumni, 180, 'img-responsive img-thumbnail') !!}
                         @if($alumni->open_to_work)
                         <button disabled style="width:100%; cursor: auto;" class="btn btn-primary">Open to work</button>
                         @endif

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Field;
 use App\Models\Stakeholder;
+use App\Models\Zone;
 use App\Services\AppraisalService;
 use Illuminate\Http\Request;
 
@@ -12,24 +14,184 @@ class AdminStakeholderAppraisalController extends Controller
     {
     }
 
-    public function index()
+    public function index(Request $request)
     {
         if ((auth()->user()?->role ?? null) != 1) {
             abort(403);
         }
 
-        $stakeholders = Stakeholder::query()
+        $query = Stakeholder::query()
             ->with(['role', 'designation', 'appraisal'])
             ->whereHas('role', function ($query) {
                 $query->where('slug', '!=', 'chapter-representative');
             })
-            ->orderBy('name')
-            ->get();
+            ->when($request->filled('search'), function ($builder) use ($request) {
+                $search = trim($request->input('search'));
+
+                $builder->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('field_id'), function ($builder) use ($request) {
+                $builder->where('field_id', $request->input('field_id'));
+            })
+            ->when($request->filled('zone_id'), function ($builder) use ($request) {
+                $builder->where('zone_id', $request->input('zone_id'));
+            })
+            ->when($request->filled('self_status'), function ($builder) use ($request) {
+                $builder->whereHas('appraisal', function ($appraisalQuery) use ($request) {
+                    $appraisalQuery->where('self_status', $request->input('self_status'));
+                });
+            })
+            ->when($request->filled('evaluation_status'), function ($builder) use ($request) {
+                $builder->whereHas('appraisal', function ($appraisalQuery) use ($request) {
+                    $appraisalQuery->where('evaluation_status', $request->input('evaluation_status'));
+                });
+            })
+            ->orderByRaw("CASE WHEN EXISTS (
+                SELECT 1
+                FROM stakeholder_appraisals sa
+                WHERE sa.appraisee_id = stakeholders.id
+                AND sa.self_status = 'published'
+            ) THEN 0 ELSE 1 END")
+            ->orderBy('name');
+
+        $stakeholders = (clone $query)
+            ->paginate(15)
+            ->withQueryString();
+
+        $filteredTotal = (clone $query)->count();
+        $appraisedCount = (clone $query)
+            ->whereHas('appraisal', function ($appraisalQuery) {
+                $appraisalQuery->where('self_status', 'published');
+            })
+            ->count();
+
+        $evaluatedCount = (clone $query)
+            ->whereHas('appraisal', function ($appraisalQuery) {
+                $appraisalQuery->where('evaluation_status', 'published');
+            })
+            ->count();
 
         return view('admin.stakeholder_appraisals.index', [
             'stakeholders' => $stakeholders,
             'appraisalService' => $this->appraisalService,
+            'appraisedCount' => $appraisedCount,
+            'evaluatedCount' => $evaluatedCount,
+            'filteredTotal' => $filteredTotal,
+            'fields' => Field::orderBy('name')->get(),
+            'zones' => Zone::orderBy('name')->get(),
         ]);
+    }
+
+    public function editSelf(Stakeholder $stakeholder)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        return $this->editEvaluation($stakeholder);
+    }
+
+    public function updateSelf(Request $request, Stakeholder $stakeholder)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:draft,published',
+            'answers' => 'nullable|array',
+        ]);
+
+        $appraisal = $this->appraisalService->selfAppraisalFor($stakeholder);
+
+        $validated['answers'] = $this->appraisalService->prepareSubmissionAnswers(
+            $stakeholder,
+            $request,
+            'my',
+            $validated['status'],
+            $appraisal
+        );
+
+        $this->appraisalService->saveSelfAppraisal($stakeholder, $validated, $validated['status']);
+
+        return redirect()
+            ->route('stakeholderappraisals.self.edit', $stakeholder)
+            ->with('message', 'Self appraisal updated successfully.');
+    }
+
+    public function editEvaluation(Stakeholder $stakeholder)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $appraisal = $this->appraisalService->selfAppraisalFor($stakeholder);
+        $evaluator = $appraisal?->evaluator ?: $stakeholder;
+        $audience = $appraisal
+            ? $this->appraisalService->evaluatorAudience($evaluator, $stakeholder)
+            : AppraisalService::AUDIENCE_EVALUATE;
+        $formPrefix = $this->appraisalService->appraisalFormPrefix($stakeholder);
+
+        return view('admin.stakeholder_appraisals.view', [
+            'user' => $stakeholder,
+            'target' => $stakeholder,
+            'isAdmin' => true,
+            'access' => $this->appraisalService->dashboardAccess($evaluator),
+            'summary' => $this->appraisalService->summary($stakeholder),
+            'selfSections' => $this->appraisalService->structureForMode($stakeholder, 'my', true, $formPrefix),
+            'evaluationSections' => $this->appraisalService->structureForMode($evaluator, 'evaluations', true, $formPrefix),
+            'appraisal' => $appraisal,
+            'selfAnswers' => $this->appraisalService->loadSelfAnswers($appraisal),
+            'evaluationAnswers' => $this->appraisalService->loadAnswersForAudience($appraisal, $audience),
+            'audience' => $audience,
+            'evaluationAuthorityLabel' => $this->appraisalService->evaluationAuthorityLabel($stakeholder),
+            'instructionProfile' => appraisalInstructionProfile($this->appraisalService->appraisalFormPrefix($stakeholder)),
+            'evaluationPrefillData' => $this->appraisalService->evaluationPrefillData($evaluator, $stakeholder),
+            'pageTitle' => 'View Appraisal: ' . $stakeholder->name,
+            'backUrl' => route('stakeholderappraisals.index'),
+            'formModeLabel' => 'Admin Review',
+            'selfEditable' => true,
+            'selfFormAction' => route('stakeholderappraisals.self.update', $stakeholder),
+            'canSubmitSelf' => true,
+            'evaluationEditable' => true,
+            'formAction' => route('stakeholderappraisals.evaluation.update', $stakeholder),
+            'canSubmitEvaluation' => true,
+        ]);
+    }
+
+    public function updateEvaluation(Request $request, Stakeholder $stakeholder)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:draft,published',
+            'answers' => 'nullable|array',
+        ]);
+
+        $appraisal = $this->appraisalService->selfAppraisalFor($stakeholder);
+
+        $evaluator = $appraisal->evaluator ?: $stakeholder;
+
+        $validated['answers'] = $this->appraisalService->prepareSubmissionAnswers(
+            $evaluator,
+            $request,
+            'evaluations',
+            $validated['status'],
+            $appraisal,
+            $stakeholder
+        );
+
+        $this->appraisalService->saveEvaluation($evaluator, $stakeholder, $validated, $validated['status']);
+
+        return redirect()
+            ->route('stakeholderappraisals.evaluation.edit', $stakeholder)
+            ->with('message', 'Evaluation updated successfully.');
     }
 
     public function unlockSelf(Stakeholder $stakeholder)
@@ -46,7 +208,12 @@ class AdminStakeholderAppraisalController extends Controller
 
         $this->appraisalService->unlockSelfAppraisal($appraisal);
 
-        return back()->with('message', 'Self appraisal reopened successfully.');
+        return back()->with([
+            'message' => 'Self appraisal reopened successfully.',
+            'appraisal_status_label' => 'Reopened',
+            'appraisal_status_scope' => 'self',
+            'appraisal_status_stakeholder_id' => $stakeholder->id,
+        ]);
     }
 
     public function unlockEvaluation(Stakeholder $stakeholder)
@@ -63,6 +230,11 @@ class AdminStakeholderAppraisalController extends Controller
 
         $this->appraisalService->unlockEvaluation($appraisal);
 
-        return back()->with('message', 'Evaluation reopened successfully.');
+        return back()->with([
+            'message' => 'Evaluation reopened successfully.',
+            'appraisal_status_label' => 'Reopened',
+            'appraisal_status_scope' => 'evaluation',
+            'appraisal_status_stakeholder_id' => $stakeholder->id,
+        ]);
     }
 }

@@ -212,7 +212,7 @@ class AppraisalQuestionSeeder extends Seeder
             ['label' => 'General Assembly 2026 - February, Northern Region', 'slug' => "{$form}-general-assembly-2026-february-northern", 'type' => 'select', 'options' => $this->attendanceOptions(), 'audience' => 'appraiser'],
             ['label' => 'General Assembly 2026 - March, South-South and Eastern Region', 'slug' => "{$form}-general-assembly-2026-march-south-south-eastern", 'type' => 'select', 'options' => $this->attendanceOptions(), 'audience' => 'appraiser'],
             ['label' => 'National Prayer Conference (July 17th - 19th 2026)', 'slug' => "{$form}-national-prayer-conference-2026", 'type' => 'select', 'options' => $this->attendanceOptions(), 'audience' => 'appraiser'],
-            ['label' => 'Total Monthly Field Pastors Meetings Attended', 'slug' => "{$form}-total-monthly-field-pastors-meetings-attended", 'type' => 'number', 'audience' => 'appraiser'],
+            ['label' => 'Total Monthly Field Pastors Meetings Attended', 'slug' => "{$form}-total-monthly-field-pastors-meetings-attended", 'type' => 'number', 'audience' => 'appraisee'],
         ], $permissions);
 
         $subF2 = $this->createSubSection($sectionF, 'Digital Report Compliance');
@@ -496,7 +496,6 @@ class AppraisalQuestionSeeder extends Seeder
             ['label' => 'General Assembly 2026 - February, Northern Region', 'slug' => "{$form}-general-assembly-2026-february-northern", 'type' => 'select', 'options' => $this->attendanceOptions(), 'audience' => 'appraiser'],
             ['label' => 'General Assembly 2026 - March, South-South and Eastern Region', 'slug' => "{$form}-general-assembly-2026-march-south-south-eastern", 'type' => 'select', 'options' => $this->attendanceOptions(), 'audience' => 'appraiser'],
             ['label' => 'National Prayer Conference (July 17th - 19th 2026)', 'slug' => "{$form}-national-prayer-conference-2026", 'type' => 'select', 'options' => $this->attendanceOptions(), 'audience' => 'appraiser'],
-            ['label' => 'Total Monthly Field Pastors Meetings Attended', 'slug' => "{$form}-total-monthly-field-pastors-meetings-attended", 'type' => 'text', 'audience' => 'appraiser'],
         ], $permissions);
 
         $subG2 = $this->createSubSection($sectionG, 'Digital Report Compliance');
@@ -554,7 +553,7 @@ class AppraisalQuestionSeeder extends Seeder
         $this->sectionPrefix = 'National President';
         $this->permissionMap = [
             'fill' => $permissions['national_president_fill'],
-            'evaluate' => $permissions['ncp_evaluate'],
+            'evaluate' => $permissions['national_president_evaluate'],
         ];
 
         $sectionA = $this->createSection('SECTION A: Personal and Ministry Information');
@@ -776,8 +775,8 @@ class AppraisalQuestionSeeder extends Seeder
     protected function attendanceOptions(): array
     {
         return [
-            ['label' => 'Attended', 'value' => 'attended'],
-            ['label' => 'Absent', 'value' => 'absent'],
+            ['label' => 'Attended', 'value' => 1],
+            ['label' => 'Absent', 'value' => 0],
         ];
     }
 

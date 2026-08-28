@@ -11,6 +11,7 @@ use App\Models\StakeholderRole;
 use App\Models\StakeholderSetting;
 use App\Models\Transaction;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 if (!function_exists('getRegistrationUserLevel')) {
@@ -118,12 +119,17 @@ if (!function_exists('rootPermissions')) {
                         'id' => 2,
                         'slug' => 'stakeholderreports.index',
                         'name' => 'Reports',
-                        'icon' => 'bx bx-file',
+                        'icon' => 'fa fa-file-text-o',
                         'children' => [
                             [
                                 'id' => 3,
                                 'slug' => 'stakeholderreports.index',
                                 'name' => 'Monthly Reports'
+                            ],
+                            [
+                                'id' => 4,
+                                'slug' => 'reports.analytics',
+                                'name' => 'Reports Analytics'
                             ]
                         ]
                     ],
@@ -131,7 +137,7 @@ if (!function_exists('rootPermissions')) {
                         'id' => 2,
                         'slug' => 'awards.etf',
                         'name' => 'Award Entries',
-                        'icon' => 'bx bx-award',
+                        'icon' => 'fa fa-trophy',
                         'children' => [
                             [
                                 'id' => 21,
@@ -157,32 +163,15 @@ if (!function_exists('rootPermissions')) {
                     ],
                     [
                         'id' => 24,
-                        'slug' => 'appraisal-structure',
+                        'slug' => 'stakeholderappraisals.index',
                         'name' => 'Appraisal',
-                        'icon' => 'fa fa-clipboard-check',
-                        'children' => [
-                            [
-                                'id' => 25,
-                                'slug' => 'appraisal.sections',
-                                'name' => 'Sections'
-                            ],
-                            [
-                                'id' => 26,
-                                'slug' => 'appraisal.subsections',
-                                'name' => 'Sub Sections'
-                            ],
-                            [
-                                'id' => 27,
-                                'slug' => 'appraisal.questions',
-                                'name' => 'Items'
-                            ]
-                        ]
+                        'icon' => 'fa fa-clipboard',
                     ],
                     [
                         'id' => 4,
                         'slug' => 'report-structure',
                         'name' => 'Form Structure',
-                        'icon' => 'bx bx-layer',
+                        'icon' => 'fa fa-sitemap',
                         'children' => [
                             [
                                 'id' => 5,
@@ -205,7 +194,7 @@ if (!function_exists('rootPermissions')) {
                         'id' => 8,
                         'slug' => 'access-control',
                         'name' => 'Access Control',
-                        'icon' => 'bx bx-lock',
+                        'icon' => 'fa fa-lock',
                         'children' => [
                             [
                                 'id' => 9,
@@ -240,13 +229,13 @@ if (!function_exists('rootPermissions')) {
                 'id' => 13,
                 'slug' => 'nec.index',
                 'name' => 'NEC Management',
-                'svg' => '<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 1 224 0a128 128 0 1 1 0 256zM209.1 359.2l-18.6-31c-6.4-10.7 1.3-24.2 13.7-24.2H224h19.7c12.4 0 20.1 13.6 13.7 24.2l-18.6 31 33.4 123.9 36-146.9c2-8.1 9.8-13.4 17.9-11.3c70.1 17.6 121.9 81 121.9 156.4c0 17-13.8 30.7-30.7 30.7H285.5c-2.1 0-4-.4-5.8-1.1l.3 1.1H168l.3-1.1c-1.8 .7-3.8 1.1-5.8 1.1H30.7C13.8 512 0 498.2 0 481.3c0-75.5 51.9-138.9 121.9-156.4c8.1-2 15.9 3.3 17.9 11.3l36 146.9 33.4-123.9z"/></svg>'
+                'icon' => 'fa fa-user-circle-o'
             ],
             [
                 'id' => 14,
                 'slug' => 'archive.nec.index',
                 'name' => 'Archive NEC Members',
-                'svg' => '<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 1 224 0a128 128 0 1 1 0 256zM209.1 359.2l-18.6-31c-6.4-10.7 1.3-24.2 13.7-24.2H224h19.7c12.4 0 20.1 13.6 13.7 24.2l-18.6 31 33.4 123.9 36-146.9c2-8.1 9.8-13.4 17.9-11.3c70.1 17.6 121.9 81 121.9 156.4c0 17-13.8 30.7-30.7 30.7H285.5c-2.1 0-4-.4-5.8-1.1l.3 1.1H168l.3-1.1c-1.8 .7-3.8 1.1-5.8 1.1H30.7C13.8 512 0 498.2 0 481.3c0-75.5 51.9-138.9 121.9-156.4c8.1-2 15.9 3.3 17.9 11.3l36 146.9 33.4-123.9z"/></svg>'
+                'icon' => 'fa fa-archive'
             ],
             [
                 'id' => 15,
@@ -334,7 +323,226 @@ if (!function_exists('rootPermissions')) {
             ],
         ];
 
+        $menuOrderMap = [
+            'conference.management' => 1,
+            'ministry.index' => 1,
+            'paymentproviders.index' => 2,
+            'conference_speakers.index' => 3,
+            'conference_faqs.index' => 4,
+            'conferencemanagement.index' => 5,
+            'stakeholder*' => 2,
+            'stakeholderreports.index' => 1,
+            'reports.analytics' => 2,
+            'awards.etf' => 2,
+            'award.etf' => 1,
+            'award.go' => 2,
+            'shortlist.index' => 3,
+            'award.settings' => 4,
+            'stakeholderappraisals.index' => 3,
+            'report-structure' => 4,
+            'stakeholderreportsection.index' => 1,
+            'stakeholderreportsubsection.index' => 2,
+            'stakeholder.questions.index' => 3,
+            'access-control' => 5,
+            'stakeholderroles.index' => 1,
+            'stakeholderpermissions.index' => 2,
+            'designation.index' => 3,
+            'stakeholderpersonnel.index' => 4,
+            'stakeholdersetting.index' => 5,
+            'nec.index' => 3,
+            'archive.nec.index' => 4,
+            'users.index' => 5,
+            'officials.index' => 6,
+            'system-logs' => 7,
+            'errors.index' => 1,
+            'error-files.index' => 2,
+            'listing-pending' => 8,
+            'users.trashed' => 9,
+            'events.index' => 10,
+            'donations.all' => 11,
+            'fields.index' => 12,
+            'zones.index' => 13,
+            'chapters.index' => 14,
+            'useremails.index' => 15,
+            'criticalEmail.index' => 16,
+        ];
+
+        $decorateMenu = function (array $menu) use (&$decorateMenu, $menuOrderMap): array {
+            if (isset($menuOrderMap[$menu['slug'] ?? ''])) {
+                $menu['menu_order'] = $menuOrderMap[$menu['slug']];
+            }
+
+            if (!empty($menu['children']) && is_array($menu['children'])) {
+                $menu['children'] = array_map($decorateMenu, $menu['children']);
+                usort($menu['children'], function (array $left, array $right) {
+                    return ($left['menu_order'] ?? 0) <=> ($right['menu_order'] ?? 0);
+                });
+            }
+
+            return $menu;
+        };
+
+        $menus = array_map($decorateMenu, $menus);
+
         return collect($menus);
+    }
+}
+
+if (!function_exists('flattenPermissionTree')) {
+    function flattenPermissionTree(array $menus): array
+    {
+        $slugs = [];
+
+        foreach ($menus as $menu) {
+            if (!empty($menu['slug'])) {
+                $slugs[] = $menu['slug'];
+            }
+
+            if (!empty($menu['children']) && is_array($menu['children'])) {
+                $slugs = array_merge($slugs, flattenPermissionTree($menu['children']));
+            }
+        }
+
+        return array_values(array_unique($slugs));
+    }
+}
+
+if (!function_exists('menuNodeVisible')) {
+    function menuNodeVisible(array $menu, array $userPermissions): bool
+    {
+        if (in_array($menu['slug'] ?? '', $userPermissions, true)) {
+            return true;
+        }
+
+        foreach ($menu['children'] ?? [] as $child) {
+            if (menuNodeVisible($child, $userPermissions)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('menuNodeActive')) {
+    function menuNodeActive(array $menu): bool
+    {
+        $currentRoute = request()->route()?->getName();
+        $slug = $menu['slug'] ?? null;
+
+        if ($slug && $currentRoute && Str::is($slug, $currentRoute)) {
+            return true;
+        }
+
+        foreach ($menu['children'] ?? [] as $child) {
+            if (menuNodeActive($child)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('menuNodeHref')) {
+    function menuNodeHref(array $menu): string
+    {
+        if (!empty($menu['route'])) {
+            return route($menu['route'], $menu['params'] ?? []);
+        }
+
+        $slug = $menu['slug'] ?? '';
+
+        if ($slug !== '' && Route::has($slug)) {
+            return route($slug);
+        }
+
+        return '#';
+    }
+}
+
+if (!function_exists('renderMenuIcon')) {
+    function renderMenuIcon(array $menu, string $fallback = 'fa fa-angle-right'): string
+    {
+        $icon = $menu['icon'] ?? $fallback;
+
+        return '<i class="' . e($icon) . '"></i>';
+    }
+}
+
+if (!function_exists('avatarInitials')) {
+    function avatarInitials(?string $name): string
+    {
+        $name = trim((string) $name);
+
+        if ($name === '') {
+            return 'NA';
+        }
+
+        $parts = preg_split('/\s+/', $name);
+        $initials = '';
+
+        foreach (array_filter($parts) as $part) {
+            $initials .= strtoupper(Str::substr($part, 0, 1));
+
+            if (strlen($initials) >= 2) {
+                break;
+            }
+        }
+
+        return $initials !== '' ? $initials : strtoupper(Str::substr($name, 0, 2));
+    }
+}
+
+if (!function_exists('renderAvatar')) {
+    function renderAvatar($user, int $size = 40, string $class = ''): string
+    {
+        $name = data_get($user, 'name') ?? data_get($user, 'full_name') ?? data_get($user, 'email');
+        $avatar = data_get($user, 'avatar') ?: data_get($user, 'passport');
+
+        if (!empty($avatar)) {
+            return '<img class="' . e($class) . '" src="' . e(asset($avatar)) . '" alt="' . e((string) $name) . '" height="' . e((string) $size) . '" width="' . e((string) $size) . '" style="width:' . e((string) $size) . 'px;height:' . e((string) $size) . 'px;display:block;flex:0 0 auto;border-radius:50%;object-fit:cover;aspect-ratio:1 / 1;overflow:hidden;">';
+        }
+
+        $initials = avatarInitials($name);
+        $fontSize = max(12, (int) round($size * 0.38));
+
+        return '<div class="' . e(trim('avatar-initials ' . $class)) . '" style="width:' . e((string) $size) . 'px;height:' . e((string) $size) . 'px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;overflow:hidden;background:linear-gradient(135deg,#163d6b,#1f6f8b);color:#fff;font-weight:700;font-size:' . e((string) $fontSize) . 'px;line-height:1;">' . e($initials) . '</div>';
+    }
+}
+
+if (!function_exists('renderMenuTree')) {
+    function renderMenuTree($menus = null, $userPermissions = null): string
+    {
+        $menus = $menus ?? rootPermissions()->toArray();
+        $userPermissions = $userPermissions ?? (auth()->user()->permissions ?? []);
+        $menus = collect($menus)->sortBy(fn ($menu) => $menu['menu_order'] ?? 0)->values()->all();
+
+        $html = '';
+
+        foreach ($menus as $menu) {
+            if (!menuNodeVisible($menu, $userPermissions)) {
+                continue;
+            }
+
+            $hasChildren = !empty($menu['children']) && is_array($menu['children']);
+            $isActive = menuNodeActive($menu);
+            if ($hasChildren) {
+                $html .= '<li class="nav-item has-sub ' . ($isActive ? 'open is_shown' : '') . '">';
+                $html .= '<a href="#">' . renderMenuIcon($menu, 'fa fa-circle') . '<span class="menu-title">' . e($menu['name'] ?? '') . '</span></a>';
+                $html .= '<ul class="menu-content">';
+                $children = collect($menu['children'])->sortBy(fn ($child) => $child['menu_order'] ?? 0)->values()->all();
+                $html .= renderMenuTree($children, $userPermissions);
+                $html .= '</ul>';
+                $html .= '</li>';
+            } else {
+                $html .= '<li class="nav-item ' . ($isActive ? 'active' : '') . '">';
+                $html .= '<a href="' . e(menuNodeHref($menu)) . '">' . renderMenuIcon($menu, 'fa fa-angle-right') . '<span class="menu-item">' . e($menu['name'] ?? '') . '</span></a>';
+                $html .= '</li>';
+            }
+        }
+
+        return $html;
     }
 }
 
@@ -1514,7 +1722,7 @@ if (!function_exists('isAdmin')){
         $isAdmin = (!is_null($roleValue) && (int)$roleValue === 1);
 
         return [
-            'status' => $isAdmin && ! $impersonatingStakeholder && auth()->guard('web')->user(),
+            'status' => $isAdmin && ! $impersonatingStakeholder,
             'user' => $user,
             'userRole' => (int)($user->role_id ?? $user->role ?? 0)
         ];

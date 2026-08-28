@@ -14,21 +14,70 @@ class StakeholderReportQuestionController extends Controller
 {
     protected function moduleType(Request $request): string
     {
-        return $request->query('module_type', 'report') === 'appraisal'
+        return $request->input('module_type', $request->query('module_type', 'report')) === 'appraisal'
             ? 'appraisal'
             : 'report';
     }
 
+    protected function moduleFilter(Request $request): string
+    {
+        return in_array($request->query('module_type'), ['report', 'appraisal'], true)
+            ? $request->query('module_type')
+            : 'all';
+    }
+
     public function index(Request $request)
     {
-        $moduleType = $this->moduleType($request);
-        $questions = StakeholderReportQuestion::with('permissions', 'section')
-            ->forModule($moduleType)
+        $moduleType = $this->moduleFilter($request);
+        $name = trim((string) $request->query('name', ''));
+        $status = $request->query('status');
+        $permission = $request->query('permission');
+        $sectionId = $request->query('section_id');
+        $subSectionId = $request->query('sub_section_id');
+        $questionsQuery = StakeholderReportQuestion::with('permissions', 'section', 'subsection')
             ->orderBy('section_id')
             ->orderBy('sub_section_id')
-            ->get();
+            ->orderBy('order')
+            ->orderBy('created_at', 'desc');
 
-        return view('admin.stakeholders.questions.index', compact('questions', 'moduleType'));
+        if ($moduleType !== 'all') {
+            $questionsQuery->forModule($moduleType);
+        }
+
+        if ($name !== '') {
+            $questionsQuery->where('label', 'like', '%' . $name . '%');
+        }
+
+        if (in_array($status, ['0', '1'], true)) {
+            $questionsQuery->where('status', (int) $status);
+        }
+
+        if ($sectionId !== null && $sectionId !== '') {
+            $questionsQuery->where('section_id', (int) $sectionId);
+        }
+
+        if ($subSectionId !== null && $subSectionId !== '') {
+            $questionsQuery->where('sub_section_id', (int) $subSectionId);
+        }
+
+        if ($permission !== null && $permission !== '') {
+            $questionsQuery->whereHas('permissions', function ($query) use ($permission) {
+                $query->where('stakeholder_permissions.id', (int) $permission);
+            });
+        }
+
+        $questions = $questionsQuery->paginate(30)->withQueryString();
+        $sections = StakeholderQuestionSection::query()
+            ->when($moduleType !== 'all', fn ($query) => $query->forModule($moduleType))
+            ->orderBy('name')
+            ->get();
+        $subsections = StakeholderQuestionSubSection::query()
+            ->when($moduleType !== 'all', fn ($query) => $query->forModule($moduleType))
+            ->orderBy('name')
+            ->get();
+        $permissionsForIndex = StakeholderPermission::query()->orderBy('name')->get();
+
+        return view('admin.stakeholders.questions.index', compact('questions', 'moduleType', 'sections', 'subsections', 'permissionsForIndex'));
     }
 
     public function create(Request $request)

@@ -1,18 +1,21 @@
 @extends('layouts.dashboard')
 
-@section('title', isset($question) ? 'Update ' . ucfirst($moduleType ?? 'report') . ' Item' : 'Create ' . ucfirst($moduleType ?? 'report') . ' Item')
+@section('title', isset($question) ? 'Update Form Structure Item' : 'Create Form Structure Item')
 
 @section('item')
 <li class="breadcrumb-item">
-    <a href="{{ route('stakeholder.questions.index', ['module_type' => $moduleType ?? 'report']) }}">All {{ ucfirst($moduleType ?? 'report') }} Items</a>
+    <a href="{{ route('stakeholder.questions.index', ['module_type' => $moduleType ?? 'report']) }}">All Form Structure Items</a>
 </li>
 @endsection
 
 @section('active')
-<li class="breadcrumb-item">{{ isset($question) ? 'Update' : 'Create' }} {{ ucfirst($moduleType ?? 'report') }} Item</li>
+<li class="breadcrumb-item">{{ isset($question) ? 'Update' : 'Create' }} Form Structure Item</li>
 @endsection
 
 @section('content')
+@php
+    $moduleType = old('module_type', $moduleType ?? 'report');
+@endphp
 <div class="content-body">
     <section id="basic-input">
         <div class="row">
@@ -21,15 +24,27 @@
                     <div class="card-header">@include('includes.alerts')</div>
                     <div class="card-content">
                         <div class="card-body">
+                            <form id="module-type-switcher" method="GET" action="{{ url()->current() }}" class="mb-3">
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <fieldset class="form-group">
+                                            <label for="module_type">Module Type</label>
+                                            <select name="module_type" id="module_type" class="form-control" required onchange="document.getElementById('module-type-switcher').submit();">
+                                                <option value="report" {{ $moduleType === 'report' ? 'selected' : '' }}>Report</option>
+                                                <option value="appraisal" {{ $moduleType === 'appraisal' ? 'selected' : '' }}>Appraisal</option>
+                                            </select>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                            </form>
+
                             <form action="{{ isset($question) ? route('stakeholder.questions.update', ['question' => $question->id, 'module_type' => $moduleType ?? 'report']) : route('stakeholder.questions.store', ['module_type' => $moduleType ?? 'report']) }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 @isset($question)
                                     @method('PATCH')
                                 @endisset
-                                <input type="hidden" name="module_type" value="{{ $moduleType ?? 'report' }}">
 
                                 <div class="row g-2">
-
                                     {{-- Label --}}
                                     <div class="col-md-4">
                                         <fieldset class="form-group">
@@ -304,7 +319,9 @@
                                     {{-- Permissions --}}
                                     <div class="col-md-12">
                                         <fieldset class="form-group">
-                                            <label class="mb-1">{{ ucfirst($moduleType ?? 'report') }} Permissions</label>
+                                            <label class="mb-1">
+                                                {{ $moduleType === 'appraisal' ? 'Appraisal Permissions' : 'Report Permissions' }}
+                                            </label>
                                             @php
                                                 $selectedPermissions = old(
                                                     'access_permissions',
@@ -340,7 +357,7 @@
                                             </div>
 
                                             <small class="text-muted d-block mt-1">
-                                                Leave unchecked to allow all {{ $moduleType ?? 'report' }} items
+                                                Leave unchecked to allow all {{ $moduleType }} items
                                             </small>
                                         </fieldset>
                                     </div>

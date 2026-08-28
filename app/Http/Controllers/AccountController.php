@@ -52,9 +52,7 @@ class AccountController extends Controller
 			$sessions = range(date('1982'), date('Y'));
 
 			$president = $user->campus->stakeholder ?? null;
-			if($president){
-				$president = $president->where('role', 'President')->first();
-			}
+			$president = $user->campus?->chapterPresident;
 
 			$edition = activeConferenceEdition();
 

@@ -19,6 +19,33 @@ class StakeholderRolePermissionService
 
         $userAccessIds = [];
 
+        if (($model->module_type ?? 'report') === 'appraisal') {
+            if ($user) {
+                $userAccessIds = collect($user->permissions())->pluck('id')->all();
+
+                if (method_exists($user, 'roles')) {
+                    $userAccessIds = array_merge(
+                        $userAccessIds,
+                        $user->relationLoaded('roles')
+                            ? $user->roles->pluck('id')->toArray()
+                            : $user->roles()->pluck('id')->toArray()
+                    );
+                }
+
+                if (isset($user->role_id) && $user->role_id) {
+                    $userAccessIds[] = $user->role_id;
+                }
+
+                if (isset($user->designation_id) && $user->designation_id) {
+                    $userAccessIds[] = $user->designation_id;
+                }
+            }
+
+            return [
+                'view' => count(array_intersect($userAccessIds, $model->access_roles)) > 0,
+            ];
+        }
+
         if ($user) {
             if (method_exists($user, 'roles')) {
                 $userAccessIds = array_merge(
@@ -32,11 +59,6 @@ class StakeholderRolePermissionService
             if (isset($user->role_id) && $user->role_id) {
                 $userAccessIds[] = $user->role_id;
             }
-        }
-
-        if (($model->module_type ?? 'report') === 'appraisal') {
-            $userDesignationId = $user?->designation_id ? [$user->designation_id] : [];
-            $userAccessIds = array_merge($userAccessIds, $userDesignationId);
         }
 
         return [
@@ -83,19 +105,21 @@ class StakeholderRolePermissionService
             ];
         }
 
+        if (
+            $user->access_appraisal_evaluation
+            && ($user?->designation?->name === 'National President')
+            && in_array($question->audience ?? 'fill', ['evaluate', 'national_president'], true)
+        ) {
+            return ['view' => true, 'edit' => true];
+        }
+
         $requiredSlug = $this->appraisalQuestionPermissionSlug($question->permissions->pluck('slug')->all());
 
         if (! $requiredSlug) {
             return ['view' => true, 'edit' => true];
         }
 
-        $appraisalProfile = app(AppraisalService::class)->appraisalPermissionProfile($user);
-        $allowedSlugs = array_values(array_filter(array_merge(
-            $appraisalProfile['fill'] ?? [],
-            $appraisalProfile['evaluate'] ?? []
-        )));
-
-        if (in_array($requiredSlug, $allowedSlugs, true) && $user->hasPermission($requiredSlug)) {
+        if (app(AppraisalService::class)->hasAppraisalPermission($user, $requiredSlug)) {
             return ['view' => true, 'edit' => true];
         }
 
@@ -148,6 +172,8 @@ class StakeholderRolePermissionService
             'national-president-fill',
             'national-president-evaluate',
             'ncp-evaluate',
+            'appraisal.appraisee',
+            'appraisal.appraiser',
         ];
 
         foreach ($questionPermissionSlugs as $slug) {

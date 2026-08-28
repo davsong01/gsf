@@ -24,8 +24,7 @@
                             @method('PATCH')
                          <div class="row">
                              <div class="col-md-3">
-                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="/{{ ($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
-                                </div>
+                                <div class="media-left pr-0">{!! renderAvatar($user, 150, 'mr-1') !!}</div>
                             </div>
                             <div class="col-md-9">
                                 <fieldset class="form-group">
@@ -141,4 +140,3 @@
     <!-- Basic Inputs end -->          
 </div>
 @endsection
-

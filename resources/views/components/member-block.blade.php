@@ -1,6 +1,6 @@
 <div class="col-sm-4 mb30">
     <div class="team-card">
-        <img src="{{ !is_null($user->passport) ? asset($user->passport) : asset('frontend/passports/avatar.jpg') }}" alt="{{ $user->passport }}" class="img-responsive alumni-img">
+        {!! renderAvatar($user, 96, 'img-responsive alumni-img') !!}
         <div class="team-overlay">
             <ul class="list-inline">
                 <li><a href="{{ $user->facebook }}" target="_blank"><i class="fa fa-facebook"></i></a></li>

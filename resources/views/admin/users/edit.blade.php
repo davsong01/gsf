@@ -53,8 +53,7 @@
                                 @if($isEdit)
                                 <div class="row mb-3">
                                     <div class="col-md-3 text-center">
-                                        <img src="{{ asset($user->passport ?? 'frontend/passports/avatar.jpg') }}"
-                                            class="rounded-circle img-fluid mb-2" style="width:150px;height:150px;object-fit:cover;">
+                                        {!! renderAvatar($user, 150, 'rounded-circle img-fluid mb-2') !!}
                                     </div>
                                     <div class="col-md-9">
                                         <label>Overview</label><br>

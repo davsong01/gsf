@@ -87,7 +87,7 @@
                 @if($official->id = 1421)
                 {{-- {{dd($official)}} --}}
                 @endif
-                <div class="col-12 col-sm-6 col-lg-3 mb-4 mb-lg-4 mb-4"> <a href="#" class="card img-card fh-250 border-0 outer-bg" data-background-inner="{{ $official->user && !is_null($official->user->passport) ? asset($official->user->passport) : asset('frontend/passports/avatar.jpg') }}" alt="passport">
+                <div class="col-12 col-sm-6 col-lg-3 mb-4 mb-lg-4 mb-4"> <a href="#" class="card img-card fh-250 border-0 outer-bg" data-background-inner="{{ $official->user ? (asset($official->user->passport ?? 'frontend/passports/avatar.jpg')) : asset('frontend/passports/avatar.jpg') }}" alt="passport">
                         <div class="inner-bg overlay-dark"></div>
                         <div class="card-img-overlay d-flex align-items-center hover-hide-text">
                             <div class="card-body p-3">
@@ -192,5 +192,4 @@
     </section>
     
 @endsection
-
 

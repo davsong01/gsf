@@ -57,9 +57,7 @@
                         <div class="row">
                             <!-- IMAGE -->
                             <div class="col-md-2 d-flex justify-content-center align-items-start">
-                                <img src="{{ asset($transaction->user->passport ?: 'frontend/passports/avatar.jpg') }}"
-                                    class="img-fluid rounded-circle"
-                                    style="width: 150px; height:150px; object-fit: cover;">
+                                {!! renderAvatar($transaction->user, 150, 'img-fluid rounded-circle') !!}
                             </div>
 
                             <!-- RIGHT SIDE CONTENT -->

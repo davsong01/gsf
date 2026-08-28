@@ -1,20 +1,23 @@
 @extends('layouts.dashboard')
 
-@section('title', isset($subSection) ? 'Update ' . ucfirst($moduleType ?? 'report') . ' Sub Section' : 'Create ' . ucfirst($moduleType ?? 'report') . ' Sub Section')
+@section('title', isset($subSection) ? 'Update Form Structure Sub Section' : 'Create Form Structure Sub Section')
 
 @section('item')
 <li class="breadcrumb-item">
-    <a href="{{ route('stakeholderreportsubsection.index', ['module_type' => $moduleType ?? 'report']) }}">All {{ ucfirst($moduleType ?? 'report') }} Sub Sections</a>
+    <a href="{{ route('stakeholderreportsubsection.index', ['module_type' => $moduleType ?? 'report']) }}">All Form Structure Sub Sections</a>
 </li>
 @endsection
 
 @section('active')
 <li class="breadcrumb-item">
-    {{ isset($subSection) ? 'Update' : 'Create' }} {{ ucfirst($moduleType ?? 'report') }} Sub Section
+    {{ isset($subSection) ? 'Update' : 'Create' }} Form Structure Sub Section
 </li>
 @endsection
 
 @section('content')
+@php
+    $moduleType = old('module_type', $moduleType ?? 'report');
+@endphp
 <div class="content-body">
     <section id="basic-input">
         <div class="row">
@@ -23,6 +26,18 @@
                     <div class="card-header">@include('includes.alerts')</div>
 
                     <div class="card-body">
+                            <form id="module-type-switcher" method="GET" action="{{ url()->current() }}" class="">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="module_type">Module Type</label>
+                                        <select class="form-control" id="module_type" name="module_type" required onchange="document.getElementById('module-type-switcher').submit();">
+                                            <option value="report" {{ $moduleType === 'report' ? 'selected' : '' }}>Report</option>
+                                            <option value="appraisal" {{ $moduleType === 'appraisal' ? 'selected' : '' }}>Appraisal</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+
                             <form
                                 action="{{ isset($subSection)
                                 ? route('stakeholderreportsubsection.update', ['stakeholderreportsubsection' => $subSection->id, 'module_type' => $moduleType ?? 'report'])
@@ -33,7 +48,6 @@
                                 @method('PATCH')
                             @endisset
 
-                            {{-- BASIC DETAILS --}}
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label">SubSection Name</label>
@@ -65,7 +79,6 @@
                                 </div>
                             </div>
 
-                            {{-- PARENT SECTION --}}
                             <div class="row mb-3">
                                 <div class="col-md-12">
                                     <label class="form-label">Parent Section</label>
@@ -81,26 +94,27 @@
                                 </div>
                             </div>
 
-                            {{-- ACCESS ROLES --}}
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <label class="form-label">Assign Roles</label>
+                                    <label class="form-label">
+                                        {{ $moduleType === 'appraisal' ? 'Appraisal Permissions' : 'Access Roles' }}
+                                    </label>
                                 </div>
 
-                                @foreach($roles as $role)
+                                @foreach($permissions as $permission)
                                     <div class="col-md-4">
                                         <div class="form-check mb-1">
                                             <input type="checkbox"
                                                    class="form-check-input"
-                                                   id="role_{{ $role->id }}"
+                                                   id="perm_{{ $permission->id }}"
                                                    name="access_roles[]"
-                                                   value="{{ $role->id }}"
+                                                   value="{{ $permission->id }}"
                                                    {{ in_array(
-                                                        $role->id,
+                                                        $permission->id,
                                                         old('access_roles', $subSection->access_roles ?? [])
                                                    ) ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="role_{{ $role->id }}">
-                                                {{ $role->name }}
+                                            <label class="form-check-label" for="perm_{{ $permission->id }}">
+                                                {{ $permission->name }}
                                             </label>
                                         </div>
                                     </div>
@@ -111,11 +125,11 @@
                             <div class="row mt-4">
                                 <div class="col-md-12">
                                     <button class="btn btn-primary w-100" type="submit">
-                                        {{ isset($subSection) ? 'Update Sub Section' : 'Create Sub Section' }}
+                                        {{ isset($subSection) ? 'Update Form Structure Sub Section' : 'Create Form Structure Sub Section' }}
                                     </button>
                                 </div>
                             </div>
-                            <input type="hidden" name="module_type" value="{{ $moduleType ?? 'report' }}">
+                            <input type="hidden" name="module_type" value="{{ $moduleType }}">
 
                         </form>
                     </div>

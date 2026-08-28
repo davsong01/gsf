@@ -1,6 +1,10 @@
-@extends('layouts.stakeholderdashboard')
+@extends('layouts.dashboard')
 
-@section('title', $pageTitle ?? 'Evaluate')
+@section('title', $pageTitle ?? 'View Appraisal')
+
+@section('item')
+<li class="breadcrumb-item"><a href="{{ route('stakeholderappraisals.index') }}">Appraisals</a></li>
+@endsection
 
 @section('content')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -29,95 +33,54 @@
         padding: 0.75rem 1rem;
         border-bottom: 1px solid #d6e1ee;
     }
-
-    .subsection-heading {
-        background: #f7f9fc;
-        color: #102542;
-        border-left: 4px solid #1f6aa5;
-        padding: 0.55rem 0.85rem;
-        margin-bottom: 0;
-        border-bottom: 1px solid #d6e1ee;
-    }
-
-    .appraisal-question-label {
-        color: #102542;
-        font-size: 0.95rem;
+    .appraisal-action-btn {
+        padding: 0.28rem 0.65rem;
+        font-size: 0.78rem;
+        line-height: 1.1;
+        border-radius: 999px;
         font-weight: 600;
-        margin-bottom: 0.35rem;
+        letter-spacing: 0.01em;
     }
 
-    .appraisal-field {
-        margin-bottom: 0.25rem;
-    }
-
-    .appraisal-control {
-        border-radius: 0.45rem;
-        min-height: 38px;
-        font-size: 0.95rem;
-    }
-
-    .appraisal-readonly-answer {
-        min-height: 38px;
-        border-radius: 0.45rem;
-        border: 1px solid #d6e1ee;
-        background: #fff;
-        padding: 0.75rem 0.85rem;
-        white-space: pre-wrap;
-        color: #102542;
+    .appraisal-action-btn i {
+        font-size: 0.78rem;
     }
 </style>
 
 <div class="content-body">
     <div class="container-fluid">
         @php
-            $isAdmin = $isAdmin ?? false;
+            $isAdmin = true;
             $selfEditable = $selfEditable ?? false;
             $canSubmitSelf = $canSubmitSelf ?? false;
-            $evaluationEditable = $evaluationEditable ?? true;
-            $canSubmitEvaluation = $canSubmitEvaluation ?? true;
-            $selfFormAction = $selfFormAction ?? route('stakeholders.appraisal.my.store');
-            $formAction = $formAction ?? route('stakeholders.appraisal.evaluations.store', $target);
+            $evaluationEditable = $evaluationEditable ?? false;
+            $canSubmitEvaluation = $canSubmitEvaluation ?? false;
+            $selfFormAction = $selfFormAction ?? route('stakeholderappraisals.self.update', $target);
+            $formAction = $formAction ?? route('stakeholderappraisals.evaluation.update', $target);
             $selfStatus = $appraisal?->self_status ?? 'draft';
             $selfPublishedAt = $appraisal?->self_published_at;
             $evaluationStatus = $appraisal?->evaluation_status ?? 'draft';
         @endphp
 
         <div class="appraisal-hero p-4 p-md-5 mb-4">
-            <small class="text-uppercase opacity-75 d-block mb-2">Evaluation Workspace</small>
-            <h2 class="font-weight-bold mb-2">{{ $pageTitle ?? 'Evaluate' }}</h2>
+            <small class="text-uppercase opacity-75 d-block mb-2">{{ $formModeLabel ?? 'Admin Review' }}</small>
+            <h2 class="font-weight-bold mb-2">{{ $pageTitle ?? 'View Appraisal' }}</h2>
             <p class="mb-0" style="max-width: 760px;">
-                @if($isAdmin)
-                    Review the published self appraisal and the evaluation responses for this stakeholder.
-                @else
-                    Review the published self appraisal first, then complete your evaluation questions underneath it.
-                @endif
+                Review the stakeholder's submitted form and evaluation responses on the same screen.
             </p>
         </div>
-
-        @include('stakeholder.appraisal._instructions', [
-            'instructionProfile' => $instructionProfile,
-            'instructionTitle' => 'Appraisal Instructions',
-        ])
 
         @if(session('message'))
             <div class="alert alert-success">{{ session('message') }}</div>
         @endif
 
+        @if(session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+
         @if ($errors->any())
             <div class="alert alert-danger">
                 Please fix the highlighted fields below and try again.
-            </div>
-        @endif
-
-        @if($appraisalMissing ?? false)
-            <div class="alert alert-warning">
-                This stakeholder has not published a self appraisal yet, so the evaluation section is currently locked.
-            </div>
-        @endif
-
-        @if($evaluationLocked ?? false)
-            <div class="alert alert-success">
-                This evaluation has already been published and is now locked.
             </div>
         @endif
 
@@ -145,7 +108,7 @@
             <div class="col-md-4 mb-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
-                        <small class="text-muted d-block">Your evaluation status</small>
+                        <small class="text-muted d-block">Evaluation Status</small>
                         <h4 class="mb-1 text-capitalize">{{ $evaluationStatus }}</h4>
                         <div class="text-muted">
                             Evaluation by: {{ $evaluationAuthorityLabel ?? 'Evaluator' }}
@@ -162,10 +125,8 @@
 
                 <div class="panel-card">
                     <div class="section-heading d-flex align-items-center justify-content-between">
-                        <div>
-                            <h4 class="mb-0">Self Appraisal</h4>
-                        </div>
-                        <i class="fa fa-file-signature"></i>
+                        <h4 class="mb-0">Self Appraisal</h4>
+                        <i class="fa fa-file-text-o"></i>
                     </div>
                     <div class="p-3 p-md-4">
                         @include('stakeholder.appraisal._form', [
@@ -178,10 +139,10 @@
 
                         @if($canSubmitSelf)
                             <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
-                                <button type="submit" class="btn btn-outline-primary px-4" onclick="return window.AppraisalSubmission.prepare('draft', this.form)">
+                                <button type="submit" class="btn btn-outline-primary btn-sm appraisal-action-btn" onclick="return window.AppraisalSubmission.prepare('draft', this.form)">
                                     Save Self Draft
                                 </button>
-                                <button type="submit" class="btn btn-primary px-4" onclick="return window.AppraisalSubmission.prepare('published', this.form)">
+                                <button type="submit" class="btn btn-primary btn-sm appraisal-action-btn" onclick="return window.AppraisalSubmission.prepare('published', this.form)">
                                     Publish Self Appraisal
                                 </button>
                             </div>
@@ -192,10 +153,8 @@
         @else
             <div class="panel-card mb-4">
                 <div class="section-heading d-flex align-items-center justify-content-between">
-                    <div>
-                        <h4 class="mb-0">Published Self Appraisal</h4>
-                    </div>
-                    <i class="fa fa-file-signature"></i>
+                    <h4 class="mb-0">Published Self Appraisal</h4>
+                    <i class="fa fa-file-text-o"></i>
                 </div>
                 <div class="p-3 p-md-4">
                     @include('stakeholder.appraisal._form', [
@@ -215,10 +174,8 @@
 
             <div class="panel-card">
                 <div class="section-heading d-flex align-items-center justify-content-between">
-                    <div>
-                        <h4 class="mb-0">{{ $isAdmin ? 'Evaluation Responses' : 'Your Evaluation' }}</h4>
-                    </div>
-                    <i class="fa fa-clipboard-check"></i>
+                    <h4 class="mb-0">Evaluation Responses</h4>
+                    <i class="fa fa-check-square-o"></i>
                 </div>
                 <div class="p-3 p-md-4">
                     @include('stakeholder.appraisal._form', [
@@ -232,10 +189,10 @@
 
                     @if($canSubmitEvaluation)
                         <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
-                            <button type="submit" class="btn btn-outline-primary px-4" onclick="return window.AppraisalSubmission.prepare('draft', this.form)">
+                            <button type="submit" class="btn btn-outline-primary btn-sm appraisal-action-btn" onclick="return window.AppraisalSubmission.prepare('draft', this.form)">
                                 Save Draft
                             </button>
-                            <button type="submit" class="btn btn-primary px-4" onclick="return window.AppraisalSubmission.prepare('published', this.form)">
+                            <button type="submit" class="btn btn-primary btn-sm appraisal-action-btn" onclick="return window.AppraisalSubmission.prepare('published', this.form)">
                                 Publish Evaluation
                             </button>
                         </div>
@@ -245,6 +202,7 @@
         </form>
     </div>
 </div>
+
 @if($canSubmitSelf || $canSubmitEvaluation)
     @include('stakeholder.appraisal._submission_script')
 @endif

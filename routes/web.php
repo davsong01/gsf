@@ -252,9 +252,15 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', [AccountController::class, 'index'])->name('account');
     Route::get('/home', [AccountController::class, 'index'])->name('home');
     Route::resource('stakeholderpersonnel', StakeholderController::class);
+    Route::post('stakeholderpersonnel/bulk-action', [StakeholderController::class, 'bulkAction'])->name('stakeholderpersonnel.bulk-action');
+    Route::post('stakeholderpersonnel/{stakeholderpersonnel}/resend-credentials', [StakeholderController::class, 'resendCredentials'])->name('stakeholderpersonnel.resend-credentials');
     Route::resource('stakeholdersetting', StakeholderSettingController::class);
     Route::controller(AdminStakeholderAppraisalController::class)->prefix('stakeholder-appraisals')->name('stakeholderappraisals.')->group(function () {
         Route::get('/', 'index')->name('index');
+        Route::get('/{stakeholder}/self', 'editSelf')->name('self.edit');
+        Route::post('/{stakeholder}/self', 'updateSelf')->name('self.update');
+        Route::get('/{stakeholder}/evaluation', 'editEvaluation')->name('evaluation.edit');
+        Route::post('/{stakeholder}/evaluation', 'updateEvaluation')->name('evaluation.update');
         Route::post('/{stakeholder}/unlock-self', 'unlockSelf')->name('unlock-self');
         Route::post('/{stakeholder}/unlock-evaluation', 'unlockEvaluation')->name('unlock-evaluation');
     });

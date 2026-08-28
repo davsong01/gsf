@@ -297,12 +297,10 @@
     $actionPermissions = rootActionPermissions();
     $actionPermissionsByParent = $actionPermissions->groupBy('parent_slug');
 
-    $parentsWithChildren = $permissions->filter(fn ($p) => isset($p['children']) && count($p['children']));
-    $parentsWithoutChildren = $permissions->filter(fn ($p) => !isset($p['children']) || !count($p['children']));
+    $orderedMenus = $permissions->sortBy(fn ($menu) => $menu['menu_order'] ?? 0)->values();
 
     $selectedCount = count($userPermissions);
     $passportLabel = $editing ? 'Replace passport' : 'Upload passport';
-    $selectedDesignation = $editing ? ($official->designation->name ?? 'Not assigned') : 'Not assigned';
 @endphp
 
 <div class="content-body">
@@ -315,7 +313,7 @@
                 </div>
                 <h2>{{ $editing ? 'Update official profile and access' : 'Create a new official account' }}</h2>
                 <p>
-                    Keep the profile details, fixed admin role, designation, and menu permissions in one place so the official gets the exact access they need.
+                    Keep the profile details, admin role, and menu permissions in one place so the official gets the exact access they need.
                 </p>
             </div>
         </div>
@@ -333,7 +331,7 @@
             @endif
 
             <div class="row g-4">
-                <div class="col-lg-5">
+                <div class="col-lg-12 mb-2">
                     <div class="glass-card h-100">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -372,19 +370,6 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="field-label">Designation</label>
-                                    <select class="form-select" name="designation_id">
-                                        <option value="">Select designation</option>
-                                        @foreach($designations as $designation)
-                                            <option value="{{ $designation->id }}" {{ (string) old('designation_id', $official->designation_id ?? '') === (string) $designation->id ? 'selected' : '' }}>
-                                                {{ $designation->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div class="field-note mt-2">Use <strong>National President</strong> for the officer who evaluates NEC members.</div>
-                                </div>
-
-                                <div class="col-md-6">
                                     <label class="field-label">Status</label>
                                     <select class="form-select" name="status" required>
                                         <option value="">Select status</option>
@@ -406,40 +391,11 @@
                                 </div>
                             </div>
 
-                            <div class="row g-3 mt-2">
-                                <div class="col-md-6">
-                                    <div class="info-tile">
-                                        <span class="label">Account Role</span>
-                                        <div class="value">Admin</div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="info-tile">
-                                        <span class="label">Account State</span>
-                                        <div class="value">{{ $editing ? ucfirst($official->status ?? 'active') : 'Active by default' }}</div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="info-tile">
-                                        <span class="label">Designation</span>
-                                        <div class="value">{{ $selectedDesignation }}</div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="info-tile">
-                                        <span class="label">Menu Permissions</span>
-                                        <div class="value">{{ $selectedCount }} selected</div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-7">
+                <div class="col-lg-12">
                     <div class="glass-card h-100">
                         <div class="card-header">
                             <div class="permission-toolbar">
@@ -461,20 +417,26 @@
                         </div>
 
                         <div class="card-body" id="permissionGroups">
-                            @foreach($parentsWithChildren as $parent)
-                                <div class="permission-card permission-group-wrap">
+                            <div class="row g-3">
+                                @foreach($orderedMenus as $parent)
+                                <div class="col-12 col-xl-6 permission-searchable">
+                                    <div class="permission-card permission-group-wrap h-100">
                                     <div class="permission-card-header">
                                         <div>
                                             <h5 class="permission-title">{{ $parent['name'] }}</h5>
-                                            <div class="permission-subtitle">Module navigation and related actions</div>
+                                            <div class="permission-subtitle">
+                                                {{ isset($parent['children']) && count($parent['children']) ? 'Module navigation and related actions' : 'Menu item' }}
+                                            </div>
                                         </div>
                                         <div class="d-flex align-items-center gap-2">
-                                            <span class="permission-badge">{{ count($parent['children']) }} groups</span>
+                                            @if(isset($parent['children']) && count($parent['children']))
+                                                <span class="permission-badge">{{ count($parent['children']) }} groups</span>
+                                            @endif
                                             <div class="permission-item mb-0">
                                                 <div class="form-check">
                                                     <input
                                                         type="checkbox"
-                                                        class="form-check-input js-permission-parent"
+                                                        class="form-check-input {{ isset($parent['children']) && count($parent['children']) ? 'js-permission-parent' : '' }}"
                                                         id="perm_{{ $parent['slug'] }}"
                                                         name="permissions[]"
                                                         value="{{ $parent['slug'] }}"
@@ -488,63 +450,35 @@
                                         </div>
                                     </div>
 
-                                    @foreach($parent['children'] as $child)
-                                        <div class="child-block permission-searchable">
-                                            <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
-                                                <div class="d-flex align-items-start gap-2">
-                                                    <div class="permission-item mb-0">
-                                                        <div class="form-check">
-                                                            @php $childId = 'perm_' . $child['slug']; @endphp
-                                                            <input
-                                                                type="checkbox"
-                                                                class="form-check-input js-permission-parent"
-                                                                id="{{ $childId }}"
-                                                                name="permissions[]"
-                                                                value="{{ $child['slug'] }}"
-                                                                {{ $nodeIsSelected($child) ? 'checked' : '' }}
-                                                            >
-                                                            <label class="form-check-label" for="{{ $childId }}">
-                                                                {{ $child['name'] }}
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <span class="permission-badge">Section</span>
-                                            </div>
-
-                                            @if(isset($child['children']) && count($child['children']))
-                                                <div class="permission-list">
-                                                    @foreach($child['children'] as $grandchild)
-                                                        @php $id = 'perm_' . $grandchild['slug']; @endphp
-                                                        <div class="permission-item permission-searchable">
+                                    @if(isset($parent['children']) && count($parent['children']))
+                                        @foreach($parent['children'] as $child)
+                                            <div class="child-block permission-searchable">
+                                                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                                                    <div class="d-flex align-items-start gap-2">
+                                                        <div class="permission-item mb-0">
                                                             <div class="form-check">
+                                                                @php $childId = 'perm_' . $child['slug']; @endphp
                                                                 <input
                                                                     type="checkbox"
-                                                                    class="form-check-input"
-                                                                    id="{{ $id }}"
+                                                                    class="form-check-input js-permission-parent"
+                                                                    id="{{ $childId }}"
                                                                     name="permissions[]"
-                                                                    value="{{ $grandchild['slug'] }}"
-                                                                    {{ in_array($grandchild['slug'], $userPermissions) ? 'checked' : '' }}
+                                                                    value="{{ $child['slug'] }}"
+                                                                    {{ $nodeIsSelected($child) ? 'checked' : '' }}
                                                                 >
-                                                                <label class="form-check-label" for="{{ $id }}">
-                                                                    {{ $grandchild['name'] }}
+                                                                <label class="form-check-label" for="{{ $childId }}">
+                                                                    {{ $child['name'] }}
                                                                 </label>
                                                             </div>
                                                         </div>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-
-                                            @if($actionPermissionsByParent->has($child['slug']))
-                                                <div class="permission-group">
-                                                    <div class="permission-group-title">
-                                                        <span>Actions</span>
-                                                        <span class="permission-badge">{{ $actionPermissionsByParent->get($child['slug'])->count() }} actions</span>
                                                     </div>
+                                                    <span class="permission-badge">Section</span>
+                                                </div>
 
+                                                @if(isset($child['children']) && count($child['children']))
                                                     <div class="permission-list">
-                                                        @foreach($actionPermissionsByParent->get($child['slug']) as $actionPermission)
-                                                            @php $id = 'perm_' . $actionPermission['slug']; @endphp
+                                                        @foreach($child['children'] as $grandchild)
+                                                            @php $id = 'perm_' . $grandchild['slug']; @endphp
                                                             <div class="permission-item permission-searchable">
                                                                 <div class="form-check">
                                                                     <input
@@ -552,58 +486,57 @@
                                                                         class="form-check-input"
                                                                         id="{{ $id }}"
                                                                         name="permissions[]"
-                                                                        value="{{ $actionPermission['slug'] }}"
-                                                                        {{ in_array($actionPermission['slug'], $userPermissions) ? 'checked' : '' }}
+                                                                        value="{{ $grandchild['slug'] }}"
+                                                                        {{ in_array($grandchild['slug'], $userPermissions) ? 'checked' : '' }}
                                                                     >
                                                                     <label class="form-check-label" for="{{ $id }}">
-                                                                        {{ $actionPermission['name'] }}
+                                                                        {{ $grandchild['name'] }}
                                                                     </label>
                                                                 </div>
-                                                                @if(!empty($actionPermission['description']))
-                                                                    <small class="text-muted d-block mt-1">{{ $actionPermission['description'] }}</small>
-                                                                @endif
                                                             </div>
                                                         @endforeach
                                                     </div>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endforeach
+                                                @endif
 
-                            @if($parentsWithoutChildren->isNotEmpty())
-                                <div class="permission-card">
-                                    <div class="permission-card-header">
-                                        <div>
-                                            <h5 class="permission-title">Standalone Permissions</h5>
-                                            <div class="permission-subtitle">Single-level menu permissions</div>
-                                        </div>
-                                        <span class="permission-badge">{{ $parentsWithoutChildren->count() }}</span>
-                                    </div>
+                                                @if($actionPermissionsByParent->has($child['slug']))
+                                                    <div class="permission-group">
+                                                        <div class="permission-group-title">
+                                                            <span>Actions</span>
+                                                            <span class="permission-badge">{{ $actionPermissionsByParent->get($child['slug'])->count() }} actions</span>
+                                                        </div>
 
-                                    <div class="permission-list">
-                                        @foreach($parentsWithoutChildren as $parent)
-                                            @php $id = 'perm_' . $parent['slug']; @endphp
-                                            <div class="permission-item permission-searchable">
-                                                <div class="form-check">
-                                                    <input
-                                                        type="checkbox"
-                                                        class="form-check-input"
-                                                        id="{{ $id }}"
-                                                        name="permissions[]"
-                                                        value="{{ $parent['slug'] }}"
-                                                        {{ in_array($parent['slug'], $userPermissions) ? 'checked' : '' }}
-                                                    >
-                                                    <label class="form-check-label" for="{{ $id }}">
-                                                        {{ $parent['name'] }}
-                                                    </label>
-                                                </div>
+                                                        <div class="permission-list">
+                                                            @foreach($actionPermissionsByParent->get($child['slug']) as $actionPermission)
+                                                                @php $id = 'perm_' . $actionPermission['slug']; @endphp
+                                                                <div class="permission-item permission-searchable">
+                                                                    <div class="form-check">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            class="form-check-input"
+                                                                            id="{{ $id }}"
+                                                                            name="permissions[]"
+                                                                            value="{{ $actionPermission['slug'] }}"
+                                                                            {{ in_array($actionPermission['slug'], $userPermissions) ? 'checked' : '' }}
+                                                                        >
+                                                                        <label class="form-check-label" for="{{ $id }}">
+                                                                            {{ $actionPermission['name'] }}
+                                                                        </label>
+                                                                    </div>
+                                                                    @if(!empty($actionPermission['description']))
+                                                                        <small class="text-muted d-block mt-1">{{ $actionPermission['description'] }}</small>
+                                                                    @endif
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endforeach
+                                    @endif
                                     </div>
                                 </div>
-                            @endif
+                                @endforeach
+                            </div>
 
                             <div class="sticky-actions mt-4">
                                 <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">

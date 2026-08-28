@@ -15,6 +15,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class AppraisalService
 {
@@ -25,10 +26,17 @@ class AppraisalService
     {
         $permissionProfile = $this->appraisalPermissionProfile($user);
 
-        $canSelfAppraise = $this->hasAnyPermission($user, $permissionProfile['fill'] ?? []);
-
-        $canEvaluate = $this->hasAnyPermission($user, $permissionProfile['evaluate'] ?? []);
+        $hasAppraisalSystemAccess = (bool) ($user->access_appraisal_system ?? false);
+        $hasAppraisalEvaluationAccess = (bool) ($user->access_appraisal_evaluation ?? false);
         $isNationalPresident = $this->isNationalPresident($user);
+
+        if ($isNationalPresident) {
+            $canSelfAppraise = $hasAppraisalSystemAccess;
+            $canEvaluate = $hasAppraisalEvaluationAccess;
+        } else {
+            $canSelfAppraise = $hasAppraisalSystemAccess && $this->hasAnyAppraisalPermission($user, $permissionProfile['fill'] ?? []);
+            $canEvaluate = $hasAppraisalEvaluationAccess && $this->hasAnyAppraisalPermission($user, $permissionProfile['evaluate'] ?? []);
+        }
 
         return [
             'my_appraisal' => $canSelfAppraise,
@@ -39,6 +47,46 @@ class AppraisalService
         ];
     }
 
+    public function hasAppraisalPermission(Stakeholder $user, string $permission): bool
+    {
+        $candidates = $this->appraisalPermissionAliases($permission);
+
+        foreach ($candidates as $candidate) {
+            if ($user->hasPermission($candidate)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasAnyAppraisalPermission(Stakeholder $user, array|string|null $permissions): bool
+    {
+        $permissionList = is_array($permissions) ? $permissions : array_filter([$permissions]);
+
+        if (empty($permissionList)) {
+            return false;
+        }
+
+        foreach ($permissionList as $permission) {
+            if ($this->hasAppraisalPermission($user, $permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasMenuAccess(Stakeholder $user): bool
+    {
+        $access = $this->dashboardAccess($user);
+
+        return (bool) (
+            ($access[self::AUDIENCE_FILL] ?? false)
+            || ($access[self::AUDIENCE_EVALUATE] ?? false)
+        );
+    }
+
     public function canAccessMode(Stakeholder $user, string $mode): bool
     {
         $access = $this->dashboardAccess($user);
@@ -46,7 +94,7 @@ class AppraisalService
         return (bool) ($access[$mode] ?? false);
     }
 
-    public function structure(Stakeholder $user, array $audiences): Collection
+    public function structure(Stakeholder $user, array $audiences, bool $isAdmin = false, ?string $formPrefix = null): Collection
     {
         $permissionService = app(StakeholderRolePermissionService::class);
 
@@ -64,24 +112,28 @@ class AppraisalService
             ->orderBy('id')
             ->get();
 
-        return $sections->map(function ($section) use ($permissionService, $user, $audiences) {
-            if (! $permissionService->sectionAccess($user, $section)['view']) {
+        return $sections->map(function ($section) use ($permissionService, $user, $audiences, $isAdmin, $formPrefix) {
+            if ($formPrefix && ! Str::startsWith($section->slug ?? '', $formPrefix . '-')) {
+                return null;
+            }
+
+            if (! $isAdmin && ! $permissionService->sectionAccess($user, $section)['view']) {
                 return null;
             }
 
             $subsections = $section->subsections
-                ->map(function ($subsection) use ($permissionService, $user, $audiences) {
-                    if (! $permissionService->sectionAccess($user, $subsection)['view']) {
+                ->map(function ($subsection) use ($permissionService, $user, $audiences, $isAdmin) {
+                    if (! $isAdmin && ! $permissionService->sectionAccess($user, $subsection)['view']) {
                         return null;
                     }
 
                     $questions = $subsection->questions
-                        ->filter(function ($question) use ($permissionService, $user, $audiences) {
+                        ->filter(function ($question) use ($permissionService, $user, $audiences, $isAdmin) {
                             if (! in_array($question->audience ?? self::AUDIENCE_FILL, $audiences, true)) {
                                 return false;
                             }
 
-                            return $permissionService->questionAccess($user, $question)['view'];
+                            return $permissionService->questionAccess($user, $question, $isAdmin)['view'];
                         })
                         ->values();
 
@@ -98,13 +150,31 @@ class AppraisalService
         })->filter()->values();
     }
 
-    public function structureForMode(Stakeholder $user, string $mode): Collection
+    public function structureForMode(Stakeholder $user, string $mode, bool $isAdmin = false, ?string $formPrefix = null): Collection
     {
+        $formPrefix = $formPrefix ?: $this->appraisalFormPrefix($user);
+
         return match ($mode) {
-            'my', self::AUDIENCE_FILL => $this->structure($user, [self::AUDIENCE_FILL]),
-            'evaluations', self::AUDIENCE_EVALUATE => $this->structure($user, [self::AUDIENCE_EVALUATE]),
+            'my', self::AUDIENCE_FILL => $this->structure($user, [self::AUDIENCE_FILL], $isAdmin, $formPrefix),
+            'evaluations', self::AUDIENCE_EVALUATE => $this->structure(
+                $user,
+                $this->evaluationAudiencesFor($user, $isAdmin),
+                $isAdmin,
+                $formPrefix
+            ),
             default => collect(),
         };
+    }
+
+    protected function evaluationAudiencesFor(Stakeholder $user, bool $isAdmin = false): array
+    {
+        $audiences = [self::AUDIENCE_EVALUATE];
+
+        if ($isAdmin || $this->isNationalPresident($user)) {
+            $audiences[] = 'national_president';
+        }
+
+        return array_values(array_unique($audiences));
     }
 
     public function summary(Stakeholder $user): array
@@ -142,7 +212,7 @@ class AppraisalService
 
     public function selfAppraisalPrefillData(Stakeholder $user): array
     {
-        $period = 'May 2025 – August 2026';
+        $period = 'May 2025 – ' . date('F Y');
         $fieldName = $user->field?->name;
         $zoneName = $user->zone?->name;
         $chapterName = $user->chapter?->name;
@@ -299,7 +369,9 @@ class AppraisalService
     public function evaluatorAudience(Stakeholder $evaluator, Stakeholder $target): string
     {
         if ($this->isNationalPresident($evaluator)) {
-            return self::AUDIENCE_EVALUATE;
+            return $this->isNationalPresident($target)
+                ? self::AUDIENCE_EVALUATE
+                : 'national_president';
         }
 
         return self::AUDIENCE_EVALUATE;
@@ -327,6 +399,22 @@ class AppraisalService
         }
 
         return 'Evaluator';
+    }
+
+    public function evaluationPrefillData(Stakeholder $evaluator, Stakeholder $target): array
+    {
+        $formPrefix = $this->appraisalFormPrefix($target) ?: $this->appraisalFormPrefix($evaluator);
+        $position = $evaluator->designation?->name ?: ($evaluator->role?->name ?? '');
+
+        if (! $formPrefix) {
+            return [];
+        }
+
+        return array_filter([
+            "{$formPrefix}-appraiser-name" => $evaluator->name ?? '',
+            "{$formPrefix}-appraiser-position" => $position,
+            "{$formPrefix}-appraiser-date" => now()->format('Y-m-d'),
+        ], fn ($value) => $value !== null && $value !== '');
     }
 
     public function canViewPublishedSelfAppraisal(Stakeholder $evaluator, StakeholderAppraisal $appraisal): bool
@@ -371,6 +459,26 @@ class AppraisalService
         });
     }
 
+    public function unlockSelfAppraisal(StakeholderAppraisal $appraisal): StakeholderAppraisal
+    {
+        $appraisal->update([
+            'self_status' => 'draft',
+            'self_published_at' => null,
+        ]);
+
+        return $appraisal->fresh(['answers', 'appraisee', 'evaluator']);
+    }
+
+    public function unlockEvaluation(StakeholderAppraisal $appraisal): StakeholderAppraisal
+    {
+        $appraisal->update([
+            'evaluation_status' => 'draft',
+            'evaluation_published_at' => null,
+        ]);
+
+        return $appraisal->fresh(['answers', 'appraisee', 'evaluator']);
+    }
+
     public function prepareSubmissionAnswers(
         Stakeholder $user,
         Request $request,
@@ -379,7 +487,11 @@ class AppraisalService
         ?StakeholderAppraisal $appraisal = null,
         ?Stakeholder $target = null
     ): array {
-        $sections = $this->structureForMode($user, $mode);
+        $formPrefix = $mode === 'my'
+            ? $this->appraisalFormPrefix($user)
+            : $this->appraisalFormPrefix($target ?? $user);
+
+        $sections = $this->structureForMode($user, $mode, false, $formPrefix);
         $audience = $mode === 'my'
             ? self::AUDIENCE_FILL
             : $this->evaluatorAudience($user, $target ?? $user);
@@ -591,6 +703,50 @@ class AppraisalService
             'fill' => [],
             'evaluate' => [],
         ];
+    }
+
+    protected function appraisalPermissionAliases(string $permission): array
+    {
+        $aliases = [
+            'field-pastor-fill' => ['appraisal.appraisee'],
+            'zonal-pastor-fill' => ['appraisal.appraisee'],
+            'nec-member-fill' => ['appraisal.appraisee'],
+            'national-president-fill' => ['nec-member-fill', 'appraisal.appraisee'],
+            'field-pastor-evaluate' => ['appraisal.appraiser'],
+            'ncp-evaluate' => ['appraisal.appraiser'],
+            'nec-member-evaluate' => ['national-president-evaluate', 'appraisal.appraiser'],
+            'national-president-evaluate' => ['nec-member-evaluate', 'appraisal.appraiser'],
+            'appraisal.appraisee' => [
+                'field-pastor-fill',
+                'zonal-pastor-fill',
+                'nec-member-fill',
+                'national-president-fill',
+            ],
+            'appraisal.appraiser' => [
+                'field-pastor-evaluate',
+                'nec-member-evaluate',
+                'national-president-evaluate',
+                'ncp-evaluate',
+            ],
+        ];
+
+        return array_values(array_unique(array_merge([$permission], $aliases[$permission] ?? [])));
+    }
+
+    public function hasEvaluationStatus(Stakeholder $user): bool
+    {
+        $designationName = $user?->designation?->name ?? '';
+        $roleSlug = $user?->role?->slug;
+
+        if ($designationName === 'National President') {
+            return true;
+        }
+
+        if ($roleSlug === 'field-pastor') {
+            return true;
+        }
+
+        return false;
     }
 
     protected function hasAnyPermission(Stakeholder $user, array|string|null $permissions): bool

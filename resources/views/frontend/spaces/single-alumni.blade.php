@@ -23,8 +23,7 @@
                             <div class="profile-cover rounded-top" style="paddinf-top:50px !important"></div>
                             <div class="card-body p-2">
                                 <div class="profile-thumbnail small-thumbnail mt-n6 mx-auto">
-                                    <img src="{{ !is_null($alumni->passport) ? asset($alumni->passport) : asset('frontend/passports/avatar.jpg') }}"
-                                        class="card-img-top rounded-circle border-white" alt="Joseph Portrait">
+                                    {!! renderAvatar($alumni, 120, 'card-img-top rounded-circle border-white') !!}
                                 </div>
                                 <span class="font-weight-normal mt-4 mb-0">{{ $alumni->name }}</span>
                                 @if($alumni->open_to_work)
@@ -52,9 +51,7 @@
                 {{-- Mobile --}}
                 <div class="card d-lg-none border-light text-center mt-n5 mt-md-n7 p-2">
                     <div class="card-body p-2">
-                        <div class="profile-thumbnail small-thumbnail mt-n6 mx-auto"><img
-                                src="{{ !is_null($alumni->passport) ? asset($alumni->passport) : asset('frontend/passports/avatar.jpg') }}"
-                                class="card-img-top rounded-circle border-white" alt=""></div>
+                        <div class="profile-thumbnail small-thumbnail mt-n6 mx-auto">{!! renderAvatar($alumni, 120, 'card-img-top rounded-circle border-white') !!}</div>
                         <h4 class="font-weight-normal mt-4 mb-0">{{ $alumni->name }}</h4>
                         <ul class="list-inline row mx-auto my-4" style="display: block">
                             @if($alumni->facebook )

@@ -12,9 +12,16 @@ class StakeholderReportSectionController extends Controller
 {
     protected function moduleType(Request $request): string
     {
-        return $request->query('module_type', 'report') === 'appraisal'
+        return $request->input('module_type', $request->query('module_type', 'report')) === 'appraisal'
             ? 'appraisal'
             : 'report';
+    }
+
+    protected function moduleFilter(Request $request): string
+    {
+        return in_array($request->query('module_type'), ['report', 'appraisal'], true)
+            ? $request->query('module_type')
+            : 'all';
     }
 
     /**
@@ -22,14 +29,36 @@ class StakeholderReportSectionController extends Controller
      */
     public function index(Request $request)
     {
-        $moduleType = $this->moduleType($request);
+        $moduleType = $this->moduleFilter($request);
+        $name = trim((string) $request->query('name', ''));
+        $status = $request->query('status');
+        $permission = $request->query('permission');
 
         if (auth()->user()->role == 1) {
-            $sections = StakeholderQuestionSection::forModule($moduleType)
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $sectionsQuery = StakeholderQuestionSection::query()
+                ->withCount('subsections')
+                ->orderBy('created_at', 'desc');
 
-            return view('admin.stakeholders.sections.index', compact('sections', 'moduleType'));
+            if ($moduleType !== 'all') {
+                $sectionsQuery->forModule($moduleType);
+            }
+
+            if ($name !== '') {
+                $sectionsQuery->where('name', 'like', '%' . $name . '%');
+            }
+
+            if (in_array($status, ['0', '1'], true)) {
+                $sectionsQuery->where('status', (int) $status);
+            }
+
+            if ($permission !== null && $permission !== '') {
+                $sectionsQuery->whereJsonContains('access_roles', (int) $permission);
+            }
+
+            $sections = $sectionsQuery->paginate(30)->withQueryString();
+            $roles = StakeholderRole::orderBy('name')->get();
+
+            return view('admin.stakeholders.sections.index', compact('sections', 'moduleType', 'roles'));
         }
         return abort(404);
     }
@@ -40,8 +69,9 @@ class StakeholderReportSectionController extends Controller
     public function create(Request $request)
     {
         $moduleType = $this->moduleType($request);
-        $roles = StakeholderRole::all();
-        return view('admin.stakeholders.sections.edit', compact('roles', 'moduleType'));
+        $permissions = $this->permissionsForModule($moduleType);
+
+        return view('admin.stakeholders.sections.edit', compact('permissions', 'moduleType'));
     }
 
     /**
@@ -51,8 +81,9 @@ class StakeholderReportSectionController extends Controller
     {
         $section = StakeholderQuestionSection::findOrFail($id);
         $moduleType = $request->query('module_type') ?: ($section->module_type ?? 'report');
-        $roles = StakeholderRole::all();
-        return view('admin.stakeholders.sections.edit', compact('section', 'roles', 'moduleType'));
+        $permissions = $this->permissionsForModule($moduleType);
+
+        return view('admin.stakeholders.sections.edit', compact('section', 'permissions', 'moduleType'));
     }
 
     /**
@@ -64,14 +95,20 @@ class StakeholderReportSectionController extends Controller
         $request->merge([
             'slug' => Str::slug($request->slug ?: $request->name),
         ]);
+
+        $permissionTable = $moduleType === 'appraisal'
+            ? 'stakeholder_permissions'
+            : 'stakeholder_roles';
+
         $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:stakeholder_question_sections,slug,NULL,id,module_type,' . $moduleType,
+            'module_type' => 'required|in:report,appraisal',
             'access_roles' => 'nullable|array',
-            'access_roles.*' => 'exists:stakeholder_roles,id',
+            'access_roles.*' => 'integer|exists:' . $permissionTable . ',id',
             'status' => 'nullable|boolean',
         ]);
-        
+
         StakeholderQuestionSection::create([
             'name' => $request->name,
             'slug' => $request->slug,
@@ -95,11 +132,16 @@ class StakeholderReportSectionController extends Controller
             'slug' => Str::slug($request->slug ?: $request->name),
         ]);
 
+        $permissionTable = $moduleType === 'appraisal'
+            ? 'stakeholder_permissions'
+            : 'stakeholder_roles';
+
         $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:stakeholder_question_sections,slug,' . $section->id . ',id,module_type,' . $moduleType,
+            'module_type' => 'required|in:report,appraisal',
             'access_roles' => 'nullable|array',
-            'access_roles.*' => 'exists:stakeholder_roles,id',
+            'access_roles.*' => 'integer|exists:' . $permissionTable . ',id',
             'status' => 'nullable|boolean',
         ]);
 
@@ -113,6 +155,29 @@ class StakeholderReportSectionController extends Controller
 
         return redirect()->route('stakeholderreportsection.index', ['module_type' => $moduleType])
             ->with('message', 'Section updated successfully.');
+    }
+
+    protected function permissionsForModule(string $moduleType)
+    {
+        if ($moduleType === 'appraisal') {
+            $allowed = [
+                'field-pastor-fill',
+                'zonal-pastor-fill',
+                'nec-member-fill',
+                'nec-member-evaluate',
+                'field-pastor-evaluate',
+                'national-president-fill',
+                'national-president-evaluate',
+                'ncp-evaluate',
+            ];
+
+            return StakeholderPermission::query()
+                ->whereIn('slug', $allowed)
+                ->orderBy('name')
+                ->get();
+        }
+
+        return StakeholderRole::query()->orderBy('name')->get();
     }
 
     /**

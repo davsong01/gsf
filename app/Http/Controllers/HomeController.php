@@ -245,7 +245,7 @@ class HomeController extends Controller
                 ->where('role', '<>', 1)
                     ->where('is_graduated', 1)
                         ->latest()
-                            ->paginate(15)
+                            ->paginate(30)
                                 ->withQueryString();
 
         return view('frontend.' . frontendTemplate() . '.alumni', compact('alumnis','chapters'));
@@ -270,7 +270,7 @@ class HomeController extends Controller
                 ->where('role', '<>', 1)
                     ->where('is_graduated', 0)
                         ->latest()
-                            ->paginate(15)
+                            ->paginate(30)
                                 ->withQueryString();
         return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
     }
@@ -288,13 +288,13 @@ class HomeController extends Controller
     }
 
     public function studentsByChapter($id){
-        $alumnis = User::where('chapter_id', $id)->whereStatus(0)->where('role', '<>', 1)->paginate(15)->withQueryString();
+        $alumnis = User::where('chapter_id', $id)->whereStatus(0)->where('role', '<>', 1)->paginate(30)->withQueryString();
         return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
     }
 
     public function alumniByChapter($id)
     {
-        $alumnis = User::where('chapter_id', $id)->whereStatus(1)->where('role', '<>', 1)->paginate(15)->withQueryString();
+        $alumnis = User::where('chapter_id', $id)->whereStatus(1)->where('role', '<>', 1)->paginate(30)->withQueryString();
         return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
     }
 
@@ -315,7 +315,7 @@ class HomeController extends Controller
         ->where("role", "<>", 1);
 
         $count = $searchMember->count();
-        $searchMember = $searchMember->paginate(15)->withQueryString();
+        $searchMember = $searchMember->paginate(30)->withQueryString();
 
         return view('frontend.' . frontendTemplate() . '.general_search_results', compact('searchMember', 'count'));
     }

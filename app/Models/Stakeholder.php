@@ -34,6 +34,8 @@ class Stakeholder extends Authenticatable
         'year',
         'status',
         'credentials_sent',
+        'access_appraisal_system',
+        'access_appraisal_evaluation',
         'last_login'
     ];
 
@@ -48,6 +50,8 @@ class Stakeholder extends Authenticatable
         'chapter_id' => 'integer',
         'designation_id' => 'integer',
         'credentials_sent' => 'boolean',
+        'access_appraisal_system' => 'boolean',
+        'access_appraisal_evaluation' => 'boolean',
         'deleted_at' => 'datetime',
     ];
 

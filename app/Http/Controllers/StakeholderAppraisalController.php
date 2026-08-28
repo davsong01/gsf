@@ -34,11 +34,12 @@ class StakeholderAppraisalController extends Controller
         }
 
         $appraisal = $this->appraisalService->selfAppraisalFor($user);
+        $formPrefix = $this->appraisalService->appraisalFormPrefix($user);
 
         return view('stakeholder.appraisal.my', [
             'user' => $user,
             'access' => $this->appraisalService->dashboardAccess($user),
-            'sections' => $this->appraisalService->structureForMode($user, 'my'),
+            'sections' => $this->appraisalService->structureForMode($user, 'my', false, $formPrefix),
             'summary' => $this->appraisalService->summary($user),
             'appraisal' => $appraisal,
             'answers' => $this->appraisalService->loadSelfAnswers($appraisal),
@@ -56,7 +57,18 @@ class StakeholderAppraisalController extends Controller
             return back()->with('error', 'You are not authorized to view evaluations.');
         }
 
-        $targets = $this->appraisalService->evaluationCandidates($user);
+        $targets = $this->appraisalService->evaluationTargets($user)
+            ->map(function (Stakeholder $target) {
+                $target->setRelation('published_appraisal', $this->appraisalService->appraisalForEvaluation($target));
+
+                return $target;
+            })
+            ->sortBy(function (Stakeholder $target) {
+                $isFilled = (($target->published_appraisal?->self_status ?? 'draft') === 'published') ? 0 : 1;
+
+                return sprintf('%d|%s', $isFilled, mb_strtolower($target->name ?? ''));
+            })
+            ->values();
 
         return view('stakeholder.appraisal.evaluations', [
             'user' => $user,
@@ -82,27 +94,31 @@ class StakeholderAppraisalController extends Controller
         }
 
         $appraisal = $this->appraisalService->appraisalForEvaluation($stakeholder);
-
-        if (! $appraisal) {
-            return back()->with('error', 'This officer has not published a self appraisal yet.');
-        }
-
         $audience = $this->appraisalService->evaluatorAudience($user, $stakeholder);
+        $evaluationLocked = ($appraisal?->evaluation_status ?? 'draft') === 'published';
+        $formPrefix = $this->appraisalService->appraisalFormPrefix($stakeholder);
 
         return view('stakeholder.appraisal.evaluate', [
             'user' => $user,
             'target' => $stakeholder,
             'access' => $this->appraisalService->dashboardAccess($user),
             'summary' => $this->appraisalService->summary($user),
-            'selfSections' => $this->appraisalService->structureForMode($stakeholder, 'my'),
-            'evaluationSections' => $this->appraisalService->structureForMode($user, 'evaluations'),
+            'selfSections' => $this->appraisalService->structureForMode($stakeholder, 'my', false, $formPrefix),
+            'evaluationSections' => $this->appraisalService->structureForMode($user, 'evaluations', false, $formPrefix),
             'appraisal' => $appraisal,
-            'selfAnswers' => $this->appraisalService->loadSelfAnswers($appraisal),
-            'evaluationAnswers' => $this->appraisalService->loadAnswersForAudience($appraisal, $audience),
+            'selfAnswers' => $appraisal ? $this->appraisalService->loadSelfAnswers($appraisal) : collect(),
+            'evaluationAnswers' => $appraisal ? $this->appraisalService->loadAnswersForAudience($appraisal, $audience) : collect(),
             'audience' => $audience,
             'evaluationAuthorityLabel' => $this->appraisalService->evaluationAuthorityLabel($stakeholder),
             'instructionProfile' => appraisalInstructionProfile($this->appraisalService->appraisalFormPrefix($stakeholder)),
+            'evaluationPrefillData' => $this->appraisalService->evaluationPrefillData($user, $stakeholder),
             'pageTitle' => 'Evaluate ' . $stakeholder->name,
+            'selfEditable' => false,
+            'canSubmitSelf' => false,
+            'evaluationEditable' => (bool) $appraisal && ! $evaluationLocked,
+            'canSubmitEvaluation' => (bool) $appraisal && ! $evaluationLocked,
+            'appraisalMissing' => ! (bool) $appraisal,
+            'evaluationLocked' => $evaluationLocked,
         ]);
     }
 
@@ -165,12 +181,18 @@ class StakeholderAppraisalController extends Controller
             'answers' => 'nullable|array',
         ]);
 
+        $appraisal = $this->appraisalService->selfAppraisalFor($stakeholder);
+
+        if (($appraisal->evaluation_status ?? 'draft') === 'published') {
+            return back()->with('error', 'This evaluation has already been published and cannot be edited again.');
+        }
+
         $validated['answers'] = $this->appraisalService->prepareSubmissionAnswers(
             $user,
             $request,
             'evaluations',
             $validated['status'],
-            $this->appraisalService->appraisalForEvaluation($stakeholder),
+            $appraisal,
             $stakeholder
         );
 

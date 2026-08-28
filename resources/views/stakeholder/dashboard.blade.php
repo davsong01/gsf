@@ -415,7 +415,7 @@
             </a>
         </div>
 
-        @if(($appraisalAccess['my_appraisal'] ?? false) || ($appraisalAccess['evaluations'] ?? false))
+        @if(app(\App\Services\AppraisalService::class)->hasMenuAccess($user))
             {{-- My Appraisal --}}
             @if($appraisalAccess['my_appraisal'] ?? false)
                 <div class="col-md-3 col-sm-6 mb-2">

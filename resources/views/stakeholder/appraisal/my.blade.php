@@ -7,6 +7,11 @@
 
 @php
     $isPublished = ($appraisal->self_status ?? 'draft') === 'published';
+    $isAdmin = $isAdmin ?? false;
+    $formAction = $formAction ?? route('stakeholders.appraisal.my.store');
+    $backUrl = $backUrl ?? null;
+    $formModeLabel = $formModeLabel ?? null;
+    $formEditable = $formEditable ?? (! $isPublished);
 @endphp
 
 <style>
@@ -120,9 +125,15 @@
         <div class="appraisal-hero px-3 py-3 px-md-4 py-md-3 appraisal-topbar">
             <div class="position-relative d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
-                    <small class="text-uppercase opacity-75 d-block mb-1">Self Appraisal</small>
+                    <small class="text-uppercase opacity-75 d-block mb-1">
+                        {{ $formModeLabel ?? 'Self Appraisal' }}
+                    </small>
                     <p class="mt-1">
-                        Complete your self appraisal below, then save it as a draft or publish it when ready.
+                        @if($isAdmin)
+                            Review and update this stakeholder's self appraisal directly.
+                        @else
+                            Complete your self appraisal below, then save it as a draft or publish it when ready.
+                        @endif
                     </p>
                 </div>
                 <div class="status-pill">
@@ -130,6 +141,13 @@
                     Status: <span class="text-capitalize">{{ $appraisal->self_status ?? 'draft' }}</span>
                 </div>
             </div>
+            @if($backUrl)
+                <div class="mt-3">
+                    <a href="{{ $backUrl }}" class="btn btn-sm btn-light">
+                        <i class="fa fa-arrow-left me-1"></i> Back to Appraisals
+                    </a>
+                </div>
+            @endif
         </div>
 
         @include('stakeholder.appraisal._instructions', [
@@ -149,7 +167,7 @@
             </div>
         @endif
 
-        <form action="{{ route('stakeholders.appraisal.my.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ $formAction }}" method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="status" id="my_appraisal_status" value="draft">
 
@@ -157,12 +175,12 @@
                 'sections' => $sections,
                 'answers' => $answers,
                 'prefillData' => $prefillData ?? [],
-                'editable' => ! $isPublished,
+                'editable' => $formEditable,
                 'audience' => 'fill',
                 'fieldPrefix' => 'answers',
             ])
 
-            @if(! $isPublished)
+            @if($formEditable)
                 <div class="d-flex flex-wrap gap-2 justify-content-end action-row">
                     <button type="submit" class="btn btn-outline-primary px-4" onclick="return window.AppraisalSubmission.prepare('draft', this.form)">
                         Save Draft
@@ -171,11 +189,15 @@
                         Publish Appraisal
                     </button>
                 </div>
+            @elseif($isPublished)
+                <div class="alert alert-success mt-3">
+                    Appraisal Completed, thank you! This form is now locked.
+                </div>
             @endif
         </form>
     </div>
 </div>
-@if(! $isPublished)
+@if($formEditable)
     @include('stakeholder.appraisal._submission_script')
 @endif
 @endsection

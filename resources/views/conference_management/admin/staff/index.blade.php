@@ -39,9 +39,7 @@
                                                  <span style="color:blue">
                                                     <strong>Admin Role:</strong> {{ ucfirst($participant->conference_role) }}</span>
                                             </td>
-                                            <td>
-                                                <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->passport ? $participant->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
-                                            </td>
+                                            <td>{!! renderAvatar($participant, 40, 'mr-1') !!}</td>
                                             <td>
                                                 <small>
                                                     <b>{{ $participant->family_id }}</b> <br>
