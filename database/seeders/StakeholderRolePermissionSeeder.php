@@ -5,15 +5,12 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\StakeholderRole;
 use App\Models\StakeholderPermission;
-use App\Services\StakeholderRolePermissionService;
 
 // php artisan db:seed --class=StakeholderRolePermissionSeeder
 class StakeholderRolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        $service = new StakeholderRolePermissionService();
-
         $rolesPermissions = [
             'Secretariat' => [
                 'report.questions.view_chapter_section',
@@ -76,8 +73,8 @@ class StakeholderRolePermissionSeeder extends Seeder
                 $permissionIds[] = $permission->id;
             }
 
-            // Sync permissions to role
-            $service->syncPermissionsToRole($role, $permissionIds);
+            // Keep the existing role permissions and add any missing ones.
+            $role->permissions()->syncWithoutDetaching($permissionIds);
         }
     }
 }

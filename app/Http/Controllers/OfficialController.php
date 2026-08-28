@@ -60,6 +60,10 @@ class OfficialController extends Controller
         $user = User::create($data);
 
         $user->update([
+            'permissions' => $request->input('permissions', []),
+        ]);
+
+        $user->update([
             'family_id' => 'GSF-OFF-' . $user->id,
         ]);
 
@@ -70,7 +74,7 @@ class OfficialController extends Controller
 
     public function edit(User $official)
 	{
-        return view('admin.official.create')->with('official', $official);
+        return view('admin.official.create', compact('official'));
     }
 
    public function update(User $official, Request $request)
@@ -100,6 +104,10 @@ class OfficialController extends Controller
         }
        
         $official->update($data);
+
+        $official->update([
+            'permissions' => $request->input('permissions', []),
+        ]);
 
         return redirect()
             ->route('officials.index')

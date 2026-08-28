@@ -74,6 +74,32 @@
                     </a>
                 </li>
             @endif
+
+            @php
+                $appraisalService = app(\App\Services\AppraisalService::class);
+                $appraisalAccess = $appraisalService->dashboardAccess($user);
+                $canAccessMyAppraisal = (bool) ($appraisalAccess['my_appraisal'] ?? false);
+                $canAccessEvaluations = (bool) ($appraisalAccess['evaluations'] ?? false);
+            @endphp
+
+            @if($canAccessMyAppraisal)
+                <li class="nav-item {{ $currentRoute === 'stakeholders.appraisal.my' ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.appraisal.my') }}">
+                        <i class="fa fa-pen-to-square" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Self Appraisal</span>
+                    </a>
+                </li>
+            @endif
+
+            @if($canAccessEvaluations)
+                <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.appraisal.evaluations') ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.appraisal.evaluations') }}">
+                        <i class="fa fa-users-gear" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Evaluations</span>
+                    </a>
+                </li>
+            @endif
+
             @if(in_array($user->role_id, chapterStakeholders()))
                 <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.users') ? 'active' : '' }}">
                     <a href="{{ route('stakeholders.users.index') }}">

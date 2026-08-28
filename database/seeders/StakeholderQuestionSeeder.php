@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\StakeholderReportQuestion;
 use App\Models\StakeholderQuestionSection;
 use App\Models\StakeholderQuestionSubSection;
@@ -925,7 +926,9 @@ class StakeholderQuestionSeeder extends Seeder
             // 1. Create Section
             $section = StakeholderQuestionSection::create([
                 'name' => $sectionData['name'],
-            'status' => 1,]);
+                'slug' => Str::slug($sectionData['name']),
+                'status' => 1,
+            ]);
 
 
             // 2. Loop through subsections
@@ -934,7 +937,9 @@ class StakeholderQuestionSeeder extends Seeder
                     $subsection = StakeholderQuestionSubSection::create([
                         'section_id' => $section->id,
                         'name' => $subsectionData['name'],
-                    'status' => 1,]);
+                        'slug' => Str::slug($section->slug . ' ' . $subsectionData['name']),
+                        'status' => 1,
+                    ]);
 
 
                     // 3. Loop through questions inside subsection

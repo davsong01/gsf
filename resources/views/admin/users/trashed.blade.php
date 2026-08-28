@@ -36,7 +36,7 @@
                                             <td>{{ $count++ }}</td>
                                             <td>{{ $user->deleted_at->format('Y-m-d') }}</td>
                                             <td>{{ $user->family_id }}</td>
-                                            <td><img class="mr-1" style="border-radius:50%" src="{{ asset($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40"></td>
+                                            <td>{!! renderAvatar($user, 40, 'mr-1') !!}</td>
                                             <td>
                                                 <strong>{{ $user->name }}</strong> <br>
                                                <i class="fa fa-envelope"></i> {{ $user->email }} <br>

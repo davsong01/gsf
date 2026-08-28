@@ -35,8 +35,7 @@
 										<tr>
 											<td>{{ $count++ }}</td>
 											<td><img class="mr-1" style="border-radius:50%"
-													src="{{ asset($n->passport ? $n->passport : 'frontend/passports/avatar.jpg') }}"
-													alt="avatar" height="40" width="40"></td>
+                                                    {!! renderAvatar($n, 40, 'mr-1') !!}</td>
 											
 											<td>
 												Name: {{ $n->name }} <br>

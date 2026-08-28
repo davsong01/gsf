@@ -149,7 +149,7 @@
                         <h3 class="header-section">{{ $section->name }}</h3>
 
                         @foreach($section->subsections as $subsection)
-                            @php $subAccess =  app('App\Services\StakeholderRolePermissionService'::class)->sectionAccess($user, $section); @endphp
+                            @php $subAccess = app('App\Services\StakeholderRolePermissionService'::class)->sectionAccess($user, $subsection); @endphp
                             @if($subAccess['view'] || $isAdmin)
                                 <div class="sub-section-card">
                                     <h5 class="sub-section">{{ $subsection->name }}</h5>

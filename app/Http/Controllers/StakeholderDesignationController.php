@@ -29,9 +29,10 @@ class StakeholderDesignationController extends Controller
      */
     public function create()
     {
+        $designation = null;
         $zones = Zone::all();
         $fields = Field::all();
-        return view('admin.designations.edit', compact('zones','fields')); // Using the same blade as edit
+        return view('admin.designations.edit', compact('designation', 'zones','fields')); // Using the same blade as edit
     }
 
     /**

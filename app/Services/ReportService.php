@@ -571,16 +571,24 @@ class ReportService
 
     }
 
-    public function canEditReport($report, $user)
+    public function canEditReport($report, $user, ?bool $forceAdmin = null)
     {
-        $role = $user->role_id;
+        $role = $user->role_id ?? $user->role ?? null;
 
-        $zone = $report->zone_status;
-        $field = $report->field_status;
-        $national = $report->national_status;
+        if (is_object($role)) {
+            $role = $role->id ?? null;
+        }
+
+        if (is_numeric($role)) {
+            $role = (int) $role;
+        }
+
+        $zone = (int) ($report->zone_status ?? 0);
+        $field = (int) ($report->field_status ?? 0);
+        $national = (int) ($report->national_status ?? 0);
 
         $inEditMode = (bool) $report->edit_mode;
-        $isAdmin = isAdmin()['status'];
+        $isAdmin = $forceAdmin ?? isAdmin($user)['status'];
 
         $isFinance = finStakeholders($user);
 
@@ -592,7 +600,7 @@ class ReportService
                 'reason' => null,
                 'canEdit' =>
                     $isAdmin ||
-                    in_array($role, chapterStakeholders()),
+                    in_array($role, chapterStakeholders(), true),
             ];
         }
 

@@ -3,7 +3,7 @@
  <footer class="footer">
     <div class="footer-copyright">
         <div class="container-custom">
-            &copy; Copyright {{ date('Y') }}. All Right Reserved | Built with love by <a href="https://davidoghi.com">Techdaves</a> 
+            &copy; Copyright {{ date('Y') }}. All Right Reserved | Built with love by <a href="https://dembrix.com">Dembrix</a>
         </div>
     </div>
 </footer>

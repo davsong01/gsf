@@ -17,10 +17,52 @@ class StakeholderRolePermissionService
             return ['view' => true];
         }
 
-        $userRoles = $user->roles->pluck('id')->toArray();
+        $userAccessIds = [];
+
+        if (($model->module_type ?? 'report') === 'appraisal') {
+            if ($user) {
+                $userAccessIds = collect($user->permissions())->pluck('id')->all();
+
+                if (method_exists($user, 'roles')) {
+                    $userAccessIds = array_merge(
+                        $userAccessIds,
+                        $user->relationLoaded('roles')
+                            ? $user->roles->pluck('id')->toArray()
+                            : $user->roles()->pluck('id')->toArray()
+                    );
+                }
+
+                if (isset($user->role_id) && $user->role_id) {
+                    $userAccessIds[] = $user->role_id;
+                }
+
+                if (isset($user->designation_id) && $user->designation_id) {
+                    $userAccessIds[] = $user->designation_id;
+                }
+            }
+
+            return [
+                'view' => count(array_intersect($userAccessIds, $model->access_roles)) > 0,
+            ];
+        }
+
+        if ($user) {
+            if (method_exists($user, 'roles')) {
+                $userAccessIds = array_merge(
+                    $userAccessIds,
+                    $user->relationLoaded('roles')
+                        ? $user->roles->pluck('id')->toArray()
+                        : $user->roles()->pluck('id')->toArray()
+                );
+            }
+
+            if (isset($user->role_id) && $user->role_id) {
+                $userAccessIds[] = $user->role_id;
+            }
+        }
 
         return [
-            'view' => count(array_intersect($userRoles, $model->access_roles)) > 0
+            'view' => count(array_intersect($userAccessIds, $model->access_roles)) > 0
         ];
     }
 
@@ -42,6 +84,10 @@ class StakeholderRolePermissionService
             $user->role->load('permissions');
         }
 
+        if (!$user->relationLoaded('designation')) {
+            $user->load('designation:id,name');
+        }
+
         $rolePermissionIds = $user->role->permissions
             ->pluck('id')
             ->toArray();
@@ -50,14 +96,36 @@ class StakeholderRolePermissionService
             ->pluck('id')
             ->toArray();
 
-        $hasPermission = !empty(array_intersect(
-            $rolePermissionIds,
-            $questionPermissionIds
-        ));
+        $hasPermission = !empty(array_intersect($rolePermissionIds, $questionPermissionIds));
+
+        if (($question->module_type ?? 'report') !== 'appraisal') {
+            return [
+                'view' => true,
+                'edit' => $hasPermission,
+            ];
+        }
+
+        if (
+            $user->access_appraisal_evaluation
+            && ($user?->designation?->name === 'National President')
+            && in_array($question->audience ?? 'fill', ['evaluate', 'national_president'], true)
+        ) {
+            return ['view' => true, 'edit' => true];
+        }
+
+        $requiredSlug = $this->appraisalQuestionPermissionSlug($question->permissions->pluck('slug')->all());
+
+        if (! $requiredSlug) {
+            return ['view' => true, 'edit' => true];
+        }
+
+        if (app(AppraisalService::class)->hasAppraisalPermission($user, $requiredSlug)) {
+            return ['view' => true, 'edit' => true];
+        }
 
         return [
-            'view' => true,
-            'edit' => $hasPermission,
+            'view' => false,
+            'edit' => false,
         ];
     }
 
@@ -91,6 +159,30 @@ class StakeholderRolePermissionService
                     ->values();
             }
         );
+    }
+
+    protected function appraisalQuestionPermissionSlug(array $questionPermissionSlugs): ?string
+    {
+        $knownSlugs = [
+            'field-pastor-fill',
+            'zonal-pastor-fill',
+            'nec-member-fill',
+            'nec-member-evaluate',
+            'field-pastor-evaluate',
+            'national-president-fill',
+            'national-president-evaluate',
+            'ncp-evaluate',
+            'appraisal.appraisee',
+            'appraisal.appraiser',
+        ];
+
+        foreach ($questionPermissionSlugs as $slug) {
+            if (in_array($slug, $knownSlugs, true)) {
+                return $slug;
+            }
+        }
+
+        return null;
     }
 
 }

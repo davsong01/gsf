@@ -22,6 +22,7 @@ class SwitchUserController extends Controller
             return redirect('/');
         }
         $admin = Auth::user()->id;
+        $target = $request->query('target');
 
         if ($type === 'stakeholder') {
             $stakeholder = Stakeholder::findOrFail($id);
@@ -32,7 +33,11 @@ class SwitchUserController extends Controller
             Auth::guard('stakeholder')->loginUsingId($stakeholder->id);
             $stakeholder->update(['last_login' => now()]);
 
-            return redirect()->route('stakeholders.dashboard');
+            return match ($target) {
+                'appraisal-my' => redirect()->route('stakeholders.appraisal.my'),
+                'appraisal-evaluations' => redirect()->route('stakeholders.appraisal.evaluations'),
+                default => redirect()->route('stakeholders.dashboard'),
+            };
         }
 
         $user = User::findOrFail($id);

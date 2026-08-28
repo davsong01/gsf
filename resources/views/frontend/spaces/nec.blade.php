@@ -136,7 +136,6 @@
         @foreach($nec as $n)
             @php
                 $stakeholder = $n->stakeholder;
-                $avatar = $stakeholder?->avatar ?? 'frontend/passports/avatar.jpg';
                 $email  = $stakeholder?->email;
                 $displayName = $stakeholder?->name ?? 'N/A';
                 $office = $n->name ?? 'N/A';
@@ -146,17 +145,7 @@
             <div class="col-md-2 col-sm-6 nec-card">
                 <div class="our-team">
                     <div class="pic">
-                        <img
-                            src="{{ asset($avatar) }}"
-                            alt="{{ $displayName }}"
-                            style="
-                                width: 100px;
-                                height: 100px;
-                                border-radius: 50%;
-                                object-fit: cover;
-                                box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px,
-                                            rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
-                            ">
+                        {!! renderAvatar($stakeholder, 100) !!}
                         <div class="social_media_team">
                             <ul class="team_social">
                                 @if($email)

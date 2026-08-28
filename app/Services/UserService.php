@@ -296,7 +296,7 @@ class UserService
         $count = $start + 1; // correct serial number
 
         foreach ($users as $user) {
-            $avatar = asset($user->passport ?? "frontend/passports/avatar.jpg");
+            $avatar = renderAvatar($user, 40);
             $campus = $user->campus?->name ?? '';
 
             $data[] = [
@@ -314,7 +314,7 @@ class UserService
                             <i class='fa fa-envelope'></i> {$user->email}<br>
                             <i class='fa fa-phone'></i> {$user->phone}<br>
                             <i class='fa fa-university'></i> GSF, {$campus}",
-                'avatar' => "<img style='border-radius:50%' src='{$avatar}' height='40' width='40'>",
+                'avatar' => $avatar,
                 'is_graduated' => $user->is_graduated == 0 ? 'Student' : 'Alumni',
                 'designation' => $user?->designation?->name ?? 'N/A',
                 'role' => $user->rolename

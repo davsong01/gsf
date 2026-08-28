@@ -81,12 +81,7 @@
                                         <fieldset class="form-group">
                                             <label for="avatar">Avatar</label>
                                             <div style="display: flex; align-items: center; gap: 10px;">
-                                                @if(!empty($stakeholder?->avatar))
-                                                    <img
-                                                        src="{{ asset($stakeholder->avatar) }}"
-                                                        alt="Current Avatar"
-                                                        style="height: 55px; width: 55px; border-radius: 50%; object-fit: cover;">
-                                                @endif
+                                                {!! renderAvatar($stakeholder, 55) !!}
                                                 <input
                                                     type="file"
                                                     class="form-control"
@@ -231,6 +226,52 @@
                                                 data-current="{{ $stakeholder->designation_id ?? '' }}">
                                                 <option value="">--Select--</option>
                                             </select>
+                                        </fieldset>
+                                    </div>
+                                </div>
+
+                                {{-- APPRAISAL ACCESS --}}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label class="sections">Appraisal Access</label><br>
+                                        <small class="text-muted d-block mb-2">These switches control whether the stakeholder sees appraisal links in their dashboard menu.</small>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <fieldset class="form-group">
+                                            <label class="d-block mb-2" for="access_appraisal_system">Access Appraisal System</label>
+                                            <div class="form-check form-switch">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="checkbox"
+                                                    id="access_appraisal_system"
+                                                    name="access_appraisal_system"
+                                                    value="1"
+                                                    {{ old('access_appraisal_system', $stakeholder->access_appraisal_system ?? false) ? 'checked' : '' }}
+                                                >
+                                                <label class="form-check-label" for="access_appraisal_system">
+                                                    Show self appraisal menu
+                                                </label>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <fieldset class="form-group">
+                                            <label class="d-block mb-2" for="access_appraisal_evaluation">Access Evaluation</label>
+                                            <div class="form-check form-switch">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="checkbox"
+                                                    id="access_appraisal_evaluation"
+                                                    name="access_appraisal_evaluation"
+                                                    value="1"
+                                                    {{ old('access_appraisal_evaluation', $stakeholder->access_appraisal_evaluation ?? false) ? 'checked' : '' }}
+                                                >
+                                                <label class="form-check-label" for="access_appraisal_evaluation">
+                                                    Show evaluations menu
+                                                </label>
+                                            </div>
                                         </fieldset>
                                     </div>
                                 </div>
@@ -466,4 +507,3 @@ $(document).ready(function () {
 });
 </script>
 @endsection
-

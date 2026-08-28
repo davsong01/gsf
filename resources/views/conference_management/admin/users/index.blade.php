@@ -57,7 +57,7 @@
                                                 <span id="single-{{$participant->transid}}"><span>
                                             </td>
                                             <td>
-                                                <img class="mr-1" style="border-radius:50%" src="{{ asset($participant->user->passport ? $participant->user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="40" width="40">
+                                                {!! renderAvatar($participant->user, 40, 'mr-1') !!}
                                             </td>
                                             <td>
                                                 <small>

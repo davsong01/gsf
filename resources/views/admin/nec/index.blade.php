@@ -35,11 +35,7 @@
                                         @foreach($nec as $n)
                                             <tr style="font-size: 12px;">
                                                 <td>{{ $loop->iteration }}</td>
-                                                <td>
-                                                    <img class="mr-1" style="border-radius:50%"
-                                                        src="{{ asset($n->stakeholder?->avatar ?? 'frontend/passports/avatar.jpg') }}"
-                                                        alt="avatar" height="40" width="40">
-                                                </td>
+                                                <td>{!! renderAvatar($n->stakeholder, 40, 'mr-1') !!}</td>
 
                                                 <td>
                                                     Office: {{ $n->name }} <br>

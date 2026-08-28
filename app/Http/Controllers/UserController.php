@@ -231,35 +231,20 @@ class UserController extends Controller
 		$request['chapter_id'] = $user->chapter_id;
 		$request['role'] = $user->role;
 
-		$this->validate($request, [
-			'email' => 'unique:users,email,'.$user->id,
+		$request->validate([
+			'name' => 'required|string|max:255',
+			'email' => 'required|email|unique:users,email,'.$user->id,
+			'phone' => 'required|string|max:50',
+			'gender' => 'required|in:Male,Female',
+			'dob' => 'nullable|date',
+			'password' => 'nullable|string|min:6',
+			'passport' => 'nullable|image',
 		]);
 
-		$data = $this->validateUser($request);
+		$data = $this->userService->prepareUserData($request, $user);
 
-		//Handle password
-		if ($request['password']) {
-			$data['password'] = Hash::make($request['password']);
-		} else {
-			$data['password'] = $user->password;
-		}
-
-		if ($request->show_phone) {
-			$data['show_phone'] = 1;
-		} else $data['show_phone'] = 0;
-
-		if ($request->show_email) {
-			$data['show_email'] = 1;
-		} else $data['show_email'] = 0;
-
-		//Handle Passport Upload
-		if ($request['passport']) {
-			$passport = $this->uploadImage($request->passport, 'images/passports', 500, 500);
-			$data['passport'] = $passport;
-		}
-
-		// Handle name change
-		$data['slug'] = Str::slug($request->name);
+		$data['show_phone'] = $request->filled('show_phone') ? 1 : 0;
+		$data['show_email'] = $request->filled('show_email') ? 1 : 0;
 
 		try {
 			$user->update($data);
@@ -267,7 +252,7 @@ class UserController extends Controller
 			return back()->with('error', $e->getMessage());
 		}
 
-		return back()->with('message', 'Operation Successful');
+		return back()->with('message', 'Profile updated successfully.');
 
 	}
 
@@ -361,11 +346,7 @@ class UserController extends Controller
 		$chapters = Chapter::all();
 		$portfolios = getCommunityPortfolios();
 		$sessions = range(date('1982'), date('Y'));
-
-		$president = $user->campus->stakeholder ?? null;
-		if($president){
-			$president = $president->where('role', 'President')->first();
-		}
+		$president = $user->campus?->chapterPresident;
 
 		return view('admin.users.profile', compact('chapters', 'user', 'president', 'portfolios', 'sessions'));
 	}

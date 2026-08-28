@@ -20,10 +20,11 @@ class ZoneController extends Controller
 
     public function create()
     {
+        $zone = null;
         $fields = Field::all();
         $pastors = Stakeholder::whereNotIn('role_id', [1, 2, 5])->get();
 
-        return view('admin.zones.edit', compact('fields', 'pastors'));
+        return view('admin.zones.edit', compact('zone', 'fields', 'pastors'));
     }
 
     public function edit(Zone $zone)

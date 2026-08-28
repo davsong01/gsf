@@ -1,237 +1,219 @@
-
 @extends('layouts.dashboard')
-@section('extra_styles')
-<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
-@endsection
-@section('extra_scripts')
-<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
-@endsection
-@section('title', 'My profile')
+
+@section('title', 'My Profile')
+
 @section('item')
-<li class="breadcrumb-item"> <a href="/account">Dashboard</a></li>
+<li class="breadcrumb-item">
+    <a href="/account">Dashboard</a>
+</li>
 @endsection
+
 @section('active')
-<li class="breadcrumb-item">My profile</li>
+<li class="breadcrumb-item">My Profile</li>
 @endsection
+
 @section('content')
+<style>
+    .admin-profile-shell {
+        position: relative;
+    }
+
+    .admin-profile-hero {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 1.1rem;
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+        color: #fff;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+    }
+
+    .admin-profile-hero::after {
+        content: '';
+        position: absolute;
+        inset: auto -4rem -5rem auto;
+        width: 16rem;
+        height: 16rem;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 68%);
+        pointer-events: none;
+    }
+
+    .admin-profile-avatar {
+        width: 5.5rem;
+        height: 5.5rem;
+        border-radius: 1.2rem;
+        overflow: hidden;
+        border: 3px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .admin-profile-stat {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 1rem;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+    }
+
+    .admin-profile-section {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 1rem;
+        background: #fff;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+    }
+
+    .admin-profile-section .section-title {
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 1rem;
+    }
+
+    .admin-profile-field label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 0.35rem;
+    }
+
+    .admin-profile-field .form-control,
+    .admin-profile-field .form-select {
+        border-radius: 0.85rem;
+        border-color: #dbe3ee;
+        box-shadow: none;
+    }
+
+    .admin-profile-field .form-control:focus,
+    .admin-profile-field .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.18rem rgba(37, 99, 235, 0.12);
+    }
+
+    .admin-profile-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .admin-profile-help {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+</style>
+
 <div class="content-body">
-    <!-- Basic Inputs start -->
-    <section id="basic-input">
+    <section class="admin-profile-shell">
         <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4 class="card-title">My Profile <br> <br>
-                            @if(!auth()->user()->isAdmin())
-                            @if(auth()->user()->status == 0)
-                            <span class="btn btn-primary btn-sm">Student</span>
-                            <span class="btn btn-info btn-sm">{{ $user->rolename }}</span>
-                            @else
-                            <span class="btn btn-danger btn-sm">Alumni</span>
-                            <span class="btn btn-dark btn-sm">{{ $user->rolename }}</span>
-                            @endif
-                            @else
-                            <span class="btn btn-dark btn-sm">{{ $user->rolename }}</span>
-                            @endif
-                        </h4>
-                        @include('includes.alerts')
-                    </div>
-                    <div class="card-content">
-                        <div class="card-body">
-                            <form action="{{ route('users.profile.save', $user->id) }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            @method('PATCH')
-                         <div class="row">
-                             <div class="col-md-3">
-                                <div class="media-left pr-0"><img style="width: 150px !important; border-radius: 50%;" class="mr-1" src="{{ asset($user->passport ? $user->passport : 'frontend/passports/avatar.jpg') }}" alt="avatar" height="20%">
+            <div class="col-12 mb-3">
+                <div class="admin-profile-hero p-4 p-lg-5">
+                    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4 position-relative">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="admin-profile-avatar">
+                                {!! renderAvatar($user, 160, 'w-100 h-100') !!}
+                            </div>
+                            <div>
+                                <div class="admin-profile-badge mb-2">
+                                    <i class="fa fa-user-shield"></i>
+                                    Admin Profile
+                                </div>
+                                <h3 class="mb-1 text-white">{{ $user->name }}</h3>
+                                <div class="text-white-50">{{ $user->email }}</div>
+                                <div class="mt-2 d-flex flex-wrap gap-2">
+                                    <span class="badge bg-light text-dark">{{ $user->rolename }}</span>
+                                    @if($user->campus)
+                                        <span class="badge bg-light text-dark">GSF, {{ $user->campus->name }}</span>
+                                    @endif
+                                    @if($user->designation)
+                                        <span class="badge bg-light text-dark">{{ $user->designation->name }}</span>
+                                    @endif
                                 </div>
                             </div>
-                            <div class="col-md-9">
-                                <label for="">Overview</label> <br>
-                                <span><strong>Login ID:</strong> {{ $user->family_id }}</span> <br>
-                                @if($user->campus)
-                                <span><strong>Campus:</strong> GSF, {{ $user->campus->name ?? '' }} </span> <br>
-                                @endif
-                                @if(!is_null($president))
-                                <span><em><b>Current President:</b></em> {{ $president->name }}</span><br>
-                                <span><em><b>Current President's Phone:</b></em> {{  $president->phone }}</span><br>
-                                @endif
-                                @if(!auth()->user()->isAdmin() && auth()->user()->status == 0)
-                                <a href="{{ route('student.single', $user->slug) }}" target="_blank" class="btn btn-dark">View Profile</a>
-                                @endif
-                                @if(!auth()->user()->isAdmin() && auth()->user()->status == 1)
-                                <a href="{{ route('student.single', $user->slug)  }}" target="_blank" class="btn btn-dark">View Profile</a>
-                                @endif
-                            </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 col-sm-12">
-                                <fieldset class="form-group">
-                                    <label for="name">Name</label>
-                                    <input type="text" class="form-control" id="name" name="name" value="{{ old('name') ?? $user->name }}" placeholder="Enter name">
-                                </fieldset>
-
-                                <fieldset class="form-group">
-                                    <label for="email">Email</label>
-                                    <input type="email" id="email" name="email" class="form-control" value="{{ old('email') ?? $user->email }}" required>
-                                    <input type="checkbox" id="show_email" name="show_email" {{ $user->show_email == 1 ? 'checked' : '' }}><label for="show_email"> &nbsp; Make email public</label>
-                                </fieldset>
-
-                                <fieldset class="form-group">
-
-                                    <label for="phone">Phone</label>
-
-                                    <input type="phone" id="phone" name="phone" class="form-control" value="{{ old('phone') ?? $user->phone }}" required>
-                                    <input type="checkbox" id="show_phone" name="show_phone" {{ $user->show_phone == 1 ? 'checked' : '' }}><label for="show_phone">&nbsp; Make phone public</label>
-                                </fieldset>
-
-                                <fieldset class="form-group">
-                                    <label for="gender">Gender</label>
-                                    <select class="form-control" name="gender" id="gender" required {{ isset($setting) && $setting->status == 'active'?'disabled':'' }}>
-                                        <option value="Male" {{ $user->gender == 'Male' ? 'selected' : ''}}>Male</option>
-                                        <option value="Female" {{ $user->gender == 'Female' ? 'selected' : ''}}>Female</option>
-                                    </select>
-                                </fieldset>
-                                <fieldset class="form-group">
-                                    <label for="is_graduated">Undergraduate Status</label>
-                                    <select class="form-control" name="is_graduated" id="is_graduated" required>
-                                        <option value="">--Select Status--</option>
-                                        <option value="0" {{ $user->is_graduated == 0 ? 'selected' : ''}}>Student</option>
-                                        <option value="1" {{ $user->is_graduated == 1 ? 'selected' : ''}}>Alumni</option>
-                                    </select>
-                                </fieldset>
-                                
-                                <fieldset class="form-group">
-                                    <label for="open_to_work">Open to work? (this will add an open to work label on user profile)</label>
-                                    <select class="form-control" name="open_to_work" id="open_to_work" required>
-                                        <option value="1" {{ $user->open_to_work == 1 ? 'selected' : ''}}>Yes</option>
-                                        <option value="0" {{ $user->open_to_work == 0 ? 'selected' : ''}}>No</option>
-                                    </select>
-                                </fieldset>
-                                <fieldset class="form-group">
-                                    <label for="dob">Date of birth</label>
-                                    <input type="date" id="dob" name="dob" class="form-control" value="{{ old('dob') ?? $user->dob }}">
-                                </fieldset>
-
-                            <fieldset class="form-group @error('passport')is-invalid @enderror">
-                                <label for="passport">Change Passport</label>
-                                <input type= "file"  accept="image/*" class="form-control" name="passport" id="passport">
-                            </fieldset>
-                            <fieldset class="form-group">
-                                <label for="password">Password</label><small class="text-muted"><i style="color:red">Leave blank to use this user's phone number as password</i></small>
-                                <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
-                            </fieldset>
-                        </div>
-                        <div class="col-md-6 col-sm-12">
-                                @if(auth()->user()->isAdmin())
-                                <fieldset class="form-group">
-                                    <label for="chapter_id">Campus</label>
-                                    <select class="form-control" name="chapter_id" id="chapter_id" required>
-                                        {{-- //include chapter --}}
-                                        <option value="">--Select Campus--</option>
-                                        @foreach($chapters as $chapter)
-                                        <option value="{{ $chapter->id ?? old('chapter_id')}}" {{ $user->chapter_id == $chapter->id ? 'selected' : ''}}>{{ $chapter->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </fieldset>
-                                @endif
-                                @if(auth()->user()->isAdmin())
-                                <fieldset class="form-group">
-                                    <label for="portfolio">Portfolio</label>
-                                    <select class="form-control" name="role" id="role" required>
-                                        <option value="">--Select Portfolio--</option>
-                                        @foreach($portfolios as $portfolio=>$value)
-                                            @if(auth()->user()->isSubAdmin() && $portfolio <> 1)
-                                                <option value="{{ $portfolio }}" {{ $user->role == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
-                                            @endif
-                                            @if(auth()->user()->isAdmin())
-                                                <option value="{{ $portfolio }}" {{ $user->role == $portfolio ? 'selected' : '' }}>{{ $value }}</option>
-                                            @endif
-                                        @endforeach
-                                    </select>
-                                </fieldset>
-
-                                <fieldset class="form-group" id="session" style="display: {{ ($user->role == 1 || $user->role == 2) ? 'none' : '' }}">
-                                    <label for="portfolio">Portfolio session</label>
-                                    <select class="form-control" name="portfolio_session" id="portfolio_session">
-                                        @foreach($sessions as $session=>$value)
-                                            <option value="{{ $value . '/' . ($value + 1) }}" {{ old('portfolio_session') == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                                        @endforeach
-                                    </select>
-                                </fieldset>
-                                @endif
-                                <fieldset class="form-group">
-                                    <label for="program">Program</label>
-                                    <select class="form-control" name="program" required>
-                                        <option value="">Select...</option>
-                                        <option value="PHD"  {{ $user->program == 'PHD' ? 'selected' : '' }}>PHD</option>
-                                        <option value="PGD"  {{ $user->program == 'PGD' ? 'selected' : '' }}>PGD</option>
-                                        <option value="MSC"  {{ $user->program == 'MSC' ? 'selected' : '' }}>MSC</option>
-                                        <option value="BSC"  {{ $user->program == 'BSC' ? 'selected' : '' }}>BSC</option>
-                                        <option value="HND"  {{ $user->program == 'HND' ? 'selected' : '' }}>HND</option>
-                                        <option value="OND"  {{ $user->program == 'OND' ? 'selected' : '' }}>OND</option>
-                                        <option value="NCE"  {{ $user->program == 'NCE' ? 'selected' : '' }}>NCE</option>
-                                    </select>
-                                </fieldset>
-                                <fieldset class="form-group">
-                                    <label for="course">Course of study</label>
-                                    <select class="form-control" name="course"  id="course">
-                                        <option value="">Select...</option>
-                                        @foreach(coursesOfStudy() as $course)
-                                        <option value="{{$course}}" {{ (old('course') ?? $user->course == $course) ? 'selected' : '' }}>{{$course}}</option>
-                                        @endforeach
-                                    </select>
-                                </fieldset>
-                                <fieldset class="form-group">
-                                    <label for="course_duration">Course Duration(Years)</label>
-                                    <input type="number" id="course_duration" name="course_duration" class="form-control" value="{{ old('course_duration') ?? $user->course_duration }}" required>
-                                </fieldset>
-                                <fieldset class="form-group">
-                                    <label for="skills">Skills</label>
-                                    <input type="text" id="skills" name="skills" class="form-control" value="{{ $user->skills }}">
-                                </fieldset>
-                                <fieldset class="form-group">
-                                    <label for="matric_year">Year of Matriculation</label>
-                                    <select class="form-control" name="matric_year" id="matric_year">
-                                        @foreach($sessions as $session=>$value)
-                                        <option value="{{ $value . '/' . ($value + 1) }}" {{ $user->matric_year == $value . '/' . ($value + 1) ? 'selected' : '' }} required>{{ $value . '/' . ($value + 1) }}</option>
-                                    @endforeach
-                                    </select>
-                                </fieldset>
-                                <fieldset class="form-group">
-                                    <label for="graduation_year">Year of graduation</label>
-                                    <select class="form-control" name="graduation_year" id="graduation_year">
-                                        <option value="">Select...</option>
-                                        @foreach($sessions as $session=>$value)
-                                        <option value="{{ $value . '/' . ($value + 1) }}" {{ $user->graduation_year == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                                    @endforeach
-                                    </select>
-                                </fieldset>
-
-                                <fieldset class="form-group">
-                                    <label for="facebook">Facebook Profile</label>
-                                    <input type="link" id="facebook" name="facebook" class="form-control" value="{{ old('facebook') ?? $user->facebook }}">
-                                </fieldset>
-                                <fieldset class="form-group">
-                                    <label for="twitter">Twitter Profile</label>
-                                    <input type="link" id="twitter" name="twitter" class="form-control" value="{{ old('twitter') ?? $user->twitter }}">
-                                </fieldset>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12 col-sm-12">
-                                <button class="btn btn-primary" style="width:100%" type="submit">Update</button>
-                                </form>
-                            </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ route('user.single', $user->slug) }}" target="_blank" class="btn btn-light btn-sm">
+                                <i class="fa fa-eye me-1"></i> View Public Profile
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="col-lg-12">
+                <div class="admin-profile-section p-4">
+                    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-4">
+                        <div>
+                            <h4 class="mb-1">My Profile</h4>
+                            <div class="admin-profile-help">Update your admin account information and visibility preferences.</div>
+                        </div>
+                    </div>
+
+                    @include('includes.alerts')
+
+                    <form action="{{ route('users.profile.save', $user->id) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        @method('PATCH')
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="admin-profile-section p-3 p-lg-4">
+                                    <div class="section-title">Personal Details</div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6 admin-profile-field">
+                                            <label for="name">Name</label>
+                                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $user->name) }}" placeholder="Enter name">
+                                        </div>
+                                        <div class="col-md-6 admin-profile-field">
+                                            <label for="email">Email</label>
+                                            <input type="email" id="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
+                                        </div>
+                                        <div class="col-md-6 admin-profile-field">
+                                            <label for="phone">Phone</label>
+                                            <input type="tel" id="phone" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}" required>
+                                        </div>
+                                        <div class="col-md-6 admin-profile-field">
+                                            <label for="gender">Gender</label>
+                                            <select class="form-select" name="gender" id="gender" required>
+                                                <option value="Male" {{ $user->gender == 'Male' ? 'selected' : '' }}>Male</option>
+                                                <option value="Female" {{ $user->gender == 'Female' ? 'selected' : '' }}>Female</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 admin-profile-field">
+                                            <label for="dob">Date of Birth</label>
+                                            <input type="date" id="dob" name="dob" class="form-control" value="{{ old('dob', $user->dob) }}">
+                                        </div>
+                                        <div class="col-md-6 admin-profile-field">
+                                            <label for="passport">Change Passport</label>
+                                            <input type="file" accept="image/*" class="form-control" name="passport" id="passport">
+                                        </div>
+                                        <div class="col-md-6 admin-profile-field">
+                                            <label for="password">Password</label>
+                                            <small class="text-muted d-block mb-1">Leave blank to keep the current password.</small>
+                                            <input type="text" class="form-control" name="password" id="password" value="{{ old('password') }}" placeholder="Enter password">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <button class="btn btn-primary w-100 py-2" type="submit">
+                                    Update Profile
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </section>
-    <!-- Basic Inputs end -->
-
 </div>
-
 @endsection
-
