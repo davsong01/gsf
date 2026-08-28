@@ -756,10 +756,12 @@ class AppraisalService
                 );
             })
             ->values()
-            ->map(function (StakeholderReportQuestion $question) {
+            ->map(function (StakeholderReportQuestion $question, int $index) {
+                $label = trim((string) ($question->label ?? $question->slug));
+
                 return [
                     'slug' => $question->slug,
-                    'header' => trim(($question->section?->name ? $question->section->name . ' / ' : '') . ($question->label ?? $question->slug)),
+                    'header' => sprintf('Q%02d - %s', $index + 1, Str::limit($label, 28, '...')),
                     'model' => $question,
                 ];
             });
