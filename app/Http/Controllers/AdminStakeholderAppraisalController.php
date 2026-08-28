@@ -7,6 +7,7 @@ use App\Models\Stakeholder;
 use App\Models\Zone;
 use App\Services\AppraisalService;
 use Illuminate\Http\Request;
+use Pdf;
 
 class AdminStakeholderAppraisalController extends Controller
 {
@@ -21,7 +22,7 @@ class AdminStakeholderAppraisalController extends Controller
         }
 
         $query = Stakeholder::query()
-            ->with(['role', 'designation', 'appraisal'])
+            ->with(['role', 'designation', 'appraisal.evaluator'])
             ->whereHas('role', function ($query) {
                 $query->where('slug', '!=', 'chapter-representative');
             })
@@ -59,7 +60,7 @@ class AdminStakeholderAppraisalController extends Controller
             ->orderBy('name');
 
         $stakeholders = (clone $query)
-            ->paginate(15)
+            ->paginate(100)
             ->withQueryString();
 
         $filteredTotal = (clone $query)->count();
@@ -84,6 +85,22 @@ class AdminStakeholderAppraisalController extends Controller
             'fields' => Field::orderBy('name')->get(),
             'zones' => Zone::orderBy('name')->get(),
         ]);
+    }
+
+    public function pdf(Stakeholder $stakeholder)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $data = $this->appraisalService->appraisalPdfData($stakeholder, null, true);
+
+        $pdf = Pdf::loadView('stakeholder.appraisal.pdf', [
+            ...$data,
+            'isAdmin' => true,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('appraisal-' . str()->slug($stakeholder->name) . '.pdf');
     }
 
     public function editSelf(Stakeholder $stakeholder)
@@ -236,5 +253,46 @@ class AdminStakeholderAppraisalController extends Controller
             'appraisal_status_scope' => 'evaluation',
             'appraisal_status_stakeholder_id' => $stakeholder->id,
         ]);
+    }
+
+    public function remind(Stakeholder $stakeholder)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $queued = $this->appraisalService->queueAppraisalReminderEmails($stakeholder);
+
+        if ($queued === 0) {
+            return back()->with('message', 'No pending appraisal reminders for this stakeholder.');
+        }
+
+        return back()->with('message', "{$queued} reminder email(s) queued successfully.");
+    }
+
+    public function bulkRemind(Request $request)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'action' => 'required|in:remind',
+            'stakeholders' => 'required|array|min:1',
+            'stakeholders.*' => 'integer|exists:stakeholders,id',
+        ]);
+
+        $stakeholders = Stakeholder::query()
+            ->with(['appraisal.evaluator', 'role', 'designation', 'field', 'zone', 'chapter'])
+            ->whereIn('id', $validated['stakeholders'])
+            ->get();
+
+        $queued = 0;
+
+        foreach ($stakeholders as $stakeholder) {
+            $queued += $this->appraisalService->queueAppraisalReminderEmails($stakeholder, $stakeholder->appraisal);
+        }
+
+        return back()->with('message', "{$queued} reminder email(s) queued successfully.");
     }
 }

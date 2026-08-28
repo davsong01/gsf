@@ -6,6 +6,7 @@ use App\Models\Stakeholder;
 use App\Services\AppraisalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Pdf;
 
 class StakeholderAppraisalController extends Controller
 {
@@ -149,9 +150,11 @@ class StakeholderAppraisalController extends Controller
             $appraisal
         );
 
-        $this->appraisalService->saveSelfAppraisal($user, $validated, $validated['status']);
+        $appraisal = $this->appraisalService->saveSelfAppraisal($user, $validated, $validated['status']);
 
         if ($validated['status'] === 'published') {
+            $this->appraisalService->queueAppraisalReminderEmails($user, $appraisal);
+
             return redirect()
                 ->route('stakeholders.dashboard')
                 ->with('message', 'Appraisal Completed, thank you!');
@@ -201,6 +204,36 @@ class StakeholderAppraisalController extends Controller
         return redirect()
             ->route('stakeholders.appraisal.evaluations.show', $stakeholder)
             ->with('message', $validated['status'] === 'published' ? 'The evaluation has been published.' : 'The evaluation draft has been saved.');
+    }
+
+    public function pdf(Stakeholder $stakeholder)
+    {
+        $user = Auth::guard('stakeholder')->user();
+
+        if (! $this->appraisalService->canAccessMode($user, 'evaluations')) {
+            return back()->with('error', 'You are not authorized to view appraisal PDFs.');
+        }
+
+        $targetIds = $this->appraisalService->evaluationTargets($user)->pluck('id')->all();
+
+        if (! in_array($stakeholder->id, $targetIds, true)) {
+            return back()->with('error', 'This officer is not available for your evaluation scope.');
+        }
+
+        $appraisal = $this->appraisalService->appraisalRecordForPdf($stakeholder);
+
+        if (! $appraisal || ($appraisal->self_status !== 'published' || $appraisal->evaluation_status !== 'published')) {
+            return back()->with('error', 'The PDF is available only after both the appraisal and evaluation have been published.');
+        }
+
+        $data = $this->appraisalService->appraisalPdfData($stakeholder, $user, false);
+
+        $pdf = Pdf::loadView('stakeholder.appraisal.pdf', [
+            ...$data,
+            'isAdmin' => false,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('appraisal-' . str()->slug($stakeholder->name) . '.pdf');
     }
 
     public function appraisee()

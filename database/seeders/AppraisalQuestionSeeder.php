@@ -642,11 +642,39 @@ class AppraisalQuestionSeeder extends Seeder
             ['label' => 'Total NEC Meetings Attended', 'slug' => "{$form}-total-nec-meetings-attended", 'type' => 'text', 'audience' => 'appraiser'],
         ], $permissions);
 
-        $sectionI = $this->createSection('SECTION I: Official Use only (To be completed by the National President)');
-        $this->applyAccessDesignations($sectionI, ['National President']);
-        $subI = $this->createSubSection($sectionI, 'Evaluator Assessment');
-        $this->applyAccessDesignations($subI, ['National President']);
-        $this->createQuestionSet($subI, [
+        $sectionH = $this->createSection('SECTION H: Office-Specific Questions. Kindly respond to the questions below in not more than 2 lines per question');
+        $this->applyAccessRoles($sectionH, ['Nec Member']);
+        $subH = $this->createSubSection($sectionH, 'Self-Reflection');
+        $this->applyAccessRoles($subH, ['Nec Member']);
+        $this->createQuestionSet($subH, [
+            ['label' => 'What are your top 3 strategic goals for the remainder of your tenure?', 'slug' => "{$form}-office-top-3-strategic-goals", 'type' => 'textarea', 'audience' => 'appraisee'],
+            ['label' => 'What key challenges impacted your performance during the period under review?', 'slug' => "{$form}-office-key-challenges", 'type' => 'textarea', 'audience' => 'appraisee'],
+            ['label' => 'What specific resources or administrative support do you require?', 'slug' => "{$form}-office-resources-needed", 'type' => 'textarea', 'audience' => 'appraisee'],
+            ['label' => 'What specific initiatives do you intend to implement before the end of your administration?', 'slug' => "{$form}-office-initiatives", 'type' => 'textarea', 'audience' => 'appraisee'],
+            ['label' => 'What were the major responsibilities assigned to this officer during the period under review?', 'slug' => "{$form}-office-major-responsibilities", 'type' => 'textarea', 'audience' => 'appraisee'],
+            ['label' => 'Which of these responsibilities were effectively carried out?', 'slug' => "{$form}-office-responsibilities-effectively-carried-out", 'type' => 'textarea', 'audience' => 'appraisee'],
+            ['label' => 'Which responsibilities were not fully carried out, and why?', 'slug' => "{$form}-office-responsibilities-not-carried-out", 'type' => 'textarea', 'audience' => 'appraisee'],
+            ['label' => 'What specific achievement can be credited to this officer?', 'slug' => "{$form}-office-specific-achievement", 'type' => 'textarea', 'audience' => 'appraisee'],
+            ['label' => 'What area of the officer performance requires improvement?', 'slug' => "{$form}-office-area-requires-improvement", 'type' => 'textarea', 'audience' => 'appraisee'],
+            ['label' => 'What training, support, or resources does your office need?', 'slug' => "{$form}-office-training-support-resources", 'type' => 'textarea', 'audience' => 'appraisee'],
+            ['label' => 'What recommendations should be made for further development?', 'slug' => "{$form}-office-recommendations", 'type' => 'textarea', 'audience' => 'appraisee'],
+        ], $permissions);
+
+        $sectionI = $this->createSection('SECTION I: General Observations and Recommendations');
+        $this->applyAccessRoles($sectionI, ['NCP']);
+        $subI1 = $this->createSubSection($sectionI, 'General Observations');
+        $this->applyAccessRoles($subI1, ['NCP']);
+        $this->createQuestionSet($subI1, [
+            ['label' => 'What are the major strengths of this National Officer?', 'slug' => "{$form}-major-strengths-of-national-officer", 'type' => 'textarea', 'audience' => 'appraiser'],
+            ['label' => 'What weaknesses or concerns were observed?', 'slug' => "{$form}-weaknesses-or-concerns-observed", 'type' => 'textarea', 'audience' => 'appraiser'],
+            ['label' => 'What support, training, or mentoring does this officer need?', 'slug' => "{$form}-support-training-or-mentoring-needed", 'type' => 'textarea', 'audience' => 'appraiser'],
+            ['label' => 'Recommendation on continuation in office', 'slug' => "{$form}-recommendation-on-continuation", 'type' => 'select', 'options' => $this->nationalRecommendationOptions(), 'audience' => 'appraiser'],
+            ['label' => 'Reason', 'slug' => "{$form}-continuation-reason", 'type' => 'textarea', 'audience' => 'appraiser'],
+        ], $permissions);
+
+        $subI2 = $this->createSubSection($sectionI, 'Evaluator Assessment');
+        $this->applyAccessRoles($subI2, ['NCP']);
+        $this->createQuestionSet($subI2, [
             ['label' => 'Key strengths observed in this officer', 'slug' => "{$form}-evaluator-key-strengths", 'type' => 'textarea', 'audience' => 'appraiser'],
             ['label' => 'Specific performance gaps or areas requiring improvement', 'slug' => "{$form}-evaluator-performance-gaps", 'type' => 'textarea', 'audience' => 'appraiser'],
             ['label' => 'Key notable achievements recorded under their leadership', 'slug' => "{$form}-evaluator-notable-achievements", 'type' => 'textarea', 'audience' => 'appraiser'],

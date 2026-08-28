@@ -9,6 +9,7 @@ use App\Models\StakeholderDesignation;
 use App\Models\StakeholderQuestionSection;
 use App\Models\StakeholderReportQuestion;
 use App\Models\StakeholderRole;
+use App\Services\EmailService;
 use App\Services\FileUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -580,6 +581,183 @@ class AppraisalService
             ->where('appraisee_id', $target->id)
             ->where('self_status', 'published')
             ->first();
+    }
+
+    public function appraisalRecordForPdf(Stakeholder $target): ?StakeholderAppraisal
+    {
+        return StakeholderAppraisal::with(['answers', 'appraisee', 'evaluator'])
+            ->where('appraisee_id', $target->id)
+            ->first();
+    }
+
+    public function appraisalPdfData(Stakeholder $target, ?Stakeholder $viewer = null, bool $isAdmin = false): array
+    {
+        $appraisal = $this->appraisalRecordForPdf($target);
+        $formPrefix = $this->appraisalFormPrefix($target);
+        $evaluator = $appraisal?->evaluator ?: ($viewer ?: $target);
+        $audience = $appraisal
+            ? $this->evaluatorAudience($evaluator, $target)
+            : self::AUDIENCE_EVALUATE;
+
+        return [
+            'target' => $target->loadMissing(['designation', 'role', 'field', 'zone', 'chapter']),
+            'appraisal' => $appraisal,
+            'selfSections' => $this->structureForMode($target, 'my', $isAdmin, $formPrefix),
+            'evaluationSections' => $this->structureForMode($evaluator, 'evaluations', $isAdmin, $formPrefix),
+            'selfAnswers' => $appraisal ? $this->loadSelfAnswers($appraisal) : collect(),
+            'evaluationAnswers' => $appraisal ? $this->loadAnswersForAudience($appraisal, $audience) : collect(),
+            'audience' => $audience,
+            'evaluationAuthorityLabel' => $this->evaluationAuthorityLabel($target),
+            'selfStatus' => $appraisal?->self_status ?? 'draft',
+            'evaluationStatus' => $appraisal?->evaluation_status ?? 'draft',
+            'selfPublishedAt' => $appraisal?->self_published_at,
+            'evaluationPublishedAt' => $appraisal?->evaluation_published_at,
+            'formPrefix' => $formPrefix,
+            'instructionProfile' => appraisalInstructionProfile($formPrefix),
+        ];
+    }
+
+    public function queueAppraisalReminderEmails(Stakeholder $target, ?StakeholderAppraisal $appraisal = null): int
+    {
+        $queued = 0;
+
+        foreach ($this->appraisalReminderPayloads($target, $appraisal) as $payload) {
+            EmailService::logEmail($payload);
+
+            $queued++;
+        }
+
+        return $queued;
+    }
+
+    public function appraisalReminderPayloads(Stakeholder $target, ?StakeholderAppraisal $appraisal = null): array
+    {
+        $appraisal = $appraisal ?: $this->appraisalRecordForPdf($target);
+        $payloads = [];
+
+        if (! $appraisal || $appraisal->self_status !== 'published') {
+            $payloads[] = $this->buildReminderPayload($target, 'self');
+        }
+
+        if ($appraisal && $appraisal->self_status === 'published' && $appraisal->evaluation_status !== 'published') {
+            $evaluator = $appraisal?->evaluator ?: $this->responsibleEvaluatorFor($target);
+
+            if ($evaluator) {
+                $payloads[] = $this->buildReminderPayload($target, 'evaluation', $evaluator);
+            }
+        }
+
+        return array_values(array_filter($payloads));
+    }
+
+    public function responsibleEvaluatorFor(Stakeholder $target): ?Stakeholder
+    {
+        if ($this->isNationalPresident($target)) {
+            return Stakeholder::query()
+                ->with('designation', 'role')
+                ->whereHas('role', function ($query) {
+                    $query->where('slug', 'ncp');
+                })
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        if ($this->isNecMemberTarget($target)) {
+            return Stakeholder::query()
+                ->with('designation', 'role')
+                ->whereHas('designation', function ($query) {
+                    $query->where('name', 'National President');
+                })
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        if ($this->isFieldPastorTarget($target)) {
+            return Stakeholder::query()
+                ->with('designation', 'role')
+                ->whereHas('role', function ($query) {
+                    $query->where('slug', 'ncp');
+                })
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        if ($this->isZonalPastorTarget($target)) {
+            return Stakeholder::query()
+                ->with('designation', 'role')
+                ->whereHas('role', function ($query) {
+                    $query->where('slug', 'field-pastor');
+                })
+                ->where('field_id', $target->field_id)
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        return null;
+    }
+
+    protected function buildReminderPayload(Stakeholder $target, string $scope, ?Stakeholder $recipient = null): ?array
+    {
+        $recipient = $recipient ?: $target;
+
+        if (! $recipient || empty($recipient->email)) {
+            return null;
+        }
+
+        $stakeholderName = $target->name ?? 'the stakeholder';
+        $stakeholderTitle = $target->designation?->name ?? $target->role?->name ?? 'Stakeholder';
+        $label = $scope === 'evaluation' ? 'Evaluation Reminder' : 'Appraisal Reminder';
+        $subject = $scope === 'evaluation'
+            ? "Appraisal Evaluation Reminder for {$stakeholderName}"
+            : "Complete Your Appraisal for {$stakeholderName}";
+
+        $content = $scope === 'evaluation'
+            ? "
+                Dear {$recipient->name},<br><br>
+                This is a reminder to complete the evaluation for <strong>{$stakeholderName}</strong> ({$stakeholderTitle}).<br><br>
+                Please log in to your dashboard to finish the evaluation when you can.<br><br>
+                Thank you.
+            "
+            : "
+                Dear {$recipient->name},<br><br>
+                This is a reminder to complete your self appraisal for <strong>{$stakeholderName}</strong> ({$stakeholderTitle}).<br><br>
+                Please log in to your dashboard to complete and publish your appraisal when you can.<br><br>
+                Thank you.
+            ";
+
+        return [
+            'recipient' => $recipient->email,
+            'subject' => $subject,
+            'content' => trim($content),
+            'type' => 'appraisal_reminder',
+            'reminder_scope' => $scope,
+            'appraisee_id' => $target->id,
+        ];
+    }
+
+    protected function isNecMemberTarget(Stakeholder $user): bool
+    {
+        $designationName = $user?->designation?->name ?? '';
+        $roleSlug = $user?->role?->slug;
+
+        return $roleSlug === 'nec-member'
+            || $roleSlug === 'nec'
+            || str_contains($designationName, 'National Officer');
+    }
+
+    protected function isZonalPastorTarget(Stakeholder $user): bool
+    {
+        $designationName = $user?->designation?->name ?? '';
+        $roleSlug = $user?->role?->slug;
+
+        return $roleSlug === 'zonal-pastor'
+            || str_contains($designationName, 'Zonal Pastor')
+            || str_contains($designationName, 'Assistant Zonal Pastor');
+    }
+
+    protected function isFieldPastorTarget(Stakeholder $user): bool
+    {
+        return ($user?->role?->slug ?? null) === 'field-pastor';
     }
 
     protected function syncAnswers(StakeholderAppraisal $appraisal, array $payload, string $audience, int $answeredById): void

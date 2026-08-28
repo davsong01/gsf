@@ -21,6 +21,23 @@
         font-size: 0.78rem;
     }
 
+    .appraisal-stakeholder-link {
+        color: #0f172a;
+        text-decoration: none;
+        transition: color 0.15s ease, text-decoration-color 0.15s ease;
+    }
+
+    .appraisal-stakeholder-link:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+        text-underline-offset: 0.18rem;
+    }
+
+    .appraisal-stakeholder-link i {
+        font-size: 0.72rem;
+        color: #64748b;
+    }
+
     .appraisal-stat-card {
         position: relative;
         overflow: hidden;
@@ -142,8 +159,8 @@
     }
 
     .appraisal-filter-actions .btn {
-        min-width: 0;
-        flex: 1 1 7rem;
+        min-width: 7rem;
+        flex: 0 0 auto;
     }
 </style>
 <div class="content-body">
@@ -164,11 +181,11 @@
                             <div class="card-body">
                                 <form method="GET" action="{{ route('stakeholderappraisals.index') }}">
                                     <div class="row g-3 align-items-end">
-                                        <div class="col-lg-3 col-md-6">
+                                        <div class="col-lg-2 col-md-6">
                                             <label for="search">Search</label>
                                             <input type="text" class="form-control" id="search" name="search" value="{{ request('search') }}" placeholder="Search name, email, or phone">
                                         </div>
-                                        <div class="col-lg-2 col-md-6">
+                                        <div class="col-lg-3 col-md-6">
                                             <label for="field_id">Field</label>
                                             <select class="form-select" id="field_id" name="field_id">
                                                 <option value="">All fields</option>
@@ -177,7 +194,7 @@
                                                 @endforeach
                                             </select>
                                         </div>
-                                        <div class="col-lg-2 col-md-6">
+                                        <div class="col-lg-3 col-md-6">
                                             <label for="zone_id">Zone</label>
                                             <select class="form-select" id="zone_id" name="zone_id">
                                                 <option value="">All zones</option>
@@ -202,12 +219,10 @@
                                                 <option value="published" @selected(request('evaluation_status') === 'published')>Published</option>
                                             </select>
                                         </div>
-                                        <div class="col-lg-2 col-md-12">
-                                            <div class="d-flex flex-wrap gap-2 appraisal-filter-actions justify-content-lg-end">
-                                                <button type="submit" class="btn btn-primary rounded-pill">Filter</button>
-                                                <a href="{{ route('stakeholderappraisals.index') }}" class="btn btn-outline-secondary rounded-pill">Reset</a>
-                                            </div>
-                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 justify-content-end mt-1 appraisal-filter-actions">
+                                        <button type="submit" class="btn btn-primary rounded-pill">Filter</button>
+                                        <a href="{{ route('stakeholderappraisals.index') }}" class="btn btn-outline-secondary rounded-pill">Reset</a>
                                     </div>
                                 </form>
                             </div>
@@ -262,10 +277,35 @@
                             <div class="alert alert-success">{{ session('message') }}</div>
                         @endif --}}
 
+                        <div class="card appraisal-filter-card mb-3">
+                            <div class="card-body">
+                                <form method="POST" action="{{ route('stakeholderappraisals.bulk-remind') }}" id="bulkReminderForm">
+                                    @csrf
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-lg-5 col-md-6">
+                                            <label for="bulk_action" class="form-label">Bulk Action</label>
+                                            <select name="action" id="bulk_action" class="form-select">
+                                                <option value="remind">Send Reminder</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6">
+                                            <button type="submit" class="btn btn-primary rounded-pill w-100" onclick="return confirm('Queue reminder emails for the selected stakeholders?')">
+                                                Apply
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="bulkReminderInputs"></div>
+                                </form>
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-striped align-middle zero-configuration">
                                 <thead>
                                     <tr>
+                                        <th style="width: 42px;">
+                                            <input type="checkbox" id="selectAllStakeholders">
+                                        </th>
                                         <th>S/N</th>
                                         <th>Name</th>
                                         <th>Role</th>
@@ -278,6 +318,7 @@
                                     @forelse($stakeholders as $stakeholder)
                                         @php
                                             $appraisal = $stakeholder->appraisal;
+                                            $pendingReminders = $appraisalService->appraisalReminderPayloads($stakeholder, $appraisal);
                                             $showEvaluationStatus = (bool) (
                                                 $appraisal?->evaluation_status
                                                 || $appraisal?->evaluation_published_at
@@ -289,10 +330,14 @@
                                             $flashStakeholderId = session('appraisal_status_stakeholder_id');
                                         @endphp
                                         <tr>
+                                            <td>
+                                                <input type="checkbox" class="form-check-input stakeholder-row-checkbox" value="{{ $stakeholder->id }}">
+                                            </td>
                                             <td>{{ ($stakeholders->firstItem() ?? 0) + $loop->index }}</td>
                                             <td>
-                                                <a href="{{ route('stakeholderpersonnel.edit', $stakeholder->id) }}" class="fw-semibold text-decoration-none">
+                                                <a href="{{ route('stakeholderpersonnel.edit', $stakeholder->id) }}" target="_blank" rel="noopener" class="fw-semibold appraisal-stakeholder-link">
                                                     {{ $stakeholder->name }}
+                                                    <i class="fa fa-arrow-up-right-from-square ms-1"></i>
                                                 </a> <br>
                                                 <small class="text-muted">{{ $stakeholder->email }}</small>
                                             </td>
@@ -357,6 +402,25 @@
                                                         <i class="fa fa-eye me-1"></i>
                                                         View
                                                     </a>
+                                                    <a href="{{ route('stakeholderappraisals.pdf', $stakeholder) }}"
+                                                       target="_blank" rel="noopener"
+                                                       class="btn btn-outline-danger appraisal-action-btn">
+                                                        <i class="fa fa-file-pdf me-1"></i>
+                                                        PDF
+                                                    </a>
+                                                    @if(count($pendingReminders))
+                                                        <form action="{{ route('stakeholderappraisals.remind', $stakeholder) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit"
+                                                                    class="btn btn-outline-warning appraisal-action-btn"
+                                                                    onclick="return confirm('Queue reminder email(s) for this stakeholder?')">
+                                                                <i class="fa fa-bell me-1"></i>
+                                                                Reminder
+                                                            </button>
+                                                        </form>
+                                                    @else
+                                                        <span class="badge bg-light text-muted border">No reminders due</span>
+                                                    @endif
                                                 </div>
                                             </td>
                                         </tr>
@@ -383,4 +447,34 @@
         </div>
     </section>
 </div>
+@endsection
+
+@section('extra_scripts')
+<script>
+    document.getElementById('selectAllStakeholders')?.addEventListener('change', function () {
+        document.querySelectorAll('.stakeholder-row-checkbox').forEach(function (checkbox) {
+            checkbox.checked = this.checked;
+        }, this);
+    });
+
+    document.getElementById('bulkReminderForm')?.addEventListener('submit', function (event) {
+        const container = document.getElementById('bulkReminderInputs');
+        const selected = Array.from(document.querySelectorAll('.stakeholder-row-checkbox:checked'));
+
+        if (!selected.length) {
+            event.preventDefault();
+            alert('Please select at least one stakeholder.');
+            return;
+        }
+
+        container.innerHTML = '';
+        selected.forEach(function (checkbox) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'stakeholders[]';
+            input.value = checkbox.value;
+            container.appendChild(input);
+        });
+    });
+</script>
 @endsection

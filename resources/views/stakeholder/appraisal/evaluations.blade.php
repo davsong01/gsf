@@ -26,6 +26,10 @@
         font-size: 0.78rem;
     }
 
+    .eval-filter-actions .btn {
+        min-width: 7rem;
+    }
+
     .eval-note {
         border-left: 4px solid #1f6aa5;
         background: #f7f9fc;
@@ -53,9 +57,9 @@
             </div>
         </div>
 
-        @if(session('message'))
+        {{-- @if(session('message'))
             <div class="alert alert-success">{{ session('message') }}</div>
-        @endif
+        @endif --}}
 
         <div class="card border-0 shadow-sm">
             <div class="card-body">
@@ -79,7 +83,9 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>
-                                        <div class="fw-semibold">{{ $target->name }}</div>
+                                        <a href="{{ route('stakeholders.appraisal.evaluations.show', $target) }}" class="fw-semibold text-decoration-none">
+                                            {{ $target->name }}
+                                        </a> <br>
                                         <small class="text-muted">{{ $target->email }}</small>
                                     </td>
                                     <td>
@@ -108,10 +114,18 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ route('stakeholders.appraisal.evaluations.show', $target) }}" class="btn btn-outline-primary eval-action-btn">
-                                            <i class="fa fa-eye me-1"></i>
-                                            Open
-                                        </a>
+                                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                                            <a href="{{ route('stakeholders.appraisal.evaluations.show', $target) }}" class="btn btn-outline-primary eval-action-btn">
+                                                <i class="fa fa-eye me-1"></i>
+                                                Open
+                                            </a>
+                                            @if(($publishedAppraisal?->self_status ?? 'draft') === 'published' && ($publishedAppraisal?->evaluation_status ?? 'draft') === 'published')
+                                                <a href="{{ route('stakeholders.appraisal.evaluations.pdf', $target) }}" target="_blank" rel="noopener" class="btn btn-outline-danger eval-action-btn">
+                                                    <i class="fa fa-file-pdf me-1"></i>
+                                                    PDF
+                                                </a>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty

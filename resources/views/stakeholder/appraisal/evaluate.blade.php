@@ -7,12 +7,13 @@
 
 <style>
     .appraisal-hero {
-        background: linear-gradient(135deg, #102542 0%, #1f6aa5 58%, #6a8fc7 100%);
-        border-radius: 1.25rem;
-        color: #fff;
+        background: linear-gradient(135deg, #f8fbff 0%, #eef5fb 100%);
+        border: 1px solid #d6e1ee;
+        border-radius: 0.85rem;
+        color: #102542;
         overflow: hidden;
         position: relative;
-        box-shadow: 0 18px 40px rgba(16, 37, 66, 0.18);
+        box-shadow: 0 8px 24px rgba(16, 37, 66, 0.06);
     }
 
     .panel-card {
@@ -82,10 +83,13 @@
             $evaluationStatus = $appraisal?->evaluation_status ?? 'draft';
         @endphp
 
-        <div class="appraisal-hero p-4 p-md-5 mb-4">
-            <small class="text-uppercase opacity-75 d-block mb-2">Evaluation Workspace</small>
-            <h2 class="font-weight-bold mb-2">{{ $pageTitle ?? 'Evaluate' }}</h2>
-            <p class="mb-0" style="max-width: 760px;">
+        <div class="appraisal-hero p-3 p-md-3 mb-3">
+            <h2 class="font-weight-bold mb-1 h5">{{ $pageTitle ?? 'Evaluate' }}</h2>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                <span class="badge badge-primary px-2 py-2">Stakeholder Title: {{ $target->office ?? $target->designation?->name ?? 'Officer' }}</span>
+                <span class="badge badge-secondary px-2 py-2">Designation: {{ $target->designation?->name ?? 'Officer' }}</span>
+            </div>
+            <p class="mb-0 small text-muted" style="max-width: 760px;">
                 @if($isAdmin)
                     Review the published self appraisal and the evaluation responses for this stakeholder.
                 @else
@@ -120,40 +124,6 @@
                 This evaluation has already been published and is now locked.
             </div>
         @endif
-
-        <div class="row mb-4">
-            <div class="col-md-4 mb-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <small class="text-muted d-block">Officer being evaluated</small>
-                        <h4 class="mb-1">{{ $target->name }}</h4>
-                        <div class="text-muted">{{ $target->designation?->name ?? 'Officer' }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <small class="text-muted d-block">Self Status</small>
-                        <h4 class="mb-1 text-capitalize">{{ $selfStatus }}</h4>
-                        <div class="text-muted">
-                            Published on {{ $selfPublishedAt ? $selfPublishedAt->format('d M, Y') : 'not yet published' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <small class="text-muted d-block">Your evaluation status</small>
-                        <h4 class="mb-1 text-capitalize">{{ $evaluationStatus }}</h4>
-                        <div class="text-muted">
-                            Evaluation by: {{ $evaluationAuthorityLabel ?? 'Evaluator' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         @if($selfEditable)
             <form action="{{ $selfFormAction }}" method="POST" enctype="multipart/form-data" class="mb-4">

@@ -154,6 +154,9 @@ class EmailService {
                 'subject' => $subject,
                 'attachments' => !empty($data['attachments']) ? json_encode($data['attachments']) : null,
                 'content' => $content,
+                'status' => 0,
+                'sent_at' => null,
+                'errors' => null,
             ]);
 
             $data['settings'] = $record->settings ?? null;
@@ -195,6 +198,9 @@ class EmailService {
                     'subject' => $subject,
                     'attachments' => !empty($data['attachments']) ? json_encode($data['attachments']) : null,
                     'content' => $content,
+                    'status' => 0,
+                    'sent_at' => null,
+                    'errors' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -203,12 +209,19 @@ class EmailService {
             $insert = $data['recipients'];
         }else{
             $insert[] = [
-                'recipient' => in_array($type, ['new_registration']) ? $transaction->edition->official_email : $transaction->email,
+                'recipient' => $data['recipient'] ?? (
+                    in_array($type, ['new_registration']) && $transaction
+                        ? $transaction->edition->official_email
+                        : ($transaction->email ?? null)
+                ),
                 'type' => $type,
-                'conference_edition_id' => $transaction->conference_edition_id,
+                'conference_edition_id' => $transaction->conference_edition_id ?? null,
                 'subject' => $subject,
                 'attachments' => !empty($data['attachments']) ? json_encode($data['attachments']) : null,
                 'content' => $content,
+                'status' => 0,
+                'sent_at' => null,
+                'errors' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

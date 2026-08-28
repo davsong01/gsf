@@ -257,12 +257,15 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('stakeholdersetting', StakeholderSettingController::class);
     Route::controller(AdminStakeholderAppraisalController::class)->prefix('stakeholder-appraisals')->name('stakeholderappraisals.')->group(function () {
         Route::get('/', 'index')->name('index');
+        Route::get('/{stakeholder}/pdf', 'pdf')->name('pdf');
         Route::get('/{stakeholder}/self', 'editSelf')->name('self.edit');
         Route::post('/{stakeholder}/self', 'updateSelf')->name('self.update');
         Route::get('/{stakeholder}/evaluation', 'editEvaluation')->name('evaluation.edit');
         Route::post('/{stakeholder}/evaluation', 'updateEvaluation')->name('evaluation.update');
         Route::post('/{stakeholder}/unlock-self', 'unlockSelf')->name('unlock-self');
         Route::post('/{stakeholder}/unlock-evaluation', 'unlockEvaluation')->name('unlock-evaluation');
+        Route::post('/{stakeholder}/remind', 'remind')->name('remind');
+        Route::post('/bulk-remind', 'bulkRemind')->name('bulk-remind');
     });
 
     Route::resource('designation', StakeholderDesignationController::class);
@@ -678,6 +681,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::post('/self-appraisal', 'saveMyAppraisal')->name('my.store');
             Route::get('/evaluations', 'evaluations')->name('evaluations');
             Route::get('/evaluations/{stakeholder}', 'evaluate')->name('evaluations.show');
+            Route::get('/evaluations/{stakeholder}/pdf', 'pdf')->name('evaluations.pdf');
             Route::post('/evaluations/{stakeholder}', 'saveEvaluation')->name('evaluations.store');
 
             Route::get('/appraisee', 'appraisee')->name('appraisee');

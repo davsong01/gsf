@@ -11,12 +11,13 @@
 
 <style>
     .appraisal-hero {
-        background: linear-gradient(135deg, #102542 0%, #1f6aa5 58%, #6a8fc7 100%);
-        border-radius: 1.25rem;
-        color: #fff;
+        background: linear-gradient(135deg, #f8fbff 0%, #eef5fb 100%);
+        border: 1px solid #d6e1ee;
+        border-radius: 0.85rem;
+        color: #102542;
         overflow: hidden;
         position: relative;
-        box-shadow: 0 18px 40px rgba(16, 37, 66, 0.18);
+        box-shadow: 0 8px 24px rgba(16, 37, 66, 0.06);
     }
 
     .panel-card {
@@ -62,10 +63,9 @@
             $evaluationStatus = $appraisal?->evaluation_status ?? 'draft';
         @endphp
 
-        <div class="appraisal-hero p-4 p-md-5 mb-4">
-            <small class="text-uppercase opacity-75 d-block mb-2">{{ $formModeLabel ?? 'Admin Review' }}</small>
-            <h2 class="font-weight-bold mb-2">{{ $pageTitle ?? 'View Appraisal' }}</h2>
-            <p class="mb-0" style="max-width: 760px;">
+        <div class="appraisal-hero p-3 p-md-3 mb-3">
+            <h2 class="font-weight-bold mb-1 h5">{{ $pageTitle ?? 'View Appraisal' }}</h2>
+            <p class="mb-0 small text-muted" style="max-width: 760px;">
                 Review the stakeholder's submitted form and evaluation responses on the same screen.
             </p>
         </div>
@@ -90,7 +90,8 @@
                     <div class="card-body">
                         <small class="text-muted d-block">Officer being evaluated</small>
                         <h4 class="mb-1">{{ $target->name }}</h4>
-                        <div class="text-muted">{{ $target->designation?->name ?? 'Officer' }}</div>
+                        <div class="text-muted">Stakeholder Title: {{ $target->office ?? $target->designation?->name ?? 'Officer' }}</div>
+                        <div class="text-muted">Designation: {{ $target->designation?->name ?? 'Officer' }}</div>
                     </div>
                 </div>
             </div>
