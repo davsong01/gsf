@@ -617,6 +617,278 @@ class AppraisalService
         ];
     }
 
+    public function appraisalExportSheets(Collection $stakeholders): array
+    {
+        $questions = $this->appraisalExportQuestions();
+        $questionHeaders = $questions->map(fn ($question) => $question['header'])->all();
+
+        $responseHeaders = array_merge([
+            'S/N',
+            'Stakeholder',
+            'Role',
+            'Designation',
+            'Field',
+            'Zone',
+            'Self Status',
+            'Evaluation Status',
+            'Self Published At',
+            'Evaluation Published At',
+        ], $questionHeaders);
+
+        $responsesRows = [];
+        $ratingsRows = [];
+        $responseIndex = 1;
+        $ratingIndex = 1;
+
+        foreach ($stakeholders as $stakeholder) {
+            $appraisal = $stakeholder->appraisal;
+            $answers = ($appraisal?->answers ?? collect())->keyBy(fn ($answer) => $answer->audience . ':' . $answer->question_slug);
+            $selfScores = [];
+            $evaluationScores = [];
+
+            $row = [
+                'S/N' => $responseIndex++,
+                'Stakeholder' => $stakeholder->name,
+                'Role' => $stakeholder->role?->name ?? '',
+                'Designation' => $stakeholder->designation?->name ?? '',
+                'Field' => $stakeholder->field?->name ?? '',
+                'Zone' => $stakeholder->zone?->name ?? '',
+                'Self Status' => $appraisal?->self_status ?? 'draft',
+                'Evaluation Status' => $appraisal?->evaluation_status ?? 'draft',
+                'Self Published At' => optional($appraisal?->self_published_at)->format('d M Y, h:i A'),
+                'Evaluation Published At' => optional($appraisal?->evaluation_published_at)->format('d M Y, h:i A'),
+            ];
+
+            foreach ($questions as $question) {
+                $questionSlug = $question['slug'];
+                $questionModel = $question['model'];
+                $answer = $answers->get(self::AUDIENCE_FILL . ':' . $questionSlug);
+                $answerValue = $answer?->answer_value;
+
+                $row[$question['header']] = $this->appraisalExportAnswerText($questionModel, $answerValue);
+
+                $numericScore = $this->appraisalExportNumericScore($questionModel, $answerValue);
+                if ($numericScore !== null) {
+                    $selfScores[] = $numericScore;
+                }
+            }
+
+            $responsesRows[] = $row;
+
+            foreach ($answers->filter(fn ($answer) => $answer->audience !== self::AUDIENCE_FILL) as $answer) {
+                $questionEntry = $questions->firstWhere('slug', $answer->question_slug);
+                $questionModel = $questionEntry['model'] ?? null;
+                $numericScore = $this->appraisalExportNumericScore($questionModel, $answer->answer_value);
+
+                if ($numericScore !== null) {
+                    $evaluationScores[] = $numericScore;
+                }
+            }
+
+            $allScores = array_values(array_filter($selfScores, fn ($score) => $score !== null));
+
+            $ratingsRows[] = [
+                'S/N' => $ratingIndex++,
+                'Stakeholder' => $stakeholder->name,
+                'Role' => $stakeholder->role?->name ?? '',
+                'Designation' => $stakeholder->designation?->name ?? '',
+                'Field' => $stakeholder->field?->name ?? '',
+                'Zone' => $stakeholder->zone?->name ?? '',
+                'Self Questions Scored' => count($selfScores),
+                'Self Average' => $this->appraisalAverageScore($selfScores),
+                'Self Rating' => $this->appraisalRatingLabel($selfScores),
+                'Evaluation Questions Scored' => count($evaluationScores),
+                'Evaluation Average' => $this->appraisalAverageScore($evaluationScores),
+                'Evaluation Rating' => $this->appraisalRatingLabel($evaluationScores),
+                'Overall Questions Scored' => count(array_filter(array_merge($selfScores, $evaluationScores), fn ($score) => $score !== null)),
+                'Overall Average' => $this->appraisalAverageScore(array_merge($selfScores, $evaluationScores)),
+                'Overall Rating' => $this->appraisalRatingLabel(array_merge($selfScores, $evaluationScores)),
+                'Appraiser' => $appraisal?->evaluator?->name ?? '',
+                'Self Status' => $appraisal?->self_status ?? 'draft',
+                'Evaluation Status' => $appraisal?->evaluation_status ?? 'draft',
+            ];
+        }
+
+        return [
+            'Responses' => [
+                'headers' => $responseHeaders,
+                'rows' => $responsesRows,
+            ],
+            'Ratings' => [
+                'headers' => array_keys($ratingsRows[0] ?? [
+                    'S/N' => '',
+                    'Stakeholder' => '',
+                    'Role' => '',
+                    'Designation' => '',
+                    'Field' => '',
+                    'Zone' => '',
+                    'Self Questions Scored' => '',
+                    'Self Average' => '',
+                    'Self Rating' => '',
+                    'Evaluation Questions Scored' => '',
+                    'Evaluation Average' => '',
+                    'Evaluation Rating' => '',
+                    'Overall Questions Scored' => '',
+                    'Overall Average' => '',
+                    'Overall Rating' => '',
+                    'Appraiser' => '',
+                    'Self Status' => '',
+                    'Evaluation Status' => '',
+                ]),
+                'rows' => $ratingsRows,
+            ],
+        ];
+    }
+
+    protected function appraisalExportQuestions(): Collection
+    {
+        return StakeholderReportQuestion::query()
+            ->where('module_type', 'appraisal')
+            ->with(['section', 'subsection'])
+            ->get()
+            ->sortBy(function (StakeholderReportQuestion $question) {
+                return sprintf(
+                    '%03d|%03d|%03d|%s',
+                    (int) ($question->section?->order ?? 0),
+                    (int) ($question->subsection?->order ?? 0),
+                    (int) ($question->order ?? 0),
+                    $question->label ?? ''
+                );
+            })
+            ->values()
+            ->map(function (StakeholderReportQuestion $question) {
+                return [
+                    'slug' => $question->slug,
+                    'header' => trim(($question->section?->name ? $question->section->name . ' / ' : '') . ($question->label ?? $question->slug)),
+                    'model' => $question,
+                ];
+            });
+    }
+
+    protected function appraisalExportAnswerText(?StakeholderReportQuestion $question, mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '-';
+        }
+
+        $decoded = $this->appraisalMaybeDecodeJson($value);
+        $options = is_array($question?->options ?? null) ? $question->options : [];
+
+        $findLabel = function ($needle) use ($options) {
+            foreach ($options as $option) {
+                $optionValue = $option['value'] ?? null;
+                $optionLabel = $option['label'] ?? $optionValue;
+
+                if ((string) $optionValue === (string) $needle) {
+                    return $optionLabel;
+                }
+            }
+
+            return null;
+        };
+
+        if (is_array($decoded)) {
+            $mapped = array_map(function ($item) use ($findLabel) {
+                return $findLabel($item) ?? $item;
+            }, $decoded);
+
+            return implode(', ', array_filter($mapped, fn ($item) => $item !== null && $item !== ''));
+        }
+
+        if ($question && ($question->type ?? 'text') === 'file') {
+            $decodedPath = is_string($decoded) ? base64_decode($decoded, true) : null;
+
+            return basename($decodedPath ?: (string) $decoded ?: (string) $value);
+        }
+
+        return $findLabel($decoded) ?? (string) $decoded;
+    }
+
+    protected function appraisalExportNumericScore(?StakeholderReportQuestion $question, mixed $value): ?float
+    {
+        $decoded = $this->appraisalMaybeDecodeJson($value);
+
+        if (is_array($decoded)) {
+            return null;
+        }
+
+        if (is_numeric($decoded)) {
+            return (float) $decoded;
+        }
+
+        $options = is_array($question?->options ?? null) ? $question->options : [];
+
+        foreach ($options as $option) {
+            $optionValue = $option['value'] ?? null;
+
+            if ((string) $optionValue === (string) $decoded && is_numeric($optionValue)) {
+                return (float) $optionValue;
+            }
+        }
+
+        return null;
+    }
+
+    protected function appraisalAverageScore(array $scores): string
+    {
+        $scores = array_values(array_filter($scores, fn ($score) => is_numeric($score)));
+
+        if (empty($scores)) {
+            return 'N/A';
+        }
+
+        return number_format(array_sum($scores) / count($scores), 2);
+    }
+
+    protected function appraisalRatingLabel(array $scores): string
+    {
+        $scores = array_values(array_filter($scores, fn ($score) => is_numeric($score)));
+
+        if (empty($scores)) {
+            return 'N/A';
+        }
+
+        $average = array_sum($scores) / count($scores);
+
+        return match (true) {
+            $average >= 4.5 => 'Excellent',
+            $average >= 3.5 => 'Very Good',
+            $average >= 2.5 => 'Good',
+            $average >= 1.5 => 'Fair',
+            default => 'Poor',
+        };
+    }
+
+    protected function appraisalAudienceLabel(string $audience, Stakeholder $stakeholder): string
+    {
+        return match ($audience) {
+            self::AUDIENCE_FILL => 'Self',
+            'national_president' => 'National President Evaluation',
+            default => $this->evaluationAuthorityLabel($stakeholder),
+        };
+    }
+
+    protected function appraisalMaybeDecodeJson(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        $trimmed = trim($value);
+
+        if ($trimmed === '') {
+            return $value;
+        }
+
+        if (! in_array($trimmed[0] ?? '', ['[', '{'], true)) {
+            return $value;
+        }
+
+        $decoded = json_decode($trimmed, true);
+
+        return json_last_error() === JSON_ERROR_NONE ? $decoded : $value;
+    }
+
     public function queueAppraisalReminderEmails(Stakeholder $target, ?StakeholderAppraisal $appraisal = null): int
     {
         $queued = 0;

@@ -6,6 +6,7 @@ use App\Models\Field;
 use App\Models\Stakeholder;
 use App\Models\Zone;
 use App\Services\AppraisalService;
+use App\Services\ExcelService;
 use Illuminate\Http\Request;
 use Pdf;
 
@@ -101,6 +102,30 @@ class AdminStakeholderAppraisalController extends Controller
         ])->setPaper('a4', 'portrait');
 
         return $pdf->stream('appraisal-' . str()->slug($stakeholder->name) . '.pdf');
+    }
+
+    public function export(Request $request)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $stakeholders = $this->filteredQuery($request)
+            ->with(['role', 'designation', 'field', 'zone', 'chapter', 'appraisal.evaluator', 'appraisal.answers'])
+            ->get()
+            ->sortBy(function (Stakeholder $stakeholder) {
+                $appraisal = $stakeholder->appraisal;
+                $isAppraised = ($appraisal?->self_status ?? 'draft') === 'published' ? 0 : 1;
+                $isEvaluated = ($appraisal?->evaluation_status ?? 'draft') === 'published' ? 0 : 1;
+
+                return sprintf('%d|%d|%s', $isAppraised, $isEvaluated, mb_strtolower($stakeholder->name ?? ''));
+            })
+            ->values();
+
+        $sheets = $this->appraisalService->appraisalExportSheets($stakeholders);
+        $fileName = 'stakeholder-appraisals-' . now()->format('Y-m-d_His') . '.xlsx';
+
+        return ExcelService::downloadMultipleSheetsWithHeaders($sheets, $fileName);
     }
 
     public function editSelf(Stakeholder $stakeholder)
@@ -294,5 +319,46 @@ class AdminStakeholderAppraisalController extends Controller
         }
 
         return back()->with('message', "{$queued} reminder email(s) queued successfully.");
+    }
+
+    protected function filteredQuery(Request $request)
+    {
+        return Stakeholder::query()
+            ->with(['role', 'designation', 'appraisal.evaluator'])
+            ->whereHas('role', function ($query) {
+                $query->where('slug', '!=', 'chapter-representative');
+            })
+            ->when($request->filled('search'), function ($builder) use ($request) {
+                $search = trim($request->input('search'));
+
+                $builder->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('field_id'), function ($builder) use ($request) {
+                $builder->where('field_id', $request->input('field_id'));
+            })
+            ->when($request->filled('zone_id'), function ($builder) use ($request) {
+                $builder->where('zone_id', $request->input('zone_id'));
+            })
+            ->when($request->filled('self_status'), function ($builder) use ($request) {
+                $builder->whereHas('appraisal', function ($appraisalQuery) use ($request) {
+                    $appraisalQuery->where('self_status', $request->input('self_status'));
+                });
+            })
+            ->when($request->filled('evaluation_status'), function ($builder) use ($request) {
+                $builder->whereHas('appraisal', function ($appraisalQuery) use ($request) {
+                    $appraisalQuery->where('evaluation_status', $request->input('evaluation_status'));
+                });
+            })
+            ->orderByRaw("CASE WHEN EXISTS (
+                SELECT 1
+                FROM stakeholder_appraisals sa
+                WHERE sa.appraisee_id = stakeholders.id
+                AND sa.self_status = 'published'
+            ) THEN 0 ELSE 1 END")
+            ->orderBy('name');
     }
 }

@@ -222,6 +222,9 @@
                                     </div>
                                     <div class="d-flex flex-wrap gap-2 justify-content-end mt-1 appraisal-filter-actions">
                                         <button type="submit" class="btn btn-primary rounded-pill">Filter</button>
+                                        <button type="submit" class="btn btn-success rounded-pill" formmethod="GET" formaction="{{ route('stakeholderappraisals.export') }}">
+                                            Download Excel
+                                        </button>
                                         <a href="{{ route('stakeholderappraisals.index') }}" class="btn btn-outline-secondary rounded-pill">Reset</a>
                                     </div>
                                 </form>

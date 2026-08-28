@@ -257,6 +257,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('stakeholdersetting', StakeholderSettingController::class);
     Route::controller(AdminStakeholderAppraisalController::class)->prefix('stakeholder-appraisals')->name('stakeholderappraisals.')->group(function () {
         Route::get('/', 'index')->name('index');
+        Route::get('/export', 'export')->name('export');
         Route::get('/{stakeholder}/pdf', 'pdf')->name('pdf');
         Route::get('/{stakeholder}/self', 'editSelf')->name('self.edit');
         Route::post('/{stakeholder}/self', 'updateSelf')->name('self.update');
