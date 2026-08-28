@@ -53,7 +53,9 @@ class AdminReportsController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $user->role_id = $user->role;
+        $user->role_id = is_object($user->role)
+            ? ($user->role->id ?? $user->role_id)
+            : ($user->role_id ?? $user->role);
 
         $isAdmin = true;
         $data = app(ReportService::class)
@@ -147,6 +149,9 @@ class AdminReportsController extends Controller
     public function edit(StakeholderReport $stakeholderreport)
     {
         $user = auth()->user();
+        $user->role_id = is_object($user->role)
+            ? ($user->role->id ?? $user->role_id)
+            : ($user->role_id ?? $user->role);
         $isAdmin = true;
 
         return view(

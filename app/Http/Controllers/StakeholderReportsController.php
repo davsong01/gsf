@@ -209,7 +209,7 @@ class StakeholderReportsController extends Controller
     public function edit(StakeholderReport $report)
     {
         $user = Auth::guard('stakeholder')->user();
-        $canEdit = app(ReportService::class)->canEditReport($report, $user);
+        $canEdit = app(ReportService::class)->canEditReport($report, $user, false);
 
         if(!$canEdit['canEdit']){
             $this->logStakeholderAccessDenied(request(), 'edit report denied: report is not editable for stakeholder', [
