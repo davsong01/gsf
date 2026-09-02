@@ -28,6 +28,7 @@ jobs:
             git pull origin development
             php artisan migrate --force
             php artisan optimize:clear
-            php artisan db:seed 
+            php artisan db:seed
             # php artisan db:seed --class=AwardShortlistStageSeeder --force
             echo "Deployment to Server completed!"
+            
