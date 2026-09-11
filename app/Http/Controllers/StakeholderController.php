@@ -9,15 +9,14 @@ use Illuminate\Http\File;
 use App\Models\Stakeholder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\EmailService;
 use App\Services\FileUploadService;
 use App\Rules\UniqueStakeholderRole;
 use App\Http\Controllers\Controller;
 use App\Models\StakeholderRole;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
-use App\Mail\NotificationEmail;
 
 class StakeholderController extends Controller
 {
@@ -426,8 +425,8 @@ class StakeholderController extends Controller
         ]);
 
         $loginLink = url('/stakeholders/login');
-
-        Mail::to($stakeholder->email)->send(new NotificationEmail([
+        EmailService::logEmail([
+            'recipient' => $stakeholder->email,
             'type' => 'generic',
             'subject' => 'Your GSF Digital Portal Access',
             'content' => "
@@ -456,7 +455,7 @@ class StakeholderController extends Controller
                     <strong>GSF National ICT</strong>
                 </p>
             ",
-        ]));
+        ]);
 
         return back()->with('message', 'Credentials resent successfully.');
     }
