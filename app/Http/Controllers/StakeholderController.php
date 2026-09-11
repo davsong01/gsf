@@ -383,7 +383,7 @@ class StakeholderController extends Controller
         }
 
         $data = $request->validate([
-            'bulk_action' => ['required', 'in:allow_appraisal_access,remove_appraisal_access'],
+            'bulk_action' => ['required', 'in:allow_appraisal_access,remove_appraisal_access,resend_credentials'],
             'selected_ids' => ['required', 'array', 'min:1'],
             'selected_ids.*' => ['integer', 'exists:stakeholders,id'],
         ]);
@@ -404,6 +404,24 @@ class StakeholderController extends Controller
                     'access_appraisal_evaluation' => false,
                 ]);
             }
+        } elseif ($data['bulk_action'] === 'resend_credentials') {
+            $resent = 0;
+            $skipped = 0;
+
+            foreach ($stakeholders as $stakeholder) {
+                if ($this->resetAndLogCredentials($stakeholder)) {
+                    $resent++;
+                } else {
+                    $skipped++;
+                }
+            }
+
+            $message = "{$resent} credential email(s) queued successfully.";
+            if ($skipped > 0) {
+                $message .= " {$skipped} stakeholder(s) were skipped because they do not have an email address.";
+            }
+
+            return back()->with('message', $message);
         }
 
         return back()->with('message', 'Bulk action completed successfully.');
@@ -411,14 +429,20 @@ class StakeholderController extends Controller
 
     public function resendCredentials(Stakeholder $stakeholderpersonnel)
     {
-        $stakeholder = $stakeholderpersonnel;
-
-        if (! filled($stakeholder->email)) {
+        if (! $this->resetAndLogCredentials($stakeholderpersonnel)) {
             return back()->with('error', 'This stakeholder does not have an email address.');
         }
 
-        $passwordPlain = Str::random(10);
+        return back()->with('message', 'Credentials resent successfully.');
+    }
 
+    protected function resetAndLogCredentials(Stakeholder $stakeholder): bool
+    {
+        if (! filled($stakeholder->email)) {
+            return false;
+        }
+
+        $passwordPlain = Str::random(10);
         $stakeholder->update([
             'password' => bcrypt($passwordPlain),
             'credentials_sent' => 1,
@@ -457,6 +481,6 @@ class StakeholderController extends Controller
             ",
         ]);
 
-        return back()->with('message', 'Credentials resent successfully.');
+        return true;
     }
 }

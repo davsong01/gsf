@@ -371,8 +371,11 @@
                                             <option value="">Choose action</option>
                                             <option value="allow_appraisal_access">Allow Appraisal Access</option>
                                             <option value="remove_appraisal_access">Remove Appraisal Access</option>
+                                            <option value="resend_credentials">Resend Credentials</option>
                                         </select>
-                                        <button type="submit" class="btn btn-success btn-sm rounded-pill" style="min-width: 6rem;">
+                                        <button type="submit" class="btn btn-success btn-sm rounded-pill"
+                                                style="min-width: 6rem;"
+                                                onclick="if (this.form.bulk_action.value === 'resend_credentials') return confirm('Reset passwords and resend credentials to all selected stakeholders?');">
                                             Apply
                                         </button>
                                     </div>
