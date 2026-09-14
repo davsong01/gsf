@@ -39,6 +39,19 @@ class StakeholderRolePermissionService
                 if (isset($user->designation_id) && $user->designation_id) {
                     $userAccessIds[] = $user->designation_id;
                 }
+
+                $isLegalMatters = ($user->designation?->slug === 'legal-matters')
+                    || ($user->designation_id
+                        && \App\Models\StakeholderDesignation::whereKey($user->designation_id)
+                            ->where('slug', 'legal-matters')
+                            ->exists());
+
+                if ($isLegalMatters) {
+                    $userAccessIds = array_merge(
+                        $userAccessIds,
+                        StakeholderRole::where('slug', 'field-pastor')->pluck('id')->all()
+                    );
+                }
             }
 
             return [
@@ -85,7 +98,7 @@ class StakeholderRolePermissionService
         }
 
         if (!$user->relationLoaded('designation')) {
-            $user->load('designation:id,name');
+            $user->load('designation:id,name,slug');
         }
 
         $rolePermissionIds = $user->role->permissions

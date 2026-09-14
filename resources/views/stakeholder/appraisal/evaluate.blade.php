@@ -200,6 +200,25 @@
                         'prefillData' => $evaluationPrefillData ?? [],
                     ])
 
+                    @php
+                        $finalComment = old(
+                            'answers.' . \App\Services\AppraisalService::FINAL_COMMENT_SLUG,
+                            $evaluationAnswers->get(\App\Services\AppraisalService::FINAL_COMMENT_SLUG)?->answer_value ?? ''
+                        );
+                    @endphp
+                    <div class="mt-3">
+                        <label for="{{ \App\Services\AppraisalService::FINAL_COMMENT_SLUG }}" class="appraisal-question-label d-block">
+                            Final Comment <small class="text-muted">(Optional)</small>
+                        </label>
+                        <textarea
+                            class="form-control appraisal-control"
+                            id="{{ \App\Services\AppraisalService::FINAL_COMMENT_SLUG }}"
+                            name="answers[{{ \App\Services\AppraisalService::FINAL_COMMENT_SLUG }}]"
+                            rows="4"
+                            @if(! $evaluationEditable) disabled @endif
+                        >{{ $finalComment }}</textarea>
+                    </div>
+
                     @if($canSubmitEvaluation)
                         <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
                             <button type="submit" class="btn btn-outline-primary px-4" onclick="return window.AppraisalSubmission.prepare('draft', this.form)">

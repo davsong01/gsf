@@ -105,7 +105,7 @@ class StakeholderAppraisalController extends Controller
             'access' => $this->appraisalService->dashboardAccess($user),
             'summary' => $this->appraisalService->summary($user),
             'selfSections' => $this->appraisalService->structureForMode($stakeholder, 'my', false, $formPrefix),
-            'evaluationSections' => $this->appraisalService->structureForMode($user, 'evaluations', false, $formPrefix),
+            'evaluationSections' => $this->appraisalService->structureForMode($user, 'evaluations', false, $formPrefix, $stakeholder),
             'appraisal' => $appraisal,
             'selfAnswers' => $appraisal ? $this->appraisalService->loadSelfAnswers($appraisal) : collect(),
             'evaluationAnswers' => $appraisal ? $this->appraisalService->loadAnswersForAudience($appraisal, $audience) : collect(),

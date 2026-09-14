@@ -22,6 +22,7 @@ class AppraisalService
 {
     public const AUDIENCE_FILL = 'fill';
     public const AUDIENCE_EVALUATE = 'evaluate';
+    public const FINAL_COMMENT_SLUG = 'evaluation-final-comment';
 
     public function dashboardAccess(Stakeholder $user): array
     {
@@ -37,6 +38,10 @@ class AppraisalService
         } else {
             $canSelfAppraise = $hasAppraisalSystemAccess && $this->hasAnyAppraisalPermission($user, $permissionProfile['fill'] ?? []);
             $canEvaluate = $hasAppraisalEvaluationAccess && $this->hasAnyAppraisalPermission($user, $permissionProfile['evaluate'] ?? []);
+        }
+
+        if ($this->isLegalMattersTarget($user)) {
+            $canEvaluate = false;
         }
 
         return [
@@ -95,9 +100,16 @@ class AppraisalService
         return (bool) ($access[$mode] ?? false);
     }
 
-    public function structure(Stakeholder $user, array $audiences, bool $isAdmin = false, ?string $formPrefix = null): Collection
+    public function structure(
+        Stakeholder $user,
+        array $audiences,
+        bool $isAdmin = false,
+        ?string $formPrefix = null,
+        ?Stakeholder $formSubject = null
+    ): Collection
     {
         $permissionService = app(StakeholderRolePermissionService::class);
+        $formSubject = $formSubject ?: $user;
 
         $sections = StakeholderQuestionSection::forModule('appraisal')
             ->isActive()
@@ -113,7 +125,7 @@ class AppraisalService
             ->orderBy('id')
             ->get();
 
-        return $sections->map(function ($section) use ($permissionService, $user, $audiences, $isAdmin, $formPrefix) {
+        return $sections->map(function ($section) use ($permissionService, $user, $audiences, $isAdmin, $formPrefix, $formSubject) {
             if ($formPrefix && ! Str::startsWith($section->slug ?? '', $formPrefix . '-')) {
                 return null;
             }
@@ -123,14 +135,18 @@ class AppraisalService
             }
 
             $subsections = $section->subsections
-                ->map(function ($subsection) use ($permissionService, $user, $audiences, $isAdmin) {
+                ->map(function ($subsection) use ($permissionService, $user, $audiences, $isAdmin, $formSubject) {
                     if (! $isAdmin && ! $permissionService->sectionAccess($user, $subsection)['view']) {
                         return null;
                     }
 
                     $questions = $subsection->questions
-                        ->filter(function ($question) use ($permissionService, $user, $audiences, $isAdmin) {
+                        ->filter(function ($question) use ($permissionService, $user, $audiences, $isAdmin, $formSubject) {
                             if (! in_array($question->audience ?? self::AUDIENCE_FILL, $audiences, true)) {
+                                return false;
+                            }
+
+                            if (! $this->appraisalQuestionAppliesToTarget($question, $formSubject)) {
                                 return false;
                             }
 
@@ -151,17 +167,24 @@ class AppraisalService
         })->filter()->values();
     }
 
-    public function structureForMode(Stakeholder $user, string $mode, bool $isAdmin = false, ?string $formPrefix = null): Collection
+    public function structureForMode(
+        Stakeholder $user,
+        string $mode,
+        bool $isAdmin = false,
+        ?string $formPrefix = null,
+        ?Stakeholder $formSubject = null
+    ): Collection
     {
         $formPrefix = $formPrefix ?: $this->appraisalFormPrefix($user);
 
         return match ($mode) {
-            'my', self::AUDIENCE_FILL => $this->structure($user, [self::AUDIENCE_FILL], $isAdmin, $formPrefix),
+            'my', self::AUDIENCE_FILL => $this->structure($user, [self::AUDIENCE_FILL], $isAdmin, $formPrefix, $formSubject),
             'evaluations', self::AUDIENCE_EVALUATE => $this->structure(
                 $user,
                 $this->evaluationAudiencesFor($user, $isAdmin),
                 $isAdmin,
-                $formPrefix
+                $formPrefix,
+                $formSubject
             ),
             default => collect(),
         };
@@ -266,6 +289,10 @@ class AppraisalService
             return 'national-president';
         }
 
+        if ($this->isLegalMattersTarget($user)) {
+            return 'field-pastor';
+        }
+
         if ($roleSlug === 'field-pastor') {
             return 'field-pastor';
         }
@@ -305,10 +332,12 @@ class AppraisalService
     public function evaluationTargets(Stakeholder $user): Collection
     {
         if ($this->isNationalPresident($user)) {
-            $excludedRoles = ['ncp'];
+            $excludedRoles = ['ncp', 'field-pastor'];
+            $excludedDesignationSlugs = ['legal-matters'];
 
             return $this->necMembers()
                 ->reject(fn (Stakeholder $stakeholder) => in_array($stakeholder->role?->slug, $excludedRoles, true))
+                ->reject(fn (Stakeholder $stakeholder) => in_array($stakeholder->designation?->slug, $excludedDesignationSlugs, true))
                 ->reject(fn (Stakeholder $stakeholder) => $stakeholder->id === $user->id)
                 ->values();
         }
@@ -321,7 +350,10 @@ class AppraisalService
                 ->where('id', '!=', $user->id)
                 ->where(function ($query) use ($fieldPastorRoleIds) {
                     $query->whereIn('role_id', $fieldPastorRoleIds)
-                        ->orWhere('designation_id', $this->nationalPresidentDesignationId());
+                        ->orWhere('designation_id', $this->nationalPresidentDesignationId())
+                        ->orWhereHas('designation', function ($designationQuery) {
+                            $designationQuery->where('slug', 'legal-matters');
+                        });
                 })
                 ->get()
                 ->values();
@@ -387,6 +419,10 @@ class AppraisalService
         $roleSlug = $target?->role?->slug;
 
         if ($designationName === 'National President') {
+            return 'NCP';
+        }
+
+        if ($this->isFieldPastorTarget($target)) {
             return 'NCP';
         }
 
@@ -495,7 +531,13 @@ class AppraisalService
             ? $this->appraisalFormPrefix($user)
             : $this->appraisalFormPrefix($target ?? $user);
 
-        $sections = $this->structureForMode($user, $mode, false, $formPrefix);
+        $sections = $this->structureForMode(
+            $user,
+            $mode,
+            false,
+            $formPrefix,
+            $mode === 'my' ? $user : ($target ?? $user)
+        );
         $audience = $mode === 'my'
             ? self::AUDIENCE_FILL
             : $this->evaluatorAudience($user, $target ?? $user);
@@ -575,6 +617,10 @@ class AppraisalService
             throw ValidationException::withMessages($errors);
         }
 
+        if ($mode !== 'my' && array_key_exists(self::FINAL_COMMENT_SLUG, $submittedAnswers)) {
+            $normalizedAnswers[self::FINAL_COMMENT_SLUG] = $submittedAnswers[self::FINAL_COMMENT_SLUG];
+        }
+
         return $normalizedAnswers;
     }
 
@@ -606,7 +652,7 @@ class AppraisalService
             'target' => $target->loadMissing(['designation', 'role', 'field', 'zone', 'chapter']),
             'appraisal' => $appraisal,
             'selfSections' => $this->structureForMode($target, 'my', $isAdmin, $formPrefix),
-            'evaluationSections' => $this->structureForMode($evaluator, 'evaluations', $isAdmin, $formPrefix),
+            'evaluationSections' => $this->structureForMode($evaluator, 'evaluations', $isAdmin, $formPrefix, $target),
             'selfAnswers' => $appraisal ? $this->loadSelfAnswers($appraisal) : collect(),
             'evaluationAnswers' => $appraisal ? $this->loadAnswersForAudience($appraisal, $audience) : collect(),
             'audience' => $audience,
@@ -939,21 +985,21 @@ class AppraisalService
                 ->first();
         }
 
-        if ($this->isNecMemberTarget($target)) {
-            return Stakeholder::query()
-                ->with('designation', 'role')
-                ->whereHas('designation', function ($query) {
-                    $query->where('name', 'National President');
-                })
-                ->orderByDesc('id')
-                ->first();
-        }
-
         if ($this->isFieldPastorTarget($target)) {
             return Stakeholder::query()
                 ->with('designation', 'role')
                 ->whereHas('role', function ($query) {
                     $query->where('slug', 'ncp');
+                })
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        if ($this->isNecMemberTarget($target)) {
+            return Stakeholder::query()
+                ->with('designation', 'role')
+                ->whereHas('designation', function ($query) {
+                    $query->where('name', 'National President');
                 })
                 ->orderByDesc('id')
                 ->first();
@@ -1017,9 +1063,10 @@ class AppraisalService
         $designationName = $user?->designation?->name ?? '';
         $roleSlug = $user?->role?->slug;
 
-        return $roleSlug === 'nec-member'
+        return ! $this->isLegalMattersTarget($user)
+            && ($roleSlug === 'nec-member'
             || $roleSlug === 'nec'
-            || str_contains($designationName, 'National Officer');
+            || str_contains($designationName, 'National Officer'));
     }
 
     protected function isZonalPastorTarget(Stakeholder $user): bool
@@ -1034,7 +1081,28 @@ class AppraisalService
 
     protected function isFieldPastorTarget(Stakeholder $user): bool
     {
-        return ($user?->role?->slug ?? null) === 'field-pastor';
+        return ($user?->role?->slug ?? null) === 'field-pastor'
+            || $this->isLegalMattersTarget($user);
+    }
+
+    protected function isLegalMattersTarget(Stakeholder $user): bool
+    {
+        if (($user?->designation?->slug ?? null) === 'legal-matters') {
+            return true;
+        }
+
+        return $user?->designation_id
+            ? StakeholderDesignation::whereKey($user->designation_id)->where('slug', 'legal-matters')->exists()
+            : false;
+    }
+
+    protected function appraisalQuestionAppliesToTarget($question, Stakeholder $target): bool
+    {
+        if (! $this->isLegalMattersTarget($target)) {
+            return true;
+        }
+
+        return $question->slug !== 'field-pastor-number-of-zones-under-supervision';
     }
 
     protected function syncAnswers(StakeholderAppraisal $appraisal, array $payload, string $audience, int $answeredById): void
@@ -1059,7 +1127,7 @@ class AppraisalService
                 ->where('module_type', 'appraisal')
                 ->first();
 
-            if (! $question) {
+            if (! $question && $questionSlug !== self::FINAL_COMMENT_SLUG) {
                 continue;
             }
 
@@ -1071,10 +1139,10 @@ class AppraisalService
                     'answered_by_id' => $answeredById,
                 ],
                 [
-                    'question_id' => $question->id,
-                    'question_section_id' => $question->section_id,
-                    'question_sub_section_id' => $question->sub_section_id,
-                    'question_label' => $question->label,
+                    'question_id' => $question?->id,
+                    'question_section_id' => $question?->section_id,
+                    'question_sub_section_id' => $question?->sub_section_id,
+                    'question_label' => $question?->label ?? 'Final Comment',
                     'answer_value' => is_array($answerValue) ? json_encode($answerValue) : $answerValue,
                 ]
             );
@@ -1123,6 +1191,13 @@ class AppraisalService
             return [
                 'fill' => ['national-president-fill'],
                 'evaluate' => ['nec-member-evaluate'],
+            ];
+        }
+
+        if ($this->isLegalMattersTarget($user)) {
+            return [
+                'fill' => ['field-pastor-fill'],
+                'evaluate' => ['field-pastor-evaluate'],
             ];
         }
 
@@ -1192,6 +1267,10 @@ class AppraisalService
     {
         $designationName = $user?->designation?->name ?? '';
         $roleSlug = $user?->role?->slug;
+
+        if ($this->isLegalMattersTarget($user)) {
+            return false;
+        }
 
         if ($designationName === 'National President') {
             return true;

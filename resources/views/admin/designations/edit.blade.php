@@ -54,6 +54,21 @@
                                         </fieldset>
                                     </div>
 
+                                    {{-- Slug --}}
+                                    <div class="col-md-12 col-sm-12">
+                                        <fieldset class="form-group">
+                                            <label for="slug">Slug</label>
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                id="slug"
+                                                name="slug"
+                                                value="{{ old('slug', $designation->slug ?? '') }}"
+                                                placeholder="Auto-generated from name if left blank"
+                                            >
+                                        </fieldset>
+                                    </div>
+
                                     {{-- Order --}}
                                     <div class="col-md-12 col-sm-12">
                                         <fieldset class="form-group">

@@ -74,6 +74,21 @@
             margin-top: 4px;
         }
 
+        .section-title {
+            margin-top: 6px;
+            padding: 3px 4px;
+            background: #eef5fb;
+            color: #193085;
+            font-weight: 700;
+        }
+
+        .answer-block {
+            min-height: 18px;
+            padding: 4px;
+            border: 1px solid #d6e1ee;
+            white-space: pre-wrap;
+        }
+
         .question-table tr {
             page-break-inside: avoid;
             page-break-after: auto;
@@ -335,6 +350,12 @@
 
     {!! $renderAppraisalTable($selfSections, $selfAnswers, 'Self Appraisal') !!}
     {!! $renderAppraisalTable($evaluationSections, $evaluationAnswers, 'Evaluation Responses') !!}
+
+    @php
+        $finalComment = $evaluationAnswers->get(\App\Services\AppraisalService::FINAL_COMMENT_SLUG)?->answer_value ?? '';
+    @endphp
+    <div class="section-title">Final Comment</div>
+    <div class="answer-block">{{ $finalComment !== '' ? $finalComment : 'No final comment provided.' }}</div>
 </div>
 </body>
 </html>

@@ -6,6 +6,7 @@ use App\Models\Zone;
 use App\Models\Field;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\StakeholderDesignation;
 
 class StakeholderDesignationController extends Controller
@@ -42,12 +43,15 @@ class StakeholderDesignationController extends Controller
     {
         $data = $request->validate([
             'name'   => 'required|string|unique:stakeholder_designations,name',
+            'slug'   => 'nullable|string|max:255|unique:stakeholder_designations,slug',
             'order'  => 'nullable|numeric|min:1',
             'type'   => 'required|in:nec,chapter-exco',
             'status' => 'required|in:active,inactive',
             'zone_id' => 'nullable',
             'field_id' => 'nullable',
         ]);
+
+        $data['slug'] = Str::slug($data['slug'] ?: $data['name']);
 
         StakeholderDesignation::create($data);
 
@@ -82,12 +86,15 @@ class StakeholderDesignationController extends Controller
     {
         $data = $request->validate([
             'name'   => 'required|string|unique:stakeholder_designations,name,' . $designation->id,
+            'slug'   => 'nullable|string|max:255|unique:stakeholder_designations,slug,' . $designation->id,
             'order'  => 'nullable|numeric|min:1',
             'type'   => 'required|in:nec,chapter-exco',
             'zone_id'   => 'nullable',
             'field_id'   => 'nullable',
             'status' => 'required|in:active,inactive',
         ]);
+
+        $data['slug'] = Str::slug($data['slug'] ?: $data['name']);
 
         $designation->update($data);
 
