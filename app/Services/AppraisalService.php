@@ -35,6 +35,10 @@ class AppraisalService
         if ($isNationalPresident) {
             $canSelfAppraise = $hasAppraisalSystemAccess;
             $canEvaluate = $hasAppraisalEvaluationAccess;
+        } elseif ($this->isLegalMattersTarget($user)) {
+            // Legal Matters uses the Field Pastor form but does not evaluate anyone.
+            $canSelfAppraise = $hasAppraisalSystemAccess;
+            $canEvaluate = false;
         } else {
             $canSelfAppraise = $hasAppraisalSystemAccess && $this->hasAnyAppraisalPermission($user, $permissionProfile['fill'] ?? []);
             $canEvaluate = $hasAppraisalEvaluationAccess && $this->hasAnyAppraisalPermission($user, $permissionProfile['evaluate'] ?? []);
