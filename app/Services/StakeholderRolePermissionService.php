@@ -40,7 +40,7 @@ class StakeholderRolePermissionService
                     $userAccessIds[] = $user->designation_id;
                 }
 
-                $isLegalMatters = ($user->designation?->slug === 'legal-matters')
+                $isLegalMatters = ($user->designation?->slug == 'legal-matters')
                     || ($user->designation_id
                         && \App\Models\StakeholderDesignation::whereKey($user->designation_id)
                             ->where('slug', 'legal-matters')
@@ -84,7 +84,7 @@ class StakeholderRolePermissionService
         if($isAdmin){
             return ['view' => true, 'edit' => true];
         }
-        
+
         if ($question->permissions->isEmpty()) {
             return ['view' => true, 'edit' => true];
         }

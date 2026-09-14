@@ -1087,7 +1087,7 @@ class AppraisalService
 
     protected function isLegalMattersTarget(Stakeholder $user): bool
     {
-        if (($user?->designation?->slug ?? null) === 'legal-matters') {
+        if (($user?->designation?->slug ?? null) == 'legal-matters') {
             return true;
         }
 
