@@ -306,10 +306,7 @@ class AppraisalService
     {
         if ($this->isNationalPresident($user)) {
             $excludedRoles = ['ncp'];
-            // dd($this->necMembers()
-            //     ->reject(fn (Stakeholder $stakeholder) => in_array($stakeholder->role?->slug, $excludedRoles, true))
-            //     ->reject(fn (Stakeholder $stakeholder) => $stakeholder->id === $user->id)
-            //     ->values());
+
             return $this->necMembers()
                 ->reject(fn (Stakeholder $stakeholder) => in_array($stakeholder->role?->slug, $excludedRoles, true))
                 ->reject(fn (Stakeholder $stakeholder) => $stakeholder->id === $user->id)
