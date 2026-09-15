@@ -59,6 +59,11 @@ class AppraisalService
 
     public function hasAppraisalPermission(Stakeholder $user, string $permission): bool
     {
+        if ($this->isLegalMattersTarget($user)
+            && in_array($permission, ['field-pastor-fill', 'field-pastor-evaluate'], true)) {
+            return true;
+        }
+
         $candidates = $this->appraisalPermissionAliases($permission);
 
         foreach ($candidates as $candidate) {
