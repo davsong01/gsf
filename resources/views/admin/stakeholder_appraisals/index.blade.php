@@ -314,7 +314,7 @@
                                                 <option value="change_evaluation_status">Change Evaluation Status</option>
                                             </select>
                                         </div>
-                                        <div class="col-lg-3 col-md-6" id="bulkStatusField" hidden>
+                                        <div class="col-lg-3 col-md-6" id="bulkStatusField">
                                             <label for="bulk_status" class="form-label">New Status</label>
                                             <select name="status" id="bulk_status" class="form-select">
                                                 <option value="">Select status</option>
@@ -492,17 +492,7 @@
     });
 
     const bulkAction = document.getElementById('bulk_action');
-    const bulkStatusField = document.getElementById('bulkStatusField');
     const bulkStatus = document.getElementById('bulk_status');
-
-    function updateBulkStatusVisibility() {
-        const changesStatus = bulkAction?.value !== 'remind';
-        if (bulkStatusField) bulkStatusField.hidden = !changesStatus;
-        if (bulkStatus) bulkStatus.required = changesStatus;
-    }
-
-    bulkAction?.addEventListener('change', updateBulkStatusVisibility);
-    updateBulkStatusVisibility();
 
     document.getElementById('bulkActionForm')?.addEventListener('submit', function (event) {
         const container = document.getElementById('bulkReminderInputs');
