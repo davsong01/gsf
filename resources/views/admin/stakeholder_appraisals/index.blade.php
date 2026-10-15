@@ -162,6 +162,27 @@
         min-width: 7rem;
         flex: 0 0 auto;
     }
+
+    .appraisal-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .appraisal-table {
+        min-width: 1050px;
+    }
+
+    @media (max-width: 767.98px) {
+        .appraisal-table-wrapper {
+            margin-inline: -0.75rem;
+            padding-inline: 0.75rem;
+        }
+
+        .appraisal-table th,
+        .appraisal-table td {
+            white-space: normal;
+        }
+    }
 </style>
 <div class="content-body">
     <section id="basic-datatable">
@@ -282,17 +303,27 @@
 
                         <div class="card appraisal-filter-card mb-3">
                             <div class="card-body">
-                                <form method="POST" action="{{ route('stakeholderappraisals.bulk-remind') }}" id="bulkReminderForm">
+                                <form method="POST" action="{{ route('stakeholderappraisals.bulk-remind') }}" id="bulkActionForm">
                                     @csrf
                                     <div class="row g-2 align-items-end">
                                         <div class="col-lg-5 col-md-6">
                                             <label for="bulk_action" class="form-label">Bulk Action</label>
                                             <select name="action" id="bulk_action" class="form-select">
                                                 <option value="remind">Send Reminder</option>
+                                                <option value="change_self_status">Change Fill Status</option>
+                                                <option value="change_evaluation_status">Change Evaluation Status</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6" id="bulkStatusField" hidden>
+                                            <label for="bulk_status" class="form-label">New Status</label>
+                                            <select name="status" id="bulk_status" class="form-select">
+                                                <option value="">Select status</option>
+                                                <option value="draft">Draft</option>
+                                                <option value="published">Published</option>
                                             </select>
                                         </div>
                                         <div class="col-lg-3 col-md-6">
-                                            <button type="submit" class="btn btn-primary rounded-pill w-100" onclick="return confirm('Queue reminder emails for the selected stakeholders?')">
+                                            <button type="submit" class="btn btn-primary rounded-pill w-100">
                                                 Apply
                                             </button>
                                         </div>
@@ -302,8 +333,8 @@
                             </div>
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-striped align-middle zero-configuration">
+                        <div class="table-responsive appraisal-table-wrapper">
+                            <table class="table table-striped align-middle zero-configuration appraisal-table">
                                 <thead>
                                     <tr>
                                         <th style="width: 42px;">
@@ -429,7 +460,7 @@
                                         </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="6" class="text-center text-muted py-4">No stakeholders found.</td>
+                                                <td colspan="7" class="text-center text-muted py-4">No stakeholders found.</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -460,7 +491,20 @@
         }, this);
     });
 
-    document.getElementById('bulkReminderForm')?.addEventListener('submit', function (event) {
+    const bulkAction = document.getElementById('bulk_action');
+    const bulkStatusField = document.getElementById('bulkStatusField');
+    const bulkStatus = document.getElementById('bulk_status');
+
+    function updateBulkStatusVisibility() {
+        const changesStatus = bulkAction?.value !== 'remind';
+        if (bulkStatusField) bulkStatusField.hidden = !changesStatus;
+        if (bulkStatus) bulkStatus.required = changesStatus;
+    }
+
+    bulkAction?.addEventListener('change', updateBulkStatusVisibility);
+    updateBulkStatusVisibility();
+
+    document.getElementById('bulkActionForm')?.addEventListener('submit', function (event) {
         const container = document.getElementById('bulkReminderInputs');
         const selected = Array.from(document.querySelectorAll('.stakeholder-row-checkbox:checked'));
 
@@ -478,6 +522,20 @@
             input.value = checkbox.value;
             container.appendChild(input);
         });
+
+        if (bulkAction?.value !== 'remind') {
+            const statusLabel = bulkAction.value === 'change_self_status' ? 'fill status' : 'evaluation status';
+            if (!bulkStatus?.value) {
+                event.preventDefault();
+                alert(`Please select a new ${statusLabel}.`);
+                return;
+            }
+            if (!confirm(`Change ${statusLabel} for the selected stakeholders? This will not send notifications.`)) {
+                event.preventDefault();
+            }
+        } else if (!confirm('Queue reminder emails for the selected stakeholders?')) {
+            event.preventDefault();
+        }
     });
 </script>
 @endsection

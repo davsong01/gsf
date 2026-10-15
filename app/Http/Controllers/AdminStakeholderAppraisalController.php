@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Field;
 use App\Models\Stakeholder;
+use App\Models\StakeholderAppraisal;
 use App\Models\Zone;
 use App\Services\AppraisalService;
 use App\Services\ExcelService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Pdf;
 
 class AdminStakeholderAppraisalController extends Controller
@@ -302,10 +304,40 @@ class AdminStakeholderAppraisalController extends Controller
         }
 
         $validated = $request->validate([
-            'action' => 'required|in:remind',
+            'action' => 'required|in:remind,change_self_status,change_evaluation_status',
             'stakeholders' => 'required|array|min:1',
             'stakeholders.*' => 'integer|exists:stakeholders,id',
+            'status' => 'required_if:action,change_self_status,change_evaluation_status|in:draft,published',
         ]);
+
+        if ($validated['action'] !== 'remind') {
+            $status = $validated['status'];
+            $statusColumn = $validated['action'] === 'change_self_status'
+                ? 'self_status'
+                : 'evaluation_status';
+            $publishedAtColumn = $validated['action'] === 'change_self_status'
+                ? 'self_published_at'
+                : 'evaluation_published_at';
+
+            DB::transaction(function () use ($validated, $status, $statusColumn, $publishedAtColumn) {
+                foreach ($validated['stakeholders'] as $stakeholderId) {
+                    $appraisal = StakeholderAppraisal::firstOrCreate(
+                        ['appraisee_id' => $stakeholderId],
+                        ['self_status' => 'draft', 'evaluation_status' => 'draft']
+                    );
+
+                    // This is intentionally a direct status update: bulk status changes send no notifications.
+                    $appraisal->update([
+                        $statusColumn => $status,
+                        $publishedAtColumn => $status === 'published' ? now() : null,
+                    ]);
+                }
+            });
+
+            $label = $statusColumn === 'self_status' ? 'Fill status' : 'Evaluation status';
+
+            return back()->with('message', "{$label} updated to {$status} for " . count($validated['stakeholders']) . ' stakeholder(s).');
+        }
 
         $stakeholders = Stakeholder::query()
             ->with(['appraisal.evaluator', 'role', 'designation', 'field', 'zone', 'chapter'])
