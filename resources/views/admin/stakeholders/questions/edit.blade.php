@@ -13,6 +13,32 @@
 @endsection
 
 @section('content')
+<style>
+    .reorderable-row {
+        align-items: center;
+    }
+
+    .option-drag-handle {
+        flex: 0 0 auto;
+        padding: .375rem .5rem;
+        color: #6c757d;
+        cursor: grab;
+        user-select: none;
+        touch-action: none;
+    }
+
+    .option-drag-handle:active {
+        cursor: grabbing;
+    }
+
+    .reorderable-row.is-dragging {
+        opacity: .5;
+    }
+
+    .reorderable-row.is-drag-over {
+        border-top: 2px solid #7367f0 !important;
+    }
+</style>
 @php
     $moduleType = old('module_type', $moduleType ?? 'report');
 @endphp
@@ -175,12 +201,13 @@
                                     <div class="col-md-12" id="simple-options" style="display:none">
                                         <label>Options</label>
 
-                                        <div id="simple-options-wrapper">
+                                        <div id="simple-options-wrapper" class="reorderable-options-wrapper">
                                             @if(in_array($questionType, ['select','radio','checkbox','rating']))
                                                 @php $options = $question->options ?? []; @endphp
                                                 @foreach($options as $key => $opt)
                                                     @if(is_array($opt) && isset($opt['label'], $opt['value']))
-                                                        <div class="option-row mb-2 d-flex gap-2">
+                                                        <div class="option-row reorderable-row mb-2 d-flex gap-2">
+                                                            <span class="option-drag-handle" draggable="true" title="Drag to reorder" aria-label="Drag to reorder">☷</span>
                                                             <input type="text" name="options[{{ $key }}][label]" class="form-control" placeholder="Label" value="{{ $opt['label'] }}">
                                                             <input type="text" name="options[{{ $key }}][value]" class="form-control" placeholder="Value" value="{{ $opt['value'] }}">
                                                             <button type="button" class="btn btn-danger remove-option">Remove</button>
@@ -199,12 +226,13 @@
                                     <div class="col-md-12" id="complex-options" style="display:none">
                                         <label>Options</label>
 
-                                        <div id="complex-options-wrapper">
+                                        <div id="complex-options-wrapper" class="reorderable-options-wrapper">
                                             @if($questionType === 'dynamic_table')
                                                 @php $options = $question->options ?? []; @endphp
                                                 @foreach($options as $index => $option)
                                                     @if(is_array($option))
-                                                        <div class="option-row border rounded p-1 mb-1">
+                                                        <div class="option-row reorderable-row border rounded p-1 mb-1">
+                                                            <span class="option-drag-handle" draggable="true" title="Drag to reorder" aria-label="Drag to reorder">☷</span>
                                                             <div class="row g-2">
                                                                 <div class="col-md-3">
                                                                     <input type="text"
@@ -409,14 +437,52 @@
 
         // REMOVE handler (single source)
         $(document).on('click', '.remove-option', function () {
-            $(this).closest('.option-row, .d-flex').remove();
+            $(this).closest('.reorderable-row, .option-row, .d-flex').remove();
+        });
+
+        // Native drag-and-drop keeps the submitted array in the same order as the UI.
+        let draggedOption = null;
+        $(document).on('dragstart', '.option-drag-handle', function (event) {
+            draggedOption = this.closest('.reorderable-row');
+            draggedOption.classList.add('is-dragging');
+            event.originalEvent.dataTransfer.effectAllowed = 'move';
+        });
+
+        $(document).on('dragend', '.option-drag-handle', function () {
+            if (draggedOption) {
+                draggedOption.classList.remove('is-dragging');
+                $('.reorderable-row').removeClass('is-drag-over');
+            }
+            draggedOption = null;
+        });
+
+        $(document).on('dragover', '.reorderable-options-wrapper', function (event) {
+            if (!draggedOption || !this.contains(draggedOption)) {
+                return;
+            }
+
+            event.preventDefault();
+            const rows = [...this.querySelectorAll('.reorderable-row:not(.is-dragging)')];
+            const target = rows.find((row) => {
+                const box = row.getBoundingClientRect();
+                return event.originalEvent.clientY < box.top + box.height / 2;
+            });
+
+            rows.forEach((row) => row.classList.remove('is-drag-over'));
+            if (target) {
+                target.classList.add('is-drag-over');
+                this.insertBefore(draggedOption, target);
+            } else {
+                this.appendChild(draggedOption);
+            }
         });
 
         // SIMPLE OPTIONS (label + value)
         let simpleIndex = {{ count($question->options ?? []) }};
         function renderSimpleOption(label = '', value = '') {
             return `
-                <div class="option-row mb-2 d-flex gap-2">
+                <div class="option-row reorderable-row mb-2 d-flex gap-2">
+                    <span class="option-drag-handle" draggable="true" title="Drag to reorder" aria-label="Drag to reorder">☷</span>
                     <input type="text" name="options[${simpleIndex}][label]" class="form-control" placeholder="Label" value="${label}" required>
                     <input type="text" name="options[${simpleIndex}][value]" class="form-control" placeholder="Value" value="${value}" required>
                     <button type="button" class="btn btn-danger remove-option">Remove</button>
@@ -433,7 +499,8 @@
         let complexIndex = {{ count($question->options ?? []) }};
         $('#add-complex-option').on('click', function () {
             $('#complex-options-wrapper').append(`
-                <div class="option-row border rounded p-1 mb-1">
+                <div class="option-row reorderable-row border rounded p-1 mb-1">
+                    <span class="option-drag-handle" draggable="true" title="Drag to reorder" aria-label="Drag to reorder">☷</span>
                     <div class="row g-2">
                         <div class="col-md-3">
                             <input type="text" name="options[${complexIndex}][label]" class="form-control" placeholder="Label" required>
