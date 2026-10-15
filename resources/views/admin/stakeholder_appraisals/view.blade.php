@@ -57,7 +57,9 @@
             $evaluationEditable = $evaluationEditable ?? false;
             $canSubmitEvaluation = $canSubmitEvaluation ?? false;
             $selfFormAction = $selfFormAction ?? route('stakeholderappraisals.self.update', $target);
+            $selfSilentSaveAction = route('stakeholderappraisals.self.silent-save', $target);
             $formAction = $formAction ?? route('stakeholderappraisals.evaluation.update', $target);
+            $evaluationSilentSaveAction = route('stakeholderappraisals.evaluation.silent-save', $target);
             $selfStatus = $appraisal?->self_status ?? 'draft';
             $selfPublishedAt = $appraisal?->self_published_at;
             $evaluationStatus = $appraisal?->evaluation_status ?? 'draft';
@@ -140,6 +142,11 @@
 
                         @if($canSubmitSelf)
                             <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+                                @if($isAdmin)
+                                    <button type="submit" formaction="{{ $selfSilentSaveAction }}" class="btn btn-outline-secondary btn-sm appraisal-action-btn">
+                                        Save Changes (Keep Status)
+                                    </button>
+                                @endif
                                 <button type="submit" class="btn btn-outline-primary btn-sm appraisal-action-btn" onclick="return window.AppraisalSubmission.prepare('draft', this.form)">
                                     Save Self Draft
                                 </button>
@@ -209,6 +216,11 @@
 
                     @if($canSubmitEvaluation)
                         <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+                            @if($isAdmin)
+                                <button type="submit" formaction="{{ $evaluationSilentSaveAction }}" class="btn btn-outline-secondary btn-sm appraisal-action-btn">
+                                    Save Changes (Keep Status)
+                                </button>
+                            @endif
                             <button type="submit" class="btn btn-outline-primary btn-sm appraisal-action-btn" onclick="return window.AppraisalSubmission.prepare('draft', this.form)">
                                 Save Draft
                             </button>

@@ -261,8 +261,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('/{stakeholder}/pdf', 'pdf')->name('pdf');
         Route::get('/{stakeholder}/self', 'editSelf')->name('self.edit');
         Route::post('/{stakeholder}/self', 'updateSelf')->name('self.update');
+        Route::post('/{stakeholder}/self/silent-save', 'silentSaveSelf')->name('self.silent-save');
         Route::get('/{stakeholder}/evaluation', 'editEvaluation')->name('evaluation.edit');
         Route::post('/{stakeholder}/evaluation', 'updateEvaluation')->name('evaluation.update');
+        Route::post('/{stakeholder}/evaluation/silent-save', 'silentSaveEvaluation')->name('evaluation.silent-save');
         Route::post('/{stakeholder}/unlock-self', 'unlockSelf')->name('unlock-self');
         Route::post('/{stakeholder}/unlock-evaluation', 'unlockEvaluation')->name('unlock-evaluation');
         Route::post('/{stakeholder}/remind', 'remind')->name('remind');

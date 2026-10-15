@@ -508,6 +508,36 @@ class AppraisalService
         });
     }
 
+    /**
+     * Save admin edits to self-appraisal answers without changing status or timestamps.
+     */
+    public function saveSelfAnswersSilently(StakeholderAppraisal $appraisal, array $answers): StakeholderAppraisal
+    {
+        return DB::transaction(function () use ($appraisal, $answers) {
+            $this->syncAnswers($appraisal, ['answers' => $answers], self::AUDIENCE_FILL, $appraisal->appraisee_id);
+
+            return $appraisal->fresh(['answers', 'appraisee', 'evaluator']);
+        });
+    }
+
+    /**
+     * Save admin edits to evaluation answers without changing status or timestamps.
+     */
+    public function saveEvaluationAnswersSilently(
+        StakeholderAppraisal $appraisal,
+        Stakeholder $evaluator,
+        Stakeholder $target,
+        array $answers
+    ): StakeholderAppraisal {
+        return DB::transaction(function () use ($appraisal, $evaluator, $target, $answers) {
+            $audience = $this->evaluatorAudience($evaluator, $target);
+            $answeredById = $appraisal->evaluator_id ?: $evaluator->id;
+            $this->syncAnswers($appraisal, ['answers' => $answers], $audience, $answeredById);
+
+            return $appraisal->fresh(['answers', 'appraisee', 'evaluator']);
+        });
+    }
+
     public function unlockSelfAppraisal(StakeholderAppraisal $appraisal): StakeholderAppraisal
     {
         $appraisal->update([

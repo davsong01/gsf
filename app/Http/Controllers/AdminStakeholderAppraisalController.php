@@ -167,6 +167,29 @@ class AdminStakeholderAppraisalController extends Controller
             ->with('message', 'Self appraisal updated successfully.');
     }
 
+    public function silentSaveSelf(Request $request, Stakeholder $stakeholder)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $request->validate(['answers' => 'nullable|array']);
+        $appraisal = $this->appraisalService->selfAppraisalFor($stakeholder);
+        $answers = $this->appraisalService->prepareSubmissionAnswers(
+            $stakeholder,
+            $request,
+            'my',
+            'draft',
+            $appraisal
+        );
+
+        $this->appraisalService->saveSelfAnswersSilently($appraisal, $answers);
+
+        return redirect()
+            ->route('stakeholderappraisals.evaluation.edit', $stakeholder)
+            ->with('message', 'Self appraisal changes saved silently.');
+    }
+
     public function editEvaluation(Stakeholder $stakeholder)
     {
         if ((auth()->user()?->role ?? null) != 1) {
@@ -236,6 +259,31 @@ class AdminStakeholderAppraisalController extends Controller
         return redirect()
             ->route('stakeholderappraisals.evaluation.edit', $stakeholder)
             ->with('message', 'Evaluation updated successfully.');
+    }
+
+    public function silentSaveEvaluation(Request $request, Stakeholder $stakeholder)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $request->validate(['answers' => 'nullable|array']);
+        $appraisal = $this->appraisalService->selfAppraisalFor($stakeholder);
+        $evaluator = $appraisal->evaluator ?: $stakeholder;
+        $answers = $this->appraisalService->prepareSubmissionAnswers(
+            $evaluator,
+            $request,
+            'evaluations',
+            'draft',
+            $appraisal,
+            $stakeholder
+        );
+
+        $this->appraisalService->saveEvaluationAnswersSilently($appraisal, $evaluator, $stakeholder, $answers);
+
+        return redirect()
+            ->route('stakeholderappraisals.evaluation.edit', $stakeholder)
+            ->with('message', 'Evaluation changes saved silently.');
     }
 
     public function unlockSelf(Stakeholder $stakeholder)
