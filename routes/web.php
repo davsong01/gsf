@@ -332,6 +332,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::post('/admin/reports/toggle-edit-mode', [AdminReportsController::class, 'toggleEditMode']);
 
     Route::prefix('stakeholder')->as('stakeholder.')->group(function () {
+        Route::post('questions/bulk-action', [StakeholderReportQuestionController::class, 'bulkAction'])->name('questions.bulk-action');
         Route::resource('questions', StakeholderReportQuestionController::class);
         Route::get('clone-question/{question}', [StakeholderReportQuestionController::class, 'cloneQuestion'])->name('questions.clone');
     });

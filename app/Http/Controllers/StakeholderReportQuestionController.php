@@ -411,4 +411,33 @@ class StakeholderReportQuestionController extends Controller
         return redirect()->route('stakeholder.questions.index', ['module_type' => $moduleType])
             ->with('message', 'Question item deleted successfully.');
     }
+
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|in:delete,activate,deactivate',
+            'question_ids' => 'required|array|min:1',
+            'question_ids.*' => 'integer|exists:stakeholder_report_questions,id',
+            'module_type' => 'nullable|in:all,report,appraisal',
+        ]);
+
+        $questions = StakeholderReportQuestion::whereIn('id', $validated['question_ids'])->get();
+
+        if ($validated['action'] === 'delete') {
+            foreach ($questions as $question) {
+                $question->permissions()->sync([]);
+                $question->delete();
+            }
+
+            $message = $questions->count() . ' item(s) deleted successfully.';
+        } else {
+            $status = $validated['action'] === 'activate' ? 1 : 0;
+            StakeholderReportQuestion::whereIn('id', $questions->pluck('id'))->update(['status' => $status]);
+            $message = $questions->count() . ' item(s) ' . ($status ? 'activated' : 'deactivated') . ' successfully.';
+        }
+
+        $redirect = ['module_type' => $validated['module_type'] ?? 'all'];
+
+        return redirect()->route('stakeholder.questions.index', $redirect)->with('message', $message);
+    }
 }

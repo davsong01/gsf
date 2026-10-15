@@ -92,10 +92,25 @@
                             </div>
                         </form>
 
+                        <form method="POST" action="{{ route('stakeholder.questions.bulk-action') }}" id="questionBulkForm" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                            @csrf
+                            <input type="hidden" name="module_type" value="{{ $selectedModule }}">
+                            <select name="action" id="questionBulkAction" class="form-select" style="max-width: 220px;" required>
+                                <option value="">Bulk Action</option>
+                                <option value="activate">Activate</option>
+                                <option value="deactivate">Deactivate</option>
+                                <option value="delete">Delete</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">Apply</button>
+                            <span class="text-muted small">Select items below to apply an action.</span>
+                            <div id="questionBulkInputs"></div>
+                        </form>
+
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead>
                                     <tr>
+                                        <th style="width: 42px;"><input type="checkbox" id="selectAllQuestions" aria-label="Select all items"></th>
                                         <th>S/N</th>
                                         <th>Section</th>
                                         <th>Sub Section</th>
@@ -112,6 +127,7 @@
                                 <tbody>
                                     @forelse($questions as $question)
                                         <tr>
+                                            <td><input type="checkbox" class="question-row-checkbox" value="{{ $question->id }}" aria-label="Select {{ $question->label }}"></td>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ optional($question->section)->name ?? '-' }}</td>
                                             <td>{{ optional($question->subsection)->name ?? '-' }}</td>
@@ -149,7 +165,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="11" class="text-center text-muted py-4">No item records found for {{ strtolower($moduleLabel) }}.</td>
+                                            <td colspan="12" class="text-center text-muted py-4">No item records found for {{ strtolower($moduleLabel) }}.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -205,5 +221,40 @@
             });
         }
     })();
+
+    const selectAllQuestions = document.getElementById('selectAllQuestions');
+    const questionBulkForm = document.getElementById('questionBulkForm');
+    const questionBulkInputs = document.getElementById('questionBulkInputs');
+
+    selectAllQuestions?.addEventListener('change', function () {
+        document.querySelectorAll('.question-row-checkbox').forEach(function (checkbox) {
+            checkbox.checked = selectAllQuestions.checked;
+        });
+    });
+
+    questionBulkForm?.addEventListener('submit', function (event) {
+        const selected = Array.from(document.querySelectorAll('.question-row-checkbox:checked'));
+        const action = document.getElementById('questionBulkAction')?.value;
+
+        if (!selected.length) {
+            event.preventDefault();
+            alert('Please select at least one item.');
+            return;
+        }
+
+        if (action === 'delete' && !confirm('Delete the selected items? This cannot be undone.')) {
+            event.preventDefault();
+            return;
+        }
+
+        questionBulkInputs.innerHTML = '';
+        selected.forEach(function (checkbox) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'question_ids[]';
+            input.value = checkbox.value;
+            questionBulkInputs.appendChild(input);
+        });
+    });
 </script>
 @endsection
