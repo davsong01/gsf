@@ -219,7 +219,24 @@ class ReportAnalyticsService
 
     public function generateSubmissionStatusReport($scope, $from = null, $to = null): array
     {
-        $query = DB::table('stakeholder_reports')->where('edit_mode', 0);
+        $query = StakeholderReport::query()
+            ->with([
+                'answers.section',
+                'answers.subSection',
+                'answers.question',
+                'chapter',
+                'zone',
+                'field',
+            ])
+            ->where('edit_mode', 0);
+
+        $chapterIds = $scope['chapterIds'] ?? collect();
+        if ($chapterIds->isNotEmpty()) {
+            $query->whereIn('chapter_id', $chapterIds);
+        } else {
+            // An empty scope must not accidentally expose reports outside the stakeholder's access.
+            $query->whereRaw('1 = 0');
+        }
 
         // =========================
         // DATE RANGE FILTER
