@@ -137,7 +137,7 @@ class AdminStakeholderAppraisalController extends Controller
         }
 
         $stakeholders = $this->filteredQuery($request)
-            ->with(['role', 'field', 'zone', 'appraisal'])
+            ->with(['role', 'designation', 'field', 'zone', 'appraisal'])
             ->get();
 
         return view('admin.stakeholder_appraisals.statistics', [
@@ -154,46 +154,99 @@ class AdminStakeholderAppraisalController extends Controller
         }
 
         $stakeholders = $this->filteredQuery($request)
-            ->with(['role', 'field', 'zone', 'appraisal'])
+            ->with(['role', 'designation', 'field', 'zone', 'appraisal'])
             ->get();
         $statistics = $this->appraisalStatistics($stakeholders);
 
         $summaryRows = collect($statistics['summary'])->map(function ($value, $label) {
             return ['Metric' => str($label)->replace('_', ' ')->title(), 'Value' => $value];
         })->values()->all();
-        $breakdownHeaders = ['Group', 'Stakeholders', 'Self Published', 'Self Completion %', 'Evaluations Published', 'Evaluation Completion %'];
+        $breakdownHeaders = [
+            'Group', 'Stakeholders', 'Not Submitted Count', 'Not Submitted People',
+            'Submitted Not Evaluated Count', 'Submitted Not Evaluated People',
+            'Evaluated Count', 'Evaluated People',
+        ];
+        $exportBreakdown = function (array $rows): array {
+            return collect($rows)->map(fn ($row) => [
+                'Group' => $row['Group'],
+                'Stakeholders' => $row['Stakeholders'],
+                'Not Submitted Count' => $row['not_submitted_count'],
+                'Not Submitted People' => implode(', ', $row['not_submitted_people']),
+                'Submitted Not Evaluated Count' => $row['submitted_not_evaluated_count'],
+                'Submitted Not Evaluated People' => implode(', ', $row['submitted_not_evaluated_people']),
+                'Evaluated Count' => $row['evaluated_count'],
+                'Evaluated People' => implode(', ', $row['evaluated_people']),
+            ])->all();
+        };
 
         $fileName = 'appraisal-statistics-' . now()->format('Y-m-d_His') . '.xlsx';
 
         return ExcelService::downloadMultipleSheetsWithHeaders([
             'Summary' => ['headers' => ['Metric', 'Value'], 'rows' => $summaryRows],
-            'By Role' => ['headers' => $breakdownHeaders, 'rows' => $statistics['byRole']],
-            'By Field' => ['headers' => $breakdownHeaders, 'rows' => $statistics['byField']],
-            'By Zone' => ['headers' => $breakdownHeaders, 'rows' => $statistics['byZone']],
+            'By Field' => ['headers' => $breakdownHeaders, 'rows' => $exportBreakdown($statistics['byField'])],
+            'By Zone' => ['headers' => $breakdownHeaders, 'rows' => $exportBreakdown($statistics['byZone'])],
         ], $fileName);
+    }
+
+    public function statisticsPdf(Request $request)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $stakeholders = $this->filteredQuery($request)
+            ->with(['role', 'designation', 'field', 'zone', 'appraisal'])
+            ->get();
+
+        $pdf = Pdf::loadView('admin.stakeholder_appraisals.statistics_pdf', [
+            ...$this->appraisalStatistics($stakeholders),
+            'fields' => Field::orderBy('name')->get(),
+            'zones' => Zone::orderBy('name')->get(),
+            'filters' => $request->query(),
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('appraisal-statistics-' . now()->format('Y-m-d_His') . '.pdf');
     }
 
     protected function appraisalStatistics($stakeholders): array
     {
         $total = $stakeholders->count();
-        $selfPublished = $stakeholders->filter(fn ($stakeholder) => $stakeholder->appraisal?->self_status === 'published')->count();
-        $evaluationPublished = $stakeholders->filter(fn ($stakeholder) => $stakeholder->appraisal?->evaluation_status === 'published')->count();
-        $selfDraft = $total - $selfPublished;
-        $evaluationDraft = $total - $evaluationPublished;
+        $status = function ($stakeholder): string {
+            if ($stakeholder->appraisal?->evaluation_status === 'published') {
+                return 'evaluated';
+            }
+
+            return $stakeholder->appraisal?->self_status === 'published'
+                ? 'submitted_not_evaluated'
+                : 'not_submitted';
+        };
+        $countStatus = fn (string $wanted) => $stakeholders->filter(fn ($stakeholder) => $status($stakeholder) === $wanted)->count();
+        $notSubmitted = $countStatus('not_submitted');
+        $submittedNotEvaluated = $countStatus('submitted_not_evaluated');
+        $evaluated = $countStatus('evaluated');
 
         $breakdown = function ($items, callable $label): array {
             return $items->groupBy($label)->map(function ($group, $name) {
                 $total = $group->count();
-                $selfPublished = $group->filter(fn ($stakeholder) => $stakeholder->appraisal?->self_status === 'published')->count();
-                $evaluationPublished = $group->filter(fn ($stakeholder) => $stakeholder->appraisal?->evaluation_status === 'published')->count();
+                $peopleByStatus = ['not_submitted' => [], 'submitted_not_evaluated' => [], 'evaluated' => []];
+
+                foreach ($group as $stakeholder) {
+                    $personStatus = $stakeholder->appraisal?->evaluation_status === 'published'
+                        ? 'evaluated'
+                        : ($stakeholder->appraisal?->self_status === 'published' ? 'submitted_not_evaluated' : 'not_submitted');
+                    $designation = $stakeholder->designation?->name ?: ($stakeholder->role?->name ?: 'No designation');
+                    $peopleByStatus[$personStatus][] = trim(($stakeholder->name ?: 'Unnamed stakeholder') . ' - ' . $designation);
+                }
 
                 return [
-                    'Group' => $name ?: 'Unassigned',
+                    'Group' => $name ?: 'NEC Officials',
                     'Stakeholders' => $total,
-                    'Self Published' => $selfPublished,
-                    'Self Completion %' => $total ? number_format($selfPublished / $total * 100, 1) : '0.0',
-                    'Evaluations Published' => $evaluationPublished,
-                    'Evaluation Completion %' => $total ? number_format($evaluationPublished / $total * 100, 1) : '0.0',
+                    'not_submitted_count' => count($peopleByStatus['not_submitted']),
+                    'not_submitted_people' => $peopleByStatus['not_submitted'],
+                    'submitted_not_evaluated_count' => count($peopleByStatus['submitted_not_evaluated']),
+                    'submitted_not_evaluated_people' => $peopleByStatus['submitted_not_evaluated'],
+                    'evaluated_count' => count($peopleByStatus['evaluated']),
+                    'evaluated_people' => $peopleByStatus['evaluated'],
                 ];
             })->sortByDesc('Stakeholders')->values()->all();
         };
@@ -201,14 +254,16 @@ class AdminStakeholderAppraisalController extends Controller
         return [
             'summary' => [
                 'total_stakeholders' => $total,
-                'self_published' => $selfPublished,
-                'self_draft_or_not_started' => $selfDraft,
-                'self_completion_percent' => $total ? number_format($selfPublished / $total * 100, 1) : '0.0',
-                'evaluations_published' => $evaluationPublished,
-                'evaluation_draft_or_not_started' => $evaluationDraft,
-                'evaluation_completion_percent' => $total ? number_format($evaluationPublished / $total * 100, 1) : '0.0',
+                'not_submitted' => $notSubmitted,
+                'submitted_not_evaluated' => $submittedNotEvaluated,
+                'evaluated' => $evaluated,
+                'not_submitted_percent' => $total ? number_format($notSubmitted / $total * 100, 1) : '0.0',
+                'submitted_not_evaluated_percent' => $total ? number_format($submittedNotEvaluated / $total * 100, 1) : '0.0',
+                'evaluated_percent' => $total ? number_format($evaluated / $total * 100, 1) : '0.0',
+                'submitted_total' => $submittedNotEvaluated + $evaluated,
+                'submission_rate_percent' => $total ? number_format(($submittedNotEvaluated + $evaluated) / $total * 100, 1) : '0.0',
+                'evaluation_rate_percent' => $total ? number_format($evaluated / $total * 100, 1) : '0.0',
             ],
-            'byRole' => $breakdown($stakeholders, fn ($stakeholder) => $stakeholder->role?->name),
             'byField' => $breakdown($stakeholders, fn ($stakeholder) => $stakeholder->field?->name),
             'byZone' => $breakdown($stakeholders, fn ($stakeholder) => $stakeholder->zone?->name),
         ];

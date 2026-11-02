@@ -260,6 +260,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('/export', 'export')->name('export');
         Route::get('/statistics', 'statistics')->name('statistics');
         Route::get('/statistics/export', 'statisticsExport')->name('statistics.export');
+        Route::get('/statistics/pdf', 'statisticsPdf')->name('statistics.pdf');
         Route::get('/{stakeholder}/pdf', 'pdf')->name('pdf');
         Route::get('/{stakeholder}/self', 'editSelf')->name('self.edit');
         Route::post('/{stakeholder}/self', 'updateSelf')->name('self.update');
