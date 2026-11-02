@@ -21,7 +21,17 @@ class StakeholderRolePermissionService
 
         if (($model->module_type ?? 'report') === 'appraisal') {
             if ($user) {
-                $userAccessIds = collect($user->permissions())->pluck('id')->all();
+                if (method_exists($user, 'permissions')) {
+                    $userAccessIds = collect($user->permissions())->pluck('id')->all();
+                } elseif (is_array($user->permissions ?? null)) {
+                    $userAccessIds = collect($user->permissions)
+                        ->map(fn ($permission) => is_object($permission)
+                            ? ($permission->id ?? null)
+                            : (is_array($permission) ? ($permission['id'] ?? null) : $permission))
+                        ->filter(fn ($id) => is_numeric($id))
+                        ->map(fn ($id) => (int) $id)
+                        ->all();
+                }
 
                 if (method_exists($user, 'roles')) {
                     $userAccessIds = array_merge(
