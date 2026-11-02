@@ -77,13 +77,30 @@
             <thead><tr><th class="group">{{ $groupHeading }}</th><th class="total">Total</th><th class="status not-submitted">Not submitted</th><th class="status waiting">Submitted, not evaluated</th><th class="status evaluated">Evaluated</th></tr></thead>
             <tbody>
             @forelse($rows as $row)
-                <tr>
-                    <td class="group">{{ $row['Group'] }}</td>
-                    <td class="total">{{ $row['Stakeholders'] }}</td>
-                    <td class="status not-submitted"><strong>{{ $row['not_submitted_count'] }}</strong><div class="people">@forelse($row['not_submitted_people'] as $index => $person){{ $index + 1 }}. {{ $person }}<br>@empty None @endforelse</div></td>
-                    <td class="status waiting"><strong>{{ $row['submitted_not_evaluated_count'] }}</strong><div class="people">@forelse($row['submitted_not_evaluated_people'] as $index => $person){{ $index + 1 }}. {{ $person }}<br>@empty None @endforelse</div></td>
-                    <td class="status evaluated"><strong>{{ $row['evaluated_count'] }}</strong><div class="people">@forelse($row['evaluated_people'] as $index => $person){{ $index + 1 }}. {{ $person }}<br>@empty None @endforelse</div></td>
-                </tr>
+                @php
+                    $notSubmittedPeople = $row['not_submitted_people'];
+                    $waitingPeople = $row['submitted_not_evaluated_people'];
+                    $evaluatedPeople = $row['evaluated_people'];
+                    $personRows = max(count($notSubmittedPeople), count($waitingPeople), count($evaluatedPeople), 1);
+                @endphp
+                @for($index = 0; $index < $personRows; $index++)
+                    <tr>
+                        <td class="group">{{ $index === 0 ? $row['Group'] : '' }}</td>
+                        <td class="total">{{ $index === 0 ? $row['Stakeholders'] : '' }}</td>
+                        <td class="status not-submitted">
+                            @if($index === 0)<strong>{{ $row['not_submitted_count'] }}</strong>@endif
+                            <div class="people">@if(isset($notSubmittedPeople[$index])){{ $index + 1 }}. {{ $notSubmittedPeople[$index] }}@elseif($index === 0)None @endif</div>
+                        </td>
+                        <td class="status waiting">
+                            @if($index === 0)<strong>{{ $row['submitted_not_evaluated_count'] }}</strong>@endif
+                            <div class="people">@if(isset($waitingPeople[$index])){{ $index + 1 }}. {{ $waitingPeople[$index] }}@elseif($index === 0)None @endif</div>
+                        </td>
+                        <td class="status evaluated">
+                            @if($index === 0)<strong>{{ $row['evaluated_count'] }}</strong>@endif
+                            <div class="people">@if(isset($evaluatedPeople[$index])){{ $index + 1 }}. {{ $evaluatedPeople[$index] }}@elseif($index === 0)None @endif</div>
+                        </td>
+                    </tr>
+                @endfor
             @empty
                 <tr><td colspan="5">No data available.</td></tr>
             @endforelse
