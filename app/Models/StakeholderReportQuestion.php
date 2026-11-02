@@ -19,7 +19,13 @@ class StakeholderReportQuestion extends Model
 
     public function scopeForModule($query, string $moduleType = 'report')
     {
-        return $query->where('module_type', $moduleType);
+        return $query->where(function ($query) use ($moduleType) {
+            $query->where('module_type', $moduleType);
+
+            if ($moduleType === 'report') {
+                $query->orWhereNull('module_type');
+            }
+        });
     }
 
     public function answers()

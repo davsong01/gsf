@@ -130,6 +130,90 @@ class AdminStakeholderAppraisalController extends Controller
         return ExcelService::downloadMultipleSheetsWithHeaders($sheets, $fileName);
     }
 
+    public function statistics(Request $request)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $stakeholders = $this->filteredQuery($request)
+            ->with(['role', 'field', 'zone', 'appraisal'])
+            ->get();
+
+        return view('admin.stakeholder_appraisals.statistics', [
+            ...$this->appraisalStatistics($stakeholders),
+            'fields' => Field::orderBy('name')->get(),
+            'zones' => Zone::orderBy('name')->get(),
+        ]);
+    }
+
+    public function statisticsExport(Request $request)
+    {
+        if ((auth()->user()?->role ?? null) != 1) {
+            abort(403);
+        }
+
+        $stakeholders = $this->filteredQuery($request)
+            ->with(['role', 'field', 'zone', 'appraisal'])
+            ->get();
+        $statistics = $this->appraisalStatistics($stakeholders);
+
+        $summaryRows = collect($statistics['summary'])->map(function ($value, $label) {
+            return ['Metric' => str($label)->replace('_', ' ')->title(), 'Value' => $value];
+        })->values()->all();
+        $breakdownHeaders = ['Group', 'Stakeholders', 'Self Published', 'Self Completion %', 'Evaluations Published', 'Evaluation Completion %'];
+
+        $fileName = 'appraisal-statistics-' . now()->format('Y-m-d_His') . '.xlsx';
+
+        return ExcelService::downloadMultipleSheetsWithHeaders([
+            'Summary' => ['headers' => ['Metric', 'Value'], 'rows' => $summaryRows],
+            'By Role' => ['headers' => $breakdownHeaders, 'rows' => $statistics['byRole']],
+            'By Field' => ['headers' => $breakdownHeaders, 'rows' => $statistics['byField']],
+            'By Zone' => ['headers' => $breakdownHeaders, 'rows' => $statistics['byZone']],
+        ], $fileName);
+    }
+
+    protected function appraisalStatistics($stakeholders): array
+    {
+        $total = $stakeholders->count();
+        $selfPublished = $stakeholders->filter(fn ($stakeholder) => $stakeholder->appraisal?->self_status === 'published')->count();
+        $evaluationPublished = $stakeholders->filter(fn ($stakeholder) => $stakeholder->appraisal?->evaluation_status === 'published')->count();
+        $selfDraft = $total - $selfPublished;
+        $evaluationDraft = $total - $evaluationPublished;
+
+        $breakdown = function ($items, callable $label): array {
+            return $items->groupBy($label)->map(function ($group, $name) {
+                $total = $group->count();
+                $selfPublished = $group->filter(fn ($stakeholder) => $stakeholder->appraisal?->self_status === 'published')->count();
+                $evaluationPublished = $group->filter(fn ($stakeholder) => $stakeholder->appraisal?->evaluation_status === 'published')->count();
+
+                return [
+                    'Group' => $name ?: 'Unassigned',
+                    'Stakeholders' => $total,
+                    'Self Published' => $selfPublished,
+                    'Self Completion %' => $total ? number_format($selfPublished / $total * 100, 1) : '0.0',
+                    'Evaluations Published' => $evaluationPublished,
+                    'Evaluation Completion %' => $total ? number_format($evaluationPublished / $total * 100, 1) : '0.0',
+                ];
+            })->sortByDesc('Stakeholders')->values()->all();
+        };
+
+        return [
+            'summary' => [
+                'total_stakeholders' => $total,
+                'self_published' => $selfPublished,
+                'self_draft_or_not_started' => $selfDraft,
+                'self_completion_percent' => $total ? number_format($selfPublished / $total * 100, 1) : '0.0',
+                'evaluations_published' => $evaluationPublished,
+                'evaluation_draft_or_not_started' => $evaluationDraft,
+                'evaluation_completion_percent' => $total ? number_format($evaluationPublished / $total * 100, 1) : '0.0',
+            ],
+            'byRole' => $breakdown($stakeholders, fn ($stakeholder) => $stakeholder->role?->name),
+            'byField' => $breakdown($stakeholders, fn ($stakeholder) => $stakeholder->field?->name),
+            'byZone' => $breakdown($stakeholders, fn ($stakeholder) => $stakeholder->zone?->name),
+        ];
+    }
+
     public function editSelf(Stakeholder $stakeholder)
     {
         if ((auth()->user()?->role ?? null) != 1) {

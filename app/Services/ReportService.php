@@ -296,11 +296,12 @@ class ReportService
         $chapter = $user?->chapter;
 
         $sections = StakeholderQuestionSection::isActive()
+            ->forModule('report')
             ->with([
                 'subsections' => function ($subQuery) {
-                    $subQuery->isActive()->with([
+                    $subQuery->isActive()->forModule('report')->with([
                         'questions' => function ($q) {
-                            $q->isActive()->orderBy('order');
+                            $q->isActive()->forModule('report')->orderBy('order');
                         }
                     ]);
                 }
@@ -720,11 +721,12 @@ class ReportService
         $report->load('answers');
 
         $sections = StakeholderQuestionSection::isActive()
+            ->forModule('report')
             ->with([
                 'subsections' => function ($subQuery) {
-                    $subQuery->isActive()->with([
+                    $subQuery->isActive()->forModule('report')->with([
                         'questions' => function ($q) {
-                            $q->isActive()->orderBy('order');
+                            $q->isActive()->forModule('report')->orderBy('order');
                         }
                     ]);
                 }

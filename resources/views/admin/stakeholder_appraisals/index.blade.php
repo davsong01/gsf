@@ -194,7 +194,12 @@
                             <h4 class="card-title mb-1">Stakeholder Appraisals</h4>
                             <small class="text-muted">Track self appraisal and evaluation status, then reopen a published form when needed.</small>
                         </div>
-                        <span class="badge bg-light text-dark border">{{ $filteredTotal ?? $stakeholders->total() }} stakeholders</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ route('stakeholderappraisals.statistics', request()->query()) }}" class="btn btn-outline-primary btn-sm rounded-pill">
+                                <i class="fa fa-bar-chart me-1"></i> Statistics Report
+                            </a>
+                            <span class="badge bg-light text-dark border">{{ $filteredTotal ?? $stakeholders->total() }} stakeholders</span>
+                        </div>
                     </div>
 
                     <div class="card-body">
