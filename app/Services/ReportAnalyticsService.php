@@ -15,12 +15,10 @@ class ReportAnalyticsService
 {
     public function fetchAnalyticsTypeData(Request $request, $scope = [])
     {
-        $groupBy = $request->group_by ?? 'chapter';
-
         $statusLevels = [
             0 => 'Not Submitted',
-            1 => 'Currently Editing',
-            2 => 'Submitted',
+            1 => 'Editing — Not Submitted',
+            2 => 'Submitted — Awaiting Zone Review',
             3 => 'Zone Rejected',
             4 => 'Zone Approved',
             5 => 'Field Rejected',
@@ -31,7 +29,7 @@ class ReportAnalyticsService
 
         $from = $request->from_date
             ? Carbon::parse($request->from_date)->startOfMonth()
-            : Carbon::now()->startOfMonth();
+            : Carbon::now()->subMonths(11)->startOfMonth();
 
         $to = $request->to_date
             ? Carbon::parse($request->to_date)->endOfMonth()
@@ -42,169 +40,79 @@ class ReportAnalyticsService
             $months[] = $date->format('Y-m');
         }
 
-        $availableFieldIds = $scope['fieldIds']->toArray() ?? [];
-        $availableZoneIds = $scope['zoneIds']->toArray() ?? [];
-
-        // Apply user filters but intersect with available scope
+        $chapterIds = collect($scope['chapterIds'] ?? [])->map(fn ($id) => (int) $id);
+        $availableFieldIds = collect($scope['fieldIds'] ?? [])->map(fn ($id) => (int) $id);
+        $availableZoneIds = collect($scope['zoneIds'] ?? [])->map(fn ($id) => (int) $id);
         $fieldFilter = $request->filled('fields')
-            ? array_intersect($request->fields, $availableFieldIds)
+            ? collect((array) $request->input('fields'))->map(fn ($id) => (int) $id)->intersect($availableFieldIds)->values()
             : $availableFieldIds;
-
         $zoneFilter = $request->filled('zones')
-            ? array_intersect($request->zones, $availableZoneIds)
+            ? collect((array) $request->input('zones'))->map(fn ($id) => (int) $id)->intersect($availableZoneIds)->values()
             : $availableZoneIds;
 
-        $datasets = [];
+        $chapters = Chapter::query()
+            ->whereIn('id', $chapterIds)
+            ->when($request->filled('fields'), fn ($query) => $query->whereIn('field_id', $fieldFilter))
+            ->when($request->filled('zones'), fn ($query) => $query->whereIn('zone_id', $zoneFilter))
+            ->orderBy('name')
+            ->get();
 
-        if ($groupBy === 'chapter') {
-            $chapters = Chapter::query()
-                ->when($fieldFilter, fn ($q) => $q->whereIn('field_id', $fieldFilter))
-                ->when($zoneFilter, fn ($q) => $q->whereIn('zone_id', $zoneFilter))
-                ->orderBy('name')
-                ->get();
+        $reports = StakeholderReport::query()
+            ->whereIn('chapter_id', $chapters->pluck('id'))
+            ->where(function ($query) use ($from) {
+                $query->where('year', '>', $from->year)
+                    ->orWhere(fn ($query) => $query->where('year', $from->year)->where('month', '>=', $from->month));
+            })
+            ->where(function ($query) use ($to) {
+                $query->where('year', '<', $to->year)
+                    ->orWhere(fn ($query) => $query->where('year', $to->year)->where('month', '<=', $to->month));
+            })
+            ->orderBy('id')
+            ->get([
+                'id', 'chapter_id', 'year', 'month', 'edit_mode',
+                'zone_status', 'zone_rejected_at', 'field_status', 'field_rejected_at',
+                'national_status', 'national_rejected_at',
+            ]);
 
-            foreach ($chapters as $chapter) {
-
-                $data = [];
-                $tooltips = [];
-
-                foreach ($months as $month) {
-                    [$year, $m] = explode('-', $month);
-
-                    $report = StakeholderReport::where([
-                        'chapter_id' => $chapter->id,
-                        'year' => $year,
-                        'month' => $m,
-                    ])->first();
-
-                    $status = 0;
-                    if ($report) {
-                        if ($report->national_rejected_at) {
-                            $status = 7;
-                        } elseif ($report->national_status) {
-                            $status = 8;
-                        } elseif ($report->field_rejected_at) {
-                            $status = 5;
-                        } elseif ($report->field_status) {
-                            $status = 6;
-                        } elseif ($report->zone_rejected_at) {
-                            $status = 3;
-                        } elseif ($report->zone_status) {
-                            $status = 4;
-                        } elseif ($report->edit_mode) {
-                            $status = 1;
-                        } else {
-                            $status = 2;
-                        }
-                    }
-
-                    $data[] = $status;
-                    $tooltips[] = [[
-                        'chapter_name' => $chapter->name,
-                        'status' => $status,
-                        'status_label' => $statusLevels[$status],
-                    ]];
-                }
-
-                $datasets[] = [
-                    'legend_id' => $chapter->id,
-                    'label' => $chapter->name,
-                    'data' => $data,
-                    'tooltip' => $tooltips,
-                    'borderWidth' => 1.5,
-                    'tension' => 0.3,
-                    'fill' => false,
-                ];
-            }
-
-        } else {
-
-            if ($groupBy === 'field') {
-                $groups = Field::query()
-                    ->when($fieldFilter, fn ($q) => $q->whereIn('id', $fieldFilter))
-                    ->orderBy('name')
-                    ->get();
-            } else {
-                $groups = Zone::query()
-                    ->when($zoneFilter, fn ($q) => $q->whereIn('id', $zoneFilter))
-                    ->when($fieldFilter, fn ($q) => $q->whereIn('field_id', $fieldFilter))
-                    ->orderBy('name')
-                    ->get();
-            }
-
-            foreach ($groups as $group) {
-
-                $chaptersInGroup = Chapter::query()
-                    ->when($groupBy === 'field', fn ($q) => $q->where('field_id', $group->id))
-                    ->when($groupBy === 'zone', fn ($q) => $q->where('zone_id', $group->id))
-                    ->when($fieldFilter, fn ($q) => $q->whereIn('field_id', $fieldFilter))
-                    ->when($zoneFilter, fn ($q) => $q->whereIn('zone_id', $zoneFilter))
-                    ->get();
-
-                $data = [];
-                $tooltips = [];
-
-                foreach ($months as $month) {
-                    [$year, $m] = explode('-', $month);
-
-                    $maxStatus = 0;
-                    $chapterStatuses = [];
-
-                    foreach ($chaptersInGroup as $chapter) {
-
-                        $report = StakeholderReport::where([
-                            'chapter_id' => $chapter->id,
-                            'year' => $year,
-                            'month' => $m,
-                        ])->first();
-
-                        $status = 0;
-                        if ($report) {
-                            if ($report->national_rejected_at) {
-                                $status = 7;
-                            } elseif ($report->national_status) {
-                                $status = 8;
-                            } elseif ($report->field_rejected_at) {
-                                $status = 5;
-                            } elseif ($report->field_status) {
-                                $status = 6;
-                            } elseif ($report->zone_rejected_at) {
-                                $status = 3;
-                            } elseif ($report->zone_status) {
-                                $status = 4;
-                            } elseif ($report->edit_mode) {
-                                $status = 1;
-                            } else {
-                                $status = 2;
-                            }
-                        }
-
-                        $chapterStatuses[] = [
-                            'chapter_name' => $chapter->name,
-                            'status' => $status,
-                            'status_label' => $statusLevels[$status],
-                        ];
-
-                        if ($status > $maxStatus) {
-                            $maxStatus = $status;
-                        }
-                    }
-
-                    $data[] = $maxStatus;
-                    $tooltips[] = $chapterStatuses;
-                }
-
-                $datasets[] = [
-                    'legend_id' => $group->id,
-                    'label' => $group->name,
-                    'data' => $data,
-                    'tooltip' => $tooltips,
-                    'borderWidth' => 1.5,
-                    'tension' => 0.3,
-                    'fill' => false,
-                ];
-            }
+        $statusForReport = function ($report): int {
+            if ($report->edit_mode) return 1;
+            if ($report->national_rejected_at || (int) $report->national_status === 2) return 7;
+            if ((int) $report->national_status === 1) return 8;
+            if ($report->field_rejected_at || (int) $report->field_status === 2) return 5;
+            if ((int) $report->field_status === 1) return 6;
+            if ($report->zone_rejected_at || (int) $report->zone_status === 2) return 3;
+            if ((int) $report->zone_status === 1) return 4;
+            return 2;
+        };
+        $statusByChapterMonth = [];
+        foreach ($reports as $report) {
+            $monthKey = sprintf('%d-%02d', $report->year, $report->month);
+            $statusByChapterMonth[$report->chapter_id][$monthKey] = $statusForReport($report);
         }
+
+        $datasets = $chapters->map(function ($chapter) use ($months, $statusByChapterMonth, $statusLevels) {
+            $data = [];
+            $tooltips = [];
+            foreach ($months as $month) {
+                $status = $statusByChapterMonth[$chapter->id][$month] ?? 0;
+                $data[] = $status;
+                $tooltips[] = [[
+                    'chapter_name' => $chapter->name,
+                    'status' => $status,
+                    'status_label' => $statusLevels[$status],
+                ]];
+            }
+
+            return [
+                'legend_id' => $chapter->id,
+                'label' => $chapter->name,
+                'data' => $data,
+                'tooltip' => $tooltips,
+                'borderWidth' => 1.5,
+                'tension' => 0.3,
+                'fill' => false,
+            ];
+        })->values();
 
         $labels = collect($months)
             ->map(fn ($m) => Carbon::createFromFormat('Y-m', $m)->format('M Y'))
@@ -214,6 +122,7 @@ class ReportAnalyticsService
             'labels' => $labels,
             'datasets' => $datasets,
             'status_levels' => $statusLevels,
+            'chapter_count' => $chapters->count(),
         ];
     }
 
@@ -234,8 +143,9 @@ class ReportAnalyticsService
             ->when(! empty($filters['fields']), fn ($query) => $query->whereIn('field_id', $selectedFieldIds))
             ->when(! empty($filters['zones']), fn ($query) => $query->whereIn('zone_id', $selectedZoneIds))
             ->orderBy('name')
-            ->get();
-        $chapterIds = $chapters->pluck('id');
+            ->get()
+            ->keyBy('id');
+        $chapterIds = $chapters->keys();
         $fields = Field::whereIn('id', $chapters->pluck('field_id')->unique())->get()->keyBy('id');
 
         $start = $from
@@ -248,7 +158,6 @@ class ReportAnalyticsService
 
         $reports = StakeholderReport::query()
             ->whereIn('chapter_id', $chapterIds)
-            ->where('edit_mode', 0)
             ->where(function ($query) use ($start) {
                 $query->where('year', '>', $start->year)
                     ->orWhere(fn ($query) => $query->where('year', $start->year)->where('month', '>=', $start->month));
@@ -258,22 +167,23 @@ class ReportAnalyticsService
                     ->orWhere(fn ($query) => $query->where('year', $end->year)->where('month', '<=', $end->month));
             })
             ->get();
+        $submittedReports = $reports->where('edit_mode', 0)->values();
 
         $isApproved = fn ($stage) => fn ($report) => (int) ($report->{$stage.'_status'} ?? 0) === 1;
         $isRejected = fn ($stage) => fn ($report) => (int) ($report->{$stage.'_status'} ?? 0) === 2
             || ! empty($report->{$stage.'_rejected_at'});
 
         return [
-            'nationallyApproved' => $this->group($reports, $chapters, $fields, $isApproved('national')),
-            'nationalDeclined' => $this->group($reports, $chapters, $fields, $isRejected('national')),
-            'nationalPending' => $this->group($reports, $chapters, $fields, fn ($report) => (int) ($report->field_status ?? 0) === 1 && (int) ($report->national_status ?? 0) === 0),
-            'zoneApproved' => $this->group($reports, $chapters, $fields, $isApproved('zone')),
-            'zoneDeclined' => $this->group($reports, $chapters, $fields, $isRejected('zone')),
-            'pendingZoneApproval' => $this->group($reports, $chapters, $fields, fn ($report) => (int) ($report->zone_status ?? 0) === 0 && empty($report->zone_rejected_at)),
-            'fieldApproved' => $this->group($reports, $chapters, $fields, $isApproved('field')),
-            'fieldDeclined' => $this->group($reports, $chapters, $fields, $isRejected('field')),
-            'pendingFieldApproval' => $this->group($reports, $chapters, $fields, fn ($report) => (int) ($report->zone_status ?? 0) === 1 && (int) ($report->field_status ?? 0) === 0 && empty($report->field_rejected_at)),
-            'monthsYetToSubmit' => $this->getDefaulters($reports, $chapters, $fields, $start, $end),
+            'nationallyApproved' => $this->group($submittedReports, $chapters, $fields, $isApproved('national')),
+            'nationalDeclined' => $this->group($submittedReports, $chapters, $fields, $isRejected('national')),
+            'nationalPending' => $this->group($submittedReports, $chapters, $fields, fn ($report) => (int) ($report->field_status ?? 0) === 1 && (int) ($report->national_status ?? 0) === 0),
+            'zoneApproved' => $this->group($submittedReports, $chapters, $fields, $isApproved('zone')),
+            'zoneDeclined' => $this->group($submittedReports, $chapters, $fields, $isRejected('zone')),
+            'pendingZoneApproval' => $this->group($submittedReports, $chapters, $fields, fn ($report) => (int) ($report->zone_status ?? 0) === 0 && empty($report->zone_rejected_at)),
+            'fieldApproved' => $this->group($submittedReports, $chapters, $fields, $isApproved('field')),
+            'fieldDeclined' => $this->group($submittedReports, $chapters, $fields, $isRejected('field')),
+            'pendingFieldApproval' => $this->group($submittedReports, $chapters, $fields, fn ($report) => (int) ($report->zone_status ?? 0) === 1 && (int) ($report->field_status ?? 0) === 0 && empty($report->field_rejected_at)),
+            'monthsYetToSubmit' => $this->getDefaulters($submittedReports, $chapters, $fields, $start, $end),
         ];
     }
 

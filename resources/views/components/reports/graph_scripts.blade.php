@@ -5,58 +5,21 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    let currentGroup = 'chapter';
     let downloadType = null;
-
-    const compareBtn = document.getElementById('compareBtn');
-    const compareModalEl = document.getElementById('compareModal');
-    const compareModal = compareModalEl ? new bootstrap.Modal(compareModalEl) : null;
-    const compareRadios = document.querySelectorAll('.compare-radio');
-
     let chart = null;
     let fullGraphData = null;
-
     const ctx = document.getElementById('reportGraph')?.getContext('2d');
 
-    // -----------------------------
-    // Compare group handling
-    // -----------------------------
-    function updateCompareBtnText() {
-        if (!compareBtn) return;
-        const span = compareBtn.querySelector('span');
-        if (span) {
-            span.textContent = currentGroup.charAt(0).toUpperCase() + currentGroup.slice(1);
-        }
+    function formatDate(date) {
+        return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
     }
-
-    compareBtn?.addEventListener('click', () => {
-        compareRadios.forEach(r => r.checked = r.value === currentGroup);
-        compareModal?.show();
-    });
-
-    compareRadios.forEach(radio => {
-        radio.addEventListener('change', function () {
-            if (!this.checked) return;
-
-            currentGroup = this.value;
-            updateCompareBtnText();
-
-            fetchGraph();
-            compareModal?.hide();
-        });
-    });
-
-    updateCompareBtnText();
-
-    // reset group on normal filter submit
-    document.querySelectorAll('.graph-submit button[type="submit"]:not([name="filter_type"])')
-        .forEach(btn => {
-            btn.addEventListener('click', function () {
-                currentGroup = 'chapter';
-                updateCompareBtnText();
-                compareRadios.forEach(r => r.checked = r.value === currentGroup);
-            });
-        });
+    const today = new Date();
+    const fromInput = document.querySelector('input[name="from_date"]');
+    const toInput = document.querySelector('input[name="to_date"]');
+    const dueThrough = new Date(today.getFullYear(), today.getMonth(), 1);
+    if (today.getDate() < 25) dueThrough.setMonth(dueThrough.getMonth() - 1);
+    if (fromInput && !fromInput.value) fromInput.value = formatDate(new Date(dueThrough.getFullYear(), dueThrough.getMonth() - 11, 1));
+    if (toInput && !toInput.value) toInput.value = formatDate(new Date(dueThrough.getFullYear(), dueThrough.getMonth() + 1, 0));
 
     // -----------------------------
     // Download detection (FIXED)
@@ -79,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
             zones: $('select[name="zones[]"]').val() || [],
             fields: $('select[name="fields[]"]').val() || [],
             submission_status: $('select[name="submission_status"]').val() || null,
-            group_by: currentGroup,
+            group_by: 'chapter',
             filter_type: downloadType
         };
     }
@@ -138,153 +101,65 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // -----------------------------
-    // Chart rendering
-    // -----------------------------
-    function getColor(i, total) {
-        const hue = Math.round((i / total) * 360);
-        return `hsl(${hue}, 60%, 65%)`;
-    }
-
     function renderChart() {
         if (!fullGraphData || !ctx) return;
 
         const { labels, datasets, status_levels } = fullGraphData;
+        const colors = ['#9ca3af', '#f59e0b', '#60a5fa', '#ef4444', '#34d399', '#dc2626', '#10b981', '#b91c1c', '#047857'];
+        const chapterCount = Number(fullGraphData.chapter_count) || datasets.length;
+        const statusCodes = Object.keys(status_levels).map(Number).sort((a, b) => a - b);
+        const statusDatasets = statusCodes.map((code, index) => ({
+            label: status_levels[code],
+            data: labels.map((_, monthIndex) => datasets.reduce((count, chapter) => (
+                count + (Number(chapter.data[monthIndex]) === code ? 1 : 0)
+            ), 0)),
+            backgroundColor: colors[index % colors.length],
+            borderColor: '#fff',
+            borderWidth: 1,
+            stack: 'monthly-status'
+        }));
 
-        datasets.forEach((ds, i) => {
-            const color = getColor(i, datasets.length);
-            ds.borderColor = color;
-            ds.backgroundColor = color;
-        });
+        const summary = document.getElementById('complianceChartSummary');
+        if (summary) {
+            summary.textContent = chapterCount
+                ? 'Monthly chapter counts across ' + chapterCount + ' selected chapters. Reports in edit mode count as not submitted.'
+                : 'No chapters match the selected filters.';
+        }
 
         if (chart) chart.destroy();
 
         chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels,
-                datasets: datasets.map(ds => ({
-                    label: ds.label,
-                    data: ds.data,
-                    borderColor: ds.borderColor,
-                    backgroundColor: ds.backgroundColor,
-                    fill: false,
-                    tension: ds.tension || 0.3,
-                    borderWidth: 1,
-                    pointRadius: 3,
-                    pointHoverRadius: 6
-                }))
-            },
+            type: 'bar',
+            data: { labels, datasets: statusDatasets },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: true, position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const count = Number(context.raw) || 0;
+                                const percent = chapterCount ? (100 * count / chapterCount).toFixed(1) : '0.0';
+                                return context.dataset.label + ': ' + count + ' chapters (' + percent + '%)';
+                            },
+                            footer: function (items) {
+                                return 'Total chapters: ' + items.reduce((total, item) => total + (Number(item.raw) || 0), 0);
+                            }
+                        }
+                    }
                 },
                 scales: {
+                    x: { stacked: true, title: { display: true, text: 'Report month' } },
                     y: {
+                        stacked: true,
                         beginAtZero: true,
-                        ticks: {
-                            callback: v => status_levels[v] || v
-                        }
+                        title: { display: true, text: 'Number of chapters' },
+                        ticks: { precision: 0 }
                     }
                 }
             }
         });
-
-        buildLegend(chart);
-    }
-
-    // -----------------------------
-    // Legend system
-    // -----------------------------
-    function buildLegend(chart) {
-
-        const legendContainer = document.getElementById('customLegend');
-        const searchInput = document.getElementById('legendSearch');
-        const selectAll = document.getElementById('legendSelectAllCheckbox');
-
-        if (!legendContainer) return;
-
-        const STORAGE_KEY = "legendState";
-
-        function saveState() {
-            const state = {};
-            chart.data.datasets.forEach((ds, i) => {
-                state[ds.label] = !chart.getDatasetMeta(i).hidden;
-            });
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        }
-
-        function render(filter = '') {
-
-            legendContainer.innerHTML = '';
-
-            chart.data.datasets.forEach((ds, i) => {
-
-                if (filter && !ds.label.toLowerCase().includes(filter.toLowerCase())) return;
-
-                const meta = chart.getDatasetMeta(i);
-
-                const row = document.createElement('div');
-                row.style.display = 'flex';
-                row.style.alignItems = 'center';
-                row.style.gap = '6px';
-                row.style.cursor = 'pointer';
-                row.style.fontSize = '11px';
-
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.checked = !meta.hidden;
-
-                const box = document.createElement('span');
-                box.style.width = '12px';
-                box.style.height = '12px';
-                box.style.background = ds.borderColor;
-
-                const label = document.createElement('span');
-                label.textContent = ds.label;
-
-                checkbox.addEventListener('change', function () {
-                    meta.hidden = !this.checked;
-                    chart.update();
-                    saveState();
-                    updateSelectAll();
-                });
-
-                row.appendChild(checkbox);
-                row.appendChild(box);
-                row.appendChild(label);
-
-                legendContainer.appendChild(row);
-            });
-        }
-
-        function updateSelectAll() {
-            const allVisible = chart.data.datasets.every((d, i) => !chart.getDatasetMeta(i).hidden);
-            const noneVisible = chart.data.datasets.every((d, i) => chart.getDatasetMeta(i).hidden);
-
-            selectAll.checked = allVisible;
-            selectAll.indeterminate = !allVisible && !noneVisible;
-        }
-
-        selectAll?.addEventListener('change', function () {
-            chart.data.datasets.forEach((d, i) => {
-                chart.getDatasetMeta(i).hidden = !this.checked;
-            });
-
-            chart.update();
-            saveState();
-            render(searchInput?.value || '');
-            updateSelectAll();
-        });
-
-        searchInput?.addEventListener('input', function () {
-            render(this.value);
-        });
-
-        render();
-        updateSelectAll();
     }
 
     // -----------------------------
@@ -301,5 +176,8 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <style>
-#reportGraph { height: 450px; }
+.compliance-chart-card{padding:20px;background:#fff;border:1px solid rgba(40,45,55,.1);border-radius:14px;box-shadow:0 5px 18px rgba(20,25,35,.06)}
+.compliance-chart-heading{margin-bottom:12px}.compliance-chart-heading h2{margin:0 0 4px;font-size:1.1rem}.compliance-chart-heading p{margin:0;color:#747b88;font-size:.85rem}
+.compliance-chart-wrap{position:relative;height:520px}
+@media(max-width:767px){.compliance-chart-card{padding:14px}.compliance-chart-wrap{height:430px}}
 </style>

@@ -1,13 +1,14 @@
 @php
 $type = $type ?? '';
-if (!$isAdmin) {
-    $canViewZone = in_array($user->role_id, array_merge(
+$isAdmin = (bool) ($isAdmin ?? false);
+if (!$isAdmin && isset($user)) {
+    $canViewZone = in_array($user->role_id ?? null, array_merge(
         fieldStakeholders(),
         secretariatStakeholders(),
         ncpStakeholders()
     ));
 } else {
-    $canViewZone = true;
+    $canViewZone = $isAdmin;
 }
 @endphp
 

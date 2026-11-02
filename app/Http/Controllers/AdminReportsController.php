@@ -208,7 +208,8 @@ class AdminReportsController extends Controller
                 ->get(['id', 'label', 'section_id', 'sub_section_id']),
             'chapters' => Chapter::orderBy('name')->get(),
             'legends' => Chapter::orderBy('name')->get(),
-            'isAdmin' => isAdmin()['status'],
+            'isAdmin' => $isAdmin,
+            'user' => $user,
         ];
 
         if ($type === 'section') {
