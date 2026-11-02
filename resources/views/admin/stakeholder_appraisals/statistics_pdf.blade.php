@@ -26,7 +26,7 @@
         .summary-note { color:#718096; font-size:7px; }
         .filters { background:#f4f7fb; border:1px solid #e2e8f0; padding:5px 7px; margin-top:8px; }
         .group-table { page-break-inside:auto; }
-        .group-table tr { page-break-inside:avoid; page-break-after:auto; }
+        .group-table tr { page-break-inside:auto; page-break-after:auto; }
         .group-table th { background:#182b58; color:#fff; font-size:8px; text-align:left; padding:4px; }
         .group-table td { border:1px solid #e2e8f0; padding:4px; vertical-align:top; }
         .group-table tr:nth-child(even) td { background:#f8fafc; }

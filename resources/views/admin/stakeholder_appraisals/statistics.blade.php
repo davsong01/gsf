@@ -40,7 +40,8 @@
     .section-card-header h2 { margin:0; color:var(--ink); font-size:1.1rem; font-weight:800; }
     .section-card-header p { margin:.25rem 0 0; color:var(--muted); font-size:.82rem; }
     .group-table { margin:0; min-width:980px; }
-    .group-table thead { position:sticky; top:4.5rem; z-index:3; }
+    .statistics-page .table-responsive { max-height:70vh; overflow:auto; }
+    .group-table thead { position:sticky; top:0; z-index:3; }
     .group-table th { color:#8390a5; background:#fbfcfe; border-bottom:1px solid var(--line); font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
     .group-table td { color:var(--ink); border-color:#eef2f6; vertical-align:top; }
     .group-name { font-weight:800; min-width:180px; }
