@@ -281,7 +281,8 @@ class AdminReportsController extends Controller
             $pdfData = $reportService->generateSubmissionStatusReport(
                 $scope,
                 $request->from_date,
-                $request->to_date
+                $request->to_date,
+                $request->only('fields', 'zones')
             );
 
             return $reportService->downloadSubmissionStatusPdf(

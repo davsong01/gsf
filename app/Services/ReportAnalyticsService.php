@@ -217,30 +217,27 @@ class ReportAnalyticsService
         ];
     }
 
-    public function generateSubmissionStatusReport($scope, $from = null, $to = null): array
+    public function generateSubmissionStatusReport($scope, $from = null, $to = null, array $filters = []): array
     {
-        $query = StakeholderReport::query()
-            ->with([
-                'answers.section',
-                'answers.subSection',
-                'answers.question',
-                'chapter',
-                'zone',
-                'field',
-            ])
-            ->where('edit_mode', 0);
+        $allowedChapterIds = collect($scope['chapterIds'] ?? [])->map(fn ($id) => (int) $id);
+        $allowedFieldIds = collect($scope['fieldIds'] ?? [])->map(fn ($id) => (int) $id);
+        $allowedZoneIds = collect($scope['zoneIds'] ?? [])->map(fn ($id) => (int) $id);
+        $selectedFieldIds = ! empty($filters['fields'])
+            ? collect((array) $filters['fields'])->map(fn ($id) => (int) $id)->intersect($allowedFieldIds)->values()
+            : $allowedFieldIds;
+        $selectedZoneIds = ! empty($filters['zones'])
+            ? collect((array) $filters['zones'])->map(fn ($id) => (int) $id)->intersect($allowedZoneIds)->values()
+            : $allowedZoneIds;
 
-        $chapterIds = $scope['chapterIds'] ?? collect();
-        if ($chapterIds->isNotEmpty()) {
-            $query->whereIn('chapter_id', $chapterIds);
-        } else {
-            // An empty scope must not accidentally expose reports outside the stakeholder's access.
-            $query->whereRaw('1 = 0');
-        }
+        $chapters = Chapter::query()
+            ->whereIn('id', $allowedChapterIds)
+            ->when(! empty($filters['fields']), fn ($query) => $query->whereIn('field_id', $selectedFieldIds))
+            ->when(! empty($filters['zones']), fn ($query) => $query->whereIn('zone_id', $selectedZoneIds))
+            ->orderBy('name')
+            ->get();
+        $chapterIds = $chapters->pluck('id');
+        $fields = Field::whereIn('id', $chapters->pluck('field_id')->unique())->get()->keyBy('id');
 
-        // =========================
-        // DATE RANGE FILTER
-        // =========================
         $start = $from
             ? Carbon::parse($from)->startOfMonth()
             : Carbon::create(date('Y'), 1, 1);
@@ -249,91 +246,34 @@ class ReportAnalyticsService
             ? Carbon::parse($to)->endOfMonth()
             : now()->endOfMonth();
 
-        $query->whereBetween('created_at', [$start, $end]);
+        $reports = StakeholderReport::query()
+            ->whereIn('chapter_id', $chapterIds)
+            ->where('edit_mode', 0)
+            ->where(function ($query) use ($start) {
+                $query->where('year', '>', $start->year)
+                    ->orWhere(fn ($query) => $query->where('year', $start->year)->where('month', '>=', $start->month));
+            })
+            ->where(function ($query) use ($end) {
+                $query->where('year', '<', $end->year)
+                    ->orWhere(fn ($query) => $query->where('year', $end->year)->where('month', '<=', $end->month));
+            })
+            ->get();
 
-        $reports = $query->get();
-
-        $groupedRows = [];
-        $periods = [];
-
-        foreach ($reports as $report) {
-
-            $period = date(
-                'M Y',
-                mktime(0, 0, 0, (int) $report->month, 1, (int) $report->year)
-            );
-
-            $periods[$period] = $period;
-
-            foreach ($report->answers as $answer) {
-
-                $key = implode('|', [
-                    $report->chapter_id,
-                    $report->zone_id,
-                    $report->field_id,
-                    $answer->question_section_id,
-                    $answer->question_sub_section_id,
-                    $answer->question_id,
-                ]);
-
-                if (! isset($groupedRows[$key])) {
-
-                    $groupedRows[$key] = [
-                        'Chapter' => $report->chapter->name ?? '-',
-                        'Zone' => $report->zone->name ?? '-',
-                        'Field' => $report->field->name ?? '-',
-                        'Section' => $answer->section->name ?? '-',
-                        'Sub Section' => $answer->subSection->name ?? '-',
-                        'Question' => $answer->question->label ?? '-',
-                    ];
-                }
-
-                $groupedRows[$key][$period] = $this->normalizeAnswerValue(
-                    $answer->answer_value ?? $answer->answer
-                );
-            }
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Sort periods chronologically
-        |--------------------------------------------------------------------------
-        */
-        uksort($periods, function ($a, $b) {
-            return strtotime('01 '.$a) <=> strtotime('01 '.$b);
-        });
-
-        $periods = array_values($periods);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Ensure every row has every month column
-        |--------------------------------------------------------------------------
-        */
-        $rows = [];
-
-        foreach ($groupedRows as $row) {
-
-            foreach ($periods as $period) {
-                $row[$period] = $row[$period] ?? '-';
-            }
-
-            $rows[] = $row;
-        }
+        $isApproved = fn ($stage) => fn ($report) => (int) ($report->{$stage.'_status'} ?? 0) === 1;
+        $isRejected = fn ($stage) => fn ($report) => (int) ($report->{$stage.'_status'} ?? 0) === 2
+            || ! empty($report->{$stage.'_rejected_at'});
 
         return [
-            'headers' => array_merge(
-                [
-                    'Chapter',
-                    'Zone',
-                    'Field',
-                    'Section',
-                    'Sub Section',
-                    'Question',
-                ],
-                $periods
-            ),
-            'rows' => $rows,
+            'nationallyApproved' => $this->group($reports, $chapters, $fields, $isApproved('national')),
+            'nationalDeclined' => $this->group($reports, $chapters, $fields, $isRejected('national')),
+            'nationalPending' => $this->group($reports, $chapters, $fields, fn ($report) => (int) ($report->field_status ?? 0) === 1 && (int) ($report->national_status ?? 0) === 0),
+            'zoneApproved' => $this->group($reports, $chapters, $fields, $isApproved('zone')),
+            'zoneDeclined' => $this->group($reports, $chapters, $fields, $isRejected('zone')),
+            'pendingZoneApproval' => $this->group($reports, $chapters, $fields, fn ($report) => (int) ($report->zone_status ?? 0) === 0 && empty($report->zone_rejected_at)),
+            'fieldApproved' => $this->group($reports, $chapters, $fields, $isApproved('field')),
+            'fieldDeclined' => $this->group($reports, $chapters, $fields, $isRejected('field')),
+            'pendingFieldApproval' => $this->group($reports, $chapters, $fields, fn ($report) => (int) ($report->zone_status ?? 0) === 1 && (int) ($report->field_status ?? 0) === 0 && empty($report->field_rejected_at)),
+            'monthsYetToSubmit' => $this->getDefaulters($reports, $chapters, $fields, $start, $end),
         ];
     }
 

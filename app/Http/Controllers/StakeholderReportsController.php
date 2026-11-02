@@ -122,7 +122,8 @@ class StakeholderReportsController extends Controller
             $data = $reportService->generateSubmissionStatusReport(
                 $scope,
                 $request->from_date ?? null,
-                $request->to_date ?? null
+                $request->to_date ?? null,
+                $request->only('fields', 'zones')
             );
 
             return $reportService->downloadSubmissionStatusPdf(
