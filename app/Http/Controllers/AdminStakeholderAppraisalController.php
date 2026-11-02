@@ -183,6 +183,7 @@ class AdminStakeholderAppraisalController extends Controller
 
         return ExcelService::downloadMultipleSheetsWithHeaders([
             'Summary' => ['headers' => ['Metric', 'Value'], 'rows' => $summaryRows],
+            'Officials' => ['headers' => $breakdownHeaders, 'rows' => $exportBreakdown($statistics['necOfficials'])],
             'By Field' => ['headers' => $breakdownHeaders, 'rows' => $exportBreakdown($statistics['byField'])],
             'By Zone' => ['headers' => $breakdownHeaders, 'rows' => $exportBreakdown($statistics['byZone'])],
         ], $fileName);
@@ -234,7 +235,7 @@ class AdminStakeholderAppraisalController extends Controller
                     $personStatus = $stakeholder->appraisal?->evaluation_status === 'published'
                         ? 'evaluated'
                         : ($stakeholder->appraisal?->self_status === 'published' ? 'submitted_not_evaluated' : 'not_submitted');
-                    $designation = $stakeholder->designation?->name ?: ($stakeholder->role?->name ?: 'No designation');
+                    $designation = $stakeholder->designation?->name ?: ($stakeholder->role?->name ?: 'No designation assigned');
                     $peopleByStatus[$personStatus][] = trim(($stakeholder->name ?: 'Unnamed stakeholder') . ' - ' . $designation);
                 }
 
@@ -251,6 +252,9 @@ class AdminStakeholderAppraisalController extends Controller
             })->sortByDesc('Stakeholders')->values()->all();
         };
 
+        $necOfficials = $stakeholders->filter(fn ($stakeholder) => $this->isNecOfficial($stakeholder))->values();
+        $regionalStakeholders = $stakeholders->reject(fn ($stakeholder) => $this->isNecOfficial($stakeholder))->values();
+
         return [
             'summary' => [
                 'total_stakeholders' => $total,
@@ -264,9 +268,37 @@ class AdminStakeholderAppraisalController extends Controller
                 'submission_rate_percent' => $total ? number_format(($submittedNotEvaluated + $evaluated) / $total * 100, 1) : '0.0',
                 'evaluation_rate_percent' => $total ? number_format($evaluated / $total * 100, 1) : '0.0',
             ],
-            'byField' => $breakdown($stakeholders, fn ($stakeholder) => $stakeholder->field?->name),
-            'byZone' => $breakdown($stakeholders, fn ($stakeholder) => $stakeholder->zone?->name),
+            'necOfficials' => $breakdown($necOfficials, fn () => 'NEC Officials'),
+            'byField' => $breakdown($regionalStakeholders, fn ($stakeholder) => $this->appraisalGroupLabel($stakeholder, 'field')),
+            'byZone' => $breakdown($regionalStakeholders, fn ($stakeholder) => $this->appraisalGroupLabel($stakeholder, 'zone')),
         ];
+    }
+
+    protected function appraisalGroupLabel(Stakeholder $stakeholder, string $group): string
+    {
+        return $group === 'field'
+            ? ($stakeholder->field?->name ?: 'Unassigned')
+            : ($stakeholder->zone?->name ?: 'Unassigned');
+    }
+
+    protected function isNecOfficial(Stakeholder $stakeholder): bool
+    {
+        $roleSlug = strtolower(str_replace('_', '-', (string) $stakeholder->role?->slug));
+        $designationSlug = strtolower(str_replace('_', '-', (string) $stakeholder->designation?->slug));
+        $designationName = mb_strtolower((string) ($stakeholder->designation?->name ?? ''));
+        $hasNoFieldOrZone = ! $stakeholder->field_id && ! $stakeholder->zone_id;
+
+        return $hasNoFieldOrZone
+            || in_array($roleSlug, [
+                'nec-member', 'nec', 'ncp', 'secretariat', 'portfolio',
+                'national-secretariat', 'nation-secretariat', 'financial-secretary',
+            ], true)
+            || in_array($designationSlug, ['national-secretariat', 'nation-secretariat', 'financial-secretary'], true)
+            || str_contains($designationName, 'national campus pastor')
+            || str_contains($designationName, 'national secretariat')
+            || str_contains($designationName, 'financial secretary')
+            || str_contains($designationName, 'national officer')
+            || $designationName === 'national president';
     }
 
     public function editSelf(Stakeholder $stakeholder)

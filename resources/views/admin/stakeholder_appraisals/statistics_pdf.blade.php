@@ -71,7 +71,7 @@
     </tr></table>
     <table class="summary-table" style="margin-top:8px"><tr><td><strong>Submission rate:</strong> {{ $summary['submission_rate_percent'] }}%</td><td><strong>Evaluation rate:</strong> {{ $summary['evaluation_rate_percent'] }}%</td><td><strong>Submitted total:</strong> {{ $summary['submitted_total'] }}</td></tr></table>
 
-    @foreach([['Fields', $byField, 'Field'], ['Zones', $byZone, 'Zone']] as [$title, $rows, $groupHeading])
+    @foreach([['Officials', $necOfficials, 'Group'], ['Fields', $byField, 'Field'], ['Zones', $byZone, 'Zone']] as [$title, $rows, $groupHeading])
         <h2 style="margin-top:12px">Breakdown by {{ $title }}/Groups</h2>
         <table class="group-table">
             <thead><tr><th class="group">{{ $groupHeading }}</th><th class="total">Total</th><th class="status not-submitted">Not submitted</th><th class="status waiting">Submitted, not evaluated</th><th class="status evaluated">Evaluated</th></tr></thead>
