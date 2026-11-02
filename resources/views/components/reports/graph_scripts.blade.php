@@ -10,17 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let fullGraphData = null;
     const ctx = document.getElementById('reportGraph')?.getContext('2d');
 
-    function formatDate(date) {
-        return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
-    }
-    const today = new Date();
-    const fromInput = document.querySelector('input[name="from_date"]');
-    const toInput = document.querySelector('input[name="to_date"]');
-    const dueThrough = new Date(today.getFullYear(), today.getMonth(), 1);
-    if (today.getDate() < 25) dueThrough.setMonth(dueThrough.getMonth() - 1);
-    if (fromInput && !fromInput.value) fromInput.value = formatDate(new Date(dueThrough.getFullYear(), dueThrough.getMonth() - 11, 1));
-    if (toInput && !toInput.value) toInput.value = formatDate(new Date(dueThrough.getFullYear(), dueThrough.getMonth() + 1, 0));
-
     // -----------------------------
     // Download detection (FIXED)
     // -----------------------------

@@ -29,11 +29,13 @@ class ReportAnalyticsService
 
         $from = $request->from_date
             ? Carbon::parse($request->from_date)->startOfMonth()
-            : Carbon::now()->subMonths(11)->startOfMonth();
+            : Carbon::now()->startOfYear();
 
         $to = $request->to_date
             ? Carbon::parse($request->to_date)->endOfMonth()
-            : Carbon::now()->endOfMonth();
+            : (Carbon::now()->day < 25
+                ? Carbon::now()->subMonth()->endOfMonth()
+                : Carbon::now()->endOfMonth());
 
         $months = [];
         for ($date = $from->copy(); $date <= $to; $date->addMonth()) {
@@ -150,11 +152,11 @@ class ReportAnalyticsService
 
         $start = $from
             ? Carbon::parse($from)->startOfMonth()
-            : Carbon::create(date('Y'), 1, 1);
+            : Carbon::now()->startOfYear();
 
         $end = $to
             ? Carbon::parse($to)->endOfMonth()
-            : now()->endOfMonth();
+            : (now()->day < 25 ? now()->subMonth()->endOfMonth() : now()->endOfMonth());
 
         $reports = StakeholderReport::query()
             ->whereIn('chapter_id', $chapterIds)

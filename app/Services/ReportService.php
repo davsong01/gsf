@@ -342,11 +342,20 @@ class ReportService
 
     public function validateRequest(Request $request): array
     {
-        return $request->validate([
-            'responses' => 'required|array',
+        $schoolNotInSession = $request->boolean('school_not_in_session');
+
+        $validated = $request->validate([
+            'school_not_in_session' => 'sometimes|boolean',
+            'report_session' => 'nullable|string|max:20',
+            'responses' => $schoolNotInSession ? 'nullable|array' : 'required|array',
             'responses.*' => 'nullable',
-            'confirm_information' => 'accepted',
+            'confirm_information' => $schoolNotInSession ? 'nullable' : 'accepted',
         ]);
+
+        $validated['school_not_in_session'] = $schoolNotInSession;
+        $validated['responses'] = $validated['responses'] ?? [];
+
+        return $validated;
     }
 
     public function saveReport($stakeholder, ?StakeholderReport $report, array $validated, bool $isAdmin = false
@@ -383,7 +392,8 @@ class ReportService
              * NORMAL FLOW (NON-ADMIN)
              * ===================== */
             $isNew    = false;
-            $editMode = request()->boolean('edit_mode');
+            $schoolNotInSession = (bool) ($validated['school_not_in_session'] ?? false);
+            $editMode = !$schoolNotInSession && request()->boolean('edit_mode');
 
             if (!$report) {
                 $report = new StakeholderReport();
@@ -415,7 +425,8 @@ class ReportService
              * ===================== */
 
             $report->stakeholder_id = $stakeholder->id;
-            $report->session        = $validated['responses']['session'] ?? $report->session;
+            $report->school_not_in_session = $schoolNotInSession;
+            $report->session        = $validated['responses']['session'] ?? $validated['report_session'] ?? $report->session;
             $report->year           = $validated['year'] ?? $report->year;
             $report->month          = $validated['month_number'] ?? $report->month;
 
@@ -439,12 +450,14 @@ class ReportService
             /** =====================
              * SAVE ANSWERS
              * ===================== */
-            $this->saveResponses(
-                $stakeholder,
-                $report,
-                $validated['responses'],
-                $isAdmin
-            );
+            if (!$schoolNotInSession) {
+                $this->saveResponses(
+                    $stakeholder,
+                    $report,
+                    $validated['responses'],
+                    $isAdmin
+                );
+            }
 
             DB::commit();
 

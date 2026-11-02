@@ -17,6 +17,7 @@ class StakeholderReport extends Model
         'field_status' => 'integer',
         'national_status' => 'integer',
         'edit_mode' => 'integer',
+        'school_not_in_session' => 'boolean',
     ];
     
     public function chapter(){

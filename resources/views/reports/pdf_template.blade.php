@@ -160,6 +160,16 @@
             </tr>
         </table>
 
+        @if($report->school_not_in_session)
+            <table style="margin: 14px 0; border: 3px solid #d39e00; background: #fff3cd;">
+                <tr>
+                    <td style="border: 0; padding: 14px; color: #664d03; font-size: 18px; font-weight: bold; text-align: center;">
+                        SCHOOL NOT IN SESSION
+                    </td>
+                </tr>
+            </table>
+            <p style="text-align: center; font-size: 13px;">No report sections were submitted for this month because the school was not in session.</p>
+        @else
         <!-- Sections -->
         @foreach($sections as $section)
             <div class="section-title">{{ $section->name }}</div>
@@ -286,6 +296,7 @@
                 </table>
             @endforeach
         @endforeach
+        @endif
 
     </div>
 </body>

@@ -115,6 +115,141 @@
     .btn-circle:hover .btn-label {
         opacity: 1;
     }
+
+    .school-session-banner {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1.5rem 1.75rem;
+        margin: 1.5rem 0;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, .9);
+        border-radius: 1.25rem;
+        background: linear-gradient(115deg, rgba(255,255,255,.82), rgba(238,245,255,.67) 58%, rgba(255,245,226,.72));
+        box-shadow: 0 18px 45px rgba(31, 51, 82, .11), inset 0 1px 0 rgba(255,255,255,.9);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        transition: background .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+
+    .school-session-banner::before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(180deg, #4f83cc, #85b6eb);
+        content: '';
+    }
+
+    .school-session-banner.is-active {
+        border-color: rgba(241, 174, 74, .55);
+        background: linear-gradient(115deg, rgba(255,255,255,.86), rgba(255,248,232,.78) 58%, rgba(255,237,205,.72));
+        box-shadow: 0 18px 45px rgba(125, 91, 31, .13), inset 0 1px 0 rgba(255,255,255,.95);
+    }
+
+    .school-session-banner.is-active::before {
+        background: linear-gradient(180deg, #eea43a, #f6ca78);
+    }
+
+    .school-session-icon {
+        display: grid;
+        flex: 0 0 3.25rem;
+        width: 3.25rem;
+        height: 3.25rem;
+        place-items: center;
+        color: #4779b9;
+        border: 1px solid rgba(85, 130, 190, .18);
+        border-radius: 1rem;
+        background: rgba(255,255,255,.72);
+        box-shadow: 0 6px 16px rgba(38, 68, 108, .08);
+    }
+
+    .school-session-icon svg { width: 1.55rem; height: 1.55rem; }
+    .school-session-copy { flex: 1; min-width: 0; }
+    .school-session-eyebrow {
+        display: block;
+        margin-bottom: .25rem;
+        color: #6480a2;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+    .school-session-title { margin: 0 0 .35rem; color: #23364e; font-size: 1.3rem; font-weight: 750; }
+    .school-session-description { margin: 0; color: #64748b; font-size: .96rem; line-height: 1.55; }
+    .school-session-switch {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: .75rem;
+        margin: 0 !important;
+        padding: .55rem .7rem .55rem .6rem;
+        border: 1px solid rgba(115, 137, 163, .2);
+        border-radius: 999px;
+        background: rgba(255,255,255,.64);
+        box-shadow: inset 0 1px 2px rgba(40, 60, 85, .04);
+        cursor: pointer;
+        user-select: none;
+    }
+    .school-session-switch-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+    }
+    .school-session-switch-track {
+        position: relative;
+        display: inline-flex;
+        width: 3.25rem;
+        height: 1.85rem;
+        align-items: center;
+        padding: .2rem;
+        border: 1px solid rgba(91, 111, 137, .22);
+        border-radius: 999px;
+        background: #cbd5e1;
+        box-shadow: inset 0 2px 4px rgba(24, 39, 58, .12);
+        transition: background .2s ease, border-color .2s ease;
+    }
+    .school-session-switch-thumb {
+        width: 1.35rem;
+        height: 1.35rem;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(20, 35, 55, .25);
+        transition: transform .2s ease;
+    }
+    .school-session-switch-input:checked + .school-session-switch-track { border-color: #e3a43f; background: #e7a83f; }
+    .school-session-switch-input:checked + .school-session-switch-track .school-session-switch-thumb { transform: translateX(1.38rem); }
+    .school-session-switch-input:focus-visible + .school-session-switch-track { outline: 3px solid rgba(67, 131, 214, .3); outline-offset: 3px; }
+    .school-session-switch-state { min-width: 2.3rem; color: #64748b; font-size: .88rem; font-weight: 750; }
+    .school-session-banner.is-active .school-session-switch-state { color: #9a6518; }
+    .school-session-readonly {
+        margin: 1.5rem 0;
+        padding: 1.1rem 1.35rem;
+        border: 1px solid rgba(231, 168, 63, .42);
+        border-left: 5px solid #e7a83f;
+        border-radius: 1rem;
+        color: #76521d;
+        background: linear-gradient(110deg, rgba(255,255,255,.84), rgba(255,246,226,.78));
+        box-shadow: 0 14px 35px rgba(48, 57, 72, .09);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    #normalReportActions[hidden],
+    #schoolReportActions[hidden] {
+        display: none !important;
+    }
+
+    @media (max-width: 767.98px) {
+        .school-session-banner { align-items: flex-start; flex-wrap: wrap; padding: 1.15rem; gap: .9rem; }
+        .school-session-icon { flex-basis: 2.8rem; width: 2.8rem; height: 2.8rem; }
+        .school-session-copy { flex-basis: calc(100% - 3.8rem); }
+        .school-session-title { font-size: 1.1rem; }
+        .school-session-switch { margin-left: 3.7rem !important; }
+    }
 </style>
 @endsection
 @section('content')
@@ -134,14 +269,42 @@
     @endif
 
     <section id="basic-input">
-        <form action="{{ isset($report) ? route(($isAdmin ? 'stakeholderreports.update' : 'stakeholders.reports.update'), $report->id) : route('stakeholders.reports.store') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('You are about to submit this report, action is irreversible');">
+        @php
+            $schoolNotInSession = (bool) old('school_not_in_session', $report->school_not_in_session ?? false);
+            $hideReportSections = !$isAdmin && $schoolNotInSession;
+            $reportSession = old('report_session', $report->session ?? ($prefillData['session'] ?? ''));
+        @endphp
+        <form id="stakeholderReportForm" action="{{ isset($report) ? route(($isAdmin ? 'stakeholderreports.update' : 'stakeholders.reports.update'), $report->id) : route('stakeholders.reports.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @if(isset($report))
                 @method('PUT')
             @endif
 
+            <input type="hidden" name="report_session" value="{{ $reportSession }}">
+            @if(!$isAdmin)
+                <input type="hidden" name="school_not_in_session" value="0">
+                <div class="school-session-banner {{ $schoolNotInSession ? 'is-active' : '' }}" id="schoolSessionBanner">
+                    <span class="school-session-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"></rect><path d="M7.5 3v4M16.5 3v4M3.5 10h17"></path><path d="M8 14h3M8 17h6"></path></svg>
+                    </span>
+                    <div class="school-session-copy">
+                        <span class="school-session-eyebrow">Monthly report status</span>
+                        <h3 class="school-session-title">School not in session</h3>
+                        <p class="school-session-description">Turn this on if the school was not in session for this reporting month. You can submit the status without completing the report sections.</p>
+                    </div>
+                    <label class="school-session-switch" for="schoolNotInSession">
+                        <input class="school-session-switch-input" type="checkbox" role="switch" aria-checked="{{ $schoolNotInSession ? 'true' : 'false' }}" id="schoolNotInSession" name="school_not_in_session" value="1" {{ $schoolNotInSession ? 'checked' : '' }}>
+                        <span class="school-session-switch-track" aria-hidden="true"><span class="school-session-switch-thumb"></span></span>
+                        <span class="school-session-switch-state">{{ $schoolNotInSession ? 'On' : 'Off' }}</span>
+                    </label>
+                </div>
+            @elseif($schoolNotInSession)
+                <div class="school-session-readonly"><strong>School not in session</strong><br><span>This report records that the school was not in session for this reporting month.</span></div>
+            @endif
+
             @php $questionNumber = 1; @endphp
 
+            <fieldset id="reportSections" {{ $hideReportSections ? 'disabled' : '' }} class="border-0 p-0 m-0 {{ $hideReportSections ? 'd-none' : '' }}">
             @foreach($sections as $section)
                 @php $sectionAccess = app('App\Services\StakeholderRolePermissionService'::class)->sectionAccess($user, $section); @endphp
                 @if($sectionAccess['view'] || $isAdmin)
@@ -349,11 +512,12 @@
                     </div>
                 @endif
             @endforeach
+            </fieldset>
 
-            <div class="card mb-4">
+            <div id="reportConfirmation" class="card mb-4 {{ $hideReportSections ? 'd-none' : '' }}">
                 <div class="card-body">
                     <div class="form-check">
-                        <input type="checkbox" name="confirm_information" value="1" class="form-check-input" id="confirmInfo" required>
+                        <input type="checkbox" name="confirm_information" value="1" class="form-check-input" id="confirmInfo" required {{ $hideReportSections ? 'disabled' : '' }}>
                         <label style="margin-top: 0 !important" class="form-check-label fw-semibold" for="confirmInfo">
                             I hereby confirm that all information provided in this report is true, current, and accurate to the best of my knowledge.
                         </label>
@@ -367,7 +531,7 @@
                 }
             </style>
 
-            <div class="mt-4 d-flex button-gap">
+            <div id="normalReportActions" class="mt-4 d-flex button-gap" {{ $schoolNotInSession ? 'hidden' : '' }}>
                 @if(in_array($userRole, chapterStakeholders()) || $isAdmin)
                 <button class="btn btn-warning flex-fill" name="edit_mode" value="1" type="submit">
                     Save and Submit later
@@ -381,9 +545,53 @@
                 </button>
                 @endif
             </div>
+            @if(!$isAdmin)
+                <div id="schoolReportActions" class="mt-4" {{ $schoolNotInSession ? '' : 'hidden' }}>
+                    <button class="btn btn-warning btn-lg w-100 fw-bold" name="edit_mode" value="0" type="submit">Submit: School not in session</button>
+                </div>
+            @endif
         </form>
     </section>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('stakeholderReportForm');
+    const toggle = document.getElementById('schoolNotInSession');
+    if (!form) return;
+
+    form.addEventListener('submit', function (event) {
+        if (toggle && toggle.checked) return;
+        if (!window.confirm('You are about to submit this report, action is irreversible')) {
+            event.preventDefault();
+        }
+    });
+
+    if (!toggle) return;
+    const sections = document.getElementById('reportSections');
+    const confirmation = document.getElementById('reportConfirmation');
+    const confirmInput = document.getElementById('confirmInfo');
+    const normalActions = document.getElementById('normalReportActions');
+    const schoolActions = document.getElementById('schoolReportActions');
+    const banner = document.getElementById('schoolSessionBanner');
+    const state = form.querySelector('.school-session-switch-state');
+
+    function updateSchoolSessionMode() {
+        const enabled = toggle.checked;
+        toggle.setAttribute('aria-checked', enabled ? 'true' : 'false');
+        banner.classList.toggle('is-active', enabled);
+        sections.disabled = enabled;
+        sections.classList.toggle('d-none', enabled);
+        confirmation.classList.toggle('d-none', enabled);
+        confirmInput.disabled = enabled;
+        normalActions.hidden = enabled;
+        schoolActions.hidden = !enabled;
+        state.textContent = enabled ? 'On' : 'Off';
+    }
+
+    toggle.addEventListener('change', updateSchoolSessionMode);
+    updateSchoolSessionMode();
+});
+</script>
 
 @php
     $canAct = false;

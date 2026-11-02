@@ -202,6 +202,9 @@
                                         <td>
                                             {{ date('F', mktime(0, 0, 0, $report->month, 10)) }}, {{ $report->year }}
                                             <br>
+                                            @if($report->school_not_in_session)
+                                                <span class="badge bg-warning text-dark">School not in Session</span><br>
+                                            @endif
                                             <span class="badge {{ $report->edit_mode ? 'bg-warning' : 'bg-success' }}">
                                                 {{ $report->edit_mode ? 'Currently Editing' : 'Final Submission' }}
                                             </span>
