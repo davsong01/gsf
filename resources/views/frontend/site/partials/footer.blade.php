@@ -5,13 +5,13 @@
                 <img src="{{ asset('frontend/img/logo.png') }}" alt="">
                 <span class="brand__copy"><strong>GOFAMINT Students’ Fellowship</strong><small>Growing faith. Forming leaders. Serving communities.</small></span>
             </a>
-            <p>The Student ministry of The Gospel Faith Mission (GOFAMINT) serving and growing across the country.</p>
+            <p>The Student ministry of The Gospel Faith Mission (GOFAMINT) serving and growing students across the country.</p>
         </div>
         <div>
             <h2>Explore</h2>
             <ul>
                 <li><a href="{{ route('about.foundational-concept') }}">About GSF</a></li>
-                <li><a href="{{ route('leaders.fathers') }}">Our Fathers</a></li>
+                <li><a href="{{ route('leaders.fathers') }}">Our Leaders</a></li>
                 <li><a href="{{ route('people.nec') }}">National Executive Committee</a></li>
                 <li><a href="{{ route('conferences.index') }}">GSF Conferences</a></li>
                 <li><a href="{{ route('home.index') }}#news-events">News &amp; events</a></li>

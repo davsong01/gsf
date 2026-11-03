@@ -81,7 +81,7 @@
 <section class="page-next page-next--leaders">
     <div class="site-container page-next__card">
         <div><span>Leadership heritage</span><h2>Meet the fathers providing spiritual covering and direction to the Fellowship.</h2></div>
-        <a class="button button--blue" href="{{ route('leaders.fathers') }}">View Our Fathers <span aria-hidden="true">→</span></a>
+        <a class="button button--blue" href="{{ route('leaders.fathers') }}">View Our Leaders <span aria-hidden="true">→</span></a>
     </div>
 </section>
 @endsection

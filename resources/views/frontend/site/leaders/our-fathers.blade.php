@@ -1,6 +1,6 @@
 @extends('frontend.site.layout')
 
-@section('title', "Our Fathers — GOFAMINT Students' Fellowship")
+@section('title', "Our Leaders — GOFAMINT Students' Fellowship")
 @section('mainClass', 'public-page leadership-page')
 @section('activeSection', 'leaders')
 
@@ -10,7 +10,7 @@
     <div class="site-container inner-hero__grid">
         <div class="inner-hero__copy">
             <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ route('home.index') }}">Home</a><span>·</span><span>Meet Our Leaders</span></nav>
-            <div class="eyebrow eyebrow--light"><span></span> Our Fathers</div>
+            <div class="eyebrow eyebrow--light"><span></span> Our Leaders</div>
             <h1>Honouring the leaders who provide <em>spiritual covering and direction.</em></h1>
             <p>GSF is strengthened by faithful leaders serving across GOFAMINT, Youth and Campus Ministries, and the national fellowship.</p>
         </div>
@@ -24,7 +24,7 @@
             <h2>Guided by conviction, experience and a commitment to the next generation.</h2>
         </div>
         <div class="leadership-intro__copy">
-            <p>Our fathers represent a connected line of leadership—from the wider GOFAMINT family to the leaders directly responsible for youth, campus ministry and GSF nationally.</p>
+            <p>Our leaders represent a connected line of leadership—from the wider GOFAMINT family to the leaders directly responsible for youth, campus ministry and GSF nationally.</p>
             <p>Together, they provide spiritual oversight, institutional continuity and direction for the Fellowship’s mission among students.</p>
         </div>
     </div>

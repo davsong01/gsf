@@ -8,6 +8,15 @@
 </div>
 
 <header class="site-header" data-site-header>
+    @php
+        $stakeholderGuard = auth()->guard('stakeholder');
+        $webGuard = auth()->guard('web');
+        $portalIsAuthenticated = $stakeholderGuard->check() || $webGuard->check();
+        $portalUrl = $stakeholderGuard->check()
+            ? route('stakeholders.dashboard')
+            : ($webGuard->check() ? route('account') : route('login'));
+        $portalLabel = $portalIsAuthenticated ? 'My Account' : 'Member Portal';
+    @endphp
     <div class="site-container site-header__inner">
         <a class="brand" href="{{ route('home.index') }}" aria-label="GSF homepage">
             <img src="{{ asset('frontend/img/logo.png') }}" alt="GSF logo">
@@ -39,7 +48,7 @@
                         Our Leaders <span aria-hidden="true">⌄</span>
                     </button>
                     <ul class="nav-dropdown__menu">
-                        <li><a href="{{ route('leaders.fathers') }}">Our Fathers</a></li>
+                        <li><a href="{{ route('leaders.fathers') }}">Our Leaders</a></li>
                         <li><a href="{{ route('people.nec') }}">National Executive Committee</a></li>
                     </ul>
                 </li>
@@ -66,7 +75,7 @@
                 </li>
                 <li><a class="{{ ($activeSection ?? '') === 'conferences' ? 'is-active' : '' }}" href="{{ route('conferences.index') }}">Conferences</a></li>
                 <li><a href="{{ route('blog.index') }}">News &amp; Events</a></li>
-                <li class="primary-nav__portal"><a href="{{ route('login') }}">Member Portal <span aria-hidden="true">↗</span></a></li>
+                <li class="primary-nav__portal"><a href="{{ $portalUrl }}">{{ $portalLabel }} @if(!$portalIsAuthenticated)<span aria-hidden="true">↗</span>@endif</a></li>
             </ul>
         </nav>
     </div>
