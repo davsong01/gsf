@@ -45,6 +45,15 @@
     $canArchiveSubmission = $isAdmin && userHasPermission('awards.archive-submission', $user);
     $canDeleteSubmission = $isAdmin && userHasPermission('awards.delete-submission', $user);
     $canAdjustApprovalStatus = $isAdmin && userHasPermission('awards.adjust-approval-status', $user);
+    $visibleAwards = $awards->getCollection()->flatMap(fn ($group) => $group);
+    $visibleApproved = $visibleAwards->filter(fn ($award) => (int) $award->national_status === 1)->count();
+    $visiblePending = $visibleAwards->filter(fn ($award) => (int) $award->national_status === 0)->count();
+    $visibleNeedsAttention = $visibleAwards->filter(fn ($award) => collect([
+        $award->chapter_status,
+        $award->zone_status,
+        $award->field_status,
+        $award->national_status,
+    ])->contains(fn ($status) => (int) $status === 2))->count();
 
 @endphp
 
@@ -62,6 +71,63 @@
 
 @section('extra_styles')
 <style>
+    .award-workspace { --aw-ink:#172b43; --aw-muted:#718096; --aw-line:#e5eaf0; }
+    .award-hero { position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; overflow:hidden; margin-bottom:18px; padding:26px 30px; border:1px solid #dfe8ee; border-radius:20px; background:radial-gradient(circle at 92% 12%,rgba(209,164,82,.16),transparent 28%),linear-gradient(120deg,#fff 0%,#f7fafc 55%,#f3f7f5 100%); box-shadow:0 12px 34px rgba(30,53,75,.055); }
+    .award-hero::after { position:absolute; right:30px; bottom:-95px; width:230px; height:230px; border:1px solid rgba(47,102,122,.12); border-radius:50%; box-shadow:0 0 0 28px rgba(47,102,122,.025),0 0 0 58px rgba(47,102,122,.02); content:""; pointer-events:none; }
+    .award-hero__copy,.award-hero__actions { position:relative; z-index:1; }
+    .award-hero__eyebrow { color:#9b742b; font-size:10px; font-weight:850; letter-spacing:.16em; text-transform:uppercase; }
+    .award-hero h1 { margin:8px 0 6px; color:var(--aw-ink); font-size:clamp(23px,3vw,32px); font-weight:800; letter-spacing:-.035em; }
+    .award-hero p { margin:0; color:var(--aw-muted); font-size:13px; }
+    .award-hero__count { display:inline-flex; align-items:center; gap:8px; margin-top:15px; padding:7px 11px; border:1px solid #e3eaf0; border-radius:999px; color:#506477; background:rgba(255,255,255,.78); font-size:11px; font-weight:750; }
+    .award-hero__count i { color:#aa7b2d; }
+    .award-hero__actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; }
+    .award-summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:18px; }
+    .award-summary-card { display:flex; align-items:center; gap:13px; min-width:0; padding:15px 17px; border:1px solid var(--aw-line); border-radius:15px; background:#fff; box-shadow:0 7px 20px rgba(30,53,75,.035); }
+    .award-summary-card__icon { display:grid; width:39px; height:39px; flex:0 0 39px; place-items:center; border-radius:12px; color:var(--aw-accent); background:var(--aw-soft); font-size:16px; }
+    .award-summary-card span { display:block; color:var(--aw-muted); font-size:10px; font-weight:750; letter-spacing:.06em; text-transform:uppercase; }
+    .award-summary-card strong { display:block; margin-top:3px; color:var(--aw-ink); font-size:22px; font-weight:850; line-height:1.1; }
+    .award-summary-caption { margin:-9px 2px 15px; color:#8793a1; font-size:10px; text-align:right; }
+    .award-filters-card { margin-bottom:18px; padding:17px 18px 12px; border:1px solid var(--aw-line); border-radius:17px; background:#fff; box-shadow:0 8px 24px rgba(30,53,75,.04); }
+    .award-filters-card__heading { display:flex; align-items:center; gap:9px; margin-bottom:11px; color:var(--aw-ink); font-size:13px; font-weight:800; }
+    .award-filters-card__heading i { color:#aa7b2d; }
+    .award-results-card { overflow:hidden; border:1px solid var(--aw-line)!important; border-radius:17px!important; box-shadow:0 10px 30px rgba(30,53,75,.05)!important; }
+    .award-results-card .card-body.table-toolbar { min-height:62px; padding:11px 16px; background:#f9fbfc; }
+    .award-results-card .table-responsive { max-height:75vh; }
+    .award-results-card .custom-modern-table { min-width:940px; }
+    .award-results-card .custom-modern-table thead th { padding-top:13px; padding-bottom:13px; color:#66778b!important; background:#f7f9fb!important; font-size:10px; font-weight:850; letter-spacing:.08em; }
+    .award-results-card .custom-modern-table { border-collapse:separate; border-spacing:0 7px; padding:0 10px; background:#f5f7fa; }
+    .award-results-card .custom-modern-table thead th { border:0; }
+    .award-results-card .award-row-item td { padding:15px 12px; border-top:1px solid #e4eaf0; border-bottom:1px solid #e4eaf0; background:#fff; transition:background .16s ease,box-shadow .16s ease; }
+    .award-results-card .award-row-item td:first-child { border-left:1px solid #e4eaf0; border-radius:13px 0 0 13px; }
+    .award-results-card .award-row-item td:last-child { border-right:1px solid #e4eaf0; border-radius:0 13px 13px 0; }
+    .award-results-card .award-row-item:hover td { background:#fcfdff; box-shadow:0 4px 12px rgba(31,55,79,.035); }
+    .award-results-card .sticky-chapter-row td { top:45px; padding-top:11px!important; padding-bottom:11px!important; border:0!important; background:#eaf0f5!important; box-shadow:none!important; }
+    .award-results-card .sticky-chapter-row td:nth-child(2) { border-radius:11px 0 0 11px; }
+    .award-results-card .sticky-chapter-row td:last-child { border-radius:0 11px 11px 0; }
+    .award-workspace--admin .award-results-card .award-row-item > td:nth-child(3),.award-workspace--stakeholder .award-results-card .award-row-item > td:nth-child(2) { min-width:265px; }
+    .award-workspace--admin .award-results-card .award-row-item > td:nth-child(4),.award-workspace--stakeholder .award-results-card .award-row-item > td:nth-child(3) { min-width:250px; }
+    .award-workspace--admin .award-results-card .award-row-item > td:nth-child(5),.award-workspace--stakeholder .award-results-card .award-row-item > td:nth-child(4) { min-width:130px; white-space:nowrap; }
+    .award-workspace--admin .award-results-card .award-row-item > td:nth-child(6),.award-workspace--stakeholder .award-results-card .award-row-item > td:nth-child(5) { min-width:150px; }
+    .award-serial { display:inline-grid; width:30px; height:30px; place-items:center; border:1px solid #e3eaf0; border-radius:10px; color:#53677c; background:#f8fafc; font-size:11px; font-weight:800; }
+    .award-shortlist-state { display:flex; min-height:38px; align-items:center; padding:6px 9px; border:1px solid #e9edf1; border-radius:10px; background:#fafbfd; }
+    .award-shortlist-state .badge { font-size:10px; }
+    .award-shortlist-state .text-danger { color:#7d8996!important; font-size:10px; font-weight:700; }
+    .award-entry-name { color:#20364d!important; font-size:14px!important; font-weight:800!important; }
+    .award-reference { display:inline-flex; align-self:flex-start; padding:4px 7px; border:1px solid #e6ebf0; border-radius:6px; color:#64748b!important; background:#f8fafc; font-size:10px!important; }
+    .award-approval-track { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; min-width:220px; }
+    .award-approval-step { display:flex; min-width:0; align-items:center; justify-content:space-between; gap:6px; padding:6px 8px; border:1px solid #e8edf1; border-radius:8px; background:#fbfcfd; }
+    .award-approval-step__level { color:#758397; font-size:9px; font-weight:800; letter-spacing:.045em; text-transform:uppercase; }
+    .award-approval-step__status { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:800; white-space:nowrap; }
+    .award-approval-step__status i { font-size:10px; }
+    .award-approval-step--approved { border-color:#dcefe5; background:#f5fbf7; }
+    .award-approval-step--approved .award-approval-step__status { color:#21805a; }
+    .award-approval-step--pending { border-color:#f0e8d5; background:#fffcf5; }
+    .award-approval-step--pending .award-approval-step__status { color:#9a762a; }
+    .award-approval-step--rejected { border-color:#f2dfe1; background:#fff8f8; }
+    .award-approval-step--rejected .award-approval-step__status { color:#b54e56; }
+    .award-approval-step__feedback { margin-left:2px; color:inherit; }
+    .award-results-card .card-footer { border-color:var(--aw-line)!important; }
+    @media(max-width:767px) { .award-hero { align-items:flex-start; flex-direction:column; padding:21px; } .award-hero__actions { justify-content:flex-start; } .award-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; } .award-summary-card { padding:12px; } .award-summary-card__icon { width:34px; height:34px; flex-basis:34px; } .award-summary-card strong { font-size:19px; } .award-filters-card { padding:14px 12px 8px; } .award-summary-caption { text-align:left; } .award-results-card .custom-modern-table { min-width:940px; } }
     .custom-modern-table thead th {
         position: -webkit-sticky;
         position: sticky;
@@ -156,33 +222,33 @@
 
 @section('content')
 <div class="content-body">
-    <section id="awards-dashboard">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-                <h4 class="card-title mb-0">{{ $title }}</h4>
-                @if($isArchivedView)
-                    <small class="text-muted">Viewing archived award nominations.</small>
-                @endif
+    <section id="awards-dashboard" class="award-workspace {{ $isAdmin ? 'award-workspace--admin' : 'award-workspace--stakeholder' }}">
+        <header class="award-hero">
+            <div class="award-hero__copy">
+                <div class="award-hero__eyebrow">Education &amp; Excellence Awards</div>
+                <h1>{{ $title }}</h1>
+                <p>{{ $isArchivedView ? 'Review and manage archived nominations.' : 'Review submissions, follow the approval journey, and manage nominations.' }}</p>
+                <span class="award-hero__count"><i class="fa fa-file-text-o" aria-hidden="true"></i>{{ number_format($awards->total()) }} {{ $isArchivedView ? 'archived' : 'active' }} {{ \Illuminate\Support\Str::plural('submission', $awards->total()) }}</span>
             </div>
-            <span class="badge {{ $isArchivedView ? 'bg-secondary' : 'bg-primary' }} rounded-pill font-sm fw-bold px-2 py-0.5">
-                    {{ method_exists($awards, 'total') ? $awards->total() : $awards->count() }} {{ $isArchivedView ? 'Archived' : 'Active' }}
-                </span>
-        </div>
-
-        @if($isAdmin)
-            <div class="d-flex justify-content-end mb-2">
-                <div class="btn-group">
-                    <a href="{{ $activeUrl }}" class="btn btn-sm {{ $isArchivedView ? 'btn-outline-primary' : 'btn-primary' }}">
-                        Active Awards
-                    </a>
-                    <a href="{{ $archivedUrl }}" class="btn btn-sm {{ $isArchivedView ? 'btn-primary' : 'btn-outline-primary' }}">
-                        Archived Awards
-                    </a>
+            @if($isAdmin)
+                <div class="award-hero__actions">
+                    <a href="{{ $activeUrl }}" class="btn btn-sm {{ $isArchivedView ? 'btn-outline-primary' : 'btn-primary' }}">Active Awards</a>
+                    <a href="{{ $archivedUrl }}" class="btn btn-sm {{ $isArchivedView ? 'btn-primary' : 'btn-outline-primary' }}">Archived Awards</a>
                 </div>
-            </div>
-        @endif
+            @endif
+        </header>
+
+        <div class="award-summary-grid" aria-label="Current page summary">
+            <article class="award-summary-card" style="--aw-accent:#376d9b;--aw-soft:#e8f1f8"><span class="award-summary-card__icon"><i class="fa fa-files-o" aria-hidden="true"></i></span><div><span>On this page</span><strong>{{ number_format($visibleAwards->count()) }}</strong></div></article>
+            <article class="award-summary-card" style="--aw-accent:#24845e;--aw-soft:#e6f5ee"><span class="award-summary-card__icon"><i class="fa fa-check-circle" aria-hidden="true"></i></span><div><span>Nationally approved</span><strong>{{ number_format($visibleApproved) }}</strong></div></article>
+            <article class="award-summary-card" style="--aw-accent:#aa7928;--aw-soft:#fff3dc"><span class="award-summary-card__icon"><i class="fa fa-hourglass-half" aria-hidden="true"></i></span><div><span>Awaiting national decision</span><strong>{{ number_format($visiblePending) }}</strong></div></article>
+            <article class="award-summary-card" style="--aw-accent:#bd4e55;--aw-soft:#fbeaec"><span class="award-summary-card__icon"><i class="fa fa-exclamation-circle" aria-hidden="true"></i></span><div><span>Rejected at a stage</span><strong>{{ number_format($visibleNeedsAttention) }}</strong></div></article>
+        </div>
+        <div class="award-summary-caption">Summary counts reflect the submissions currently shown on this page.</div>
 
         <!-- Filters Form Panel -->
+        <div class="award-filters-card">
+            <div class="award-filters-card__heading"><i class="fa fa-sliders" aria-hidden="true"></i> Find submissions</div>
         <div class="row">
             <div class="col-12">
                 <form
@@ -540,6 +606,7 @@
                 </form>
             </div>
         </div>
+        </div>
 
         <!-- Master Data Render Table Component -->
         <div class="row">
@@ -550,55 +617,46 @@
                         <input type="hidden" name="_method" id="bulk-form-method" value="POST">
                 @endif
 
-                    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                    <div class="card award-results-card border-0 shadow-sm rounded-3 overflow-hidden">
                         @if($isAdmin)
                             <div class="card-body table-toolbar d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center gap-2">
 
                                     <select id="wp-bulk-action-select" class="form-select" style="width: 350px; height: 38px;">
                                         <option value="">Select Bulk Action</option>
-                                        @if($isArchivedView)
-                                            <option value="restore"
-                                                    data-url="{{ route('awards.bulk-restore') }}"
+                                        <option value="shortlist"
+                                                data-url="{{ route('awards.bulk.shortlist') }}"
+                                                data-method="POST"
+                                                data-confirm="Shortlist all selected entries?">
+                                            Shortlist
+                                        </option>
+                                        <option value="approve"
+                                                data-url="{{ route('awards.bulk-approve') }}"
+                                                data-method="POST"
+                                                data-confirm="Approve selected entries?">
+                                            Approve
+                                        </option>
+                                        <option value="reject"
+                                                data-url="{{ route('awards.bulk-reject') }}"
+                                                data-method="POST"
+                                                data-confirm="Reject selected entries?">
+                                            Reject
+                                        </option>
+                                        @if(!$isArchivedView && $canArchiveSubmission)
+                                            <option value="archive"
+                                                    data-url="{{ route('awards.bulk-archive') }}"
                                                     data-method="POST"
-                                                    data-confirm="Restore selected archived entries?">
-                                                Restore
+                                                    data-confirm="Archive selected entries?">
+                                                Archive
                                             </option>
-                                        @else
-                                            <option value="shortlist"
-                                                    data-url="{{ route('awards.bulk.shortlist') }}"
+                                        @endif
+                                        @if($canDeleteSubmission && !$isArchivedView)
+                                            <option value="delete"
+                                                    data-url="{{ route('awards.bulk-delete') }}"
                                                     data-method="POST"
-                                                    data-confirm="Shortlist all selected entries?">
-                                                Shortlist
+                                                    data-confirm="Delete selected entries and their submitted data? This cannot be undone.">
+                                                Delete
                                             </option>
-                                            <option value="approve"
-                                                    data-url="{{ route('awards.bulk-approve') }}"
-                                                    data-method="POST"
-                                                    data-confirm="Approve selected entries?">
-                                                Approve
-                                            </option>
-                                            <option value="reject"
-                                                    data-url="{{ route('awards.bulk-reject') }}"
-                                                    data-method="POST"
-                                                    data-confirm="Reject selected entries?">
-                                                Reject
-                                            </option>
-                                            @if($canArchiveSubmission)
-                                                <option value="archive"
-                                                        data-url="{{ route('awards.bulk-archive') }}"
-                                                        data-method="POST"
-                                                        data-confirm="Archive selected entries?">
-                                                    Archive
-                                                </option>
-                                            @endif
-                                            @if($canDeleteSubmission)
-                                                <option value="delete"
-                                                        data-url="{{ route('awards.bulk-delete') }}"
-                                                        data-method="POST"
-                                                        data-confirm="Delete selected entries and their submitted data? This cannot be undone.">
-                                                    Delete
-                                                </option>
-                                            @endif
                                         @endif
 
                                         @if($canDeleteSubmission && $isArchivedView)
@@ -644,6 +702,9 @@
                                     </thead>
 
                                     <tbody>
+                                        @php
+                                            $serialNumber = $awards->firstItem() ?? 1;
+                                        @endphp
                                         @forelse($awards as $groupKey => $awardGroup)
                                             <tr class="sticky-chapter-row table-sm bg-light-subtle">
                                                 @if($isAdmin)
@@ -699,7 +760,10 @@
                                                 @endif
 
                                                 <td class="text-secondary fw-medium align-middle">
-                                                    {{ $loop->iteration }}
+                                                    <span class="award-serial">{{ $serialNumber }}</span>
+                                                    @php
+                                                        $serialNumber++;
+                                                    @endphp
                                                 </td>
 
                                                 <td class="align-middle">
@@ -707,7 +771,7 @@
                                                     <div class="d-flex flex-column gap-2">
 
                                                         {{-- SHORTLIST STATUS BLOCK --}}
-                                                        <div class="p-2 rounded bg-light border">
+                                                        <div class="award-shortlist-state">
 
                                                             @if($award->currentShortlistStage)
 
@@ -716,15 +780,6 @@
                                                                     <span class="badge bg-success w-fit">
                                                                         {{ $award->currentShortlistStage->stage->title }}
                                                                     </span>
-                                                                    @if($isAdmin)
-                                                                        <a href="shortlistHistoryModal_{{ $award->id }}"
-                                                                            class="view-shortlist-history text-decoration-none font-xs text-muted"
-                                                                            data-award="{{ $award->id }}"
-                                                                            data-bs-toggle="modal"
-                                                                            data-bs-target="#shortlistHistoryModal">
-                                                                            View History
-                                                                        </a>
-                                                                    @endif
                                                                 </div>
                                                             @else
                                                                 <span class="text-danger font-xs fw-semibold">
@@ -734,7 +789,7 @@
                                                         </div>
 
                                                         {{-- CORE INFO --}}
-                                                        <span class="text-dark fw-semibold font-base mb-0">
+                                                        <span class="award-entry-name text-dark fw-semibold font-base mb-0">
                                                             {{ $award->name }}
                                                         </span>
 
@@ -746,7 +801,7 @@
                                                             </span>
                                                         @endif
 
-                                                        <span class="text-muted tracking-tight font-xs font-monospace">
+                                                        <span class="award-reference text-muted tracking-tight font-xs font-monospace">
                                                             {{ $award->reference }}
                                                         </span>
 
@@ -785,22 +840,20 @@
                                                             'National'=> ['value' => $award->national_status, 'level' => 'national'],
                                                         ];
                                                     @endphp
-                                                    <div class="d-flex flex-column gap-1">
+                                                    <div class="award-approval-track">
                                                         @foreach($statuses as $label => $data)
-                                                            <div class="d-flex align-items-center font-xs justify-content-between" style="max-width: 160px;">
-                                                                <span class="text-muted fw-normal">{{ $label }}</span>
-                                                                @if($data['value'] == 2)
-                                                                    <span class="badge bg-soft-danger text-danger d-inline-flex align-items-center gap-1">
-                                                                        Rejected
-                                                                        <a href="#{{ $data['level'] }}Rejection{{ $award->id }}" data-toggle="modal" class="text-danger lh-1" title="View feedback">
-                                                                            <i class="bx bx-message-rounded-dots"></i>
-                                                                        </a>
-                                                                    </span>
-                                                                @elseif($data['value'] == 1)
-                                                                    <span class="badge bg-soft-success text-success">Approved</span>
-                                                                @else
-                                                                    <span class="badge bg-soft-warning text-warning">Pending</span>
-                                                                @endif
+                                                            @php
+                                                                $statusClass = $data['value'] == 2 ? 'rejected' : ($data['value'] == 1 ? 'approved' : 'pending');
+                                                                $statusText = $data['value'] == 2 ? 'Rejected' : ($data['value'] == 1 ? 'Approved' : 'Pending');
+                                                                $statusIcon = $data['value'] == 2 ? 'fa-times-circle' : ($data['value'] == 1 ? 'fa-check-circle' : 'fa-clock-o');
+                                                            @endphp
+                                                            <div class="award-approval-step award-approval-step--{{ $statusClass }}">
+                                                                <span class="award-approval-step__level">{{ $label }}</span>
+                                                                <span class="award-approval-step__status"><i class="fa {{ $statusIcon }}" aria-hidden="true"></i>{{ $statusText }}
+                                                                    @if($data['value'] == 2)
+                                                                        <a href="#{{ $data['level'] }}Rejection{{ $award->id }}" data-toggle="modal" class="award-approval-step__feedback" title="View rejection feedback" aria-label="View {{ strtolower($label) }} rejection feedback"><i class="bx bx-message-rounded-dots" aria-hidden="true"></i></a>
+                                                                    @endif
+                                                                </span>
                                                             </div>
                                                         @endforeach
                                                     </div>
@@ -813,15 +866,13 @@
 
                                                 <td class="text-end pe-4 align-middle">
                                                     <div class="d-inline-flex align-items-center justify-content-end gap-1">
-                                                        @if($canAdjustApprovalStatus && !$isArchivedView)
+                                                        @if($canAdjustApprovalStatus)
                                                         <button type="button" class="btn btn-action-icon text-secondary bg-transparent border-0 p-1" data-toggle="modal" data-target="#awardStatusAdjustModal{{ $award->id }}" title="Adjust Status">
                                                             <i class="fa fa-cog font-sm"></i>
                                                         </button>
                                                         @endif
 
-                                                        @if(!$isArchivedView)
-                                                            <a href="{{ route($isAdmin ? 'awards.show' : 'stakeholders.awards.show', $award->id) }}" class="btn btn-action-icon text-warning p-1" title="Edit Entry" onclick="return confirm('Modify this record?');"><i class="fa fa-edit font-sm"></i></a>
-                                                        @endif
+                                                        <a href="{{ route($isAdmin ? 'awards.show' : 'stakeholders.awards.show', $award->id) }}" class="btn btn-action-icon text-warning p-1" title="Edit Entry" onclick="return confirm('Modify this record?');"><i class="fa fa-edit font-sm"></i></a>
 
                                                         @if(($canArchiveSubmission || $canDeleteSubmission) && !$isArchivedView)
                                                             @if($canArchiveSubmission)
@@ -833,7 +884,6 @@
                                                         @endif
 
                                                         @if($isAdmin && $isArchivedView)
-                                                            <a href="#" class="btn btn-action-icon text-success p-1" title="Restore Submission" onclick="event.preventDefault(); if (confirm('Restore this award nomination?')) { document.getElementById('restore-award-{{ $award->id }}').submit(); }"><i class="fa fa-undo font-sm"></i></a>
                                                             @if($canDeleteSubmission)
                                                             <a href="#" class="btn btn-action-icon text-danger p-1" title="Delete Submission" onclick="event.preventDefault(); if (confirm('Delete this archived award nomination and its submitted data? This cannot be undone.')) { document.getElementById('permanent-delete-award-{{ $award->id }}').submit(); }"><i class="fa fa-trash font-sm"></i></a>
                                                             @endif

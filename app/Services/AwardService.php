@@ -685,13 +685,11 @@ class AwardService{
         |--------------------------------------------------------------------------
         */
 
+        $isArchivedView = $request->boolean('archived');
+
         $awardsQuery = Award::query()
-            ->whereYear('created_at', now()->year)
             ->where('type', $type)
-            ->where(
-                'is_archive',
-                $request->boolean('archived')
-            )
+            ->where('is_archive', $isArchivedView)
             ->with([
                 'entry',
                 'chapter',
@@ -701,6 +699,10 @@ class AwardService{
                 'shortlists',
                 'currentShortlistStage',
             ]);
+
+        if (! $isArchivedView) {
+            $awardsQuery->whereYear('created_at', now()->year);
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -967,7 +969,6 @@ class AwardService{
         try {
             $stage = AwardShortlistStage::findOrFail($stageId);
             $awards = Award::query()
-                ->where('is_archive', false)
                 ->whereIn('id', $ids)
                 ->get();
 

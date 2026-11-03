@@ -69,8 +69,14 @@ class ConferenceController extends Controller
         $schedule = ConferenceSchedule::where('conference_edition_id', $edition->id)
             ->where('status', 1)->orderBy('date')->get();
 
+        $showSpeakerSection = (int) $edition->speaker_section_status === 1
+            && ($speakers->isNotEmpty() || $isUpcoming);
+        $showScheduleSection = $schedule->isNotEmpty();
+        $showFaqSection = (int) $edition->faq_section_status === 1;
+
         return view('frontend.site.conferences.show', compact(
-            'edition', 'isRegistrationOpen', 'isUpcoming', 'speakers', 'faqs', 'schedule'
+            'edition', 'isRegistrationOpen', 'isUpcoming', 'speakers', 'faqs', 'schedule',
+            'showSpeakerSection', 'showScheduleSection', 'showFaqSection'
         ));
     }
 

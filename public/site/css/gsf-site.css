@@ -1382,6 +1382,7 @@ button { color: inherit; }
 .profile-panel { padding: clamp(25px, 4vw, 42px); border: 1px solid var(--line); border-radius: 18px; background: var(--white); box-shadow: 0 16px 44px rgba(7,20,47,.045); }
 .profile-about h2 { margin: 12px 0 9px; font-family: Georgia, serif; font-size: clamp(26px, 3vw, 36px); font-weight: 500; line-height: 1.15; }
 .profile-about__intro { max-width: 680px; margin: 0; color: var(--ink-soft); font-size: 13px; line-height: 1.8; }
+.profile-motto { margin: 14px 0 18px; padding: 14px 18px; border-left: 3px solid var(--gold); color: var(--forest-800); background: var(--cream); font-family: Georgia, serif; font-size: 19px; font-style: italic; line-height: 1.5; }
 .profile-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 28px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
 .profile-facts > div { display: grid; gap: 5px; min-width: 0; padding: 16px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .profile-facts span, .profile-socials > span { color: var(--ink-soft); font-size: 8px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
@@ -1651,6 +1652,24 @@ button { color: inherit; }
     .conference-speakers-grid { grid-template-columns: 1fr; }
     .conference-registration-options { grid-template-columns: 1fr; }
     .conference-detail-endnote .site-container { align-items: flex-start; flex-direction: column; gap: 8px; }
+}
+
+@media (max-width: 680px) {
+    .conference-mini-nav .site-container {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 8px 17px;
+        min-height: 0;
+        overflow: visible;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .conference-mini-nav .conference-mini-nav__cta {
+        flex: 1 0 100%;
+        margin-left: 0;
+        padding: 10px 16px;
+        text-align: center;
+    }
 }
 
 /* Conference registration flow */

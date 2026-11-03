@@ -186,6 +186,15 @@ Route::prefix('award')->as('award.')->group(function () {
     Route::post('submit-award', [AwardController::class, 'submitAwardEntry'])->name('submit');
 });
 
+Route::get('/education-excellence-awards/etf', [AwardController::class, 'publicEducationTrustFundBeneficiaries'])
+    ->name('public.awards.etf');
+Route::get('/education-excellence-awards/go', [AwardController::class, 'publicGoExcellenceBeneficiaries'])
+    ->name('public.awards.go');
+Route::get('/education-excellence-awards/{type}/{year}/applicants', [AwardController::class, 'publicBeneficiaryYearApplicants'])
+    ->whereIn('type', ['etf', 'go'])
+    ->whereNumber('year')
+    ->name('public.awards.year-applicants');
+
 Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index')->name('home.index');
     Route::get('/about/foundational-concept', [HomeController::class, 'foundationalConcept'])->name('about.foundational-concept');
@@ -262,6 +271,7 @@ Route::get('/payment/donation-callback', [DonationController::class, 'handleDona
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', [AccountController::class, 'index'])->name('account');
     Route::get('/home', [AccountController::class, 'index'])->name('home');
+    Route::get('/profile', [AccountController::class, 'profile'])->name('member.profile');
     Route::resource('stakeholderpersonnel', StakeholderController::class);
     Route::post('stakeholderpersonnel/bulk-action', [StakeholderController::class, 'bulkAction'])->name('stakeholderpersonnel.bulk-action');
     Route::post('stakeholderpersonnel/{stakeholderpersonnel}/resend-credentials', [StakeholderController::class, 'resendCredentials'])->name('stakeholderpersonnel.resend-credentials');
@@ -304,12 +314,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('award-enties-download/{award}', 'download')->name('awards.download');
         Route::delete('delete/{award}', 'destroy')->name('awards.delete');
         Route::post('archive-award/{award}', 'archive')->name('awards.archive');
-        Route::post('restore-award/{id}', 'restore')->name('awards.restore');
         Route::delete('permanent-delete/{id}', 'permanentDelete')->name('awards.permanent.delete');
         Route::post('award-shortlist', 'shortlist')->name('awards.shortlist');
         Route::post('bulkarchive', 'bulkArchive')->name('awards.bulk-archive');
         Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
-        Route::post('bulkrestore', 'bulkRestore')->name('awards.bulk-restore');
         Route::post('bulkpermanantdelete', 'bulkPermanentDelete')->name('awards.bulk-permanent-delete');
         Route::post('bulkapprove', 'bulkApprove')->name('awards.bulk-approve');
         Route::post('bulkreject', 'bulkReject')->name('awards.bulk-reject');

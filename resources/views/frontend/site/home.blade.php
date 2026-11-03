@@ -4,6 +4,25 @@
 @section('mainClass', 'site-home')
 @section('activeSection', 'home')
 
+@push('head')
+<style>
+    .home-awards { padding:76px 0; background:linear-gradient(125deg,#102844,#1c5368 62%,#286d6a); color:#fff; }
+    .home-awards__heading { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:28px; }
+    .home-awards__heading .eyebrow { color:#f4cc83; }
+    .home-awards__heading h2 { max-width:700px; margin:12px 0 0; color:#fff; font-size:clamp(30px,4vw,48px); }
+    .home-awards__heading p { max-width:420px; margin:0; color:rgba(255,255,255,.76); line-height:1.7; }
+    .home-awards__grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+    .home-award-card { position:relative; display:flex; min-height:190px; align-items:flex-end; justify-content:space-between; gap:18px; overflow:hidden; padding:26px; border:1px solid rgba(255,255,255,.2); border-radius:20px; color:#fff; background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.04)); text-decoration:none; transition:transform .2s ease,background .2s ease; }
+    .home-award-card:hover { transform:translateY(-4px); color:#fff; background:linear-gradient(135deg,rgba(255,255,255,.19),rgba(255,255,255,.07)); }
+    .home-award-card__copy { position:relative; z-index:1; }
+    .home-award-card__copy small { display:block; margin-bottom:10px; color:#f4cc83; font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+    .home-award-card__copy strong { display:block; max-width:470px; font-size:24px; line-height:1.25; }
+    .home-award-card__copy span { display:block; margin-top:9px; color:rgba(255,255,255,.75); font-size:14px; }
+    .home-award-card__arrow { display:grid; flex:0 0 42px; width:42px; height:42px; place-items:center; border:1px solid rgba(255,255,255,.26); border-radius:50%; color:#f4cc83; font-size:20px; }
+    @media(max-width:720px) { .home-awards { padding:56px 0; } .home-awards__heading { align-items:flex-start; flex-direction:column; } .home-awards__grid { grid-template-columns:1fr; } .home-award-card { min-height:165px; padding:21px; } .home-award-card__copy strong { font-size:21px; } }
+</style>
+@endpush
+
 @section('content')
 <section class="hero" aria-roledescription="carousel" aria-label="GSF introduction" data-hero-slider>
     <div class="hero__glow hero__glow--one"></div>
@@ -112,6 +131,28 @@
         <div class="impact-stat"><strong>{{ number_format($impact['campuses']) }}</strong><span>Campus fellowships</span></div>
         <div class="impact-stat"><strong>{{ number_format($impact['fields']) }}</strong><span>Ministry fields</span></div>
         <div class="impact-stat"><strong>{{ number_format($impact['leaders']) }}</strong><span>Active leaders</span></div>
+    </div>
+</section>
+
+<section class="home-awards" aria-labelledby="home-awards-title">
+    <div class="site-container">
+        <div class="home-awards__heading">
+            <div>
+                <div class="eyebrow"><span></span> Education &amp; Excellence Awards</div>
+                <h2 id="home-awards-title">Recognising learning, promise and excellence.</h2>
+            </div>
+            <p>Explore the Education Trust Fund and GO’s Excellence Beneficiary Award, and meet the students recognised through each programme.</p>
+        </div>
+        <div class="home-awards__grid">
+            <a class="home-award-card" href="{{ route('public.awards.etf') }}">
+                <span class="home-award-card__copy"><small>Education support</small><strong>Education Trust Fund (ETF)</strong><span>See annual applications and approved beneficiaries.</span></span>
+                <span class="home-award-card__arrow" aria-hidden="true">↗</span>
+            </a>
+            <a class="home-award-card" href="{{ route('public.awards.go') }}">
+                <span class="home-award-card__copy"><small>Academic distinction</small><strong>GO’s Excellence Beneficiary Award</strong><span>Explore award recipients and year-by-year impact.</span></span>
+                <span class="home-award-card__arrow" aria-hidden="true">↗</span>
+            </a>
+        </div>
     </div>
 </section>
 

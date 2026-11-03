@@ -104,6 +104,106 @@ class AwardController extends Controller
         );
     }
 
+    public function publicEducationTrustFundBeneficiaries()
+    {
+        return $this->publicBeneficiaryDashboard('etf');
+    }
+
+    public function publicGoExcellenceBeneficiaries()
+    {
+        return $this->publicBeneficiaryDashboard('go');
+    }
+
+    public function publicBeneficiaryYearApplicants(string $type, int $year)
+    {
+        abort_unless(in_array($type, ['etf', 'go'], true), 404);
+
+        $applicants = $this->publicAwardApplicantsQuery($type, $year)
+            ->with(['entry', 'chapter', 'zone', 'field', 'currentShortlistStage.stage'])
+            ->orderByDesc('created_at')
+            ->get()
+            ->sortByDesc(fn (Award $award) =>
+                (int) $award->national_status === 1
+                || (bool) $award->currentShortlistStage?->stage?->mark_as_final
+            )
+            ->values();
+
+        return response()->json([
+            'html' => view('frontend.site.awards.partials.year-applicants', [
+                'applicants' => $applicants,
+                'year' => $year,
+                'approvedCount' => $applicants->filter(fn (Award $award) =>
+                    (int) $award->national_status === 1
+                    || (bool) $award->currentShortlistStage?->stage?->mark_as_final
+                )->count(),
+                'chapterCount' => $applicants->pluck('chapter_id')->filter()->unique()->count(),
+                'zoneCount' => $applicants->pluck('zone_id')->filter()->unique()->count(),
+                'fieldCount' => $applicants->pluck('field_id')->filter()->unique()->count(),
+            ])->render(),
+        ]);
+    }
+
+    private function publicBeneficiaryDashboard(string $type)
+    {
+        $titles = [
+            'etf' => 'Education Trust Fund (ETF)',
+            'go' => 'GO’s Excellence Beneficiary Award',
+        ];
+
+        $finalStageIds = \App\Models\AwardShortlistStage::query()
+            ->where('mark_as_final', true)
+            ->pluck('id');
+
+        $yearGroups = \Illuminate\Support\Facades\DB::table('awards as a')
+            ->leftJoin('chapters as c', 'c.id', '=', 'a.chapter_id')
+            ->leftJoin('zones as z', 'z.id', '=', 'a.zone_id')
+            ->leftJoin('fields as f', 'f.id', '=', 'a.field_id')
+            ->where('a.type', $type)
+            ->whereNull('a.deleted_at')
+            ->selectRaw('YEAR(a.created_at) as year')
+            ->selectRaw('COUNT(*) as applications')
+            ->selectRaw('SUM(CASE WHEN a.national_status = 1 OR a.current_shortlist_stage_id IN (' . ($finalStageIds->isEmpty() ? 'NULL' : $finalStageIds->implode(',')) . ') THEN 1 ELSE 0 END) as awarded_count')
+            ->selectRaw('COUNT(DISTINCT a.chapter_id) as chapters')
+            ->selectRaw('COUNT(DISTINCT a.zone_id) as zones')
+            ->selectRaw('COUNT(DISTINCT a.field_id) as fields')
+            ->groupByRaw('YEAR(a.created_at)')
+            ->orderByRaw('YEAR(a.created_at) DESC')
+            ->get();
+
+        $latestYear = $yearGroups->first()?->year;
+        $initialApplicants = $latestYear
+            ? $this->publicAwardApplicantsQuery($type, (int) $latestYear)
+                ->with(['entry', 'chapter', 'zone', 'field', 'currentShortlistStage.stage'])
+                ->orderByDesc('created_at')
+                ->get()
+                ->sortByDesc(fn (Award $award) =>
+                    (int) $award->national_status === 1
+                    || (bool) $award->currentShortlistStage?->stage?->mark_as_final
+                )
+                ->values()
+            : collect();
+        $initialApprovedCount = $initialApplicants->filter(fn (Award $award) =>
+            (int) $award->national_status === 1
+            || (bool) $award->currentShortlistStage?->stage?->mark_as_final
+        )->count();
+
+        return view('frontend.site.awards.beneficiaries', [
+            'type' => $type,
+            'title' => $titles[$type],
+            'yearGroups' => $yearGroups,
+            'latestYear' => $latestYear,
+            'initialApplicants' => $initialApplicants,
+            'initialApprovedCount' => $initialApprovedCount,
+        ]);
+    }
+
+    private function publicAwardApplicantsQuery(string $type, int $year)
+    {
+        return Award::query()
+            ->where('type', $type)
+            ->whereYear('created_at', $year);
+    }
+
     private function handleAwardEntries(
         Request $request,
         string $type,
@@ -1413,21 +1513,6 @@ class AwardController extends Controller
         }
     }
 
-    public function restore($id)
-    {
-        try {
-            $award = Award::findOrFail($id);
-            $award->update(['is_archive' => false]);
-
-            return redirect()->back()->with('message', 'Award nomination restored successfully.');
-        } catch (\Exception $e) {
-            Log::error("Failed to restore Award ID [{$id}]: " . $e->getMessage());
-
-            return redirect()->back()
-                ->with('error', 'An error occurred while trying to restore the award nomination.');
-        }
-    }
-
     public function permanentDelete($id)
     {
         if (! userHasPermission('awards.delete-submission')) {
@@ -1546,23 +1631,6 @@ class AwardController extends Controller
         } catch (\Exception $e) {
             \Log::error("Bulk archive loop failure: " . $e->getMessage());
             return back()->with('error', 'An error occurred while archiving the selected nominations.');
-        }
-    }
-
-    public function bulkRestore(Request $request)
-    {
-        $ids = $request->input('ids', []);
-        if (empty($ids)) {
-            return back()->with('error', 'No entries selected for restoration.');
-        }
-
-        try {
-            Award::whereIn('id', $ids)->update(['is_archive' => false]);
-
-            return back()->with('message', 'Selected nominations restored successfully.');
-        } catch (\Exception $e) {
-            \Log::error("Bulk restore loop failure: " . $e->getMessage());
-            return back()->with('error', 'An error occurred while restoring the selected nominations.');
         }
     }
 

@@ -36,7 +36,7 @@
                 </li>
                 <li class="nav-dropdown">
                     <button class="{{ ($activeSection ?? '') === 'leaders' ? 'is-active' : '' }}" type="button" aria-expanded="false" data-dropdown-toggle>
-                        Meet Our Leaders <span aria-hidden="true">⌄</span>
+                        Our Leaders <span aria-hidden="true">⌄</span>
                     </button>
                     <ul class="nav-dropdown__menu">
                         <li><a href="{{ route('leaders.fathers') }}">Our Fathers</a></li>
@@ -55,7 +55,16 @@
                         <li><a href="{{ route('campus.tracker') }}">Campus Tracker</a></li>
                     </ul>
                 </li>
-                <li><a class="{{ ($activeSection ?? '') === 'conferences' ? 'is-active' : '' }}" href="{{ route('conferences.index') }}">GSF Conferences</a></li>
+                <li class="nav-dropdown">
+                    <button class="{{ ($activeSection ?? '') === 'awards' ? 'is-active' : '' }}" type="button" aria-expanded="false" data-dropdown-toggle>
+                        Education &amp; Excellence Awards <span aria-hidden="true">⌄</span>
+                    </button>
+                    <ul class="nav-dropdown__menu">
+                        <li><a href="{{ route('public.awards.etf') }}">Education Trust Fund (ETF)</a></li>
+                        <li><a href="{{ route('public.awards.go') }}">GO’s Excellence Beneficiary Award</a></li>
+                    </ul>
+                </li>
+                <li><a class="{{ ($activeSection ?? '') === 'conferences' ? 'is-active' : '' }}" href="{{ route('conferences.index') }}">Conferences</a></li>
                 <li><a href="{{ route('blog.index') }}">News &amp; Events</a></li>
                 <li class="primary-nav__portal"><a href="{{ route('login') }}">Member Portal <span aria-hidden="true">↗</span></a></li>
             </ul>

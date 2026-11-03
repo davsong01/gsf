@@ -147,26 +147,36 @@ if (!function_exists('rootPermissions')) {
                     [
                         'id' => 2,
                         'slug' => 'awards.etf',
-                        'name' => 'Award Entries',
+                        'name' => 'Education & Excellence Awards',
                         'icon' => 'fa fa-trophy',
                         'children' => [
                             [
                                 'id' => 21,
                                 'slug' => 'award.etf',
-                                'name' => 'ETF Entries'
+                                'name' => 'Education Trust Fund (ETF)',
+                                'icon' => 'fa fa-book'
                             ],
                             [
                                 'id' => 22,
                                 'slug' => 'award.go',
-                                'name' => 'GO Award Entries'
+                                'name' => 'GO’s Excellence Beneficiary Award',
+                                'icon' => 'fa fa-star'
                             ],
-                             [
-                                'id' => 22,
+                        ]
+                    ],
+                    [
+                        'id' => 28,
+                        'slug' => 'award-operations',
+                        'name' => 'Award Operations',
+                        'icon' => 'fa fa-trophy',
+                        'children' => [
+                            [
+                                'id' => 29,
                                 'slug' => 'shortlist.index',
                                 'name' => 'Award Shortlist Stages'
                             ],
                             [
-                                'id' => 23,
+                                'id' => 30,
                                 'slug' => 'award.settings',
                                 'name' => 'Award Settings'
                             ]
@@ -349,6 +359,7 @@ if (!function_exists('rootPermissions')) {
             'award.go' => 2,
             'shortlist.index' => 3,
             'award.settings' => 4,
+            'award-operations' => 3,
             'stakeholderappraisals.index' => 3,
             'report-structure' => 4,
             'stakeholderreportsection.index' => 1,

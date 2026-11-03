@@ -86,9 +86,9 @@
 <nav class="conference-mini-nav" aria-label="Conference sections">
     <div class="site-container">
         <a href="#conference-story">About</a>
-        @if($speakers->isNotEmpty() || $isUpcoming)<a href="#conference-speakers">Speakers</a>@endif
-        @if($schedule->isNotEmpty() || $isUpcoming)<a href="#conference-schedule">Schedule</a>@endif
-        <a href="#conference-faq">FAQs</a>
+        @if($showSpeakerSection)<a href="#conference-speakers">Speakers</a>@endif
+        @if($showScheduleSection)<a href="#conference-schedule">Schedule</a>@endif
+        @if($showFaqSection)<a href="#conference-faq">FAQs</a>@endif
         <a href="#conference-social">Connect</a>
         @if($isRegistrationOpen)<a class="conference-mini-nav__cta" href="#conference-registration">Register <span aria-hidden="true">→</span></a>@endif
     </div>
@@ -102,27 +102,6 @@
         <div><strong>{{ $dateLabel }}</strong><span>Gathering dates</span></div>
     </div>
 </section>
-
-@if($isRegistrationOpen && $edition->conferenceplans->isNotEmpty())
-    <section class="conference-registration-section" id="conference-registration">
-        <div class="site-container">
-            <div class="conference-section-heading conference-registration-section__heading">
-                <div><div class="eyebrow"><span></span> Your place is waiting</div><h2>Choose your registration</h2><p>Pick the pass that fits you and complete your registration online.</p></div>
-                @if($edition->close_registration)<span class="conference-registration-deadline">Registration closes {{ \Carbon\Carbon::parse($edition->close_registration)->format('M j, Y') }}</span>@endif
-            </div>
-            <div class="conference-registration-options">
-                @foreach($edition->conferenceplans as $plan)
-                    <article class="conference-pass-card">
-                        <div class="conference-pass-card__top"><span>{{ $plan->level ?: 'Conference pass' }}</span><strong>{{ $plan->price > 0 ? '₦'.number_format((float) $plan->price) : 'Details on registration' }}</strong></div>
-                        <h3>{{ trim($plan->title) }}</h3>
-                        @if($plan->items)<ul>@foreach($plan->items as $item)<li>{{ $item }}</li>@endforeach</ul>@endif
-                        <a href="{{ route('conference.registration', $plan->id) }}">Continue to registration <span aria-hidden="true">→</span></a>
-                    </article>
-                @endforeach
-            </div>
-        </div>
-    </section>
-@endif
 
 <section class="conference-detail-content" id="conference-story">
     <div class="site-container conference-detail-main">
@@ -138,7 +117,7 @@
             </div>
         </article>
 
-        @if($speakers->isNotEmpty() || $isUpcoming)
+        @if($showSpeakerSection)
             <section class="conference-detail-section" id="conference-speakers">
                 <div class="conference-section-heading"><div><div class="eyebrow"><span></span> Voices for the journey</div><h2>Meet the speakers</h2><p>Ministers and leaders who will share in this gathering.</p></div></div>
                 @if($speakers->isNotEmpty())
@@ -154,7 +133,7 @@
             </section>
         @endif
 
-        @if($schedule->isNotEmpty() || $isUpcoming)
+        @if($showScheduleSection)
             <section class="conference-detail-section" id="conference-schedule">
                 <div class="conference-section-heading"><div><div class="eyebrow"><span></span> Make room for every moment</div><h2>Conference schedule</h2><p>Plan your time with us across the gathering.</p></div></div>
                 @if($schedule->isNotEmpty())
@@ -177,6 +156,7 @@
             </section>
         @endif
 
+        @if($showFaqSection)
         <section class="conference-detail-section conference-faq-section" id="conference-faq">
             <div class="conference-faq-intro"><div class="eyebrow"><span></span> Helpful details</div><h2>Questions, answered.</h2><p>Find the key information you need before registering for {{ $edition->conference_theme }}.</p>
                 @if($edition->official_email)<a href="mailto:{{ $edition->official_email }}">Still have a question? Contact us <span aria-hidden="true">→</span></a>@endif
@@ -186,11 +166,12 @@
                     <details><summary>{{ $faq->question }}</summary><p>{{ $faq->answer }}</p></details>
                 @empty
                     <details open><summary>When is the conference?</summary><p>{{ $dateLabel }}. We look forward to welcoming students and alumni from across the GSF network.</p></details>
-                    <details><summary>How do I register?</summary><p>Choose the registration option that applies to you above, then follow the prompts on the registration page.</p></details>
+                    <details><summary>How do I register?</summary><p>Choose the registration option in the final section of this page, then follow the prompts on the registration page.</p></details>
                     <details><summary>Who can I contact for help?</summary><p>@if($edition->official_email)<a href="mailto:{{ $edition->official_email }}">{{ $edition->official_email }}</a>@else Contact your campus fellowship leader for assistance.@endif</p></details>
                 @endforelse
             </div>
         </section>
+        @endif
 
         <section class="conference-social-section" id="conference-social">
             <div class="conference-social-section__copy"><div class="eyebrow"><span></span> Stay connected</div><h2>Share the invitation.</h2><p>Help someone else discover this gathering. Follow event updates or share the conference with your community.</p></div>
@@ -207,6 +188,27 @@
 </section>
 
 <section class="conference-detail-endnote"><div class="site-container"><span>One fellowship. Many gatherings. A lifetime of impact.</span><a href="{{ route('conferences.index') }}">Back to GSF Conferences <span aria-hidden="true">→</span></a></div></section>
+
+@if($isRegistrationOpen && $edition->conferenceplans->isNotEmpty())
+    <section class="conference-registration-section" id="conference-registration">
+        <div class="site-container">
+            <div class="conference-section-heading conference-registration-section__heading">
+                <div><div class="eyebrow"><span></span> Your place is waiting</div><h2>Choose your registration</h2><p>Pick the pass that fits you and complete your registration online.</p></div>
+                @if($edition->close_registration)<span class="conference-registration-deadline">Registration closes {{ \Carbon\Carbon::parse($edition->close_registration)->format('M j, Y') }}</span>@endif
+            </div>
+            <div class="conference-registration-options">
+                @foreach($edition->conferenceplans as $plan)
+                    <article class="conference-pass-card">
+                        <div class="conference-pass-card__top"><span>{{ $plan->level ?: 'Conference pass' }}</span><strong>{{ $plan->price > 0 ? '₦'.number_format((float) $plan->price) : 'Details on registration' }}</strong></div>
+                        <h3>{{ trim($plan->title) }}</h3>
+                        @if($plan->items)<ul>@foreach($plan->items as $item)<li>{{ $item }}</li>@endforeach</ul>@endif
+                        <a href="{{ route('conference.registration', $plan->id) }}">Continue to registration <span aria-hidden="true">→</span></a>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+@endif
 @endsection
 
 @if($isUpcoming)

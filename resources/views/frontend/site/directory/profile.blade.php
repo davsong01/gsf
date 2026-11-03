@@ -13,6 +13,7 @@
         $position && $position !== 'Unknown Role' ? $position.'.' : null,
         $campus ? 'Connected with '.$campus->name.'.' : null,
         $alumni->course ? 'Studied '.$alumni->course.'.' : null,
+        $alumni->motto ? 'Motto: “'.$alumni->motto.'”' : null,
     ])->filter()->implode(' ');
     $shareImage = $alumni->passport ? asset($alumni->passport) : asset('frontend/passports/avatar.jpg');
 @endphp
@@ -75,6 +76,7 @@
             <section class="profile-panel profile-about">
                 <div class="eyebrow"><span></span> Member profile</div>
                 <h2>A little about {{ explode(' ', trim($alumni->name))[0] }}.</h2>
+                @if($alumni->motto)<blockquote class="profile-motto">“{{ $alumni->motto }}”</blockquote>@endif
                 <p class="profile-about__intro">{{ $alumni->skills ? $alumni->skills : 'Part of the GOFAMINT Students’ Fellowship community, growing in faith, leadership and service.' }}</p>
                 <div class="profile-facts">
                     @if($campus)

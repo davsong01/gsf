@@ -5,7 +5,7 @@
                 <img src="{{ asset('frontend/img/logo.png') }}" alt="">
                 <span class="brand__copy"><strong>GOFAMINT Students’ Fellowship</strong><small>Growing faith. Forming leaders. Serving communities.</small></span>
             </a>
-            <p>A connected fellowship community serving students and campuses within The Gospel Faith Mission International.</p>
+            <p>The Student ministry of The Gospel Faith Mission (GOFAMINT) serving and growing across the country.</p>
         </div>
         <div>
             <h2>Explore</h2>

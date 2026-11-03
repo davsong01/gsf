@@ -239,6 +239,17 @@ class UserController extends Controller
 			'dob' => 'nullable|date',
 			'password' => 'nullable|string|min:6',
 			'passport' => 'nullable|image',
+			'is_graduated' => 'nullable|boolean',
+			'open_to_work' => 'nullable|boolean',
+			'program' => 'nullable|string|max:50',
+			'course' => 'nullable|string|max:255',
+			'course_duration' => 'nullable|integer|min:1|max:15',
+			'matric_year' => 'nullable|string|max:20',
+			'graduation_year' => 'nullable|string|max:20',
+			'skills' => 'nullable|string|max:2000',
+			'motto' => 'nullable|string|max:500',
+			'facebook' => 'nullable|url|max:255',
+			'twitter' => 'nullable|url|max:255',
 		]);
 
 		$data = $this->userService->prepareUserData($request, $user);
@@ -252,7 +263,7 @@ class UserController extends Controller
 			return back()->with('error', $e->getMessage());
 		}
 
-		return back()->with('message', 'Profile updated successfully.');
+		return redirect()->route('member.profile')->with('message', 'Profile updated successfully.');
 
 	}
 

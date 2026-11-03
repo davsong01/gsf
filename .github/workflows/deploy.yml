@@ -31,5 +31,7 @@ jobs:
             php artisan db:seed
             # php artisan db:seed --class=AwardShortlistStageSeeder --force
             php artisan db:seed --class=BlogPermissionSeeder --force
+            php artisan db:seed --class=LegacyGoAwardBeneficiariesSeeder --force
+
             echo "Deployment to Server completed!"
 

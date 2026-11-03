@@ -13,7 +13,7 @@ class UserService
     public function prepareUserData($request, ?User $user = null): array
     {
         $data = $request->only([
-            'name', 'email', 'phone','is_graduated','skills', 'gender', 'status', 'open_to_work', 'dob','chapter_id', 'role','designation_id', 'portfolio_session', 'program', 'course','skills', 'course_duration','matric_year','graduation_year','facebook','twitter','show_phone', 'show_email'
+            'name', 'email', 'phone','is_graduated','skills', 'motto', 'gender', 'status', 'open_to_work', 'dob','chapter_id', 'role','designation_id', 'portfolio_session', 'program', 'course','skills', 'course_duration','matric_year','graduation_year','facebook','twitter','show_phone', 'show_email'
         ]);
 
         // Handle password

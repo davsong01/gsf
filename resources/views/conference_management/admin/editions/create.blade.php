@@ -29,7 +29,7 @@
                                         </select>
                                     </fieldset>
                                 </div>
-                                <div class="col-sm-6 col-md-6">
+                                {{-- <div class="col-sm-6 col-md-6">
                                     <label for="template_id">Template to Use</label>
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <select class="form-control" name="template_id" id="template_id" required>
@@ -40,7 +40,7 @@
 
                                         </select>
                                     </fieldset>
-                                </div>
+                                </div> --}}
                                 <div class="col-sm-6 col-md-6">
                                     <label for="conference_theme">Conference theme</label>
                                     <fieldset class="form-group  ">
