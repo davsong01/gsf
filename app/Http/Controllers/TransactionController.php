@@ -135,9 +135,17 @@ class TransactionController extends Controller
             ->where('conference_edition_id', $edition->id)
             ->findOrFail($transactionId);
 
+        $chapterField = $transaction->allocationFields->first(function ($field) {
+            return in_array(strtolower($field->key), ['chapter', 'chapter_id'], true);
+        });
+        $chapter = $chapterField && is_numeric($chapterField->value)
+            ? Chapter::with(['zone', 'field'])->find($chapterField->value)
+            : null;
+
         $pdf = PDF::loadView('conference_management.admin.editions.transaction-receipt', compact(
             'edition',
-            'transaction'
+            'transaction',
+            'chapter'
         ))->setPaper('a4', 'portrait');
 
         $filename = 'GSF-transaction-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $transaction->transid) . '.pdf';

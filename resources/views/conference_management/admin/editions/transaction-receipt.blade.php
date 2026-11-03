@@ -73,13 +73,10 @@
             <td><span class="label">Provider reference</span><span class="value">{{ $transaction->provider_reference ?: '—' }}</span></td>
         </tr>
         <tr>
-            <td><span class="label">Payment provider</span><span class="value">{{ $transaction->paymentprovider->name ?? '—' }}</span></td>
             <td><span class="label">Date</span><span class="value">{{ $transaction->created_at?->format('d M Y, g:i a') ?: '—' }}</span></td>
-        </tr>
-        <tr>
             <td><span class="label">Transaction status</span><span class="value">{{ $transaction->status ?: '—' }}</span></td>
-            <td><span class="label">Registration status</span><span class="value">{{ $transaction->registration_status ?: '—' }}</span></td>
         </tr>
+        <tr><td><span class="label">Registration status</span><span class="value">{{ $transaction->registration_status ?: '—' }}</span></td><td></td></tr>
     </table>
 
     <h2 class="section-title">Payment breakdown</h2>
@@ -92,7 +89,14 @@
     @if($transaction->allocationFields->isNotEmpty())
         <h2 class="section-title">Registration information</h2>
         <table>
-            @foreach($transaction->allocationFields->chunk(2) as $row)
+            @if($chapter)
+                <tr>
+                    <td><span class="label">Chapter</span><span class="value">{{ $chapter->name }}</span></td>
+                    <td><span class="label">Zone</span><span class="value">{{ $chapter->zone->name ?? '—' }}</span></td>
+                </tr>
+                <tr><td><span class="label">Field</span><span class="value">{{ $chapter->field->name ?? '—' }}</span></td><td></td></tr>
+            @endif
+            @foreach($transaction->allocationFields->reject(fn ($field) => in_array(strtolower($field->key), ['chapter', 'chapter_id'], true))->chunk(2) as $row)
                 <tr>
                     @foreach($row as $field)
                         <td><span class="label">{{ \Illuminate\Support\Str::headline($field->key) }}</span><span class="value">{{ $field->value ?: '—' }}</span></td>
