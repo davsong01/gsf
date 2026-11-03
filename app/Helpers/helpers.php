@@ -77,6 +77,17 @@ if (!function_exists('rootPermissions')) {
     {
         $menus = [
             [
+                'id' => 200,
+                'slug' => 'blog.index',
+                'name' => 'Posts',
+                'icon' => 'fa fa-newspaper-o',
+                'children' => [
+                    ['id' => 201, 'slug' => 'admin.blog.posts.index', 'name' => 'All Posts'],
+                    ['id' => 202, 'slug' => 'admin.blog.posts.create', 'name' => 'New Post'],
+                    ['id' => 203, 'slug' => 'admin.blog.categories.index', 'name' => 'Categories'],
+                ],
+            ],
+            [
                 'id' => 30,
                 'slug' => 'conference.management',
                 'name' => 'Conference Mgt',
@@ -410,6 +421,10 @@ if (!function_exists('flattenPermissionTree')) {
 if (!function_exists('menuNodeVisible')) {
     function menuNodeVisible(array $menu, array $userPermissions): bool
     {
+        if (auth()->check() && (int) auth()->user()->role === 1) {
+            return true;
+        }
+
         if (in_array($menu['slug'] ?? '', $userPermissions, true)) {
             return true;
         }
@@ -570,6 +585,69 @@ if (!function_exists('rootActionPermissions')) {
                 'name' => 'Adjust Approval Status',
                 'parent_slug' => 'awards.etf',
                 'description' => 'Can manually change chapter, zone, field, or national approval status on award submissions.'
+            ],
+            [
+                'id' => 1101,
+                'slug' => 'blog.view',
+                'name' => 'View Blog Workspace',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can access the blog workspace and view posts.'
+            ],
+            [
+                'id' => 1102,
+                'slug' => 'blog.create',
+                'name' => 'Create Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can create articles and video posts.'
+            ],
+            [
+                'id' => 1103,
+                'slug' => 'blog.manage-own',
+                'name' => 'Manage Own Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can edit and submit posts they authored.'
+            ],
+            [
+                'id' => 1104,
+                'slug' => 'blog.edit',
+                'name' => 'Edit Any Blog Post',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can edit posts authored by other users.'
+            ],
+            [
+                'id' => 1105,
+                'slug' => 'blog.review',
+                'name' => 'Review Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can move submitted posts into review.'
+            ],
+            [
+                'id' => 1106,
+                'slug' => 'blog.publish',
+                'name' => 'Publish Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can publish or schedule blog posts.'
+            ],
+            [
+                'id' => 1107,
+                'slug' => 'blog.archive',
+                'name' => 'Archive Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can archive published or outdated posts.'
+            ],
+            [
+                'id' => 1108,
+                'slug' => 'blog.categories',
+                'name' => 'Manage Blog Categories',
+                'parent_slug' => 'admin.blog.categories.index',
+                'description' => 'Can create and delete blog categories.'
+            ],
+            [
+                'id' => 1109,
+                'slug' => 'blog.comments',
+                'name' => 'Moderate Blog Comments',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can moderate comments on blog posts.'
             ],
         ]);
     }
@@ -1337,7 +1415,7 @@ if (!function_exists("menu")) {
     function menu(){
         $menu = [
             [
-                'route' => 'home.index',
+                'route' => 'directory.index',
                 'name' => 'Directory'
             ],
             [

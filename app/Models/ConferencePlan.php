@@ -15,8 +15,22 @@ class ConferencePlan extends Model
     protected $casts = ['items' => 'array', 'registration_fields' => 'array'];
 
     public function scopeFields(){
-        $fields = MinistryField::whereIn('id', $this->registration_fields)->where('status', 1)->get();
-        return $fields;
+        $ministryId = $this->conferenceEdition?->ministry_id;
+
+        if (!$ministryId || empty($this->registration_fields)) {
+            return collect();
+        }
+
+        return MinistryField::where('ministry_id', $ministryId)
+            ->whereIn('id', $this->registration_fields)
+            ->where('status', 1)
+            ->orderBy('display_order')
+            ->get();
+    }
+
+    public function conferenceEdition()
+    {
+        return $this->belongsTo(ConferenceEdition::class, 'conference_edition_id');
     }
 
     public function registered()

@@ -5,6 +5,7 @@ use App\Models\User;
 use App\Models\Transaction;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\TransactionAllocationField;
 
 class PaymentService {
@@ -24,6 +25,11 @@ class PaymentService {
             ->exists();
 
         if ($exists) {
+            Log::notice('Conference payment initialization skipped because a completed registration already exists.', [
+                'conference_edition_id' => $setting->id,
+                'conference_plan_id' => $plan->id,
+            ]);
+
             return [
                 'status' => false,
                 'message' => 'Registration already exists.'
@@ -43,9 +49,24 @@ class PaymentService {
                 $location = 'Online';
 
                 if ($paymentProvider && $paymentProvider->customer_pays_provider_charge) {
-                    $provider_charge = $paymentProvider->provider_charge;
-                    $data['provider_charge'] = $provider_charge;
-                    $data['total_amount'] = $provider_charge + $data['amount'];
+                    // Gross up the registration amount so that a percentage fee
+                    // charged on the full Paystack transaction leaves the
+                    // fellowship with the full registration fee.
+                    $rateBasisPoints = (int) round(((float) $paymentProvider->provider_charge) * 100);
+                    if ($rateBasisPoints >= 10000) {
+                        return [
+                            'status' => false,
+                            'message' => 'Provider charge must be below 100%. Update the payment provider settings.',
+                        ];
+                    }
+
+                    $baseAmountCents = (int) round(((float) $amount) * 100);
+                    $totalAmountCents = $rateBasisPoints > 0
+                        ? (int) ceil(($baseAmountCents * 10000) / (10000 - $rateBasisPoints))
+                        : $baseAmountCents;
+
+                    $data['provider_charge'] = ($totalAmountCents - $baseAmountCents) / 100;
+                    $data['total_amount'] = $totalAmountCents / 100;
                 }
             }
         }
@@ -110,19 +131,43 @@ class PaymentService {
                         'key' => $key,
                     ],
                     [
-                        'value' => $value,
+                        'value' => is_array($value) ? implode(', ', array_map('strval', $value)) : $value,
                     ]
                 );
             }
 
             DB::commit();
 
+            Log::info('Conference payment transaction initialized.', [
+                'transaction_id' => $transaction->id,
+                'transaction_reference' => $transaction->transid,
+                'conference_edition_id' => $setting->id,
+                'conference_plan_id' => $plan->id,
+                'payment_provider_id' => $transaction->payment_provider_id,
+                'amount_paid' => $transaction->amount_paid,
+                'provider_charge' => $transaction->provider_charge,
+                'total_amount' => $transaction->total_amount,
+            ]);
+
             return [
                 'status' => true,
                 'data' => $transaction->load('allocationFields')
             ];
         } catch (\Throwable $e) {
-            DB::rollBack();
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            Log::error('Conference payment transaction initialization rolled back.', [
+                'transaction_reference' => $data['transid'] ?? null,
+                'conference_edition_id' => $setting->id ?? null,
+                'conference_plan_id' => $plan->id ?? null,
+                'payment_provider_id' => $data['payment_provider_id'] ?? null,
+                'amount_paid' => $amount ?? null,
+                'total_amount' => $data['total_amount'] ?? $amount ?? null,
+                'exception_class' => get_class($e),
+                'exception_message' => $e->getMessage(),
+            ]);
 
             return [
                 'status' => false,

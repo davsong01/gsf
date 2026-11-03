@@ -1,0 +1,44 @@
+@php
+    $directoryMemberCount = \App\Models\User::where('status', 'active')->where('role', '<>', 1)->count();
+    $directoryChapterCount = \App\Models\Chapter::where('id', '<>', 86)->count();
+    $directoryChapters = \App\Models\Chapter::query()
+        ->where('id', '<>', 86)
+        ->orderBy('name')
+        ->limit(6)
+        ->get();
+@endphp
+
+<section class="directory-network" aria-labelledby="directory-network-title">
+    <div class="site-container directory-network__card">
+        <div class="directory-network__content">
+            <div class="eyebrow"><span></span> The GSF Network</div>
+            <h2 id="directory-network-title">
+                <strong>{{ number_format($directoryMemberCount) }}+</strong> members across
+                <strong>{{ number_format($directoryChapterCount) }}+</strong> campus fellowships.
+            </h2>
+            <p>Discover GSF communities, reconnect with members and explore the fellowship’s growing national footprint.</p>
+
+            <div class="directory-network__links">
+                @foreach($directoryChapters as $chapter)
+                    <a href="{{ route('campus.single', $chapter->id) }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-4.35 7-11A7 7 0 1 0 5 10c0 6.65 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>
+                        <span>{{ \Illuminate\Support\Str::limit($chapter->name, 42) }}</span>
+                    </a>
+                @endforeach
+                <a class="directory-network__all" href="{{ route('people.campuses') }}">View all campuses <span aria-hidden="true">→</span></a>
+            </div>
+
+            <div class="directory-network__actions">
+                <a class="button button--blue" href="{{ route('newalumni') }}"><span aria-hidden="true">＋</span> Add a member</a>
+                <a class="text-link" href="{{ route('directory.index') }}">Explore the directory <span aria-hidden="true">→</span></a>
+            </div>
+        </div>
+
+        <div class="directory-network__map" aria-label="GSF chapters across Nigeria">
+            <div class="directory-network__map-frame">
+                <img src="{{ asset('gsfcom/images/nigeriamap.jpg') }}" alt="Map of Nigeria representing the GSF national network">
+            </div>
+            <div class="directory-network__map-label"><span></span> Connected across Nigeria</div>
+        </div>
+    </div>
+</section>

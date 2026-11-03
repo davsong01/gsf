@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\PaymentProvider;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,7 +23,9 @@ class PaymentProviderRequest extends FormRequest
      */
     public function rules()
     {
-        $providerId = $this->route('id') ?? $this->route('paymentprovider') ?? null;
+        $routeProvider = $this->route('paymentprovider');
+        $providerId = $this->route('id')
+            ?? ($routeProvider instanceof PaymentProvider ? $routeProvider->getKey() : $routeProvider);
         
         return [
             'name' => [
@@ -31,17 +34,12 @@ class PaymentProviderRequest extends FormRequest
                 'max:255',
                 Rule::unique('payment_providers', 'name')->ignore($providerId),
             ],
-            'slug' => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::unique('payment_providers', 'slug')->ignore($providerId),
-            ],
+            'slug' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive',
             'logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'base_url' => 'nullable|url',
-            'provider_charge' => 'nullable|numeric|min:0',
+            'provider_charge' => 'nullable|numeric|min:0|max:99.99',
             'customer_pays_provider_charge' => 'boolean',
             'enable_sub_account' => 'boolean',
             'api_key' => 'nullable|string|max:500',

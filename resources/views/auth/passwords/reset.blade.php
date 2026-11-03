@@ -1,49 +1,48 @@
-@extends('frontend.main.mainlayout')
-@section('title', 'Reset Password')
-@section('content')
-<div class="page-bread mb20">
-    <div class="container">
-        <div class="row">
-            <div class="col-sm-6">
-                <h3>Reset your password</h3>
-            </div>
-            <div class="col-sm-6">
+@extends('frontend.site.layout')
 
-            </div>
-        </div>
-    </div>
-</div>
-<div class="container mb70">
-    <div class="row">
-        <div class="col-sm-6 col-sm-offset-3">
-            <div class="border-card">
-                <h3 class="font300 mb0 text-center">Enter new password
-                </h3> <hr>
-                @include('includes.alerts')
-                <form class="mb-2" method="POST" action="{{ route('password.update') }}">
+@section('title', 'Choose a new password — GOFAMINT Students’ Fellowship')
+@section('description', 'Choose a new password for your GSF member account.')
+@section('mainClass', 'public-page auth-page')
+@section('activeSection', 'auth')
+@section('content')
+<section class="auth-stage auth-stage--compact">
+    <div class="site-container auth-stage__container">
+        <div class="auth-card auth-card--compact">
+            <aside class="auth-card__story">
+                <span class="auth-card__mark"><img src="{{ asset('frontend/img/logo.png') }}" alt="GSF"></span>
+                <div class="eyebrow eyebrow--light"><span></span> Account recovery</div>
+                <h1>A fresh start<br><em>for your account.</em></h1>
+                <p>Choose a strong password you haven’t used for this account before.</p>
+            </aside>
+            <div class="auth-card__form-wrap">
+                <div class="auth-form-heading"><span>Secure your account</span><h2>Choose a new password</h2><p>Enter and confirm your new password below.</p></div>
+                @if($errors->any())<div class="auth-feedback auth-feedback--error" role="alert">{{ $errors->first() }}</div>@endif
+                <form class="auth-form" method="POST" action="{{ route('password.update') }}">
                     @csrf
                     <input type="hidden" name="token" value="{{ $token }}">
-                        <div class="form-group">
-                        <label class="text-bold-600" for="email">Email</label>
-                        <input readonly type="email" class="form-control" name="email" id="email" value="{{ $email ?? old('email') }}" placeholder="Enter your email">
-
-                    </div>
-
-                    <div class="form-group">
-                        <label class="text-bold-600" for="password">New Password</label>
-                        <input type="password" class="form-control" id="password" name="password" value="{{ old('password') }}" placeholder="Enter a new password">
-
-                    </div>
-                    <div class="form-group mb-2">
-                        <label class="text-bold-600" for="password_confirmation">Confirm New Password</label>
-                        <input type="password" class="form-control" value="{{ old('password_confirmation') }}" id="password_confirmation" name="password_confirmation" placeholder="Confirm your new password">
-                    </div>
-                    <button type="submit" class="btn btn-primary glow position-relative w-100">Reset my password<i id="icon-arrow" class="bx bx-right-arrow-alt"></i></button>
+                    <div class="auth-field"><label for="email">Email address</label><input id="email" type="email" name="email" value="{{ $email ?? old('email') }}" autocomplete="email" readonly required></div>
+                    <div class="auth-field"><label for="password">New password</label><div class="auth-password"><input id="password" type="password" name="password" autocomplete="new-password" required autofocus><button type="button" data-password-toggle="password" aria-label="Show password">Show</button></div></div>
+                    <div class="auth-field"><label for="password_confirmation">Confirm new password</label><input id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" required></div>
+                    <button class="button button--blue auth-submit" type="submit">Save new password <span aria-hidden="true">→</span></button>
                 </form>
-
-                <div class="text-right"><a href="/login" class="card-link"><small>I remember my password</small></a></div>
+                <p class="auth-form__footnote"><a href="{{ route('login') }}">← Return to sign in</a></p>
             </div>
         </div>
+        <a class="auth-back-link" href="{{ route('home.index') }}">← Back to the GSF homepage</a>
     </div>
-</div>
+</section>
 @endsection
+
+@push('scripts')
+<script>
+document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const input = document.getElementById(button.dataset.passwordToggle);
+        const showing = input.type === 'password';
+        input.type = showing ? 'text' : 'password';
+        button.textContent = showing ? 'Hide' : 'Show';
+        button.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
+    });
+});
+</script>
+@endpush

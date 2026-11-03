@@ -1,7 +1,7 @@
 <header class="header-global">
     <nav style="background-color: @yield('nav-background') " id="navbar-main" class="navbar navbar-main navbar-theme-primary navbar-expand-lg headroom py-lg-3 px-lg-6 navbar-dark navbar-transparent navbar-theme-primary">
         <div class="container">
-            <a class="navbar-brand @@logo_classes" href="https://gsfnational.org" target="_blank">
+            <a class="navbar-brand @@logo_classes" href="{{ route('home.index') }}">
                 <x-logo width="auto" height="70px" class="navbar-brand-dark common"/>
                 <img class="navbar-brand-dark common" src="" height="35">
             </a>
@@ -9,24 +9,35 @@
                 <div class="navbar-collapse-header">
                     <div class="row">
                         <div class="col-6 collapse-brand">
-                            <a href=""><x-logo width="auto" height="35px"/></a>
+                            <a href="{{ route('home.index') }}"><x-logo width="auto" height="35px"/></a>
                         </div>
                         <div class="col-6 collapse-close"><a href="#navbar_global" role="button" class="fas fa-times" data-toggle="collapse" data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false" aria-label="Toggle navigation"></a></div>
                     </div>
                 </div>
                 <ul class="navbar-nav navbar-nav-hover justify-content-center">
                     <li class="nav-item">
-                        <a target="_blank" href="https://gsfnational.org" class="nav-link" aria-expanded="false">
-                            <span class="nav-link-inner-text mr-1">GSF Home</span>
+                        <a href="{{ route('home.index') }}" class="nav-link" aria-expanded="false">
+                            <span class="nav-link-inner-text mr-1">Home</span>
                         </a>
                     </li>
-                    @foreach(menu() as $m)
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            <span class="nav-link-inner-text mr-1">Directory</span>
+                            <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                        </a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="{{ route('directory.index') }}">Directory Home</a>
+                            <a class="dropdown-item" href="{{ route('people.campuses') }}">Campuses</a>
+                            <a class="dropdown-item" href="{{ route('people.alumni') }}">Alumni</a>
+                            <a class="dropdown-item" href="{{ route('people.students') }}">Members</a>
+                            <a class="dropdown-item" href="{{ route('campus.tracker') }}">Campus Tracker</a>
+                        </div>
+                    </li>
                     <li class="nav-item">
-                        <a href="{{route($m['route'])}}" class="nav-link" aria-expanded="false">
-                            <span class="nav-link-inner-text mr-1">{{$m['name']}}</span>
+                        <a href="{{ route('people.nec') }}" class="nav-link" aria-expanded="false">
+                            <span class="nav-link-inner-text mr-1">Meet Our Leaders</span>
                         </a>
                     </li>
-                    @endforeach
                 </ul>
             </div>
             @guest

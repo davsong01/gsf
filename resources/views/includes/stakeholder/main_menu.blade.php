@@ -121,6 +121,15 @@
                 </li>
             @endif
 
+            @if($user->hasPermission('blog.view') || $user->hasPermission('blog.create') || $user->hasPermission('blog.manage-own'))
+                <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.blog') ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.blog.posts.index') }}">
+                        <i class="fa fa-newspaper-o" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Posts</span>
+                    </a>
+                </li>
+            @endif
+
             <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.profile') ? 'active' : '' }}">
                 <a href="{{ route('stakeholders.profile') }}">
                     <i class="fa fa-user-o" aria-hidden="true"></i>

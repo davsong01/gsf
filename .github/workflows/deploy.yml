@@ -30,5 +30,6 @@ jobs:
             php artisan optimize:clear
             php artisan db:seed
             # php artisan db:seed --class=AwardShortlistStageSeeder --force
+            php artisan db:seed --class=BlogPermissionSeeder --force
             echo "Deployment to Server completed!"
-            
+

@@ -1,72 +1,34 @@
-@extends('frontend.spaces.layouts.app')
-@section('title', 'Forgot Password')
-@section('ogtitle', 'Forgot Password')
-@section('ogdescription')
+@extends('frontend.site.layout')
 
+@section('title', 'Recover stakeholder access — GOFAMINT Students’ Fellowship')
+@section('description', 'Request a one-time password to reset your GSF stakeholder account.')
+@section('mainClass', 'public-page auth-page stakeholder-auth-page')
+@section('activeSection', 'auth')
 @section('content')
-<section class="section section-header bg-primary overlay-primary text-white pb-2" style="margin-top:-50px">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-8 text-center">
-                <h1 class="display-2 mb-4">Forgot Password</h1>
-                <p class="lead">Enter your email address and we’ll send you a reset code.</p>
+<section class="auth-stage auth-stage--compact">
+    <div class="site-container auth-stage__container">
+        <div class="auth-card auth-card--compact">
+            <aside class="auth-card__story auth-card__story--stakeholder">
+                <span class="auth-card__mark"><img src="{{ asset('frontend/img/logo.png') }}" alt="GSF"></span>
+                <div class="eyebrow eyebrow--light"><span></span> Stakeholder portal</div>
+                <h1>Access can be<br><em>restored securely.</em></h1>
+                <p>We’ll send a one-time verification code to the email address registered to your stakeholder account.</p>
+            </aside>
+            <div class="auth-card__form-wrap">
+                <div class="auth-form-heading"><span>Account recovery</span><h2>Reset stakeholder password</h2><p>Enter your registered email to receive a secure reset code.</p></div>
+                @if(session('message'))<div class="auth-feedback auth-feedback--success" role="status">{{ session('message') }}</div>@endif
+                @if(session('error'))<div class="auth-feedback auth-feedback--error" role="alert">{{ session('error') }}</div>@endif
+                @if($errors->any())<div class="auth-feedback auth-feedback--error" role="alert">{{ $errors->first() }}</div>@endif
+                <form class="auth-form" action="{{ route('stakeholders.forgot-password.send') }}" method="POST">
+                    @csrf
+                    <div class="auth-field"><label for="email">Registered email</label><input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="email" placeholder="name@example.com" required autofocus></div>
+                    <input type="hidden" name="user_type" value="stakeholder">
+                    <button class="button button--blue auth-submit" type="submit">Send reset code <span aria-hidden="true">→</span></button>
+                </form>
+                <p class="auth-form__footnote"><a href="{{ route('stakeholders.loginpage') }}">← Return to stakeholder sign in</a></p>
             </div>
         </div>
-    </div>
-</section>
-
-<section class="min-vh-80 d-flex align-items-center" style="margin-top:20px">
-    <div class="container">
-        <div class="row justify-content-center">
-
-            <div class="col-12 d-flex align-items-center justify-content-center" style="margin-bottom:20px">
-                <div class="signin-inner mt-3 mt-lg-0 bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-500">
-
-                    @include('includes.alerts')
-
-                    <form action="{{ route('stakeholders.forgot-password.send') }}" method="POST">
-                        @csrf
-
-                        {{-- Email --}}
-                        <div class="form-group mb-4">
-                            <label for="email">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fas fa-envelope"></i>
-                                </span>
-                                <input
-                                    type="email"
-                                    class="form-control @error('email') is-invalid @enderror"
-                                    id="email"
-                                    name="email"
-                                    placeholder="Enter your registered email"
-                                    value="{{ old('email') }}"
-                                    required
-                                >
-                            </div>
-
-                            @error('email')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        {{-- Submit --}}
-                        {{-- {{dd($isSent)}} --}}
-                        <button type="submit" class="btn btn-block btn-primary">
-                            {{ 'Send Reset Code' }}
-                        </button>
-                        <input type="hidden" name="user_type" value="stakeholder">
-                        {{-- Back to login --}}
-                        <div class="text-center mt-3">
-                            <a href="{{ route('stakeholders.login') }}" class="small">
-                                ← Back to Login
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-        </div>
+        <a class="auth-back-link" href="{{ route('home.index') }}">← Back to the GSF homepage</a>
     </div>
 </section>
 @endsection

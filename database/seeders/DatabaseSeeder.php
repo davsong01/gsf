@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             // StakeholderQuestionSeeder::class,
             AppraisalQuestionSeeder::class,
             AppraisalRolePermissionSeeder::class,
+            BlogPermissionSeeder::class,
         ]);
     }
 }

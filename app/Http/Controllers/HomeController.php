@@ -19,9 +19,12 @@ use App\Models\StakeholderDesignation;
 use App\Models\TempMember;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Modules\Blog\Models\BlogPost;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class HomeController extends Controller
@@ -42,91 +45,110 @@ class HomeController extends Controller
     }
 
     public function index() {
-        $events = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', '<>', 0)->limit(6)->get();
-        $national = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->where('chapter_id', 0)->limit(3)->get();
+        $upcomingEvents = Event::with('chapter')
+            ->where('date', '>=', date('Y-m-d'))
+            ->orderBy('date', 'ASC')
+            ->limit(6)
+            ->get();
 
-        if ($this->conference) {
-            $setting = $this->conference;
+        $latestPosts = Schema::hasTable('blog_posts')
+            ? BlogPost::published()
+                ->with(['category', 'author'])
+                ->latest()
+                ->limit(3)
+                ->get()
+            : collect();
 
-            $chapters = Chapter::orderBy('name')->get();
+        $leadershipRoleIds = array_values(array_unique(array_merge(
+            zoneStakeholders(),
+            fieldStakeholders(),
+            portfolioStakeholders()
+        )));
 
-            $conference_year = optional($setting->start_date)
-                ? Carbon::parse($setting->start_date)->year
-                : null;
+        $leaders = Stakeholder::with(['designation', 'role'])
+            ->whereIn('role_id', $leadershipRoleIds)
+            ->where('status', 'active')
+            ->orderByRaw('designation_id IS NULL, designation_id ASC')
+            ->limit(4)
+            ->get();
 
-            $alumnis_amount = [
-                'alumni_registration_fee' => $setting->alumni_registration_fee ?? 0,
-                'new_alumni_registration_fee' => $setting->new_alumni_registration_fee ?? 0
-            ];
+        $impact = [
+            'campuses' => Chapter::count(),
+            'fields' => Field::count(),
+            'leaders' => Stakeholder::where('status', 'active')->count(),
+        ];
 
-            $faqs = ConferenceFaq::where('status', 1)
-                ->whereIn('id', $setting->faq_ids ?? [])
-                ->orderBy('display_order')
-                ->get();
+        return view('frontend.site.home', compact(
+            'upcomingEvents',
+            'latestPosts',
+            'leaders',
+            'impact'
+        ));
+    }
 
-            $speakers = ConferenceSpeaker::where('status', 1)
-                ->whereIn('id', $setting->speaker_ids ?? [])
-                ->get();
+    public function directory()
+    {
+        $directoryStats = [
+            'campuses' => Chapter::where('id', '<>', 86)->count(),
+            'members' => User::where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0)->count(),
+            'alumni' => User::where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 1)->count(),
+        ];
 
-            $schedule = ConferenceSchedule::where('status', 1)
-                ->where('conference_edition_id', $setting->id)
-                ->get();
+        $featuredCampuses = Chapter::with(['field', 'zone'])
+            ->withCount(['users as members_count' => function ($query) {
+                $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
+            }])
+            ->where('id', '<>', 86)
+            ->orderByDesc('members_count')
+            ->limit(6)
+            ->get();
 
-            $plans = ConferencePlan::where('status', 1)
-                ->where('conference_edition_id', $setting->id)
-                ->get();
+        return view('frontend.site.directory.index', compact('directoryStats', 'featuredCampuses'));
+    }
 
-            return view('frontend.conference.template'.$setting->template_id.'.welcome')
-                ->with('events', $events)
-                ->with('setting', $setting)
-                ->with('national', $national)
-                ->with('conference', $setting)
-                ->with('conference_year', $conference_year)
-                ->with('alumnis_amount', $alumnis_amount)
-                ->with('chapters', $chapters)
-                ->with('faqs', $faqs)
-                ->with('schedule', $schedule)
-                ->with('plans', $plans)
-                ->with('speakers', $speakers);
+    public function foundationalConcept()
+    {
+        return view('frontend.site.about.foundational-concept');
+    }
 
-        } elseif (env('MINISTRY') == 'gyf') {
-            $setting = ConferenceEdition::whereHas('ministry', function ($query) {
-                $query->where('code', env('MINISTRY'));
-            })->first();
+    public function missionStrategies()
+    {
+        $siteSettings = GeneralSetting::first();
 
-            // gyf ministry fallback (no conference loaded)
-            return view('frontend.conference.conference_closed')
-                ->with('events', $events)
-                ->with('national', $national)
-                ->with('setting', $setting);
+        return view('frontend.site.about.mission-strategies', compact('siteSettings'));
+    }
 
-        } else {
+    public function ourFathers()
+    {
+        return view('frontend.site.leaders.our-fathers');
+    }
 
-            $used = array_merge(zoneStakeholders(), fieldStakeholders(), portfolioStakeholders());
+    public function siteDocument(string $document)
+    {
+        $documents = [
+            'constitution' => [
+                'column' => 'gsf_constitution_path',
+                'filename' => 'GSF-Constitution.pdf',
+            ],
+            'code-of-conduct' => [
+                'column' => 'gsf_code_of_conduct_path',
+                'filename' => 'GSF-Code-of-Conduct.pdf',
+            ],
+        ];
 
-            $officials = Stakeholder::whereIn('role_id', $used)
-                ->where('status', 'active')
-                ->get();
+        abort_unless(isset($documents[$document]), 404);
 
-            foreach ($officials as $user) {
+        $siteSettings = GeneralSetting::first();
+        $configuration = $documents[$document];
+        $path = $siteSettings?->{$configuration['column']};
 
-                $role = $user->role_id;
+        abort_if(blank($path) || !Storage::disk('public')->exists($path), 404);
 
-                if (in_array($role, zoneStakeholders()) && !is_null($user->zone_id)) {
-                    $user->office = 'Zonal Pastor, '. ($user->zone->name ?? 'N/A');
-                }
-
-                if (in_array($role, fieldStakeholders()) && !is_null($user->field_id)) {
-                    $user->office = 'Field Pastor, '. ($user->field->name ?? 'N/A');
-                }
-
-                if (in_array($role, portfolioStakeholders())) {
-                    $user->office = 'GSF National '.$user->portfolio;
-                }
-            }
-
-            return view('frontend.'.frontendTemplate().'.index', compact('events', 'national', 'officials'));
-        }
+        return Storage::disk('public')->response(
+            $path,
+            $configuration['filename'],
+            ['Content-Type' => 'application/pdf']
+        );
     }
 
     // public function regPage($type)
@@ -186,7 +208,7 @@ class HomeController extends Controller
             $fields = $plan->fields()->sortBy('display_order');
             // dd( $fields, $plan);
             $registrationFields = reformatRegistrationFields($fields);
-            return view('frontend.conference.template' . $this->conference->template_id . '.registration', compact('title', 'chapters', 'setting', 'conference_year', 'type', 'fields', 'registrationFields','plan'));
+            return view('frontend.site.conferences.registration', compact('title', 'chapters', 'setting', 'conference_year', 'type', 'fields', 'registrationFields','plan'));
         } else {
             return abort(404);
         }
@@ -237,65 +259,139 @@ class HomeController extends Controller
 
         return response()->json($transactions);
     }
-    public function alumni() {
-        $chapters = Chapter::orderBy('name')->get();
+    public function alumni(Request $request) {
+        $alumnis = User::with(['campus', 'stakeholder.role', 'stakeholder.designation'])
+            ->whereHas('campus')
+            ->where('status', 'active')
+            ->where('role', '<>', 1)
+            ->where('is_graduated', 1)
+            ->when($request->filled('name'), function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%'.$request->string('name').'%');
+            })
+            ->when($request->filled('school'), function ($query) use ($request) {
+                $query->whereHas('campus', function ($campusQuery) use ($request) {
+                    $campusQuery->where('name', 'LIKE', '%'.$request->string('school').'%');
+                });
+            })
+            ->latest()
+            ->paginate(24)
+            ->withQueryString();
 
-        $alumnis = User::wherehas('campus')
-            ->whereStatus('active')
-                ->where('role', '<>', 1)
-                    ->where('is_graduated', 1)
-                        ->latest()
-                            ->paginate(30)
-                                ->withQueryString();
-
-        return view('frontend.' . frontendTemplate() . '.alumni', compact('alumnis','chapters'));
+        return view('frontend.site.directory.people', [
+            'people' => $alumnis,
+            'directoryType' => 'alumni',
+            'searchName' => $request->input('name', ''),
+            'searchSchool' => $request->input('school', ''),
+        ]);
     }
 
     public function nec()
     {
-        $nec = StakeholderDesignation::with(['stakeholder' => function($q) {
-            $q->where('status', 'active')
-            ->whereIn('role_id', [1,2,3,4,6,7]);
-        }])
-        ->where('status', 'active')
-        ->where('type', 'nec')
-        ->orderBy('order')->get();
+        $nec = Stakeholder::with(['designation', 'role'])
+            ->where('status', 'active')
+            ->whereIn('role_id', [1, 2, 6, 7, 8])
+            ->get()
+            ->sortBy(function (Stakeholder $stakeholder) {
+                return sprintf(
+                    '%05d-%02d-%s',
+                    $stakeholder->designation?->order ?? 99999,
+                    $stakeholder->role_id,
+                    mb_strtolower($stakeholder->name)
+                );
+            })
+            ->values();
 
-        return view('frontend.' . frontendTemplate() . '.nec', compact('nec'));
+        return view('frontend.site.leaders.nec', compact('nec'));
     }
 
-    public function students() {
-        $alumnis = User::wherehas('campus')
-            ->whereStatus('active')
-                ->where('role', '<>', 1)
-                    ->where('is_graduated', 0)
-                        ->latest()
-                            ->paginate(30)
-                                ->withQueryString();
-        return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
+    public function students(Request $request) {
+        $members = User::with(['campus', 'stakeholder.role', 'stakeholder.designation'])
+            ->whereHas('campus')
+            ->where('status', 'active')
+            ->where('role', '<>', 1)
+            ->where('is_graduated', 0)
+            ->when($request->filled('name'), function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%'.$request->string('name').'%');
+            })
+            ->when($request->filled('school'), function ($query) use ($request) {
+                $query->whereHas('campus', function ($campusQuery) use ($request) {
+                    $campusQuery->where('name', 'LIKE', '%'.$request->string('school').'%');
+                });
+            })
+            ->latest()
+            ->paginate(24)
+            ->withQueryString();
+
+        return view('frontend.site.directory.people', [
+            'people' => $members,
+            'directoryType' => 'members',
+            'searchName' => $request->input('name', ''),
+            'searchSchool' => $request->input('school', ''),
+        ]);
     }
 
     public function programs() {
-        $programs = Event::where('date', '>=', date('Y-m-d'))->orderBy('date', 'ASC')->get();
-        return view('frontend.main.program', compact('programs'));
+        return redirect()->route('conferences.index');
     }
 
-    public function chapters() {
-        $chapters = Chapter::withCount('users')->where('id','<>',86)->get();
+    public function chapters(Request $request) {
+        $chapters = Chapter::with(['field', 'zone'])
+            ->withCount(['users as members_count' => function ($query) {
+                $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
+            }])
+            ->where('id', '<>', 86)
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%'.$request->string('q').'%';
+                $query->where(function ($search) use ($term) {
+                    $search->where('name', 'LIKE', $term)
+                        ->orWhere('address', 'LIKE', $term)
+                        ->orWhereHas('field', fn ($field) => $field->where('name', 'LIKE', $term))
+                        ->orWhereHas('zone', fn ($zone) => $zone->where('name', 'LIKE', $term));
+                });
+            })
+            ->orderBy('name')
+            ->paginate(18)
+            ->withQueryString();
 
-        return view('frontend.' . frontendTemplate() . '.campuses', compact('chapters'));
-        // return view('frontend.main.chapters', compact('chapters'));
+        return view('frontend.site.directory.campuses', [
+            'chapters' => $chapters,
+            'searchTerm' => $request->input('q', ''),
+        ]);
     }
 
-    public function studentsByChapter($id){
-        $alumnis = User::where('chapter_id', $id)->whereStatus(0)->where('role', '<>', 1)->paginate(30)->withQueryString();
-        return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
+    public function studentsByChapter(Request $request, $id){
+        return $this->campusPeopleListing($request, $id, 'members');
     }
 
-    public function alumniByChapter($id)
+    public function alumniByChapter(Request $request, $id)
     {
-        $alumnis = User::where('chapter_id', $id)->whereStatus(1)->where('role', '<>', 1)->paginate(30)->withQueryString();
-        return view('frontend.' . frontendTemplate() . '.student', compact('alumnis'));
+        return $this->campusPeopleListing($request, $id, 'alumni');
+    }
+
+    private function campusPeopleListing(Request $request, $id, string $directoryType)
+    {
+        $campus = Chapter::findOrFail($id);
+        $isAlumni = $directoryType === 'alumni';
+
+        $people = User::with(['campus', 'stakeholder.role', 'stakeholder.designation'])
+            ->where('chapter_id', $campus->id)
+            ->where('status', 'active')
+            ->where('role', '<>', 1)
+            ->where('is_graduated', $isAlumni ? 1 : 0)
+            ->when($request->filled('name'), function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%'.$request->string('name').'%');
+            })
+            ->latest()
+            ->paginate(24)
+            ->withQueryString();
+
+        return view('frontend.site.directory.people', [
+            'people' => $people,
+            'directoryType' => $directoryType,
+            'searchName' => $request->input('name', ''),
+            'searchSchool' => '',
+            'campus' => $campus,
+        ]);
     }
 
     private function getSidebar() {
@@ -322,43 +418,12 @@ class HomeController extends Controller
 
     public function alumniSearch(Request $request)
     {
-        $alumni = $results = User::with('campus')
-        ->where('status', 1)
-        ->where('role', '<>', 1)->orderBy('created_at','desc');
-
-        if(!empty($request->name)){
-            $alumni = $alumni->where("name", "LIKE", "%{$request->name}%");
-        }
-
-        if ($request->school) {
-            $campus = Chapter::where("name", "LIKE", "%{$request->school}%")->pluck('id');
-            $alumni = $alumni->whereIn('users.chapter_id', $campus);
-        }
-
-        $searchMember = $alumni->get();
-        $count = $searchMember->count();
-        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('count','searchMember'));
+        return redirect()->route('people.alumni', $request->only('name', 'school'));
     }
 
     public function memberSearch(Request $request)
     {
-        $results = User::with('campus')
-        ->where('status', 0)
-        ->where('role', '<>', 1)->orderBy('created_at', 'desc');
-
-        if (!empty($request->name)) {
-            $results = $results->where("name", "LIKE", "%{$request->name}%");
-        }
-
-        if ($request->school) {
-            $campus = Chapter::where("name", "LIKE", "%{$request->school}%")->pluck('id');
-            $results = $results->whereIn('users.chapter_id', $campus);
-        }
-
-        $searchMember = $results->get();
-        $count = $searchMember->count();
-
-        return view('frontend.' . frontendTemplate() . '.general_search_results', compact('count','searchMember', ));
+        return redirect()->route('people.students', $request->only('name', 'school'));
     }
 
     public function autocomplete(Request $request)
@@ -482,16 +547,20 @@ class HomeController extends Controller
     //     return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents','chapter','related'));
     //     // return view('frontend.main.single-chapter', compact('chapter', 'nationalevents'));
     // }
-    public function singleCampus()
+    public function singleCampus($chapterId = null)
     {
-        $id = request()->chapter ?? request()->chapter_id;
+        $id = $chapterId ?? request()->chapter ?? request()->chapter_id;
 
-        // Fetch the chapter or fail with a 404 error if it doesn't exist
-        $chapter = Chapter::where('id', $id)->first();
-
-        if (!$chapter) {
-            return back()->with('error', 'The requested chapter could not be found.');
-        }
+        $chapter = Chapter::with(['field', 'zone'])
+            ->withCount([
+                'users as members_count' => function ($query) {
+                    $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
+                },
+                'users as alumni_count' => function ($query) {
+                    $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 1);
+                },
+            ])
+            ->findOrFail($id);
 
         $token = false;
         $realToken = '';
@@ -507,14 +576,37 @@ class HomeController extends Controller
             return view('frontend.conference.campusView', compact('chapter', 'token', 'realToken'));
         }
 
-        $nationalevents = Event::where('chapter_id', 0)->get();
-
-        // Since $chapter is verified as not null, you can safely query relationships
-        $related = Chapter::where('zone_id', $chapter->zone_id)
-            ->orWhere('field_id', $chapter->field?->id) // Using null-safe operator in case field is missing
+        $events = $chapter->events()
+            ->where('date', '>=', date('Y-m-d'))
+            ->orderBy('date')
+            ->limit(4)
             ->get();
 
-        return view('frontend.' . frontendTemplate() . '.single_chapter', compact('nationalevents', 'chapter', 'related'));
+        $members = $chapter->users()
+            ->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0)
+            ->latest()->limit(6)->get();
+
+        $alumni = $chapter->users()
+            ->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 1)
+            ->latest()->limit(6)->get();
+
+        $related = collect();
+        if ($chapter->zone_id || $chapter->field_id) {
+            $related = Chapter::with(['field', 'zone'])
+                ->withCount(['users as members_count' => function ($query) {
+                    $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
+                }])
+                ->where('id', '<>', $chapter->id)
+                ->where(function ($query) use ($chapter) {
+                    if ($chapter->zone_id) $query->where('zone_id', $chapter->zone_id);
+                    if ($chapter->field_id) $query->orWhere('field_id', $chapter->field_id);
+                })
+                ->orderBy('name')
+                ->limit(3)
+                ->get();
+        }
+
+        return view('frontend.site.directory.campus', compact('chapter', 'events', 'members', 'alumni', 'related'));
     }
 
 
@@ -571,16 +663,27 @@ class HomeController extends Controller
     }
 
     public function singleUser($slug){
-        $alumni = User::whereSlug($slug)->first();
+        $alumni = User::with([
+            'campus.field',
+            'campus.zone',
+            'designation',
+            'stakeholder.designation',
+            'stakeholder.role',
+        ])->whereSlug($slug)->firstOrFail();
 
-        if($alumni){
-            $related = User::where('chapter_id', $alumni->chapter_id)->where('role', '<>', 1)->get();
-        }else{
-            $related = null;
+        $related = collect();
+        if ($alumni->chapter_id && $alumni->chapter_id != 86) {
+            $related = User::with(['designation', 'campus'])
+                ->where('chapter_id', $alumni->chapter_id)
+                ->whereIn('status', ['active', 0, '0'])
+                ->where('role', '<>', 1)
+                ->where('id', '<>', $alumni->id)
+                ->orderBy('name')
+                ->limit(6)
+                ->get();
         }
 
-        // Check if this is an alumni
-        return view('frontend.' . frontendTemplate() . '.single-alumni', compact('alumni', 'related'));
+        return view('frontend.site.directory.profile', compact('alumni', 'related'));
     }
 
     public function singleStudent($slug){
@@ -636,10 +739,13 @@ class HomeController extends Controller
 
     public function newAlumni(){
         $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
-		$portfolios = getCommunityPortfolios();
+		$portfolios = StakeholderDesignation::where('type', 'chapter_executive')
+			->orderBy('order')
+			->orderBy('name')
+			->get();
 		$sessions = range(date('Y'), date('1982'));
 
-        return view('frontend.' . frontendTemplate() . '.newalumni', compact('chapters', 'portfolios', 'sessions'));
+		return view('frontend.site.newalumni', compact('chapters', 'portfolios', 'sessions'));
 	}
 
     public function newDonation()

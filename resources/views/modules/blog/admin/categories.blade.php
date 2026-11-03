@@ -1,0 +1,6 @@
+@extends('layouts.dashboard')
+@section('title', 'Blog Categories')
+@section('active')<li class="breadcrumb-item">Blog Categories</li>@endsection
+@section('content')
+<div class="content-body"><div class="row"><div class="col-lg-5"><div class="card"><div class="card-header"><h4 class="card-title">Add category</h4></div><div class="card-body"><form method="POST" action="{{ route('admin.blog.categories.store') }}">@csrf<div class="form-group"><label>Name</label><input class="form-control" name="name" required></div><div class="form-group"><label>Description</label><textarea class="form-control" name="description"></textarea></div><button class="btn btn-primary">Create category</button></form></div></div></div><div class="col-lg-7"><div class="card"><div class="card-header"><h4 class="card-title">Categories</h4></div><div class="card-body">@include('includes.alerts')<table class="table"><thead><tr><th>Name</th><th>Posts</th><th></th></tr></thead><tbody>@foreach($categories as $category)<tr><td>{{ $category->name }}</td><td>{{ $category->posts_count }}</td><td>@if($category->posts_count === 0)<form method="POST" action="{{ route('admin.blog.categories.destroy', $category) }}">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Delete</button></form>@endif</td></tr>@endforeach</tbody></table></div></div></div></div></div>
+@endsection

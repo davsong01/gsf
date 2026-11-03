@@ -12,7 +12,7 @@
 
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta property="og:type" content="website">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#0b2452">
     <link type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <link href="{{ asset('frontend/img/logo.png') }}" rel="icon">
@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{{asset('gsfcom/fancybox/min.css')}}">
     <link rel="stylesheet" href="{{asset('gsfcom/jqvmap/min.css')}}">
     <link type="text/css" href="{{asset('gsfcom/css/style.css')}}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('site/css/gsf-site.css') }}">
     <style>
         .counter{
             background: #0d1b48;

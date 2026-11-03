@@ -136,7 +136,6 @@ Route::controller(ChapterController::class)->group(function () {
 Route::post('ajax-create-temp-details', [ConferenceManagementController::class, 'ajaxPayment']);
 Route::get('ajax/zones-by-fields', [ZoneController::class, 'getZonesByFields']);
 
-Auth::routes();
 Auth::routes(['verify' => false, 'register' => false] );
 
 Route::get('/clear', function () {
@@ -177,6 +176,8 @@ Route::get('/preview-email/{id}', function ($id) {
 });
 
 Route::get('/conference', [ConferenceController::class, 'index']);
+Route::get('/conferences', [ConferenceController::class, 'archive'])->name('conferences.index');
+Route::get('/conferences/{slug}', [ConferenceController::class, 'show'])->name('conferences.show');
 
 Route::prefix('award')->as('award.')->group(function () {
     Route::get('first-class', [AwardController::class, 'firstClassSubmission'])->name('first-class-entry-submission');
@@ -187,6 +188,13 @@ Route::prefix('award')->as('award.')->group(function () {
 
 Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index')->name('home.index');
+    Route::get('/about/foundational-concept', [HomeController::class, 'foundationalConcept'])->name('about.foundational-concept');
+    Route::get('/about/mission-strategies', [HomeController::class, 'missionStrategies'])->name('about.mission-strategies');
+    Route::get('/leaders/our-fathers', [HomeController::class, 'ourFathers'])->name('leaders.fathers');
+    Route::get('/documents/{document}', [HomeController::class, 'siteDocument'])
+        ->whereIn('document', ['constitution', 'code-of-conduct'])
+        ->name('site.documents.show');
+    Route::get('/directory', [HomeController::class, 'directory'])->name('directory.index');
     //Campus auto complete
     Route::get('/autocomplete-search', 'campusAutocomplete')->name('campus.suggestions');
     Route::get('/alumni-autocomplete-search', 'alumniAutoComplete')->name('alumni.suggestions');
@@ -240,6 +248,9 @@ Route::get('/nec/registration/portal/pay', [ConferenceController::class, 'necReg
 
 Route::post('checkout', [PaymentController::class, 'checkout'])->name('checkout');
 Route::get('checkout/{transaction}', [PaymentController::class, 'showCheckout'])->name('show.checkout');
+Route::get('checkout/{transaction}/retry', [PaymentController::class, 'retryCheckout'])
+    ->middleware('signed')
+    ->name('checkout.retry');
 
 Route::post('/pay', [PaymentController::class, 'redirectToGateway'])->name('pay');
 Route::get('/payment/verify/{reference}', [PaymentController::class, 'handleGatewayCallback']);
@@ -344,6 +355,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('nec', NecController::class);
     Route::get('award-settings', [AwardController::class, 'awardSettings'])->name('award.settings');
     Route::post('award-settings', [AwardController::class, 'updateAwardSettings'])->name('award.settings.update');
+    Route::get('site-settings/documents', [SettingController::class, 'editSiteDocuments'])
+        ->name('site-settings.documents.edit');
+    Route::patch('site-settings/documents', [SettingController::class, 'updateSiteDocuments'])
+        ->name('site-settings.documents.update');
 
 
     Route::get('archived-nec', [NecController::class, 'archivedNec'])->name('archive.nec.index');
@@ -402,6 +417,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::post('fetch-transaction', [PaymentController::class, 'paystackGetCustomerIdByEmail'])->name('admin.transactions.fetch');
 
     Route::controller(TransactionController::class)->group(function () {
+        Route::get('conference-transactions/{edition}/{transaction}', 'showSingleTransaction')->name('conference.transactions.show');
+        Route::get('conference-transactions/{edition}/{transaction}/receipt', 'downloadReceipt')->name('conference.transactions.receipt');
+        Route::post('conference-transactions/{edition}/{transaction}/requery-provider', 'requeryProvider')->name('conference.transactions.requery-provider');
+        Route::post('conference-transactions/{edition}/{transaction}/resolve', 'resolveSingleTransaction')->name('conference.transactions.resolve');
         Route::get('conference-transactions/{edition?}', 'transactions')->name('conference.transactions');
         // Route::get('conference-transaction-delete/{id}/{edition}', 'destroyTransaction')->name('conference.transaction.delete');
         Route::any('transaction-bulk-action/{edition}', 'bulkAction')->name('conference.transactions.bulkAction');
@@ -781,6 +800,9 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
 
     });
 });
+
+// Reusable blog module routes.
+require base_path('app/Modules/Blog/routes.php');
 
 
 //Get signature Image

@@ -8,8 +8,8 @@
 	<meta name="keywords" content="">
 	<meta name="author" content="GSF">
 	<title>@yield('title')</title>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
-	// <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	{{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script> --}}
 	<link rel="apple-touch-icon" href="{{ asset('frontend/img/logo.png') }}">
 	<link rel="shortcut icon" type="image/x-icon" href="{{ asset('frontend/img/logo.png') }}">
 	<link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500,600%7CIBM+Plex+Sans:300,400,500,600,700"

@@ -67,10 +67,15 @@ class ChapterController extends Controller
 
     public function campusUpdate()
     {
-        $chapters = Chapter::where('id','<>',86)->get();
+        $chapters = Chapter::with(['field', 'zone'])
+            ->withCount(['users as members_count' => function ($query) {
+                $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
+            }])
+            ->where('id', '<>', 86)
+            ->orderBy('name')
+            ->get();
 
-        return view('frontend.' . frontendTemplate() . '.campusUpdate', compact('chapters'));
-        // return view('frontend.conference.campusUpdate', compact('chapters'));
+        return view('frontend.site.directory.tracker', compact('chapters'));
     }
 
     public function generateNewToken($id){
