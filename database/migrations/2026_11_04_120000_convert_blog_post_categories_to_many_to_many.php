@@ -28,8 +28,13 @@ return new class extends Migration
                 }
             });
 
-            Schema::table('blog_posts', function (Blueprint $table) {
-                $table->dropForeign(['category_id']);
+            $categoryForeignKey = collect(Schema::getForeignKeys('blog_posts'))
+                ->first(fn (array $foreignKey) => in_array('category_id', $foreignKey['columns'], true));
+
+            Schema::table('blog_posts', function (Blueprint $table) use ($categoryForeignKey) {
+                if ($categoryForeignKey) {
+                    $table->dropForeign($categoryForeignKey['name']);
+                }
                 $table->dropColumn('category_id');
             });
         }
