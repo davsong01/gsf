@@ -42,5 +42,6 @@ jobs:
             # php artisan db:seed --class="Database\Seeders\ImportWordPressBlogMediaSeeder" --force
             # php artisan db:seed --class="Database\Seeders\WebsiteConsolidationAnnouncementSeeder" --force
 
+            rm -rf ../site && cp -r public/site ../site
             echo "Deployment to Server completed!"
 
