@@ -30,9 +30,10 @@
 
     <section class="bpa-panel" aria-labelledby="bpa-list-title">
         <div class="bpa-panel__head">
-            <div><span class="bpa-kicker">Story workspace</span><h2 id="bpa-list-title">{{ request('status') ? ucfirst(request('status')).' posts' : 'All posts' }}</h2><p>{{ number_format($posts->total()) }} {{ \Illuminate\Support\Str::plural('story', $posts->total()) }} match the current filters.</p></div>
-            <nav class="bpa-tabs" aria-label="Filter posts by status">
-                <a class="{{ !request('status') ? 'is-active' : '' }}" href="{{ route($prefix.'.blog.posts.index', request()->except('status', 'page')) }}">All</a>
+            <div><span class="bpa-kicker">Story workspace</span><h2 id="bpa-list-title">{{ request('mine') ? 'My posts' : (request('status') ? ucfirst(request('status')).' posts' : 'All posts') }}</h2><p>{{ number_format($posts->total()) }} {{ \Illuminate\Support\Str::plural('story', $posts->total()) }} match the current filters.</p></div>
+            <nav class="bpa-tabs" aria-label="Filter posts">
+                <a class="{{ !request('status') && !request('mine') ? 'is-active' : '' }}" href="{{ route($prefix.'.blog.posts.index', request()->except('status', 'mine', 'page')) }}">All</a>
+                @unless($isStakeholder)<a class="{{ request('mine') ? 'is-active' : '' }}" href="{{ route($prefix.'.blog.posts.index', array_merge(request()->except('mine', 'page'), ['mine' => 1])) }}">Mine</a>@endunless
                 @foreach(['draft' => 'Drafts', 'review' => 'In review', 'scheduled' => 'Scheduled', 'published' => 'Published', 'archived' => 'Archived'] as $status => $label)
                     <a class="{{ request('status') === $status ? 'is-active' : '' }}" href="{{ route($prefix.'.blog.posts.index', array_merge(request()->except('status', 'page'), ['status' => $status])) }}">{{ $label }}</a>
                 @endforeach
@@ -40,10 +41,15 @@
         </div>
 
         <form class="bpa-filters" method="GET" action="{{ route($prefix.'.blog.posts.index') }}">
+            @if(request('mine'))<input type="hidden" name="mine" value="1">@endif
             <div class="bpa-filters__field bpa-filters__search"><label for="post-search">Search title or author</label><input class="form-control" id="post-search" name="search" value="{{ request('search') }}" placeholder="Search stories…"></div>
             <div class="bpa-filters__field"><label for="post-status">Status</label><select class="form-control" id="post-status" name="status"><option value="">All statuses</option>@foreach(['draft','review','scheduled','published','archived'] as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>@endforeach</select></div>
             <div class="bpa-filters__field"><label for="post-type">Type</label><select class="form-control" id="post-type" name="type"><option value="">All types</option><option value="article" @selected(request('type') === 'article')>Article</option><option value="video" @selected(request('type') === 'video')>Video</option></select></div>
+            @if($canFilterFields)<div class="bpa-filters__field"><label for="post-field">Field</label><select class="form-control" id="post-field" name="field_id"><option value="">All fields</option>@foreach($fields as $field)<option value="{{ $field->id }}" @selected((string) request('field_id') === (string) $field->id)>{{ $field->name }}</option>@endforeach</select></div>@endif
+            @if($canFilterZones)<div class="bpa-filters__field"><label for="post-zone">Zone</label><select class="form-control" id="post-zone" name="zone_id"><option value="">All zones</option>@foreach($zones as $zone)<option value="{{ $zone->id }}" @selected((string) request('zone_id') === (string) $zone->id)>{{ $zone->name }}{{ $zone->field ? ' — '.$zone->field->name : '' }}</option>@endforeach</select></div>@endif
+            @if($canFilterChapters)<div class="bpa-filters__field"><label for="post-chapter">Chapter</label><select class="form-control" id="post-chapter" name="chapter_id"><option value="">All chapters</option>@foreach($chapters as $chapter)<option value="{{ $chapter->id }}" @selected((string) request('chapter_id') === (string) $chapter->id)>{{ $chapter->name }}{{ $chapter->zone ? ' — '.$chapter->zone->name : '' }}</option>@endforeach</select></div>@endif
             <div class="bpa-filters__field"><label for="post-category">Category</label><select class="form-control" id="post-category" name="category"><option value="">All categories</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected((string) request('category') === (string) $category->id)>{{ $category->name }}</option>@endforeach</select></div>
+            <div class="bpa-filters__field"><label for="post-tag">Tag</label><select class="form-control" id="post-tag" name="tag"><option value="">All tags</option>@foreach($tags as $tag)<option value="{{ $tag->id }}" @selected((string) request('tag') === (string) $tag->id)>{{ $tag->name }}</option>@endforeach</select></div>
             <div class="bpa-filters__field"><label for="post-date-from">From date</label><input class="form-control" id="post-date-from" type="date" name="date_from" value="{{ request('date_from') }}"></div>
             <div class="bpa-filters__field"><label for="post-date-to">To date</label><input class="form-control" id="post-date-to" type="date" name="date_to" value="{{ request('date_to') }}"></div>
             <div class="bpa-filters__actions"><button class="btn btn-primary" type="submit"><i class="fa fa-filter" aria-hidden="true"></i> Apply filters</button><a class="btn btn-outline-secondary" href="{{ route($prefix.'.blog.posts.index') }}">Reset</a></div>

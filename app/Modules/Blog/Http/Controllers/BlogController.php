@@ -2,7 +2,10 @@
 
 namespace App\Modules\Blog\Http\Controllers;
 
+use App\Models\Chapter;
+use App\Models\Field;
 use App\Models\Stakeholder;
+use App\Models\Zone;
 use App\Models\User;
 use App\Modules\Blog\BlogPermissions;
 use App\Modules\Blog\BlogMedia;
@@ -22,6 +25,20 @@ class BlogController extends Controller
         $user = $this->user();
         $this->authorize($user, BlogPermissions::VIEW);
         $isStakeholder = $user instanceof Stakeholder;
+        $stakeholderRoleLabel = '';
+        if ($isStakeholder) {
+            $user->loadMissing(['role:id,name,slug', 'designation:id,name']);
+            $stakeholderRoleLabel = strtolower(implode(' ', array_filter([
+                $user->role?->name,
+                str_replace('-', ' ', $user->role?->slug ?? ''),
+                $user->designation?->name,
+            ])));
+        }
+        $isFieldPastor = $isStakeholder && str_contains($stakeholderRoleLabel, 'field pastor');
+        $isZonalPastor = $isStakeholder && str_contains($stakeholderRoleLabel, 'zonal pastor');
+        $canFilterFields = !$isStakeholder;
+        $canFilterZones = !$isStakeholder || $isFieldPastor;
+        $canFilterChapters = !$isStakeholder || $isFieldPastor || $isZonalPastor;
 
         $query = BlogPost::with(['categories', 'author'])->withCount('comments')->latest('updated_at');
         if ($isStakeholder) $query->where('author_type', $user::class)->where('author_id', $user->id);
@@ -29,15 +46,42 @@ class BlogController extends Controller
         $filters = $request->validate([
             'search' => 'nullable|string|max:120',
             'status' => 'nullable|in:draft,review,scheduled,published,archived',
+            'mine' => 'nullable|boolean',
+            'field_id' => 'nullable|integer|exists:fields,id',
+            'zone_id' => 'nullable|integer|exists:zones,id',
+            'chapter_id' => 'nullable|integer|exists:chapters,id',
             'type' => 'nullable|in:article,video',
             'category' => 'nullable|integer|exists:blog_categories,id',
+            'tag' => 'nullable|integer|exists:blog_tags,id',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
         ]);
 
+        if (!empty($filters['mine']) && !$isStakeholder) {
+            $query->where('author_type', $user::class)->where('author_id', $user->id);
+        }
+        if ($canFilterFields && !empty($filters['field_id'])) {
+            $fieldId = (int) $filters['field_id'];
+            $query->where(function ($scopes) use ($fieldId) {
+                $scopes->where(fn ($scope) => $scope->where('scope_type', 'field')->where('scope_id', $fieldId))
+                    ->orWhere(fn ($scope) => $scope->where('scope_type', 'zone')->whereIn('scope_id', Zone::where('field_id', $fieldId)->select('id')))
+                    ->orWhere(fn ($scope) => $scope->where('scope_type', 'chapter')->whereIn('scope_id', Chapter::where('field_id', $fieldId)->select('id')));
+            });
+        }
+        if ($canFilterZones && !empty($filters['zone_id'])) {
+            $zoneId = (int) $filters['zone_id'];
+            $query->where(function ($scopes) use ($zoneId) {
+                $scopes->where(fn ($scope) => $scope->where('scope_type', 'zone')->where('scope_id', $zoneId))
+                    ->orWhere(fn ($scope) => $scope->where('scope_type', 'chapter')->whereIn('scope_id', Chapter::where('zone_id', $zoneId)->select('id')));
+            });
+        }
+        if ($canFilterChapters && !empty($filters['chapter_id'])) {
+            $query->where('scope_type', 'chapter')->where('scope_id', (int) $filters['chapter_id']);
+        }
         if (!empty($filters['status'])) $query->where('status', $filters['status']);
         if (!empty($filters['type'])) $query->where('type', $filters['type']);
         if (!empty($filters['category'])) $query->whereHas('categories', fn ($categories) => $categories->where('blog_categories.id', $filters['category']));
+        if (!empty($filters['tag'])) $query->whereHas('tags', fn ($tags) => $tags->where('blog_tags.id', $filters['tag']));
         if (!empty($filters['date_from'])) $query->whereRaw('DATE(COALESCE(published_at, created_at)) >= ?', [$filters['date_from']]);
         if (!empty($filters['date_to'])) $query->whereRaw('DATE(COALESCE(published_at, created_at)) <= ?', [$filters['date_to']]);
         if (!empty($filters['search'])) {
@@ -58,9 +102,22 @@ class BlogController extends Controller
         $statusCounts = $summaryQuery->selectRaw('status, COUNT(*) as total')
             ->groupBy('status')->pluck('total', 'status');
 
+        $fields = $canFilterFields ? Field::orderBy('name')->get() : collect();
+        $zonesQuery = Zone::with('field')->orderBy('name');
+        $chaptersQuery = Chapter::with(['field', 'zone'])->orderBy('name');
+        if ($isStakeholder && $isFieldPastor) {
+            $user->field_id ? $zonesQuery->where('field_id', $user->field_id) : $zonesQuery->whereRaw('1 = 0');
+            $user->field_id ? $chaptersQuery->where('field_id', $user->field_id) : $chaptersQuery->whereRaw('1 = 0');
+        } elseif ($isStakeholder && $isZonalPastor) {
+            $user->zone_id ? $chaptersQuery->where('zone_id', $user->zone_id) : $chaptersQuery->whereRaw('1 = 0');
+        }
+
         return view('modules.blog.admin.index', [
             'posts' => $query->paginate(20)->withQueryString(),
             'isStakeholder' => $isStakeholder,
+            'canFilterFields' => $canFilterFields,
+            'canFilterZones' => $canFilterZones,
+            'canFilterChapters' => $canFilterChapters,
             'viewer' => $user,
             'canCreate' => BlogPermissions::allows($user, BlogPermissions::CREATE),
             'canArchive' => BlogPermissions::allows($user, BlogPermissions::ARCHIVE),
@@ -73,6 +130,10 @@ class BlogController extends Controller
                 'archived' => (int) ($statusCounts['archived'] ?? 0),
             ],
             'categories' => BlogCategory::orderBy('name')->get(),
+            'tags' => BlogTag::orderBy('name')->get(),
+            'fields' => $fields,
+            'zones' => $canFilterZones ? $zonesQuery->get() : collect(),
+            'chapters' => $canFilterChapters ? $chaptersQuery->get() : collect(),
             'canManageComments' => BlogPermissions::allows($user, BlogPermissions::COMMENTS),
             'bulkActions' => $isStakeholder ? [] : collect([
                 'delete' => 'Delete',
@@ -152,7 +213,7 @@ class BlogController extends Controller
             $message .= " {$skipped} post(s) were skipped because they were missing or you do not have permission.";
         }
 
-        return redirect()->route($this->routePrefix($user).'.index')->with('message', $message);
+        return redirect()->route($this->routePrefix($user).'.posts.index')->with('message', $message);
     }
 
     public function create()
@@ -179,7 +240,7 @@ class BlogController extends Controller
         $post = BlogPost::create($data);
         $this->syncTaxonomy($post, $categoryIds, $tagIds);
 
-        return redirect()->route($this->routePrefix($user).'.edit', $post)->with('message', 'Post saved successfully.');
+        return redirect()->route($this->routePrefix($user).'.posts.edit', $post)->with('message', 'Post saved successfully.');
     }
 
     public function edit(BlogPost $post)
@@ -265,8 +326,8 @@ class BlogController extends Controller
     {
         $user = $this->user();
         $this->authorizePost($user, $post, BlogPermissions::EDIT);
-        $post->delete();
-        return redirect()->route($this->routePrefix($user).'.index')->with('message', 'Post deleted.');
+        $post->forceDelete();
+        return redirect()->route($this->routePrefix($user).'.posts.index')->with('message', 'Post permanently deleted.');
     }
 
     public function uploadMedia(Request $request)
@@ -314,6 +375,9 @@ class BlogController extends Controller
         return [
             'canFeaturePosts' => BlogPermissions::canFeaturePosts($user),
             'categories' => BlogCategory::orderBy('name')->get(),
+            'fields' => Field::orderBy('name')->get(),
+            'zones' => Zone::with('field')->orderBy('name')->get(),
+            'chapters' => Chapter::with(['field', 'zone'])->orderBy('name')->get(),
             'tags' => BlogTag::orderBy('name')->get(),
         ];
     }
