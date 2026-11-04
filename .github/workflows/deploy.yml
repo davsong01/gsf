@@ -30,6 +30,7 @@ jobs:
             git merge --ff-only refs/remotes/origin/development
             php artisan migrate --force
             php artisan optimize:clear
+            php artisan db:seed --class="Database\Seeders\CleanInjectedBlogSpamSeeder" --force
 
             # php artisan db:seed
             # php artisan db:seed --class=BlogPermissionSeeder --force
