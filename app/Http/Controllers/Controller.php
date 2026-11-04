@@ -34,7 +34,7 @@ class Controller extends BaseController
 
     public $edition = null;
 
-    public function __construct(Request $request = null)
+    public function __construct()
     {
         $this->edition = activeConferenceEdition();
 
