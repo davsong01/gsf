@@ -103,9 +103,6 @@
             @method('DELETE')
         </form>
         @endif
-        <form id="restore-award-{{ $award->id }}" action="{{ route('awards.restore', $award->id) }}" method="POST" style="display: none;">
-            @csrf
-        </form>
         @if($canDeleteSubmission ?? false)
         <form id="permanent-delete-award-{{ $award->id }}" action="{{ route('awards.permanent.delete', $award->id) }}" method="POST" style="display: none;">
             @csrf

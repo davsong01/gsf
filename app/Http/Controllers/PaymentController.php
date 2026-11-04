@@ -73,6 +73,7 @@ class PaymentController extends Controller
 			$request['amount'] = $plan->price * ($request->no_of_participants ?? $request->participants);
 		}
 
+		$request['payment_provider_id'] = $setting->payment_provider_id;
 
 		$request['plan'] = $plan;
 
@@ -101,7 +102,44 @@ class PaymentController extends Controller
 		// $transaction->update(['transid' => strtoupper($setting->ministry->code) . '-' . PaymentService::generateTransactionId()]); //No need to generate new transid here since it's already generated during initialization. This was causing issues with requerying the transaction after payment verification.
 		$paymentProvider = $transaction->paymentprovider;
 
-		return view('frontend.conference.template' . $setting->template_id . '.checkout', compact('transaction', 'paymentProvider', 'setting'));
+		return view('frontend.site.conferences.checkout', compact('transaction', 'paymentProvider', 'setting'));
+	}
+
+	public function retryCheckout(Request $request, Transaction $transaction)
+	{
+		$transaction->load(['edition.ministry', 'conferenceplan', 'allocationFields']);
+
+		if ($transaction->status === 'Complete') {
+			return redirect('/payment/verify/' . rawurlencode($transaction->transid));
+		}
+
+		$setting = $transaction->edition;
+		$plan = $transaction->conferenceplan;
+		abort_unless($setting && $plan, 404);
+
+		$registrationFields = $transaction->allocationFields->pluck('value', 'key')->toArray();
+		$retryData = array_merge($registrationFields, [
+			'setting' => $setting,
+			'plan' => $plan,
+			'name' => $transaction->name,
+			'email' => $transaction->email,
+			'phone' => $transaction->phone,
+			'gender' => $transaction->gender,
+			'remarks' => $transaction->remarks,
+			'amount' => $transaction->amount_paid,
+			'payment_provider_id' => $setting->payment_provider_id ?: $transaction->payment_provider_id,
+			'location' => 'Online',
+		]);
+
+		$newTransaction = PaymentService::initializeTransaction($retryData);
+		if (empty($newTransaction['status'])) {
+			return redirect()->route('show.checkout', $transaction->id)
+				->with('error', $newTransaction['message'] ?? 'A new payment attempt could not be created.')
+				->with('payment_failed', true);
+		}
+
+		return redirect()->route('show.checkout', $newTransaction['data']->id)
+			->with('message', 'A fresh payment attempt is ready. Review the total and continue to payment.');
 	}
 
 	// public function handleGatewayCallback(Request $request, $admin = "", $transfer_confirm = "", $onsite_confirm = "")
@@ -109,18 +147,31 @@ class PaymentController extends Controller
 	{
 		$admin = $request->admin;
 
-		$setting = $request['setting'] ?? activeConferenceEdition();
-		$extraData = [
-			'conference_year' => Carbon::parse($setting->start_date)->year,
-		];
-
 		$transaction = Transaction::with(['user', 'paymentprovider', 'edition','conferenceplan', 'allocationFields'])
 			->where('transid', $reference)
 			->first();
 
 		if (!$transaction) {
+			\Log::warning('Payment callback received for an unknown transaction.', [
+				'transaction_reference' => $reference,
+			]);
 			return response()->json(['error' => 'Transaction not found'], 404);
 		}
+
+		$setting = $transaction->edition ?? $request['setting'] ?? activeConferenceEdition();
+		$extraData = [
+			'conference_year' => $setting && $setting->start_date
+				? Carbon::parse($setting->start_date)->year
+				: Carbon::now()->year,
+		];
+
+		\Log::info('Payment callback received for a conference transaction.', [
+			'transaction_id' => $transaction->id,
+			'transaction_reference' => $transaction->transid,
+			'payment_provider_id' => $transaction->payment_provider_id,
+			'payment_provider' => $transaction->paymentprovider->slug ?? null,
+			'transaction_status' => $transaction->status,
+		]);
 
 		// Already completed
 		if ($transaction->status === 'Complete') {
@@ -129,7 +180,19 @@ class PaymentController extends Controller
 				: $transaction;
 		}
 
-		$verify = $this->verify($transaction);
+		try {
+			$verify = $this->verify($transaction);
+		} catch (\Throwable $e) {
+			\Log::error('Payment gateway verification threw an exception.', [
+				'transaction_id' => $transaction->id,
+				'transaction_reference' => $transaction->transid,
+				'payment_provider_id' => $transaction->payment_provider_id,
+				'exception_class' => get_class($e),
+				'exception_message' => $e->getMessage(),
+			]);
+
+			$verify = ['status' => false, 'message' => null, 'provider_reference' => null];
+		}
 
 		$transaction->update([
 			'api_response' => $verify['message'] ?? null,
@@ -138,12 +201,28 @@ class PaymentController extends Controller
 
 		// Stop early if verification failed and no manual confirmation
 		if (!$verify['status'] && empty($transfer_confirm) && empty($onsite_confirm)) {
+			\Log::warning('Payment verification failed; conference registration remains pending.', [
+				'transaction_id' => $transaction->id,
+				'transaction_reference' => $transaction->transid,
+				'payment_provider_id' => $transaction->payment_provider_id,
+				'expected_total_amount' => $transaction->total_amount,
+			]);
 			if ($admin !== 'admin') {
-				return back()->with('error', 'Transaction failed! We have not received any payment.');
+				$providerMessage = $verify['verification_message'] ?? null;
+				return redirect()->route('show.checkout', $transaction->id)
+					->with('error', 'We could not verify this payment with the provider. Your registration is still pending.' . ($providerMessage ? ' Provider response: ' . $providerMessage : ''))
+					->with('payment_failed', true);
 			}
 			return $transaction;
 		}
 
+		\Log::info('Payment gateway verification accepted for conference transaction.', [
+			'transaction_id' => $transaction->id,
+			'transaction_reference' => $transaction->transid,
+			'payment_provider_id' => $transaction->payment_provider_id,
+		]);
+
+		try {
 		// If donation
 		if ($transaction->purpose == 'donation') {
 			$this->processDonation($transaction, $setting, $admin);
@@ -198,6 +277,13 @@ class PaymentController extends Controller
 			]);
 		}
 
+		\Log::info('Conference registration completed after payment verification.', [
+			'transaction_id' => $transaction->id,
+			'transaction_reference' => $transaction->transid,
+			'payment_provider_id' => $transaction->payment_provider_id,
+			'user_id' => $user->id ?? null,
+		]);
+
 		// Send emails
 		$transaction->user = $user;
         $transaction->verification_response = $verify['message'] ?? null;
@@ -212,6 +298,18 @@ class PaymentController extends Controller
 		return $admin !== 'admin'
 			? $this->thankYouPage($transaction, $extraData)
 			: $transaction;
+		} catch (\Throwable $e) {
+			\Log::critical('Payment was verified, but conference callback processing failed before returning a result.', [
+				'transaction_id' => $transaction->id,
+				'transaction_reference' => $transaction->transid,
+				'payment_provider_id' => $transaction->payment_provider_id,
+				'transaction_status' => $transaction->fresh()->status,
+				'exception_class' => get_class($e),
+				'exception_message' => $e->getMessage(),
+			]);
+
+			throw $e;
+		}
 	}
 
 	/**
@@ -241,7 +339,7 @@ class PaymentController extends Controller
 		$transaction->fresh();
 
 		if(!empty($transaction->edition)){
-            return view('frontend.conference.template'. $transaction->edition->template_id.'.thankyou', compact('transaction', 'extraData'));
+            return view('frontend.site.conferences.thankyou', compact('transaction', 'extraData'));
 		}else{
 			return view('frontend.conference.thankyou', compact('data', 'extraData'));
 		}

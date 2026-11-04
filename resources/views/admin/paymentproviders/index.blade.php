@@ -58,7 +58,7 @@
                                                 </td>
 
                                                 <td>
-                                                    ₦{{ number_format($provider->provider_charge ?? 0, 2) }}
+                                                    {{ number_format($provider->provider_charge ?? 0, 2) }}%
                                                 </td>
 
                                                 <td>

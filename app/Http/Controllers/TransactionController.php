@@ -14,6 +14,7 @@ use App\Models\Zone;
 use App\Services\ExcelService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
+use PDF;
 
 class TransactionController extends Controller
 {
@@ -102,6 +103,138 @@ class TransactionController extends Controller
 
         return view('conference_management.admin.editions.transactions', compact('transactions', 'edition', 'count', 'chapters', 'zones', 'fields'));
 	}
+
+    public function showSingleTransaction($editionId, $transactionId)
+    {
+        $edition = ConferenceEdition::findOrFail($editionId);
+        $transaction = Transaction::with([
+            'user',
+            'paymentprovider',
+            'conferenceplan',
+            'allocationFields',
+            'resolvedBy',
+        ])
+            ->where('conference_edition_id', $edition->id)
+            ->findOrFail($transactionId);
+
+        $isOnlinePayment = strtolower($transaction->location ?? 'online') !== 'on site'
+            && $transaction->paymentprovider
+            && in_array($transaction->paymentprovider->slug, ['paystack', 'monnify'], true);
+
+        return view('conference_management.admin.editions.transaction-show', compact(
+            'edition',
+            'transaction',
+            'isOnlinePayment'
+        ));
+    }
+
+    public function downloadReceipt($editionId, $transactionId)
+    {
+        $edition = ConferenceEdition::findOrFail($editionId);
+        $transaction = Transaction::with(['conferenceplan', 'paymentprovider', 'allocationFields'])
+            ->where('conference_edition_id', $edition->id)
+            ->findOrFail($transactionId);
+
+        $chapterField = $transaction->allocationFields->first(function ($field) {
+            return in_array(strtolower($field->key), ['chapter', 'chapter_id'], true);
+        });
+        $chapter = $chapterField && is_numeric($chapterField->value)
+            ? Chapter::with(['zone', 'field'])->find($chapterField->value)
+            : null;
+
+        $pdf = PDF::loadView('conference_management.admin.editions.transaction-receipt', compact(
+            'edition',
+            'transaction',
+            'chapter'
+        ))->setPaper('a4', 'portrait');
+
+        $filename = 'GSF-transaction-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $transaction->transid) . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    public function requeryProvider(Request $request, $editionId, $transactionId)
+    {
+        abort_unless(auth()->user() && auth()->user()->conference_role === 'superadmin', 403);
+
+        $edition = ConferenceEdition::findOrFail($editionId);
+        $transaction = Transaction::with('paymentprovider')
+            ->where('conference_edition_id', $edition->id)
+            ->findOrFail($transactionId);
+
+        if (strtolower($transaction->location ?? 'online') === 'on site' || !$transaction->paymentprovider) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Provider requery is only available for online payments.'], 422);
+            }
+            return back()->with('error', 'Provider requery is only available for online payments.');
+        }
+
+        if (!in_array($transaction->paymentprovider->slug, ['paystack', 'monnify'], true)) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'This payment provider does not support transaction requery.'], 422);
+            }
+            return back()->with('error', 'This payment provider does not support transaction requery.');
+        }
+
+        $verification = app(PaymentController::class)->verify($transaction) ?? [];
+        $verified = (bool) ($verification['status'] ?? false);
+        $querySuccess = (bool) ($verification['query_success'] ?? false);
+        $providerResponse = $verification['message'] ?? null;
+        $storedResponse = $providerResponse === null
+            ? ['message' => $verification['verification_message'] ?? 'Provider returned no response.']
+            : json_decode(json_encode($providerResponse), true);
+
+        $transaction->update([
+            'api_response' => $storedResponse,
+            'provider_reference' => $verification['provider_reference'] ?? $transaction->provider_reference,
+        ]);
+
+        \Log::info('Administrator requeried a conference payment provider.', [
+            'transaction_id' => $transaction->id,
+            'transaction_reference' => $transaction->transid,
+            'payment_provider_id' => $transaction->payment_provider_id,
+            'provider_query_success' => $querySuccess,
+            'transaction_verified' => $verified,
+            'expected_total_amount' => $transaction->total_amount,
+        ]);
+
+        $feedback = $querySuccess
+            ? ($verified
+                ? 'Provider query succeeded and confirms the payment details.'
+                : 'Provider query succeeded, but the returned transaction does not verify as a completed payment.')
+            : 'Provider query failed: ' . ($verification['verification_message'] ?? 'No successful response was received.');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => $querySuccess,
+                'query_success' => $querySuccess,
+                'transaction_verified' => $verified,
+                'message' => $feedback,
+                'provider_response' => $storedResponse,
+            ], $querySuccess ? 200 : 502);
+        }
+
+        return back()->with($querySuccess ? 'message' : 'error', $feedback);
+    }
+
+    public function resolveSingleTransaction(Request $request, $editionId, $transactionId)
+    {
+        abort_unless(auth()->user() && auth()->user()->conference_role === 'superadmin', 403);
+
+        $edition = ConferenceEdition::findOrFail($editionId);
+        $transaction = Transaction::where('conference_edition_id', $edition->id)->findOrFail($transactionId);
+
+        if ($transaction->status === 'Complete') {
+            return back()->with('message', 'This transaction is already complete.');
+        }
+
+        $this->resolveTransaction($transaction, false);
+        $transaction->refresh();
+
+        return $transaction->status === 'Complete'
+            ? back()->with('message', 'Transaction resolved and registration completed successfully.')
+            : back()->with('error', 'The provider did not confirm payment. The transaction remains pending.');
+    }
 
     public function show(Request $request, $id){
 

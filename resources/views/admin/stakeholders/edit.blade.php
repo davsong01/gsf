@@ -293,7 +293,14 @@
                                             <label for="password">
                                                 {{ isset($stakeholder) ? 'Change Password' : 'Password (Default: 12345@GSF0101)' }}
                                             </label>
-                                            <input type="password" class="form-control" id="password" name="password" autocomplete="new-password">
+                                            <div class="input-group">
+                                                <input type="password" class="form-control" id="password" name="password" autocomplete="new-password">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" type="button" id="toggle-stakeholder-password" aria-label="Show password" aria-pressed="false">
+                                                        <i class="fa fa-eye" aria-hidden="true"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
 
                                         </fieldset>
                                     </div>
@@ -322,6 +329,18 @@
 @section('extra_scripts')
 <script>
 $(document).ready(function () {
+    const passwordInput = document.getElementById('password');
+    const passwordToggle = document.getElementById('toggle-stakeholder-password');
+    passwordToggle?.addEventListener('click', function () {
+        const showing = passwordInput.type === 'password';
+        passwordInput.type = showing ? 'text' : 'password';
+        passwordToggle.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
+        passwordToggle.setAttribute('aria-pressed', String(showing));
+        passwordToggle.innerHTML = showing
+            ? '<i class="fa fa-eye-slash" aria-hidden="true"></i>'
+            : '<i class="fa fa-eye" aria-hidden="true"></i>';
+    });
+
     const domain = window.location.hostname;
 
     const $name        = $('#name');

@@ -136,7 +136,6 @@ Route::controller(ChapterController::class)->group(function () {
 Route::post('ajax-create-temp-details', [ConferenceManagementController::class, 'ajaxPayment']);
 Route::get('ajax/zones-by-fields', [ZoneController::class, 'getZonesByFields']);
 
-Auth::routes();
 Auth::routes(['verify' => false, 'register' => false] );
 
 Route::get('/clear', function () {
@@ -177,6 +176,8 @@ Route::get('/preview-email/{id}', function ($id) {
 });
 
 Route::get('/conference', [ConferenceController::class, 'index']);
+Route::get('/conferences', [ConferenceController::class, 'archive'])->name('conferences.index');
+Route::get('/conferences/{slug}', [ConferenceController::class, 'show'])->name('conferences.show');
 
 Route::prefix('award')->as('award.')->group(function () {
     Route::get('first-class', [AwardController::class, 'firstClassSubmission'])->name('first-class-entry-submission');
@@ -185,8 +186,29 @@ Route::prefix('award')->as('award.')->group(function () {
     Route::post('submit-award', [AwardController::class, 'submitAwardEntry'])->name('submit');
 });
 
+Route::get('/education-excellence-awards/etf', [AwardController::class, 'publicEducationTrustFundBeneficiaries'])
+    ->name('public.awards.etf');
+Route::get('/education-excellence-awards/go', [AwardController::class, 'publicGoExcellenceBeneficiaries'])
+    ->name('public.awards.go');
+Route::get('/education-excellence-awards/{type}/{year}/applicants', [AwardController::class, 'publicBeneficiaryYearApplicants'])
+    ->whereIn('type', ['etf', 'go'])
+    ->whereNumber('year')
+    ->name('public.awards.year-applicants');
+
 Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index')->name('home.index');
+    Route::get('/about/foundational-concept', [HomeController::class, 'foundationalConcept'])->name('about.foundational-concept');
+    Route::get('/about/mission-strategies', [HomeController::class, 'missionStrategies'])->name('about.mission-strategies');
+    Route::get('/about/contact', [HomeController::class, 'contact'])->name('about.contact');
+    Route::post('/about/contact', [HomeController::class, 'submitContact'])->middleware('throttle:5,1')->name('about.contact.submit');
+    Route::get('/privacy', [HomeController::class, 'privacy'])->name('site.privacy');
+    Route::get('/terms', [HomeController::class, 'terms'])->name('site.terms');
+    Route::get('/leaders/our-leaders', [HomeController::class, 'ourFathers'])->name('leaders.fathers');
+    Route::redirect('/leaders/our-fathers', '/leaders/our-leaders', 301);
+    Route::get('/documents/{document}', [HomeController::class, 'siteDocument'])
+        ->whereIn('document', ['constitution', 'code-of-conduct'])
+        ->name('site.documents.show');
+    Route::get('/directory', [HomeController::class, 'directory'])->name('directory.index');
     //Campus auto complete
     Route::get('/autocomplete-search', 'campusAutocomplete')->name('campus.suggestions');
     Route::get('/alumni-autocomplete-search', 'alumniAutoComplete')->name('alumni.suggestions');
@@ -240,6 +262,9 @@ Route::get('/nec/registration/portal/pay', [ConferenceController::class, 'necReg
 
 Route::post('checkout', [PaymentController::class, 'checkout'])->name('checkout');
 Route::get('checkout/{transaction}', [PaymentController::class, 'showCheckout'])->name('show.checkout');
+Route::get('checkout/{transaction}/retry', [PaymentController::class, 'retryCheckout'])
+    ->middleware('signed')
+    ->name('checkout.retry');
 
 Route::post('/pay', [PaymentController::class, 'redirectToGateway'])->name('pay');
 Route::get('/payment/verify/{reference}', [PaymentController::class, 'handleGatewayCallback']);
@@ -251,6 +276,7 @@ Route::get('/payment/donation-callback', [DonationController::class, 'handleDona
 Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('/account', [AccountController::class, 'index'])->name('account');
     Route::get('/home', [AccountController::class, 'index'])->name('home');
+    Route::get('/profile', [AccountController::class, 'profile'])->name('member.profile');
     Route::resource('stakeholderpersonnel', StakeholderController::class);
     Route::post('stakeholderpersonnel/bulk-action', [StakeholderController::class, 'bulkAction'])->name('stakeholderpersonnel.bulk-action');
     Route::post('stakeholderpersonnel/{stakeholderpersonnel}/resend-credentials', [StakeholderController::class, 'resendCredentials'])->name('stakeholderpersonnel.resend-credentials');
@@ -293,12 +319,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('award-enties-download/{award}', 'download')->name('awards.download');
         Route::delete('delete/{award}', 'destroy')->name('awards.delete');
         Route::post('archive-award/{award}', 'archive')->name('awards.archive');
-        Route::post('restore-award/{id}', 'restore')->name('awards.restore');
         Route::delete('permanent-delete/{id}', 'permanentDelete')->name('awards.permanent.delete');
         Route::post('award-shortlist', 'shortlist')->name('awards.shortlist');
         Route::post('bulkarchive', 'bulkArchive')->name('awards.bulk-archive');
         Route::post('bulkdelete', 'bulkDelete')->name('awards.bulk-delete');
-        Route::post('bulkrestore', 'bulkRestore')->name('awards.bulk-restore');
         Route::post('bulkpermanantdelete', 'bulkPermanentDelete')->name('awards.bulk-permanent-delete');
         Route::post('bulkapprove', 'bulkApprove')->name('awards.bulk-approve');
         Route::post('bulkreject', 'bulkReject')->name('awards.bulk-reject');
@@ -344,6 +368,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('nec', NecController::class);
     Route::get('award-settings', [AwardController::class, 'awardSettings'])->name('award.settings');
     Route::post('award-settings', [AwardController::class, 'updateAwardSettings'])->name('award.settings.update');
+    Route::get('general-settings', [SettingController::class, 'editGeneralSettings'])
+        ->name('general-settings.edit');
+    Route::patch('general-settings', [SettingController::class, 'updateGeneralSettings'])
+        ->name('general-settings.update');
 
 
     Route::get('archived-nec', [NecController::class, 'archivedNec'])->name('archive.nec.index');
@@ -402,6 +430,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::post('fetch-transaction', [PaymentController::class, 'paystackGetCustomerIdByEmail'])->name('admin.transactions.fetch');
 
     Route::controller(TransactionController::class)->group(function () {
+        Route::get('conference-transactions/{edition}/{transaction}', 'showSingleTransaction')->name('conference.transactions.show');
+        Route::get('conference-transactions/{edition}/{transaction}/receipt', 'downloadReceipt')->name('conference.transactions.receipt');
+        Route::post('conference-transactions/{edition}/{transaction}/requery-provider', 'requeryProvider')->name('conference.transactions.requery-provider');
+        Route::post('conference-transactions/{edition}/{transaction}/resolve', 'resolveSingleTransaction')->name('conference.transactions.resolve');
         Route::get('conference-transactions/{edition?}', 'transactions')->name('conference.transactions');
         // Route::get('conference-transaction-delete/{id}/{edition}', 'destroyTransaction')->name('conference.transaction.delete');
         Route::any('transaction-bulk-action/{edition}', 'bulkAction')->name('conference.transactions.bulkAction');
@@ -782,6 +814,9 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
     });
 });
 
+// Reusable blog module routes.
+require base_path('app/Modules/Blog/routes.php');
+
 
 //Get signature Image
 Route::get('/protected-files/{file}', fn ($file) =>
@@ -791,3 +826,20 @@ Route::get('/protected-files/{file}', fn ($file) =>
 Route::get('/admin-protected-files/{file}', fn ($file) =>
     app(FileUploadService::class)->serveProtectedFile($file)
 )->middleware('auth')->name('admin.protected.download');
+
+// Keep old blog links working after the public newsroom moved to /news.
+Route::redirect('/blog', '/news', 301)->name('blog.legacy.index');
+Route::get('/blog/{slug}', fn (string $slug) => redirect()->route('blog.show', $slug, 301))
+    ->where('slug', '[^/]+')->name('blog.legacy.show');
+
+// Preserve original WordPress article URLs after import.
+Route::get('/{legacyPath}', function (string $legacyPath) {
+    $fromPath = '/'.trim($legacyPath, '/');
+    $redirect = \Illuminate\Support\Facades\DB::table('blog_redirects')
+        ->where('from_path', $fromPath)
+        ->first();
+
+    abort_unless($redirect, 404);
+
+    return redirect($redirect->to_path, (int) $redirect->status_code);
+})->where('legacyPath', '.*')->name('legacy.blog.redirect');

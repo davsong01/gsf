@@ -30,10 +30,8 @@
                 {{-- Publicity sec menu --}}
                 @include('includes.subadminmenu')
             @else
-                @if(isset($edition) && $edition->status == 'active')
-                    @if(!$isAdmin)
-                        @include('includes.membermenu')
-                    @endif
+                @if(!$isAdmin)
+                    @include('includes.membermenu')
                 @endif
             @endif
         </ul>

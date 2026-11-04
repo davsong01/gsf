@@ -183,5 +183,7 @@
     <script src="{{ asset('conference_templates/template3/js/vendors.js')}}"></script>
     <script src="{{ asset('conference_templates/template3/js/designesia.js')}}"></script>
     @yield('script')
+    @include('frontend.site.partials.legacy-legal-links')
+    @include('frontend.site.partials.privacy-notice')
 </body>
 </html>

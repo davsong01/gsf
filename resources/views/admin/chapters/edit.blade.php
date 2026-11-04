@@ -97,6 +97,17 @@
                                         </fieldset>
 
                                         <fieldset class="form-group">
+                                            <label for="state">State</label>
+                                            <select class="form-control @error('state') is-invalid @enderror" id="state" name="state" required>
+                                                <option value="">Select state</option>
+                                                @foreach(array_keys(config('gsf_states')) as $state)
+                                                    <option value="{{ $state }}" @selected(old('state', $chapter->state ?? '') === $state)>{{ $state }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('state')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        </fieldset>
+
+                                        <fieldset class="form-group">
                                             <label for="email">Email (Optional)</label>
                                             <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $chapter->email ?? '') }}" placeholder="Enter email">
                                         </fieldset>

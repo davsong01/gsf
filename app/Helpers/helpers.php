@@ -77,6 +77,20 @@ if (!function_exists('rootPermissions')) {
     {
         $menus = [
             [
+                'id' => 200,
+                'slug' => 'blog.index',
+                'name' => 'Posts',
+                'icon' => 'fa fa-newspaper-o',
+                'children' => [
+                    ['id' => 201, 'slug' => 'admin.blog.posts.index', 'name' => 'All Posts'],
+                    ['id' => 202, 'slug' => 'admin.blog.posts.create', 'name' => 'New Post'],
+                    ['id' => 203, 'slug' => 'admin.blog.categories.index', 'name' => 'Categories'],
+                    ['id' => 206, 'slug' => 'blog.tags', 'name' => 'Tags', 'route' => 'admin.blog.tags.index'],
+                    ['id' => 204, 'slug' => 'blog.comments', 'name' => 'Comments', 'route' => 'admin.blog.comments.index'],
+                    ['id' => 205, 'slug' => 'blog.settings', 'name' => 'Settings', 'route' => 'admin.blog.settings.index'],
+                ],
+            ],
+            [
                 'id' => 30,
                 'slug' => 'conference.management',
                 'name' => 'Conference Mgt',
@@ -136,26 +150,36 @@ if (!function_exists('rootPermissions')) {
                     [
                         'id' => 2,
                         'slug' => 'awards.etf',
-                        'name' => 'Award Entries',
+                        'name' => 'Education Awards',
                         'icon' => 'fa fa-trophy',
                         'children' => [
                             [
                                 'id' => 21,
                                 'slug' => 'award.etf',
-                                'name' => 'ETF Entries'
+                                'name' => 'Education Trust Fund (ETF)',
+                                'icon' => 'fa fa-book'
                             ],
                             [
                                 'id' => 22,
                                 'slug' => 'award.go',
-                                'name' => 'GO Award Entries'
+                                'name' => 'GO’s Excellence Beneficiary Award',
+                                'icon' => 'fa fa-star'
                             ],
-                             [
-                                'id' => 22,
+                        ]
+                    ],
+                    [
+                        'id' => 28,
+                        'slug' => 'award-operations',
+                        'name' => 'Award Operations',
+                        'icon' => 'fa fa-trophy',
+                        'children' => [
+                            [
+                                'id' => 29,
                                 'slug' => 'shortlist.index',
                                 'name' => 'Award Shortlist Stages'
                             ],
                             [
-                                'id' => 23,
+                                'id' => 30,
                                 'slug' => 'award.settings',
                                 'name' => 'Award Settings'
                             ]
@@ -338,6 +362,7 @@ if (!function_exists('rootPermissions')) {
             'award.go' => 2,
             'shortlist.index' => 3,
             'award.settings' => 4,
+            'award-operations' => 3,
             'stakeholderappraisals.index' => 3,
             'report-structure' => 4,
             'stakeholderreportsection.index' => 1,
@@ -410,6 +435,10 @@ if (!function_exists('flattenPermissionTree')) {
 if (!function_exists('menuNodeVisible')) {
     function menuNodeVisible(array $menu, array $userPermissions): bool
     {
+        if (auth()->check() && (int) auth()->user()->role === 1) {
+            return true;
+        }
+
         if (in_array($menu['slug'] ?? '', $userPermissions, true)) {
             return true;
         }
@@ -430,7 +459,7 @@ if (!function_exists('menuNodeActive')) {
         $currentRoute = request()->route()?->getName();
         $slug = $menu['slug'] ?? null;
 
-        if ($slug && $currentRoute && Str::is($slug, $currentRoute)) {
+        if ($currentRoute && (($menu['route'] ?? null) === $currentRoute || ($slug && Str::is($slug, $currentRoute)))) {
             return true;
         }
 
@@ -570,6 +599,97 @@ if (!function_exists('rootActionPermissions')) {
                 'name' => 'Adjust Approval Status',
                 'parent_slug' => 'awards.etf',
                 'description' => 'Can manually change chapter, zone, field, or national approval status on award submissions.'
+            ],
+            [
+                'id' => 1101,
+                'slug' => 'blog.view',
+                'name' => 'View Blog Workspace',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can access the blog workspace and view posts.'
+            ],
+            [
+                'id' => 1102,
+                'slug' => 'blog.create',
+                'name' => 'Create Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can create articles and video posts.'
+            ],
+            [
+                'id' => 1103,
+                'slug' => 'blog.manage-own',
+                'name' => 'Manage Own Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can edit and submit posts they authored.'
+            ],
+            [
+                'id' => 1104,
+                'slug' => 'blog.edit',
+                'name' => 'Edit Any Blog Post',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can edit posts authored by other users.'
+            ],
+            [
+                'id' => 1105,
+                'slug' => 'blog.review',
+                'name' => 'Review Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can move submitted posts into review.'
+            ],
+            [
+                'id' => 1106,
+                'slug' => 'blog.publish',
+                'name' => 'Publish Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can publish or schedule blog posts.'
+            ],
+            [
+                'id' => 1107,
+                'slug' => 'blog.archive',
+                'name' => 'Archive Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can archive published or outdated posts.'
+            ],
+            [
+                'id' => 1108,
+                'slug' => 'blog.categories',
+                'name' => 'Manage Blog Categories',
+                'parent_slug' => 'admin.blog.categories.index',
+                'description' => 'Can create and delete blog categories.'
+            ],
+            [
+                'id' => 1109,
+                'slug' => 'blog.comments',
+                'name' => 'Moderate Blog Comments',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can moderate comments on blog posts.'
+            ],
+            [
+                'id' => 1110,
+                'slug' => 'make_post_featured',
+                'name' => 'Feature Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can choose which published posts appear as featured stories on the public news page.'
+            ],
+            [
+                'id' => 1111,
+                'slug' => 'blog.settings',
+                'name' => 'Manage Blog Settings',
+                'parent_slug' => 'blog.index',
+                'description' => 'Can access and update blog module settings.'
+            ],
+            [
+                'id' => 1112,
+                'slug' => 'blog.comments.clear-all',
+                'name' => 'Clear All Blog Comments',
+                'parent_slug' => 'blog.comments',
+                'description' => 'Can permanently delete every blog comment.'
+            ],
+            [
+                'id' => 1113,
+                'slug' => 'blog.tags',
+                'name' => 'Manage Blog Tags',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can create and remove blog tags.'
             ],
         ]);
     }
@@ -1337,7 +1457,7 @@ if (!function_exists("menu")) {
     function menu(){
         $menu = [
             [
-                'route' => 'home.index',
+                'route' => 'directory.index',
                 'name' => 'Directory'
             ],
             [

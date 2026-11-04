@@ -13,6 +13,7 @@ use App\Models\Hostel;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\EmailService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -131,6 +132,18 @@ class Controller extends BaseController
             'message' => $message
         ]);
     }
+
+    /**
+     * Queue an email using the application's shared email service.
+     *
+     * Several controllers use the historical $this->logEmail() API, while
+     * the implementation now lives in EmailService.
+     */
+    protected function logEmail(array $data)
+    {
+        return EmailService::logEmail($data);
+    }
+
     protected function createNewFood(User $user)
     {
         $collection = Food::where('level', $user->level == 'Moderator' ? 'Participant' : $user->level)

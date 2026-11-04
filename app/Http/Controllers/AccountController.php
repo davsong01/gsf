@@ -12,6 +12,7 @@ use App\Models\Chapter;
 use App\Models\Setting;
 use App\Models\Donation;
 use App\Models\Material;
+use App\Models\StakeholderDesignation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
@@ -47,17 +48,33 @@ class AccountController extends Controller
 			return view('admin.index', compact('users', 'alumnis', 'chapters', 'fields', 'zones'));
 		}else{
 			$user = auth()->user();
-			$chapters = Chapter::all();
-			$portfolios = getCommunityPortfolios();
-			$sessions = range(date('1982'), date('Y'));
-
-			$president = $user->campus->stakeholder ?? null;
-			$president = $user->campus?->chapterPresident;
-
 			$edition = activeConferenceEdition();
+			$transactions = $user->transactions()
+				->with(['edition', 'conferenceplan'])
+				->get();
 
-			return view('admin.users.profile', compact('chapters', 'user', 'president', 'portfolios', 'sessions','edition'));
+			return view('admin.users.dashboard', compact('user', 'edition', 'transactions'));
 		}
 
+	}
+
+	public function profile()
+	{
+		$user = auth()->user();
+		abort_if($user->isAdmin(), 404);
+
+		$chapters = Chapter::orderBy('name')->get();
+		$portfolios = getCommunityPortfolios();
+	$sessions = range((int) date('Y'), 1982);
+		$president = $user->campus?->chapterPresident;
+		$edition = activeConferenceEdition();
+		$campusDesignations = StakeholderDesignation::query()
+			->where('type', 'chapter_executive')
+			->orderBy('order')
+			->get(['id', 'name']);
+
+		return view('admin.users.profile', compact(
+			'chapters', 'user', 'president', 'portfolios', 'sessions', 'edition', 'campusDesignations'
+		));
 	}
 }

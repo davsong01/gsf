@@ -55,17 +55,19 @@
                         <span class="menu-title" data-i18n="User">Monthly Reports</span>
                     </a>
                 </li>
-                <li class="nav-item {{ $currentRoute === 'award.go' ? 'active' : '' }}">
-                    <a href="{{ route('stakeholders.award.go') }}">
-                        <i class="bx bxs-crown" aria-hidden="true"></i>
-                        <span class="menu-title" data-i18n="User">First Class Award Entries</span>
+                <li class="nav-item has-sub {{ Str::startsWith($currentRoute, 'stakeholders.award.') ? 'open is_shown' : '' }}">
+                    <a href="#">
+                        <i class="fa fa-graduation-cap" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Education Awards</span>
                     </a>
-                </li>
-                <li class="nav-item {{ $currentRoute === 'award.go' ? 'active' : '' }}">
-                    <a href="{{ route('stakeholders.award.etf') }}">
-                        <i class="bx bxs-trophy" aria-hidden="true"></i>
-                        <span class="menu-title" data-i18n="User">ETF Award Entries</span>
-                    </a>
+                    <ul class="menu-content">
+                        <li class="{{ $currentRoute === 'stakeholders.award.etf' ? 'active' : '' }}">
+                            <a href="{{ route('stakeholders.award.etf') }}"><i class="fa fa-book" aria-hidden="true"></i><span class="menu-item">Education Trust Fund (ETF)</span></a>
+                        </li>
+                        <li class="{{ $currentRoute === 'stakeholders.award.go' ? 'active' : '' }}">
+                            <a href="{{ route('stakeholders.award.go') }}"><i class="fa fa-star" aria-hidden="true"></i><span class="menu-item">GO’s Excellence Beneficiary Award</span></a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item disabled">
                     <a href="">
@@ -117,6 +119,15 @@
                     <a href="{{ route('stakeholders.chapters.edit', $user->chapter_id) }}">
                         <i class="fa fa-thumb-tack" aria-hidden="true"></i>
                         <span class="menu-title" data-i18n="User">Chapter Details</span>
+                    </a>
+                </li>
+            @endif
+
+            @if($user->hasPermission('blog.view') || $user->hasPermission('blog.create') || $user->hasPermission('blog.manage-own'))
+                <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.blog') ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.blog.posts.index') }}">
+                        <i class="fa fa-newspaper-o" aria-hidden="true"></i>
+                        <span class="menu-title" data-i18n="User">Posts</span>
                     </a>
                 </li>
             @endif

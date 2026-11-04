@@ -1,106 +1,50 @@
-@extends('frontend.spaces.layouts.app')
-@section('title', 'Stakeholder Login')
-@section('ogtitle', 'Stakeholder Login')
-@section('ogdescription')
+@extends('frontend.site.layout')
 
+@section('title', 'Stakeholder sign in — GOFAMINT Students’ Fellowship')
+@section('description', 'Secure stakeholder access to GSF administration, appraisals and reports.')
+@section('mainClass', 'public-page auth-page stakeholder-auth-page')
+@section('activeSection', 'auth')
 @section('content')
-<section class="section section-header bg-primary overlay-primary text-white pb-2" style="margin-top:-50px">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-8 text-center">
-                <h1 class="display-2 mb-4">Login</h1>
+<section class="auth-stage">
+    <div class="site-container auth-stage__container">
+        <div class="auth-card">
+            <aside class="auth-card__story auth-card__story--stakeholder">
+                <span class="auth-card__mark"><img src="{{ asset('frontend/img/logo.png') }}" alt="GSF"></span>
+                <div class="eyebrow eyebrow--light"><span></span> National Secretariat</div>
+                <h1>Lead with care.<br><em>Serve with purpose.</em></h1>
+                <p>Access the GSF stakeholder workspace for leadership tools, appraisals, reports and member services.</p>
+                <div class="auth-security-note"><span aria-hidden="true">◈</span><span><strong>Secure access</strong><small>For authorised GSF stakeholders</small></span></div>
+            </aside>
+            <div class="auth-card__form-wrap">
+                <div class="auth-form-heading"><span>Stakeholder portal</span><h2>Sign in to continue</h2><p>Use the email address and password connected to your stakeholder account.</p></div>
+                @if(session('message'))<div class="auth-feedback auth-feedback--success" role="status">{{ session('message') }}</div>@endif
+                @if(session('error'))<div class="auth-feedback auth-feedback--error" role="alert">{{ session('error') }}</div>@endif
+                @if($errors->any())<div class="auth-feedback auth-feedback--error" role="alert">{{ $errors->first() }}</div>@endif
+                <form class="auth-form" action="{{ route('stakeholders.login') }}" method="POST">
+                    @csrf
+                    <div class="auth-field"><label for="email">Email address</label><input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="username" placeholder="name@example.com" required autofocus></div>
+                    <div class="auth-field"><label for="stakeholder-password">Password</label><div class="auth-password"><input id="stakeholder-password" type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required><button type="button" data-password-toggle="stakeholder-password" aria-label="Show password">Show</button></div></div>
+                    <div class="auth-form__options auth-form__options--end"><a href="{{ route('stakeholders.forgot-password') }}">Forgot password?</a></div>
+                    <button class="button button--blue auth-submit" type="submit">Stakeholder sign in <span aria-hidden="true">→</span></button>
+                </form>
+                <p class="auth-form__footnote">Looking for the member portal? <a href="{{ route('login') }}">Member sign in</a>.</p>
             </div>
         </div>
+        <a class="auth-back-link" href="{{ route('home.index') }}">← Back to the GSF homepage</a>
     </div>
 </section>
+@endsection
 
-<section class="min-vh-80 d-flex align-items-center" style="margin-top:20px">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 text-center mb-5">
-                <h5 style="color:red">ADMINISTRATOR ACCESS ONLY</h5>
-                <p style="color:blue">LOGIN AS AN ADMINISTRATOR</p>
-                <div class="divider-text text-uppercase text-muted"><small></small></div>
-            </div>
-
-            @if(session('error'))
-                <div class="col-12 col-md-8 mb-3">
-                    <div class="alert alert-warning text-center mb-0">
-                        {{ session('error') }}
-                    </div>
-                </div>
-            @endif
-
-            <div class="col-12 d-flex align-items-center justify-content-center" style="margin-bottom:20px">
-                <div class="signin-inner mt-3 mt-lg-0 bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-500">
-
-                    @include('includes.alerts')
-
-                    <form action="{{ route('stakeholders.login') }}" method="POST">
-                        @csrf
-
-                        {{-- Email --}}
-                        <div class="form-group mb-3">
-                            <label for="email">Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text" style="border-radius: .45rem 0 0 .45rem !important; border-right: 0px !important;"><i class="fas fa-envelope"></i></span>
-                                <input type="text" class="form-control @error('email') is-invalid @enderror"
-                                    id="email" name="email" placeholder="Enter email" value="{{ old('email') }}" required>
-                            </div>
-                            @error('email')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        {{-- Password --}}
-                        <div class="form-group mb-3">
-                            <label for="password">Password</label>
-                            <div class="input-group" id="show_hide_password">
-                                <span class="input-group-text" style="border-radius: .45rem 0 0 .45rem !important; border-right: 0px !important;"><i class="fas fa-unlock-alt"></i></span>
-                                <input type="password" class="form-control @error('password') is-invalid @enderror"
-                                    id="password" name="password" placeholder="Password" required>
-                                <span class="input-group-text toggle-password" style="cursor:pointer; border-radius: 0 .45rem .45rem 0 !important; border-left: 0px !important;">
-                                    <i class="fas fa-eye"></i>
-                                </span>
-                            </div>
-                            @error('password')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        {{-- Forgot Password --}}
-                        <div class="d-flex justify-content-start mb-4">
-                            <div>
-                                <a href="{{ route('stakeholders.forgot-password') }}" class="small text-right">
-                                    Forgot Password?
-                                </a>
-                            </div>
-                        </div>
-
-                        {{-- Submit --}}
-                        <button type="submit" class="btn btn-block btn-primary">Sign in</button>
-                    </form>
-
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{{-- jQuery Show/Hide Password --}}
+@push('scripts')
 <script>
-$(document).ready(function(){
-    $('.toggle-password').click(function(){
-        let input = $(this).closest('#show_hide_password').find('input');
-        let icon = $(this).find('i');
-        if(input.attr('type') === 'password'){
-            input.attr('type', 'text');
-            icon.removeClass('fa-eye').addClass('fa-eye-slash');
-        } else {
-            input.attr('type', 'password');
-            icon.removeClass('fa-eye-slash').addClass('fa-eye');
-        }
+document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const input = document.getElementById(button.dataset.passwordToggle);
+        const showing = input.type === 'password';
+        input.type = showing ? 'text' : 'password';
+        button.textContent = showing ? 'Hide' : 'Show';
+        button.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
     });
 });
 </script>
-@endsection
+@endpush

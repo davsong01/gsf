@@ -30,17 +30,6 @@
                                         </fieldset>
                                     </div>
                                     <div class="col-sm-6 col-md-6">
-                                        <label for="template_id">Template to Use</label>
-                                        <fieldset class="form-group position-relative has-icon-left">
-                                            <select class="form-control" name="template_id" id="template_id" required>
-                                                <option value="">Select...</option>
-                                                <option value="1" {{ $edition->template_id == '1' ?'selected':'' }}>Template 1</option>
-                                                <option value="2"  {{ $edition->template_id == '2' ?'selected':'' }}>Template 2</option>
-                                                <option value="3"  {{ $edition->template_id == '3' ?'selected':'' }}>Aivent</option>
-                                            </select>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-sm-6 col-md-6">
                                         <label for="conference_theme">Conference theme</label>
                                         <fieldset class="form-group ">
                                             <input type="text" class="form-control" name="conference_theme" value="{{ old('conference_theme') ?? $edition->conference_theme }}" id="conference_theme">
@@ -90,6 +79,16 @@
                                         <label for="close_registration">Registration Close date</label>
                                         <fieldset class="form-group">
                                             <input type="date" class="form-control" name="close_registration" value="{{ old('close_registration') ?? $edition->close_registration }}" id="close_registration">
+                                        </fieldset>
+                                    </div>
+                                    <div class="col-sm-6 col-md-6">
+                                        <label for="registration_tickers_enabled">Registration tickers</label>
+                                        <fieldset class="form-group">
+                                            <select class="form-control" name="registration_tickers_enabled" id="registration_tickers_enabled" required>
+                                                <option value="1" {{ old('registration_tickers_enabled', $edition->registration_tickers_enabled ?? true) ? 'selected' : '' }}>Enabled</option>
+                                                <option value="0" {{ !old('registration_tickers_enabled', $edition->registration_tickers_enabled ?? true) ? 'selected' : '' }}>Disabled</option>
+                                            </select>
+                                            <small class="text-muted">Show brief registration confirmations from completed registrants on this conference page.</small>
                                         </fieldset>
                                     </div>
 
@@ -250,6 +249,16 @@
                                             </select>
                                         </fieldset>
                                     </div>
+                                    <div class="col-sm-6 col-md-6">
+                                        <label for="lock_online_payment">Online Payment</label>
+                                        <fieldset class="form-group">
+                                            <select class="form-control" name="lock_online_payment" id="lock_online_payment" required>
+                                                <option value="no" {{ old('lock_online_payment', $edition->lock_online_payment) == 'no' ? 'selected' : '' }}>Online payment enabled</option>
+                                                <option value="yes" {{ old('lock_online_payment', $edition->lock_online_payment) == 'yes' ? 'selected' : '' }}>Onsite payment only</option>
+                                            </select>
+                                            <small class="text-muted">Onsite payment only keeps people out of online checkout and asks them to pay at the venue.</small>
+                                        </fieldset>
+                                    </div>
 
                                     <input type="hidden" name="id" value="{{ $edition->id }}">
                                 </div>
@@ -289,7 +298,7 @@
                                                 </div>
                                             @empty
                                                 <div class="col-12">
-                                                    <p class="text-muted">No active FAQs available.</p>
+                                                    <p class="text-muted">No active speakers available.</p>
                                                 </div>
                                             @endforelse
                                         </div>

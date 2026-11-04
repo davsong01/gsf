@@ -13,10 +13,19 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="/">Community</a></li>
-                <li><a href="{{ route('people.campuses') }}">Campuses</a></li>
-                <li><a href="{{ route('people.alumni') }}">Alumni</a></li>
-                <li><a href="{{ route('people.students') }}">Members</a></li>
+                <li><a href="{{ route('home.index') }}">Home</a></li>
+                <li class="dropdown">
+                    <a href="{{ route('directory.index') }}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        Directory <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ route('directory.index') }}">Directory Home</a></li>
+                        <li><a href="{{ route('people.campuses') }}">Campuses</a></li>
+                        <li><a href="{{ route('people.alumni') }}">Alumni</a></li>
+                        <li><a href="{{ route('people.students') }}">Members</a></li>
+                        <li><a href="{{ route('campus.tracker') }}">Campus Tracker</a></li>
+                    </ul>
+                </li>
                 <li><a href="{{ route('people.programs') }}">Programs</a></li>
                 @guest
                 <li class="button-navbar"><a href="{{ route('login') }}"><i class="fa fa-user"></i> Login</a></li> 
@@ -29,4 +38,4 @@
         </div><!--/.nav-collapse -->
     </div><!--/.container-fluid -->
 </nav>
-       
+

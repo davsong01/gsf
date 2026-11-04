@@ -81,16 +81,18 @@
                                         </fieldset>
 
                                         <fieldset class="form-group">
-                                            <label for="provider_charge">Provider Charge (optional)</label>
+                                            <label for="provider_charge">Provider Charge (%)</label>
                                             <input 
                                                 type="number" 
                                                 step="0.01" 
                                                 min="0" 
+                                                max="99.99"
                                                 class="form-control" 
                                                 id="provider_charge" 
                                                 name="provider_charge"
                                                 value="{{ old('provider_charge', $paymentprovider->provider_charge ?? '') }}" 
-                                                placeholder="e.g. 50.00">
+                                                placeholder="e.g. 1.50">
+                                            <small class="form-text text-muted">Percentage of the transaction amount charged by the provider. When customers pay this charge, the checkout total is grossed up so the registration fee remains covered.</small>
                                             @error('provider_charge') <small class="text-danger">{{ $message }}</small> @enderror
                                         </fieldset>
                                         <fieldset class="form-group">

@@ -48,6 +48,7 @@
 
     <!-- BEGIN: Footer-->
     @include('includes.footer')
+    @stack('scripts')
     <script>
         $(document).on('shown.bs.modal', '.modal', function () {
             $(this).find('.select2-chapter').each(function () {

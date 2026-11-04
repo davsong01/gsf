@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -67,10 +68,15 @@ class ChapterController extends Controller
 
     public function campusUpdate()
     {
-        $chapters = Chapter::where('id','<>',86)->get();
+        $chapters = Chapter::with(['field', 'zone'])
+            ->withCount(['users as members_count' => function ($query) {
+                $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
+            }])
+            ->where('id', '<>', 86)
+            ->orderBy('name')
+            ->get();
 
-        return view('frontend.' . frontendTemplate() . '.campusUpdate', compact('chapters'));
-        // return view('frontend.conference.campusUpdate', compact('chapters'));
+        return view('frontend.site.directory.tracker', compact('chapters'));
     }
 
     public function generateNewToken($id){
@@ -170,6 +176,7 @@ class ChapterController extends Controller
             'facebook' => 'nullable|url',
             'twitter' => 'nullable|url',
             'zone_id' => 'required',
+            'state' => ['required', Rule::in(array_keys(config('gsf_states')))],
         ]);
         $field = Zone::whereId($data['zone_id'])->value('field_id');
 
@@ -183,6 +190,7 @@ class ChapterController extends Controller
             'token' => substr(number_format(time() * rand(),0,'',''),0,6),
             'zone_id' => $data['zone_id'],
             'field_id' => $field,
+            'state' => $data['state'],
         ]);
 
         $this->createStakeholder($chapter, $request->email);
@@ -211,6 +219,9 @@ class ChapterController extends Controller
      */
     public function update(Request $request, Chapter $chapter)
     {
+        $request->validate([
+            'state' => ['sometimes', 'nullable', Rule::in(array_keys(config('gsf_states')))],
+        ]);
 
         if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){
             if(!auth()->user()->isAdmin()){

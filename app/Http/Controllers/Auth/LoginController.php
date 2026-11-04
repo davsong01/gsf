@@ -4,9 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Models\GeneralSetting;
-use Illuminate\Support\Carbon;
-use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -22,29 +19,13 @@ class LoginController extends Controller
      * @var string
      */
     protected $redirectTo = '/account';
-    protected $conference;
-    private $frontend;
-
-
-
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct(Request $request)
+    public function __construct()
     {
-        // $this->conference = ConferenceEdition::whereHas('ministry', function ($query) {
-        //     $query->where('code', env('MINISTRY'));
-        // })->latest()->first();
-
-        $this->conference = ConferenceEdition::whereHas('ministry', function ($query) {
-            $query->where('code', env('MINISTRY'));
-        })
-        ->whereDate('end_date', '>=', now())
-        ->latest()
-        ->first();
-
         $this->middleware('guest')->except('logout');
     }
 
@@ -55,19 +36,7 @@ class LoginController extends Controller
 
     public function showLoginForm()
     {
-      if ($this->conference) {
-        $setting = $this->conference;
-        $conference_year = Carbon::parse($setting->start_date)->year;
-        // dd(Hash::make('12345678'));
-
-        return view('frontend.conference.template' . $this->conference->template_id . '.login')
-          ->with('setting', $this->conference);
-      } else {
-        return view('frontend.' . frontendTemplate() . '.login');
-
-        // return view('auth.login');
-      }
-
+        return view('auth.login');
     }
 
     public function login(Request $request)

@@ -29,7 +29,7 @@
                                         </select>
                                     </fieldset>
                                 </div>
-                                <div class="col-sm-6 col-md-6">
+                                {{-- <div class="col-sm-6 col-md-6">
                                     <label for="template_id">Template to Use</label>
                                     <fieldset class="form-group position-relative has-icon-left">
                                         <select class="form-control" name="template_id" id="template_id" required>
@@ -40,7 +40,7 @@
 
                                         </select>
                                     </fieldset>
-                                </div>
+                                </div> --}}
                                 <div class="col-sm-6 col-md-6">
                                     <label for="conference_theme">Conference theme</label>
                                     <fieldset class="form-group  ">
@@ -89,6 +89,16 @@
                                     <fieldset class="form-group">
                                         <input type="date" class="form-control" name="close_registration" value="{{ old('close_registration') }}" id="close_registration" required>
 
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <label for="registration_tickers_enabled">Registration tickers</label>
+                                    <fieldset class="form-group">
+                                        <select class="form-control" name="registration_tickers_enabled" id="registration_tickers_enabled" required>
+                                            <option value="1" {{ old('registration_tickers_enabled', '1') == '1' ? 'selected' : '' }}>Enabled</option>
+                                            <option value="0" {{ old('registration_tickers_enabled', '1') == '0' ? 'selected' : '' }}>Disabled</option>
+                                        </select>
+                                        <small class="text-muted">Show brief registration confirmations from completed registrants on this conference page.</small>
                                     </fieldset>
                                 </div>
                                 <div class="col-sm-6 col-md-6">

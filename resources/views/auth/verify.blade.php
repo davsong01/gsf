@@ -1,75 +1,30 @@
-@extends('layouts.app')
-@section('title', 'Verify Email')
-<!-- BEGIN: Body-->
+@extends('frontend.site.layout')
+
+@section('title', 'Verify your email — GOFAMINT Students’ Fellowship')
+@section('description', 'Verify the email address connected to your GSF account.')
+@section('mainClass', 'public-page auth-page')
+@section('activeSection', 'auth')
 @section('content')
-<div class="app-content content">
-    <div class="content-overlay"></div>
-    <div class="content-wrapper">
-        <div class="content-header row">
+<section class="auth-stage auth-stage--compact">
+    <div class="site-container auth-stage__container">
+        <div class="auth-card auth-card--compact">
+            <aside class="auth-card__story">
+                <span class="auth-card__mark"><img src="{{ asset('frontend/img/logo.png') }}" alt="GSF"></span>
+                <div class="eyebrow eyebrow--light"><span></span> One connected fellowship</div>
+                <h1>One last step<br><em>to stay connected.</em></h1>
+                <p>Confirming your email helps keep your GSF account secure and your member details up to date.</p>
+            </aside>
+            <div class="auth-card__form-wrap auth-verification-card">
+                <div class="auth-verification-icon" aria-hidden="true">✉</div>
+                <div class="auth-form-heading"><span>Email verification</span><h2>Check your inbox</h2><p>Before continuing, open the verification link we sent to your email.</p></div>
+                @if(session('resent'))<div class="auth-feedback auth-feedback--success" role="status">A fresh verification link has been sent to your email address.</div>@endif
+                <form method="POST" action="{{ route('verification.resend') }}">
+                    @csrf
+                    <button class="button button--blue auth-submit" type="submit">Send a new verification link <span aria-hidden="true">→</span></button>
+                </form>
+            </div>
         </div>
-        <div class="content-body">
-            <!-- register section starts -->
-            <section class="row flexbox-container">
-                <div class="col-xl-8 col-10">
-                    <div class="card bg-authentication mb-0">
-                        <div class="row m-0">
-                            <!-- register section left -->
-                            <div class="col-md-12 col-12 px-0">
-                                <div class="card disable-rounded-right mb-0 p-2 h-100 d-flex justify-content-center">
-                                    <div class="card-header pb-1">
-                                        <div class="card-title">
-                                            <div style="text-align: center;"><img style="width: 50%;"
-                                                    src="{{ asset('app-assets/images/logo/logo.png') }}">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-center">
-                                        <p> <small>
-                                                {{ __('Before proceeding, please check your email for a verification link.') }}
-                                                {{ __('If you did not receive the email') }},
-                                                <a
-                                                    href="{{ route('verification.resend') }}">{{ __('click here to request another') }}</a>.</small>
-                                        </p>
-                                        @if(session('resent'))
-                                        <div class="alert alert-success" role="alert">
-                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                            <strong>A New verification link has been sent to your email address. </strong>
-                                        </div>
-                                        @endif
-                                        
-                                    </div>
-
-                                </div>
-                            </div>
-                            
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <!-- register section endss -->
-        </div>
+        <a class="auth-back-link" href="{{ route('home.index') }}">← Back to the GSF homepage</a>
     </div>
-</div>
+</section>
 @endsection
-<!-- END: Body-->
-{{-- <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Verify Your Email Address') }}</div>
-
-<div class="card-body">
-    @if(session('resent'))
-        <div class="alert alert-success" role="alert">
-            {{ __('A fresh verification link has been sent to your email address.') }}
-        </div>
-    @endif
-
-    {{ __('Before proceeding, please check your email for a verification link.') }}
-    {{ __('If you did not receive the email') }}, <a
-        href="{{ route('verification.resend') }}">{{ __('click here to request another') }}</a>.
-</div>
-</div>
-</div>
-</div>
-</div> --}}
