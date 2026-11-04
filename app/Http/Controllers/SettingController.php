@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GeneralSetting;
 use App\Models\User;
+use App\Services\FileUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +38,8 @@ class SettingController extends Controller
 
         if ($request->hasFile('site_logo')) {
             $replacedFiles[] = $settings->site_logo;
-            $settings->site_logo = $request->file('site_logo')->store('site-images', 'public');
+            $settings->site_logo = app(FileUploadService::class)
+                ->storePublicImage($request->file('site_logo'), 'site-images');
         }
 
         $documents = [

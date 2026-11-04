@@ -62,6 +62,14 @@ class FileUploadService
     }
 
     /**
+     * Store an image on Laravel's public disk and return its relative path.
+     */
+    public function storePublicImage(UploadedFile $image, string $folder): string
+    {
+        return $image->store(trim($folder, '/'), 'public');
+    }
+
+    /**
      * Generate a unique filename with timestamp and random string.
      */
     protected function generateFilename(UploadedFile $file): string
