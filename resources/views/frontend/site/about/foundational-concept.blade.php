@@ -57,7 +57,7 @@
             </article>
 
             <article class="foundation-r foundation-r--image" aria-label="Students growing through worship and fellowship">
-                <img src="{{ asset('main/images/bg3.jpg') }}" alt="A gathering of people in worship">
+                <img src="{{ asset('site/images/community/gsf-choir.jpg') }}" alt="GSF choir members singing together at a national gathering" width="2048" height="1365" loading="lazy" decoding="async">
                 <div><span>Spiritually alive</span><strong>Grounded for campus. Prepared for life.</strong></div>
             </article>
 
@@ -95,7 +95,7 @@
 <section class="foundation-practice">
     <div class="site-container foundation-practice__grid">
         <div class="foundation-practice__visual">
-            <img src="{{ asset('frontend/img/sliders/slider2.jpg') }}" alt="A student taking notes during a learning session">
+            <img src="{{ asset('site/images/community/gsf-praise.jpg') }}" alt="GSF members celebrating together in praise" width="2048" height="1463" loading="lazy" decoding="async">
             <span>Faith that engages the whole student</span>
         </div>
         <div class="foundation-practice__copy">

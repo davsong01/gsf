@@ -1,7 +1,7 @@
 @extends('frontend.site.layout')
 
 @php
-    $conferenceImage = $edition->banner ?: $edition->conference_logo ?: 'main/images/events/img-lg1.jpg';
+    $conferenceImage = $edition->banner ?: $edition->conference_logo ?: 'site/images/community/gsf-choir.jpg';
     $conferenceImageUrl = filter_var($conferenceImage, FILTER_VALIDATE_URL) ? $conferenceImage : asset($conferenceImage);
     $speakerMap = $speakers->keyBy('id');
     $dateLabel = $edition->start_date ? formatDates($edition->start_date, $edition->end_date) : 'A GSF gathering';

@@ -46,7 +46,7 @@
 
                 <div class="hero__visual" aria-label="GSF fellowship community">
                     <div class="hero__image-wrap">
-                        <img src="{{ asset('frontend/img/sliders/slider1.png') }}" alt="Students worshipping together at a GSF gathering">
+                        <img src="{{ asset('site/images/community/gsf-gathering.jpg') }}" alt="GSF members worshipping together at a national gathering" width="2048" height="1367" fetchpriority="high" decoding="async">
                         <div class="hero__image-shade"></div>
                         <div class="hero__image-caption"><span>Our community</span><strong>Faith comes alive in fellowship.</strong></div>
                     </div>
@@ -72,7 +72,7 @@
                 </div>
                 <div class="hero__visual" aria-label="A worship gathering">
                     <div class="hero__image-wrap hero__image-wrap--landscape">
-                        <img src="{{ asset('main/images/bg3.jpg') }}" alt="People gathered in worship">
+                        <img src="{{ asset('site/images/community/gsf-worship.jpg') }}" alt="A participant worshipping with raised hands at a GSF gathering" width="2048" height="1367" decoding="async">
                         <div class="hero__image-shade"></div>
                         <div class="hero__image-caption"><span>Spiritual formation</span><strong>Gathered around worship and the Word.</strong></div>
                     </div>
@@ -96,9 +96,9 @@
                     </div>
                     <div class="hero__proof"><div class="hero__proof-mark" aria-hidden="true">02</div><p><strong>Prepared for influence.</strong><br>Leading through service and example.</p></div>
                 </div>
-                <div class="hero__visual" aria-label="Leadership and learning">
+                <div class="hero__visual" aria-label="GSF leadership and fellowship">
                     <div class="hero__image-wrap hero__image-wrap--learning">
-                        <img src="{{ asset('frontend/img/sliders/slider2.jpg') }}" alt="A participant taking notes during a leadership gathering">
+                        <img src="{{ asset('site/images/community/gsf-leadership-fellowship.jpg') }}" alt="Leaders and participants sharing a moment of fellowship at a GSF gathering" width="2048" height="1367" decoding="async">
                         <div class="hero__image-shade"></div>
                         <div class="hero__image-caption"><span>Leadership formation</span><strong>Purpose becomes practical through service.</strong></div>
                     </div>
@@ -128,8 +128,8 @@
 <section class="impact-strip" aria-label="GSF reach">
     <div class="site-container impact-strip__grid">
         <div class="impact-strip__intro"><span>Our national community</span><strong>Present, connected and growing across campuses.</strong></div>
-        <div class="impact-stat"><strong>{{ number_format($impact['campuses']) }}</strong><span>Campus fellowships</span></div>
-        <div class="impact-stat"><strong>{{ number_format($impact['fields']) }}</strong><span>Ministry fields</span></div>
+        <div class="impact-stat"><strong>{{ number_format($impact['campuses']) }}+</strong><span>Campus fellowships</span></div>
+        <div class="impact-stat"><strong>{{ number_format($impact['fields']) }}+</strong><span>Ministry fields</span></div>
         <div class="impact-stat"><strong>{{ number_format($impact['leaders']) }}</strong><span>Active leaders</span></div>
     </div>
 </section>
@@ -160,7 +160,7 @@
     <div class="site-container about-grid">
         <div class="about-visual">
             <div class="about-visual__primary">
-                <img src="{{ asset('frontend/img/sliders/slider2.jpg') }}" alt="A participant taking notes during a gathering">
+                <img src="{{ asset('site/images/community/gsf-community.jpg') }}" alt="GSF members singing and celebrating together" width="2048" height="1365" loading="lazy" decoding="async">
             </div>
             <div class="about-visual__note">
                 <span class="about-visual__symbol" aria-hidden="true">“</span>
@@ -293,7 +293,7 @@
                 <div class="panel-label"><span>Latest</span><strong>From our community</strong></div>
                 @forelse($latestPosts as $post)
                     <article class="news-card">
-                        <div class="news-card__meta"><span>{{ optional($post->published_at)->format('d M Y') }}</span><span>{{ $post->category?->name ?: 'GSF News' }}</span></div>
+                        <div class="news-card__meta"><span>{{ optional($post->published_at)->format('d M Y') }}</span><span>{{ $post->categories->pluck('name')->join(', ') ?: 'GSF News' }}</span></div>
                         <h3><a href="{{ route('blog.show', $post->slug) }}">{{ $post->title }}</a></h3>
                         <p>{{ $post->excerpt ?: \Illuminate\Support\Str::limit(trim(strip_tags($post->body)), 150) }}</p>
                     </article>

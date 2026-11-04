@@ -36,7 +36,7 @@
                 @foreach($chapters as $campus)
                     <article class="campus-directory-card">
                         <a class="campus-directory-card__image" href="{{ route('campus.single', $campus->id) }}" aria-label="View {{ $campus->name }}">
-                            <img src="{{ asset($campus->banner ?: 'gsfcom/images/image-office.jpg') }}" alt="" loading="lazy">
+                            <img src="{{ asset($campus->banner ?: 'site/images/community/gsf-gathering.jpg') }}" alt="" loading="lazy">
                             <span>{{ number_format($campus->members_count) }} {{ \Illuminate\Support\Str::plural('member', $campus->members_count) }}</span>
                         </a>
                         <div class="campus-directory-card__body">

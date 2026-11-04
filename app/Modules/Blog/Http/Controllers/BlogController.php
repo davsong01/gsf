@@ -159,14 +159,15 @@ class BlogController extends Controller
         $this->authorize($user, BlogPermissions::CREATE);
         $data = $this->validated($request, $user);
         $categoryIds = $data['category_ids'] ?? [];
-        unset($data['category_ids']);
+        $tagIds = $data['tag_ids'] ?? [];
+        unset($data['category_ids'], $data['tag_ids']);
         $data['author_type'] = $user::class;
         $data['author_id'] = $user->id;
         $data['status'] = $this->isStakeholder($user) ? ($request->boolean('submit_review') ? 'review' : 'draft') : ($data['status'] ?? 'draft');
         $data['published_at'] = $this->publicationDate($data);
 
         $post = BlogPost::create($data);
-        $this->syncTaxonomy($post, $request, $categoryIds);
+        $this->syncTaxonomy($post, $categoryIds, $tagIds);
 
         return redirect()->route($this->routePrefix($user).'.edit', $post)->with('message', 'Post saved successfully.');
     }
@@ -206,7 +207,8 @@ class BlogController extends Controller
         $this->authorizePost($user, $post, BlogPermissions::EDIT);
         $data = $this->validated($request, $user, $post);
         $categoryIds = $data['category_ids'] ?? [];
-        unset($data['category_ids']);
+        $tagIds = $data['tag_ids'] ?? [];
+        unset($data['category_ids'], $data['tag_ids']);
         if ($request->filled('author_key')) {
             abort_unless($user instanceof User && BlogPermissions::allows($user, BlogPermissions::EDIT), 403);
             $authors = $this->eligibleAuthors()->keyBy('key');
@@ -222,7 +224,7 @@ class BlogController extends Controller
         if ($this->isStakeholder($user)) $data['status'] = $request->boolean('submit_review') ? 'review' : ($post->status === 'published' ? 'published' : 'draft');
         $data['published_at'] = $this->publicationDate($data, $post);
         $post->update($data);
-        $this->syncTaxonomy($post, $request, $categoryIds);
+        $this->syncTaxonomy($post, $categoryIds, $tagIds);
 
         return back()->with('message', 'Post updated successfully.');
     }
@@ -343,7 +345,8 @@ class BlogController extends Controller
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:320'],
             'canonical_url' => ['nullable', 'url', 'max:2048'],
-            'tag_names' => ['nullable', 'string', 'max:1000'],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['integer', 'distinct', 'exists:blog_tags,id'],
             'allow_comments' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],
             'featured_image' => ['nullable', 'image', 'max:5120'],
@@ -361,25 +364,13 @@ class BlogController extends Controller
 
         if ($request->hasFile('featured_image')) $data['featured_image'] = BlogMedia::upload($request->file('featured_image'), 'featured_image');
 
-        // Tags are stored in blog_tags and synced after the post save.
-        unset($data['tag_names']);
-
         return $data;
     }
 
-    protected function syncTaxonomy(BlogPost $post, Request $request, array $categoryIds = []): void
+    protected function syncTaxonomy(BlogPost $post, array $categoryIds = [], array $tagIds = []): void
     {
         $post->categories()->sync($categoryIds);
-        $tagIds = collect($request->input('tag_ids', []))->filter()->map('intval');
-        $tagNames = collect(explode(',', (string) $request->input('tag_names')))
-            ->map(fn ($name) => trim($name))
-            ->filter()
-            ->unique(fn ($name) => Str::lower($name));
-        foreach ($tagNames as $tagName) {
-            $tagIds->push(BlogTag::firstOrCreate(['slug' => Str::slug($tagName)], ['name' => $tagName])->id);
-        }
-        $tagIds = $tagIds->unique()->map('intval')->all();
-        $post->tags()->sync($tagIds);
+        $post->tags()->sync(array_map('intval', $tagIds));
     }
 
     protected function publicationDate(array $data, ?BlogPost $post = null)

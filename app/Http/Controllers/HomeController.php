@@ -55,8 +55,9 @@ class HomeController extends Controller
 
         $latestPosts = Schema::hasTable('blog_posts')
             ? BlogPost::published()
-                ->with(['category', 'author'])
-                ->latest()
+                ->with(['categories', 'author'])
+                ->orderByDesc('published_at')
+                ->orderByDesc('id')
                 ->limit(3)
                 ->get()
             : collect();
@@ -67,17 +68,33 @@ class HomeController extends Controller
             portfolioStakeholders()
         )));
 
-        $leaders = Stakeholder::with(['designation', 'role'])
+        $excludeAssemblyRepresentatives = static function ($query): void {
+            $query->whereDoesntHave('role', function ($roleQuery) {
+                $roleQuery->where(function ($criteria) {
+                    $criteria->whereIn('slug', ['chapter-representative', 'assembly-representative'])
+                        ->orWhere('name', 'like', '%assembly%rep%');
+                });
+            })->whereDoesntHave('designation', function ($designationQuery) {
+                $designationQuery->where('name', 'like', '%assembly%rep%');
+            });
+        };
+
+        $leaderCardsQuery = Stakeholder::query();
+        $excludeAssemblyRepresentatives($leaderCardsQuery);
+        $leaders = $leaderCardsQuery->with(['designation', 'role'])
             ->whereIn('role_id', $leadershipRoleIds)
             ->where('status', 'active')
             ->orderByRaw('designation_id IS NULL, designation_id ASC')
             ->limit(4)
             ->get();
 
+        $leaderCountQuery = Stakeholder::query()->where('status', 'active');
+        $excludeAssemblyRepresentatives($leaderCountQuery);
+
         $impact = [
             'campuses' => Chapter::count(),
             'fields' => Field::count(),
-            'leaders' => Stakeholder::where('status', 'active')->count(),
+            'leaders' => $leaderCountQuery->count(),
         ];
 
         return view('frontend.site.home', compact(

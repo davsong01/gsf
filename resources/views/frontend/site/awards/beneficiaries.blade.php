@@ -10,7 +10,16 @@
     .public-award-page { --award-ink:#172b43; --award-muted:#6e7d90; --award-line:#e4eaf0; --award-gold:#c38d38; background:#f5f7f9; }
     .public-award-hero { position:relative; overflow:hidden; padding:72px 0 64px; color:#fff; background:radial-gradient(circle at 88% 8%,rgba(230,187,105,.2),transparent 26%),linear-gradient(120deg,#102944,#1c5368 62%,#286d6a); }
     .public-award-hero::after { position:absolute; width:360px; height:360px; right:-90px; top:-200px; border:1px solid rgba(255,255,255,.2); border-radius:50%; box-shadow:0 0 0 42px rgba(255,255,255,.035),0 0 0 86px rgba(255,255,255,.025); content:""; }
-    .public-award-hero__copy { position:relative; z-index:1; max-width:850px; }
+    .public-award-hero__grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center; gap:48px; }
+    .public-award-hero__copy { position:relative; z-index:1; min-width:0; max-width:850px; }
+    .public-award-moments { position:relative; z-index:1; min-width:0; margin:0; overflow:hidden; aspect-ratio:1.45; border:1px solid rgba(255,255,255,.22); border-radius:26px; background:#102944; box-shadow:0 22px 65px rgba(4,22,36,.3); }
+    .public-award-moments__group { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:42% center; }
+    .public-award-moments__portrait { position:absolute; right:0; top:0; width:43%; height:100%; object-fit:cover; object-position:54% 40%; -webkit-mask-image:linear-gradient(to right,transparent,#000 30%); mask-image:linear-gradient(to right,transparent,#000 30%); }
+    .public-award-moments::after { position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,rgba(16,41,68,.04) 42%,rgba(8,27,45,.85)); content:""; }
+    .public-award-moments figcaption { position:absolute; right:22px; bottom:22px; left:22px; z-index:1; color:#fff; font-size:15px; font-weight:750; line-height:1.5; }
+    .public-award-moments figcaption span { display:block; margin-bottom:5px; color:#f1ce8c; font-size:10px; font-weight:850; letter-spacing:.15em; text-transform:uppercase; }
+    @media(max-width:900px) { .public-award-hero__grid { grid-template-columns:1fr; gap:30px; } .public-award-moments { width:100%; max-width:680px; aspect-ratio:1.7; } }
+    @media(max-width:450px) { .public-award-moments { aspect-ratio:1.25; border-radius:18px; } .public-award-moments figcaption { right:16px; bottom:16px; left:16px; font-size:13px; } }
     .public-award-kicker { color:#f1ce8c; font-size:11px; font-weight:850; letter-spacing:.16em; text-transform:uppercase; }
     .public-award-hero h1 { margin:15px 0 12px; color:#fff; font-size:clamp(34px,5vw,58px); font-weight:800; letter-spacing:-.045em; line-height:1.08; }
     .public-award-hero p { max-width:690px; margin:0; color:rgba(255,255,255,.78); font-size:16px; line-height:1.75; }
@@ -79,13 +88,18 @@
 
 @section('content')
 <section class="public-award-hero">
-    <div class="site-container">
+    <div class="site-container public-award-hero__grid">
         <div class="public-award-hero__copy">
             <span class="public-award-kicker">Education Awards</span>
             <h1>{{ $title }}</h1>
             <p>Browse award applications by year and see each applicant’s campus, zone, field and approval status.</p>
             <span class="public-award-years"><i class="fa fa-calendar" aria-hidden="true"></i> {{ number_format($yearGroups->count()) }} {{ \Illuminate\Support\Str::plural('year', $yearGroups->count()) }} represented</span>
         </div>
+        <figure class="public-award-moments">
+            <img class="public-award-moments__group" src="{{ asset('site/images/awards/award-recipients.jpg') }}" alt="Award recipients standing together with medals and certificates" width="2048" height="1367" fetchpriority="high">
+            <img class="public-award-moments__portrait" src="{{ asset('site/images/awards/award-presentation.jpg') }}" alt="A recipient receiving an academic excellence award" width="1639" height="2048">
+            <figcaption><span>Education &amp; excellence</span>Celebrating dedication and achievement.</figcaption>
+        </figure>
     </div>
 </section>
 

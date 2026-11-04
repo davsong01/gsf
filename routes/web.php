@@ -203,7 +203,8 @@ Route::controller(HomeController::class)->group(function () {
     Route::post('/about/contact', [HomeController::class, 'submitContact'])->middleware('throttle:5,1')->name('about.contact.submit');
     Route::get('/privacy', [HomeController::class, 'privacy'])->name('site.privacy');
     Route::get('/terms', [HomeController::class, 'terms'])->name('site.terms');
-    Route::get('/leaders/our-fathers', [HomeController::class, 'ourFathers'])->name('leaders.fathers');
+    Route::get('/leaders/our-leaders', [HomeController::class, 'ourFathers'])->name('leaders.fathers');
+    Route::redirect('/leaders/our-fathers', '/leaders/our-leaders', 301);
     Route::get('/documents/{document}', [HomeController::class, 'siteDocument'])
         ->whereIn('document', ['constitution', 'code-of-conduct'])
         ->name('site.documents.show');

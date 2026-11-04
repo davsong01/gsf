@@ -19,7 +19,7 @@
 
 @if($activeConference)
     @php
-        $activeImage = $activeConference->banner ?: $activeConference->conference_logo ?: 'main/images/events/img-lg1.jpg';
+        $activeImage = $activeConference->banner ?: $activeConference->conference_logo ?: 'site/images/community/gsf-choir.jpg';
         $activeImageUrl = filter_var($activeImage, FILTER_VALIDATE_URL) ? $activeImage : asset($activeImage);
     @endphp
     <section class="conference-featured">
@@ -48,7 +48,7 @@
             <div class="conference-grid">
                 @foreach($editions as $edition)
                     @php
-                        $conferenceImage = $edition->banner ?: $edition->conference_logo ?: 'main/images/events/img-lg2.jpg';
+                        $conferenceImage = $edition->banner ?: $edition->conference_logo ?: 'site/images/community/gsf-praise.jpg';
                         $conferenceImageUrl = filter_var($conferenceImage, FILTER_VALIDATE_URL) ? $conferenceImage : asset($conferenceImage);
                         $isEditionUpcoming = $edition->start_date && \Carbon\Carbon::parse($edition->start_date)->isFuture();
                     @endphp
