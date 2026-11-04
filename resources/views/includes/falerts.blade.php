@@ -1,52 +1,17 @@
-@if(session()->get('message'))
-<div class="alert alert-success" role="alert" style="width: 100%;">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    {{ session()->get('message')}}
-</div>
-@endif
-
-@if(session()->get('error'))
-<div class="alert alert-warning" role="alert" style="width: 100%;">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    {{ session()->get('error')}} </strong>
-</div>
-@endif
+@include('includes.alerts')
 
 @if(session('failures'))
-    <div class="alert alert-danger">
-        {{-- <strong>{{ session('error') }}</strong> --}}
-        <ul>
+    <div class="alert alert-danger" role="alert">
+        <strong>Some rows could not be imported.</strong>
+        <ul class="mb-0 mt-2">
             @foreach(session('failures') as $failure)
                 <li>
-                    Row {{ $failure['row'] }} —
-                    <!-- Display values for email and phone (or any other columns you want) -->
-                    @if(isset($failure['data']['email']))
-                        Email: <strong>{{ $failure['data']['email'] }}</strong>
-                    @endif
-                    @if(isset($failure['data']['phone']))
-                        | Phone: <strong>{{ $failure['data']['phone'] }}</strong>
-                    @endif
-                    <br>
-                    <!-- Display the error messages -->
-                    Errors: {{ implode(', ', $failure['errors']) }}
+                    Row {{ $failure['row'] }}
+                    @if(isset($failure['data']['email'])) · Email: <strong>{{ $failure['data']['email'] }}</strong>@endif
+                    @if(isset($failure['data']['phone'])) · Phone: <strong>{{ $failure['data']['phone'] }}</strong>@endif
+                    — {{ implode(', ', $failure['errors']) }}
                 </li>
             @endforeach
         </ul>
     </div>
-@endif
-
-
-
-@if(session()->get('warning'))
-<div class="alert alert-danger" role="alert" style="width: 100%;">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    <span style="color:black">{{ session()->get('warning')}}</span>
-</div>
-@endif
-
-@if(session()->get('any'))
-<div class="alert alert-warning" role="alert">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        {{ session()->get('any')}}
-</div>
 @endif

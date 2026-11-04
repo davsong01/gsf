@@ -6,7 +6,6 @@ use App\Models\Stakeholder;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -24,7 +23,8 @@ class BlogPost extends Model
     ];
 
     public function author(): MorphTo { return $this->morphTo(); }
-    public function category(): BelongsTo { return $this->belongsTo(BlogCategory::class, 'category_id'); }
+    public function categories(): BelongsToMany { return $this->belongsToMany(BlogCategory::class, 'blog_post_category', 'post_id', 'category_id'); }
+    public function getCategoryAttribute(): ?BlogCategory { return $this->categories->first(); }
     public function tags(): BelongsToMany { return $this->belongsToMany(BlogTag::class, 'blog_post_tag', 'post_id', 'tag_id'); }
     public function related(): BelongsToMany { return $this->belongsToMany(self::class, 'blog_post_related', 'post_id', 'related_post_id'); }
     public function comments() { return $this->hasMany(BlogComment::class, 'post_id'); }
@@ -32,22 +32,23 @@ class BlogPost extends Model
     public function suggestedRelated(int $limit = 3)
     {
         $tagIds = $this->tags()->pluck('blog_tags.id');
-        if (!$this->category_id && $tagIds->isEmpty()) {
+        $categoryIds = $this->categories()->pluck('blog_categories.id');
+        if ($categoryIds->isEmpty() && $tagIds->isEmpty()) {
             return self::query()->whereRaw('1 = 0')->get();
         }
 
         return self::published()
             ->forNetwork($this->scope_type, $this->scope_id)
             ->where($this->getQualifiedKeyName(), '<>', $this->getKey())
-            ->where(function (Builder $query) use ($tagIds) {
-                if ($this->category_id) {
-                    $query->where('category_id', $this->category_id);
+            ->where(function (Builder $query) use ($tagIds, $categoryIds) {
+                if ($categoryIds->isNotEmpty()) {
+                    $query->whereHas('categories', fn (Builder $categories) => $categories->whereIn('blog_categories.id', $categoryIds));
                 }
                 if ($tagIds->isNotEmpty()) {
                     $query->orWhereHas('tags', fn (Builder $tags) => $tags->whereIn('blog_tags.id', $tagIds));
                 }
             })
-            ->with('category')
+            ->with('categories')
             ->inRandomOrder()
             ->limit($limit)
             ->get();

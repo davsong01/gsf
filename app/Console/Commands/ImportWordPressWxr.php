@@ -157,7 +157,7 @@ class ImportWordPressWxr extends Command
         $slug = trim((string) $wp->post_name) ?: Str::slug($title);
         $terms = $this->terms($item, 'category');
         $tags = $this->terms($item, 'post_tag');
-        $category = $this->primaryCategory($item, $terms);
+        $categoryIds = array_values(array_unique(array_map(fn (array $term) => $this->categoryId($term), $terms)));
         $publishedAt = $this->parseDate((string) $wp->post_date_gmt) ?? $this->parseDate((string) $wp->post_date) ?? now();
         $thumbnailId = $this->featuredAttachmentId($item);
         $thumbnailUrl = $thumbnailId ? ($this->attachmentUrls[$thumbnailId] ?? null) : null;
@@ -174,7 +174,6 @@ class ImportWordPressWxr extends Command
             $slug .= '-wp-'.$wpId;
         }
 
-        $categoryId = $category ? $this->categoryId($category) : null;
         $featuredPath = $thumbnailUrl ? ($this->downloaded[$thumbnailUrl] ?? $thumbnailUrl) : null;
         $data = [
             'type' => 'article',
@@ -186,7 +185,6 @@ class ImportWordPressWxr extends Command
             'author_type' => User::class,
             'author_id' => $authorId,
             'legacy_author_name' => null,
-            'category_id' => $categoryId,
             'status' => 'published',
             'published_at' => $publishedAt,
             'seo_title' => null,
@@ -208,6 +206,11 @@ class ImportWordPressWxr extends Command
             $data['created_at'] = now();
             $postId = (int) DB::table('blog_posts')->insertGetId($data);
             $counts['created']++;
+        }
+
+        DB::table('blog_post_category')->where('post_id', $postId)->delete();
+        foreach ($categoryIds as $categoryId) {
+            DB::table('blog_post_category')->insertOrIgnore(['post_id' => $postId, 'category_id' => $categoryId]);
         }
 
         $tagIds = [];

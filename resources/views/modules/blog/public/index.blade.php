@@ -43,7 +43,7 @@
                 @endif
                 <div class="newsroom-lead__copy">
                     <div class="newsroom-label"><span></span> Featured story</div>
-                    <div class="newsroom-meta"><span>{{ $featuredPost->category?->name ?: 'GSF News' }}</span><span>{{ optional($featuredPost->published_at)->format('d M Y') }}</span></div>
+                    <div class="newsroom-meta"><span>{{ $featuredPost->categories->pluck('name')->join(', ') ?: 'GSF News' }}</span><span>{{ optional($featuredPost->published_at)->format('d M Y') }}</span></div>
                     <h2><a href="{{ route('blog.show', $featuredPost->slug) }}">{{ $featuredPost->title }}</a></h2>
                     <p>{{ $featuredPost->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($featuredPost->body), 250) }}</p>
                     <a class="newsroom-read-link" href="{{ route('blog.show', $featuredPost->slug) }}">Read the story <span aria-hidden="true">↗</span></a>
@@ -64,7 +64,7 @@
                         <article class="newsroom-card {{ $imageUrl ? '' : 'newsroom-card--text' }}">
                             @if($imageUrl)<a class="newsroom-card__image" href="{{ route('blog.show', $post->slug) }}"><img src="{{ $imageUrl }}" alt="" loading="lazy"></a>@endif
                             <div class="newsroom-card__content">
-                                <div class="newsroom-meta"><span>{{ $post->category?->name ?: 'GSF News' }}</span><span>{{ optional($post->published_at)->format('d M Y') }}</span></div>
+                                <div class="newsroom-meta"><span>{{ $post->categories->pluck('name')->join(', ') ?: 'GSF News' }}</span><span>{{ optional($post->published_at)->format('d M Y') }}</span></div>
                                 <h3><a href="{{ route('blog.show', $post->slug) }}">{{ $post->title }}</a></h3>
                                 <p>{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body), 145) }}</p>
                                 <a class="newsroom-read-link" href="{{ route('blog.show', $post->slug) }}">Read story <span aria-hidden="true">→</span></a>
@@ -85,7 +85,7 @@
                         @php($popularImageUrl = \App\Modules\Blog\BlogMedia::url($popularPost->featured_image))
                         <a class="newsroom-popular {{ $popularImageUrl ? '' : 'newsroom-popular--text' }}" href="{{ route('blog.show', $popularPost->slug) }}">
                             <span class="newsroom-popular__copy">
-                                <span class="newsroom-popular__category">{{ $popularPost->category?->name ?: 'GSF News' }}</span>
+                                <span class="newsroom-popular__category">{{ $popularPost->categories->pluck('name')->join(', ') ?: 'GSF News' }}</span>
                                 <span class="newsroom-popular__title">{{ $popularPost->title }}</span>
                                 <span class="newsroom-popular__meta">{{ optional($popularPost->published_at)->format('d M') }} <i aria-hidden="true">·</i> {{ number_format($popularPost->view_count) }} {{ \Illuminate\Support\Str::plural('view', $popularPost->view_count) }}</span>
                             </span>

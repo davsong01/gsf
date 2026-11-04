@@ -23,7 +23,7 @@ class BlogController extends Controller
         $this->authorize($user, BlogPermissions::VIEW);
         $isStakeholder = $user instanceof Stakeholder;
 
-        $query = BlogPost::with(['category', 'author'])->withCount('comments')->latest('updated_at');
+        $query = BlogPost::with(['categories', 'author'])->withCount('comments')->latest('updated_at');
         if ($isStakeholder) $query->where('author_type', $user::class)->where('author_id', $user->id);
 
         $filters = $request->validate([
@@ -37,7 +37,7 @@ class BlogController extends Controller
 
         if (!empty($filters['status'])) $query->where('status', $filters['status']);
         if (!empty($filters['type'])) $query->where('type', $filters['type']);
-        if (!empty($filters['category'])) $query->where('category_id', $filters['category']);
+        if (!empty($filters['category'])) $query->whereHas('categories', fn ($categories) => $categories->where('blog_categories.id', $filters['category']));
         if (!empty($filters['date_from'])) $query->whereRaw('DATE(COALESCE(published_at, created_at)) >= ?', [$filters['date_from']]);
         if (!empty($filters['date_to'])) $query->whereRaw('DATE(COALESCE(published_at, created_at)) <= ?', [$filters['date_to']]);
         if (!empty($filters['search'])) {
@@ -98,11 +98,8 @@ class BlogController extends Controller
             'action' => 'required|in:delete,archive,review,change-category',
             'post_ids' => 'required|array|min:1|max:100',
             'post_ids.*' => 'required|integer|distinct',
-            'category_id' => [
-                'nullable',
-                'required_if:action,change-category',
-                Rule::in(array_merge(['uncategorized'], BlogCategory::query()->pluck('id')->map(fn ($id) => (string) $id)->all())),
-            ],
+            'category_ids' => ['required_if:action,change-category', 'array', 'min:1'],
+            'category_ids.*' => [Rule::in(array_merge(['uncategorized'], BlogCategory::query()->pluck('id')->map(fn ($id) => (string) $id)->all()))],
         ]);
 
         $posts = BlogPost::whereIn('id', $validated['post_ids'])->get();
@@ -126,11 +123,11 @@ class BlogController extends Controller
 
             match ($validated['action']) {
                 'delete' => $post->delete(),
-                'change-category' => $post->update([
-                    'category_id' => $validated['category_id'] === 'uncategorized'
-                        ? null
-                        : (int) $validated['category_id'],
-                ]),
+                'change-category' => $post->categories()->sync(
+                    in_array('uncategorized', $validated['category_ids'], true)
+                        ? []
+                        : array_map('intval', $validated['category_ids'])
+                ),
                 'archive' => $post->update(['status' => 'archived']),
                 'review' => $post->update(['status' => 'review']),
             };
@@ -161,13 +158,15 @@ class BlogController extends Controller
         $user = $this->user();
         $this->authorize($user, BlogPermissions::CREATE);
         $data = $this->validated($request, $user);
+        $categoryIds = $data['category_ids'] ?? [];
+        unset($data['category_ids']);
         $data['author_type'] = $user::class;
         $data['author_id'] = $user->id;
         $data['status'] = $this->isStakeholder($user) ? ($request->boolean('submit_review') ? 'review' : 'draft') : ($data['status'] ?? 'draft');
         $data['published_at'] = $this->publicationDate($data);
 
         $post = BlogPost::create($data);
-        $this->syncTaxonomy($post, $request);
+        $this->syncTaxonomy($post, $request, $categoryIds);
 
         return redirect()->route($this->routePrefix($user).'.edit', $post)->with('message', 'Post saved successfully.');
     }
@@ -178,7 +177,7 @@ class BlogController extends Controller
         $this->authorizePost($user, $post, BlogPermissions::EDIT);
 
         return view('modules.blog.admin.form', array_merge($this->formData($user), [
-            'post' => $post->load('author'),
+            'post' => $post->load(['author', 'categories']),
             'authors' => $user instanceof User && BlogPermissions::allows($user, BlogPermissions::EDIT)
                 ? $this->eligibleAuthors()
                 : collect(),
@@ -190,7 +189,7 @@ class BlogController extends Controller
     {
         $user = $this->user();
         $this->authorizePost($user, $post, BlogPermissions::EDIT);
-        $post->load(['category', 'tags', 'author', 'related'])
+        $post->load(['categories', 'tags', 'author', 'related'])
             ->loadCount(['comments as approved_comments_count' => fn ($query) => $query->where('status', 'approved')]);
         if ($post->author instanceof Stakeholder) {
             $post->author->loadMissing('chapter');
@@ -206,6 +205,8 @@ class BlogController extends Controller
         $user = $this->user();
         $this->authorizePost($user, $post, BlogPermissions::EDIT);
         $data = $this->validated($request, $user, $post);
+        $categoryIds = $data['category_ids'] ?? [];
+        unset($data['category_ids']);
         if ($request->filled('author_key')) {
             abort_unless($user instanceof User && BlogPermissions::allows($user, BlogPermissions::EDIT), 403);
             $authors = $this->eligibleAuthors()->keyBy('key');
@@ -221,7 +222,7 @@ class BlogController extends Controller
         if ($this->isStakeholder($user)) $data['status'] = $request->boolean('submit_review') ? 'review' : ($post->status === 'published' ? 'published' : 'draft');
         $data['published_at'] = $this->publicationDate($data, $post);
         $post->update($data);
-        $this->syncTaxonomy($post, $request);
+        $this->syncTaxonomy($post, $request, $categoryIds);
 
         return back()->with('message', 'Post updated successfully.');
     }
@@ -335,7 +336,8 @@ class BlogController extends Controller
             'excerpt' => ['nullable', 'string', 'max:1000'],
             'body' => ['required', 'string'],
             'video_url' => ['nullable', 'url', 'max:2048'],
-            'category_id' => ['nullable', 'exists:blog_categories,id'],
+            'category_ids' => ['nullable', 'array'],
+            'category_ids.*' => ['integer', 'distinct', 'exists:blog_categories,id'],
             'status' => ['nullable', 'in:draft,review,scheduled,published,archived'],
             'published_at' => ['nullable', 'date'],
             'seo_title' => ['nullable', 'string', 'max:255'],
@@ -365,8 +367,9 @@ class BlogController extends Controller
         return $data;
     }
 
-    protected function syncTaxonomy(BlogPost $post, Request $request): void
+    protected function syncTaxonomy(BlogPost $post, Request $request, array $categoryIds = []): void
     {
+        $post->categories()->sync($categoryIds);
         $tagIds = collect($request->input('tag_ids', []))->filter()->map('intval');
         $tagNames = collect(explode(',', (string) $request->input('tag_names')))
             ->map(fn ($name) => trim($name))

@@ -74,7 +74,7 @@
                     @php($canEditRow = \App\Modules\Blog\BlogPermissions::canEditPost($viewer, $post))
                     <tr>
                         @if(!$isStakeholder && !empty($bulkActions))<td class="blog-post-select"><input type="checkbox" name="post_ids[]" value="{{ $post->id }}" form="blog-bulk-action-form" data-post-checkbox aria-label="Select {{ $post->title }}"></td>@endif
-                        <td class="bpa-story"><div class="bpa-story__wrap">@if($imageUrl)<a class="bpa-story__image" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer"><img src="{{ $imageUrl }}" alt="" loading="lazy"></a>@endif<div><a class="bpa-story__title" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer">{{ $post->title }}</a><span class="bpa-story__meta">{{ $post->category?->name ?: 'Uncategorised' }}@if($post->is_featured)<span class="bpa-featured">★ Featured</span>@endif</span></div></div></td>
+                        <td class="bpa-story"><div class="bpa-story__wrap">@if($imageUrl)<a class="bpa-story__image" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer"><img src="{{ $imageUrl }}" alt="" loading="lazy"></a>@endif<div><a class="bpa-story__title" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer">{{ $post->title }}</a><span class="bpa-story__meta">{{ $post->categories->pluck('name')->join(', ') ?: 'Uncategorised' }}@if($post->is_featured)<span class="bpa-featured">★ Featured</span>@endif</span></div></div></td>
                         <td class="bpa-type"><i class="fa {{ $post->type === 'video' ? 'fa-play-circle-o' : 'fa-file-text-o' }}" aria-hidden="true"></i> {{ ucfirst($post->type) }}</td>
                         <td><span class="bpa-status bpa-status--{{ $post->status }}">{{ $post->status === 'review' ? 'In review' : ucfirst($post->status) }}</span></td>
                         <td class="bpa-author">{{ $post->author?->name ?: $post->author?->email ?: '—' }}</td>
@@ -104,26 +104,18 @@
         <section class="blog-category-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="blog-category-modal-title" tabindex="-1">
             <button class="blog-category-modal__close" type="button" data-category-modal-close aria-label="Close category dialog">×</button>
             <span class="blog-category-modal__eyebrow">Bulk action</span>
-            <h2 id="blog-category-modal-title">Change category</h2>
-            <p>Choose the category to apply to <strong data-category-post-count>0</strong> selected posts.</p>
+            <h2 id="blog-category-modal-title">Change categories</h2>
+            <p>Select the categories to assign to <strong data-category-post-count>0</strong> selected posts. The selection replaces their current categories.</p>
             <form id="blog-category-modal-form" method="POST" action="{{ route('admin.blog.posts.bulk-action') }}">
                 @csrf
                 <input type="hidden" name="action" value="change-category">
                 <div data-category-post-ids></div>
-                <label id="blog-category-field-label">New category</label>
-                <input type="hidden" id="blog-new-category" name="category_id">
-                <div class="blog-category-picker" data-category-picker>
-                    <button class="blog-category-picker__toggle" type="button" aria-labelledby="blog-category-field-label blog-category-picker-current" aria-haspopup="listbox" aria-expanded="false" aria-controls="blog-category-options" data-category-picker-toggle>
-                        <span id="blog-category-picker-current" data-category-picker-label>Choose a category</span><span class="blog-category-picker__chevron" aria-hidden="true">▾</span>
-                    </button>
-                    <div class="blog-category-picker__menu" id="blog-category-options" role="listbox" aria-label="Choose a category" data-category-picker-menu hidden>
-                        <button type="button" class="blog-category-picker__option" role="option" data-category-option data-value="uncategorized">Uncategorised</button>
-                        @foreach($categories as $category)
-                            <button type="button" class="blog-category-picker__option" role="option" data-category-option data-value="{{ $category->id }}">{{ $category->name }}</button>
-                        @endforeach
-                    </div>
-                    <span class="blog-category-picker__error" data-category-picker-error hidden>Please choose a category.</span>
-                </div>
+                <label for="blog-category-select">Categories</label>
+                <select class="form-control" id="blog-category-select" name="category_ids[]" multiple size="6" required>
+                    <option value="uncategorized">Uncategorised — clear existing categories</option>
+                    @foreach($categories as $category)<option value="{{ $category->id }}">{{ $category->name }}</option>@endforeach
+                </select>
+                <small class="text-muted">Hold Ctrl (Windows) or Command (Mac) to select multiple categories.</small>
                 <div class="blog-category-modal__actions">
                     <button class="btn btn-outline-secondary" type="button" data-category-modal-close>Cancel</button>
                     <button class="btn btn-primary" type="submit">Update categories</button>
@@ -229,12 +221,7 @@
             const categoryPostIds = categoryModal?.querySelector('[data-category-post-ids]');
             const categoryPostCount = categoryModal?.querySelector('[data-category-post-count]');
             const categoryForm = categoryModal?.querySelector('#blog-category-modal-form');
-            const categoryPicker = categoryModal?.querySelector('[data-category-picker]');
-            const categoryPickerToggle = categoryPicker?.querySelector('[data-category-picker-toggle]');
-            const categoryPickerMenu = categoryPicker?.querySelector('[data-category-picker-menu]');
-            const categoryPickerLabel = categoryPicker?.querySelector('[data-category-picker-label]');
-            const categoryPickerValue = categoryModal?.querySelector('#blog-new-category');
-            const categoryPickerError = categoryPicker?.querySelector('[data-category-picker-error]');
+            const categorySelect = categoryModal?.querySelector('#blog-category-select');
             if (!master || !countLabel) return;
 
             const updateSelection = () => {
@@ -277,15 +264,11 @@
                         return input;
                     }));
                     categoryPostCount.textContent = String(selected.length);
-                    if (categoryPickerValue) categoryPickerValue.value = '';
-                    if (categoryPickerLabel) categoryPickerLabel.textContent = 'Choose a category';
-                    if (categoryPickerError) categoryPickerError.hidden = true;
-                    if (categoryPickerMenu) categoryPickerMenu.hidden = true;
-                    categoryPickerToggle?.setAttribute('aria-expanded', 'false');
+                    if (categorySelect) [...categorySelect.options].forEach((option) => { option.selected = false; });
                     categoryModal.hidden = false;
                     categoryModal.setAttribute('aria-hidden', 'false');
                     document.body.classList.add('blog-category-modal-open');
-                    categoryPickerToggle?.focus();
+                    categorySelect?.focus();
                     return;
                 }
 
@@ -298,39 +281,25 @@
             categoryModal?.querySelectorAll('[data-category-modal-close]').forEach((button) => {
                 button.addEventListener('click', closeCategoryModal);
             });
-            categoryPickerToggle?.addEventListener('click', () => {
-                const isExpanded = categoryPickerToggle.getAttribute('aria-expanded') === 'true';
-                categoryPickerToggle.setAttribute('aria-expanded', String(!isExpanded));
-                categoryPickerMenu.hidden = isExpanded;
-            });
-            categoryPicker?.querySelectorAll('[data-category-option]').forEach((option) => {
-                option.addEventListener('click', () => {
-                    categoryPickerValue.value = option.dataset.value;
-                    categoryPickerLabel.textContent = option.textContent.trim();
-                    categoryPickerMenu.hidden = true;
-                    categoryPickerToggle.setAttribute('aria-expanded', 'false');
-                    categoryPickerError.hidden = true;
-                    categoryPickerToggle.focus();
-                });
+            categorySelect?.addEventListener('change', () => {
+                const uncategorized = [...categorySelect.options].find((option) => option.value === 'uncategorized');
+                if (uncategorized?.selected && categorySelect.selectedOptions.length > 1) {
+                    [...categorySelect.options].forEach((option) => { option.selected = option.value === 'uncategorized'; });
+                } else if ([...categorySelect.selectedOptions].some((option) => option.value === 'uncategorized')) {
+                    [...categorySelect.options].forEach((option) => { if (option.value === 'uncategorized') option.selected = false; });
+                }
             });
             categoryModal?.addEventListener('click', (event) => {
                 if (event.target === categoryModal) closeCategoryModal();
             });
             document.addEventListener('keydown', (event) => {
                 if (event.key !== 'Escape' || !categoryModal || categoryModal.hidden) return;
-                if (categoryPickerMenu && !categoryPickerMenu.hidden) {
-                    categoryPickerMenu.hidden = true;
-                    categoryPickerToggle?.setAttribute('aria-expanded', 'false');
-                    categoryPickerToggle?.focus();
-                    return;
-                }
                 closeCategoryModal();
             });
             categoryForm?.addEventListener('submit', (event) => {
-                if (!categoryPickerValue?.value) {
+                if (!categorySelect?.selectedOptions.length) {
                     event.preventDefault();
-                    if (categoryPickerError) categoryPickerError.hidden = false;
-                    categoryPickerToggle?.focus();
+                    categorySelect?.focus();
                 }
             });
             updateSelection();

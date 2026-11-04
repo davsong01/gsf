@@ -18,7 +18,7 @@ class ImportWordPressBlogImagesSeeder extends Seeder
     {
         $this->relocateExistingFiles();
 
-        $source = realpath(env('BLOG_WORDPRESS_UPLOADS_PATH', '/Users/davidoghi/Desktop/uploads'));
+        $source = realpath(config('blog.wordpress_uploads_path'));
         if (!$source || !is_dir($source)) {
             throw new RuntimeException('WordPress uploads folder was not found. Set BLOG_WORDPRESS_UPLOADS_PATH to its location.');
         }

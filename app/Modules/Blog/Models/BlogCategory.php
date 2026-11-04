@@ -3,15 +3,15 @@
 namespace App\Modules\Blog\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class BlogCategory extends Model
 {
     protected $table = 'blog_categories';
     protected $guarded = [];
 
-    public function posts(): HasMany
+    public function posts(): BelongsToMany
     {
-        return $this->hasMany(BlogPost::class, 'category_id');
+        return $this->belongsToMany(BlogPost::class, 'blog_post_category', 'category_id', 'post_id');
     }
 }

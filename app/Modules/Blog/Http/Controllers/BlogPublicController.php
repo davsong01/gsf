@@ -20,9 +20,9 @@ class BlogPublicController extends Controller
         $scopeId = $request->integer('scope_id') ?: null;
         $categorySlug = $request->string('category')->toString();
         $searchTerm = trim($request->string('search')->toString());
-        $query = BlogPost::published()->forNetwork($scope, $scopeId)->with(['category', 'author'])->latest('published_at');
+        $query = BlogPost::published()->forNetwork($scope, $scopeId)->with(['categories', 'author'])->latest('published_at');
         if ($categorySlug !== '') {
-            $query->whereHas('category', fn ($builder) => $builder->where('slug', $categorySlug));
+            $query->whereHas('categories', fn ($builder) => $builder->where('slug', $categorySlug));
         }
         if ($searchTerm !== '') {
             $query->where(function ($builder) use ($searchTerm) {
@@ -42,11 +42,11 @@ class BlogPublicController extends Controller
         }
         $mostReadQuery = BlogPost::published()->forNetwork($scope, $scopeId)
             ->where('view_count', '>', 0)
-            ->with('category')
+            ->with('categories')
             ->orderByDesc('view_count')
             ->orderByDesc('published_at');
         if ($categorySlug !== '') {
-            $mostReadQuery->whereHas('category', fn ($builder) => $builder->where('slug', $categorySlug));
+            $mostReadQuery->whereHas('categories', fn ($builder) => $builder->where('slug', $categorySlug));
         }
         $mostRead = $mostReadQuery->limit(5)->get();
         $categories = BlogCategory::withCount(['posts' => fn ($query) => $query->published()])->orderBy('name')->get();
@@ -63,7 +63,7 @@ class BlogPublicController extends Controller
     public function show(string $slug)
     {
         $post = BlogPost::published()
-            ->with(['category', 'tags', 'author', 'related'])
+            ->with(['categories', 'tags', 'author', 'related'])
             ->withCount(['comments as approved_comments_count' => fn ($query) => $query->where('status', 'approved')])
             ->where('slug', $slug)
             ->firstOrFail();

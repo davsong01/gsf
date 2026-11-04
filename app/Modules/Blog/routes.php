@@ -36,9 +36,11 @@ Route::middleware(['auth', 'SwitchUser'])->prefix('admin/blog')->name('admin.blo
     Route::post('posts/{post}/archive', [BlogController::class, 'archive'])->name('posts.archive');
     Route::get('categories', [BlogCategoryController::class, 'index'])->name('categories.index');
     Route::post('categories', [BlogCategoryController::class, 'store'])->name('categories.store');
+    Route::put('categories/{category}', [BlogCategoryController::class, 'update'])->name('categories.update');
     Route::delete('categories/{category}', [BlogCategoryController::class, 'destroy'])->name('categories.destroy');
     Route::get('tags', [BlogTagController::class, 'index'])->name('tags.index');
     Route::post('tags', [BlogTagController::class, 'store'])->name('tags.store');
+    Route::put('tags/{tag}', [BlogTagController::class, 'update'])->name('tags.update');
     Route::delete('tags/{tag}', [BlogTagController::class, 'destroy'])->name('tags.destroy');
 });
 

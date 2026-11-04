@@ -10,7 +10,7 @@ class ImportWordPressBlogSeeder extends Seeder
 {
     public function run(): void
     {
-        $file = public_path('uploads/gofamintstudents039fellowship.WordPress.2026-11-03.xml');
+        $file = config('blog.wordpress_wxr_path');
 
         if (!is_file($file)) {
             throw new RuntimeException("WordPress export file not found: {$file}");

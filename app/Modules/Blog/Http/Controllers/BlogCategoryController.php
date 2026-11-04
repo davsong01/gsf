@@ -32,6 +32,20 @@ class BlogCategoryController extends Controller
         return back()->with('message', 'Category deleted.');
     }
 
+    public function update(Request $request, BlogCategory $category)
+    {
+        $this->guard();
+        $request->merge(['slug' => Str::slug((string) $request->input('name')) ?: 'category-'.$category->id]);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'slug' => ['required', 'string', 'max:140', 'unique:blog_categories,slug,'.$category->id],
+        ]);
+        $category->update($data);
+
+        return back()->with('message', 'Category updated.');
+    }
+
     protected function guard(): void
     {
         $user = auth()->user();
