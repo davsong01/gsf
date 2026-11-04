@@ -37,7 +37,9 @@
                     <article class="campus-directory-card">
                         <a class="campus-directory-card__image" href="{{ route('campus.single', $campus->id) }}" aria-label="View {{ $campus->name }}">
                             <img src="{{ asset(campusImagePath($campus)) }}" alt="{{ $campus->name }} campus gate or fellowship illustration" loading="lazy">
-                            <span>{{ number_format($campus->members_count) }} {{ \Illuminate\Support\Str::plural('member', $campus->members_count) }}</span>
+                            @if($campus->members_count > 0)
+                                <span>{{ number_format($campus->members_count) }} {{ \Illuminate\Support\Str::plural('member', $campus->members_count) }}</span>
+                            @endif
                         </a>
                         <div class="campus-directory-card__body">
                             <small>{{ $campus->field?->name ?: 'GSF Fellowship' }}</small>
