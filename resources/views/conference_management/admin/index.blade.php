@@ -152,6 +152,12 @@
                     .conference-registration-card__stat strong { display:block; margin-top:2px; color:#1d5ca8; font-size:22px; line-height:1.1; }
                     .conference-registration-card__body { padding:18px 24px 24px; }
                     .conference-registration-card__chart { position:relative; height:360px; }
+                    .chapter-registration-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(175px,1fr)); gap:10px; }
+                    .chapter-registration-tile { min-width:0; padding:13px 14px; border:1px solid rgba(29,92,168,.16); border-radius:11px; background:#f5f8fd; }
+                    .chapter-registration-tile__top { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px; }
+                    .chapter-registration-tile__rank { color:#7b8da5; font-size:9px; font-weight:800; letter-spacing:.08em; }
+                    .chapter-registration-tile__count { color:#174d89; font-size:18px; font-weight:850; line-height:1; }
+                    .chapter-registration-tile__name { display:block; min-height:27px; color:#31445f; font-size:10px; font-weight:700; line-height:1.35; overflow-wrap:anywhere; }
                     .conference-registration-card__status { margin:10px 0 0; color:#8795a8; font-size:11px; }
                     @media (max-width:600px) { .conference-registration-card__head { flex-direction:column; } .conference-registration-card__stat { text-align:left; } .conference-registration-card__chart { height:280px; } }
                 </style>
@@ -166,11 +172,14 @@
                     <button type="button" class="btn btn-outline-primary" data-breakdown="fields">Fields</button>
                 </div>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <div class="conference-registration-card__chart"><canvas id="multiBarChart"></canvas></div>
+                <div class="conference-registration-card__chart"><div id="chapterRegistrationGrid" class="chapter-registration-grid" hidden></div><canvas id="multiBarChart"></canvas></div>
                 <div id="multiBarChartStatus" class="conference-registration-card__status" role="status" aria-live="polite">Loading registration data…</div>
                 <script>
                     $(document).ready(function () {
                         const ctx = document.getElementById('multiBarChart').getContext('2d');
+                        const chartCanvas = document.getElementById('multiBarChart');
+                        const chapterGrid = document.getElementById('chapterRegistrationGrid');
+                        const chartContainer = document.querySelector('.conference-registration-card__chart');
                         let chartInstance = null;
                         let breakdowns = {};
                         let activeBreakdown = 'chapters';
@@ -200,13 +209,17 @@
                             const breakdown = breakdowns[key];
                             if (!breakdown) return;
                             activeBreakdown = key;
-                            const labels = breakdown.labels || [];
-                            const datasets = breakdown.datasets || [];
-                            const label = key.charAt(0).toUpperCase() + key.slice(1);
+                            const sourceLabels = breakdown.labels || [];
+                            const sourceDatasets = breakdown.datasets || [];
+                            const labels = sourceLabels.slice();
+                            const datasets = sourceDatasets.map(function (dataset) { return Object.assign({}, dataset, { data: (dataset.data || []).slice() }); });
                             document.getElementById('multiBarChartTitle').textContent = 'Participants by ' + key.slice(0, -1);
-                            document.getElementById('multiBarChartHint').textContent = 'Completed registrations grouped by ' + key.slice(0, -1) + '.';
+                            document.getElementById('multiBarChartHint').textContent = key === 'chapters'
+                                ? 'All chapters ranked by completed registrations.'
+                                : 'Completed registrations grouped by ' + key.slice(0, -1) + '.';
                             if (chartInstance) {
                                 chartInstance.destroy();
+                                chartInstance = null;
                             }
 
                             const total = datasets.reduce(function (sum, dataset) {
@@ -215,7 +228,44 @@
                                 }, 0);
                             }, 0);
                             document.getElementById('multiBarChartTotal').textContent = total.toLocaleString();
-                            document.getElementById('multiBarChartStatus').textContent = labels.length + ' locations shown';
+                            document.getElementById('multiBarChartStatus').textContent = sourceLabels.length + ' ' + key + ' represented';
+                            const isChapterView = key === 'chapters';
+                            if (isChapterView) {
+                                chartCanvas.hidden = true;
+                                chapterGrid.hidden = false;
+                                chartContainer.style.height = 'auto';
+                                chapterGrid.replaceChildren();
+                                const values = datasets[0] ? datasets[0].data : [];
+                                const maximum = Math.max.apply(null, values.concat([1]));
+                                labels.forEach(function (label, index) {
+                                    const count = Number(values[index]) || 0;
+                                    const tile = document.createElement('article');
+                                    const strength = count / maximum;
+                                    tile.className = 'chapter-registration-tile';
+                                    tile.style.backgroundColor = 'rgba(29,92,168,' + (0.045 + strength * 0.2) + ')';
+                                    tile.style.borderColor = 'rgba(29,92,168,' + (0.14 + strength * 0.24) + ')';
+                                    const top = document.createElement('div');
+                                    top.className = 'chapter-registration-tile__top';
+                                    const rank = document.createElement('span');
+                                    rank.className = 'chapter-registration-tile__rank';
+                                    rank.textContent = '#' + (index + 1);
+                                    const value = document.createElement('strong');
+                                    value.className = 'chapter-registration-tile__count';
+                                    value.textContent = count.toLocaleString();
+                                    const name = document.createElement('span');
+                                    name.className = 'chapter-registration-tile__name';
+                                    name.textContent = label;
+                                    name.title = label;
+                                    top.append(rank, value);
+                                    tile.append(top, name);
+                                    chapterGrid.appendChild(tile);
+                                });
+                                return;
+                            }
+
+                            chapterGrid.hidden = true;
+                            chartCanvas.hidden = false;
+                            chartContainer.style.height = '360px';
 
                             chartInstance = new Chart(ctx, {
                                 type: 'bar',
@@ -234,6 +284,7 @@
                                 options: {
                                     responsive: true,
                                     maintainAspectRatio: false,
+                                    indexAxis: 'x',
                                     interaction: { mode: 'index', intersect: false },
                                     scales: {
                                         y: {
@@ -243,23 +294,15 @@
                                             ticks: { precision: 0, color: '#718096', font: { size: 10 } }
                                         },
                                         x: {
-                                            stacked: false,
                                             border: { display: false },
                                             grid: { display: false },
-                                            ticks: {
-                                                autoSkip: false,
-                                                maxRotation: 45,
-                                                minRotation: 0,
-                                                color: '#718096',
-                                                font: { size: 10 }
-                                            }
+                                            ticks: { autoSkip: false, maxRotation: 25, minRotation: 0, color: '#718096', font: { size: 10, weight: '600' } }
                                         }
                                     },
                                     plugins: {
                                         tooltip: { backgroundColor: '#17365f', padding: 12, displayColors: true, cornerRadius: 8 },
                                         legend: {
-                                            position: 'bottom',
-                                            labels: { usePointStyle: true, pointStyle: 'circle', padding: 18, color: '#52617b', font: { size: 11, weight: '600' } }
+                                            display: false
                                         }
                                     }
                                 }

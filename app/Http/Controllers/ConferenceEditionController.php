@@ -201,7 +201,7 @@ class ConferenceEditionController extends Controller
                     ->sortDesc();
 
                 return [
-                    'labels' => $groups->map(fn ($count, $name) => "{$name} ({$count})")->values()->all(),
+                    'labels' => $groups->keys()->values()->all(),
                     'datasets' => [[
                         'label' => $label,
                         'data' => $groups->values()->all(),

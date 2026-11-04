@@ -5,7 +5,7 @@
     $conferenceImageUrl = filter_var($conferenceImage, FILTER_VALIDATE_URL) ? $conferenceImage : asset($conferenceImage);
     $speakerMap = $speakers->keyBy('id');
     $dateLabel = $edition->start_date ? formatDates($edition->start_date, $edition->end_date) : 'A GSF gathering';
-    $conferenceDescription = trim(strip_tags($edition->conference_overview ?: 'A gathering for worship, the Word, fellowship and spiritual growth with GOFAMINT Students’ Fellowship.'));
+    $conferenceDescription = trim(html_entity_decode(strip_tags($edition->conference_overview ?: 'A gathering for worship, the Word, fellowship and spiritual growth with GOFAMINT Students’ Fellowship.'), ENT_QUOTES | ENT_HTML5));
     $conferenceUrl = route('conferences.show', $edition->slug);
     $shareTitle = rawurlencode($edition->conference_theme.' — GOFAMINT Students’ Fellowship');
     $shareUrl = rawurlencode($conferenceUrl);
@@ -73,9 +73,7 @@
 @endif
 
 @section('content')
-<section class="conference-detail-hero">
-    <div class="conference-detail-hero__image"><img src="{{ $conferenceImageUrl }}" alt="{{ $edition->conference_theme }}" fetchpriority="high"></div>
-    <div class="conference-detail-hero__wash"></div>
+<section class="conference-detail-hero {{ $isUpcoming ? 'has-countdown' : '' }}">
     <div class="site-container conference-detail-hero__content">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ route('home.index') }}">Home</a><span>·</span><a href="{{ route('conferences.index') }}">GSF Conferences</a><span>·</span><span>{{ $edition->conference_theme }}</span></nav>
         <div class="eyebrow eyebrow--light"><span></span> {{ $isRegistrationOpen ? 'Registration is open' : ($isUpcoming ? 'Coming up' : 'A GSF conference edition') }}</div>
@@ -123,17 +121,20 @@
 
 <section class="conference-detail-content" id="conference-story">
     <div class="site-container conference-detail-main">
-        <article class="conference-story-card">
-            <div class="eyebrow"><span></span> The heart of this gathering</div>
-            <h2>A time to encounter God, build community and grow.</h2>
-            <div class="conference-story-copy">
-                @if(filled($edition->conference_overview))
-                    {!! $edition->conference_overview !!}
-                @else
-                    <p>This GSF conference brings students and alumni together for worship, biblical teaching, prayer and fellowship. It is an invitation to grow in faith, deepen lasting relationships and return to campus ready to serve.</p>
-                @endif
-            </div>
-        </article>
+        <div class="conference-overview-grid">
+            <article class="conference-story-card">
+                <div class="eyebrow"><span></span> The heart of this gathering</div>
+                <h2>A time to encounter God, build community and grow.</h2>
+                <div class="conference-story-copy">
+                    @if(filled($edition->conference_overview))
+                        {!! $edition->conference_overview !!}
+                    @else
+                        <p>This GSF conference brings students and alumni together for worship, biblical teaching, prayer and fellowship. It is an invitation to grow in faith, deepen lasting relationships and return to campus ready to serve.</p>
+                    @endif
+                </div>
+            </article>
+            <div class="conference-overview-visual"><div><img src="{{ $conferenceImageUrl }}" alt="" fetchpriority="high"></div></div>
+        </div>
 
         @if($showSpeakerSection)
             <section class="conference-detail-section" id="conference-speakers">
