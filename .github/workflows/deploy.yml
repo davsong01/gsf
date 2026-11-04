@@ -37,8 +37,8 @@ jobs:
 
             # php artisan db:seed --class="Database\Seeders\ImportWordPressBlogSeeder" --force
             # php artisan db:seed --class="Database\Seeders\FormatImportedWordPressBlogPostsSeeder" --force
-            php artisan db:seed --class="Database\Seeders\ImportWordPressBlogMediaSeeder" --force
-            php artisan db:seed --class="Database\Seeders\WebsiteConsolidationAnnouncementSeeder" --force
+            # php artisan db:seed --class="Database\Seeders\ImportWordPressBlogMediaSeeder" --force
+            # php artisan db:seed --class="Database\Seeders\WebsiteConsolidationAnnouncementSeeder" --force
 
             echo "Deployment to Server completed!"
 

@@ -65,6 +65,9 @@
                         <h2>{{ $displayName }}</h2>
                         <p>{{ $office }}</p>
                         @if(filled($tenure))<span>{{ $tenure }}</span>@endif
+                        @if(auth()->check() && (int) auth()->user()->role === 1)
+                            <a href="{{ route('stakeholderpersonnel.edit', $stakeholder->id) }}" target="_blank" rel="noopener">Edit stakeholder <span aria-hidden="true">↗</span></a>
+                        @endif
                         {{-- @if(filled($stakeholder?->email))
                             <a href="mailto:{{ $stakeholder->email }}" aria-label="Email {{ $displayName }}">Contact <span aria-hidden="true">↗</span></a>
                         @endif --}}
