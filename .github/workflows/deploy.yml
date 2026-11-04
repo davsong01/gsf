@@ -33,7 +33,8 @@ jobs:
 
             # php artisan db:seed
             # php artisan db:seed --class=BlogPermissionSeeder --force
-            php artisan db:seed --class=LegacyGoAwardBeneficiariesSeeder --force
+            # php artisan db:seed --class=LegacyGoAwardBeneficiariesSeeder --force
+            php artisan db:seed --class=BackfillBlogFeaturedCoversSeeder --force
 
             # php artisan db:seed --class="Database\Seeders\ImportWordPressBlogSeeder" --force
             # php artisan db:seed --class="Database\Seeders\FormatImportedWordPressBlogPostsSeeder" --force
