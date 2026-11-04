@@ -2089,3 +2089,26 @@ if (!function_exists('resolveAwardIndexContext')) {
         ];
     }
 }
+
+if (!function_exists('campusImagePath')) {
+    function campusImagePath($campus): string
+    {
+        if (filled($campus?->banner)) {
+            return $campus->banner;
+        }
+
+        $name = Str::lower(trim((string) ($campus?->name ?? '')));
+        foreach (config('campus_images.matches', []) as $match => $path) {
+            if (Str::contains($name, $match)) {
+                return $path;
+            }
+        }
+
+        $fallbacks = config('campus_images.fallbacks', []);
+        if ($fallbacks === []) {
+            return 'site/images/campuses/campus-gate-fallback.png';
+        }
+
+        return $fallbacks[abs(crc32($name ?: (string) ($campus?->id ?? 'campus'))) % count($fallbacks)];
+    }
+}

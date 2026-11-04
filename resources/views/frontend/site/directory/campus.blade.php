@@ -5,7 +5,7 @@
 @section('activeSection', 'directory')
 
 @section('content')
-<section class="campus-hero" style="--campus-image: url('{{ asset($chapter->banner ?: 'site/images/community/gsf-gathering.jpg') }}')">
+<section class="campus-hero" style="--campus-image: url('{{ asset(campusImagePath($chapter)) }}')">
     <div class="campus-hero__shade"></div>
     <div class="site-container campus-hero__content">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ route('home.index') }}">Home</a><span>·</span><a href="{{ route('directory.index') }}">Directory</a><span>·</span><a href="{{ route('people.campuses') }}">Campuses</a></nav>
