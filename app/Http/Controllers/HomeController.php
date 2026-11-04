@@ -362,7 +362,9 @@ class HomeController extends Controller
     {
         $nec = Stakeholder::with(['designation', 'role'])
             ->where('status', 'active')
-            ->whereIn('role_id', [1, 2, 6, 7, 8])
+            ->whereDoesntHave('role', function ($query) {
+                $query->where('slug', 'chapter-representative');
+            })
             ->get()
             ->sortBy(function (Stakeholder $stakeholder) {
                 return sprintf(

@@ -22,7 +22,7 @@
         <div class="nec-directory__toolbar">
             <div>
                 <div class="eyebrow"><span></span> National Secretariat</div>
-                <h2>Meet the current committee</h2>
+                <h2>Meet our current leaders</h2>
                 <p><span data-nec-result-count>{{ $nec->count() }}</span> active leadership {{ \Illuminate\Support\Str::plural('profile', $nec->count()) }}</p>
             </div>
             <label class="nec-search" for="nec-search">
@@ -39,12 +39,14 @@
                     $roleFallbacks = [
                         1 => 'National Secretariat',
                         2 => 'National Campus Pastor',
+                        3 => 'Field Pastor',
+                        4 => 'Zonal Pastor',
                         6 => 'National Portfolio Officer',
                         7 => 'NEC Member',
                         8 => 'National President',
                     ];
                     $office = $stakeholder?->designation?->name
-                        ?: ($roleFallbacks[$stakeholder?->role_id] ?? 'National Executive Committee');
+                        ?: ($roleFallbacks[$stakeholder?->role_id] ?? $stakeholder?->role?->name ?? 'National Executive Committee');
 
                     $tenure = $stakeholder?->designation?->tenure ?? null;
                     $avatar = $stakeholder?->avatar;
