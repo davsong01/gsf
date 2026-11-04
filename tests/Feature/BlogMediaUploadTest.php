@@ -42,6 +42,36 @@ class BlogMediaUploadTest extends TestCase
         }
     }
 
+    public function test_mp3_upload_returns_a_usable_audio_url_and_size_after_moving_the_file(): void
+    {
+        $user = new User();
+        $user->role = 1;
+        auth()->setUser($user);
+
+        $audio = UploadedFile::fake()->create('article.mp3', 128, 'audio/mpeg');
+        $expectedSize = $audio->getSize();
+        $request = Request::create('/admin/blog/media/upload', 'POST');
+        $request->files->set('file-0', $audio);
+
+        $path = null;
+
+        try {
+            $response = app(BlogController::class)->uploadMedia($request);
+            $result = $response->getData(true)['result'][0];
+            parse_str((string) parse_url($result['url'], PHP_URL_QUERY), $query);
+            $path = $query['path'] ?? null;
+
+            $this->assertSame(200, $response->getStatusCode());
+            $this->assertSame('audio', $result['type']);
+            $this->assertSame($expectedSize, $result['size']);
+            $this->assertFileExists(public_path($path));
+        } finally {
+            if ($path && is_file(public_path($path))) {
+                unlink(public_path($path));
+            }
+        }
+    }
+
     public function test_featured_image_uses_public_upload_service_and_is_readable(): void
     {
         $path = null;

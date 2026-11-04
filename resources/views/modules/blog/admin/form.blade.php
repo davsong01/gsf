@@ -16,7 +16,7 @@
                     <div class="form-group"><label>Excerpt</label><textarea class="form-control" name="excerpt" rows="3">{{ old('excerpt', $post?->excerpt) }}</textarea></div>
                     <div class="form-group">
                         <label for="blog-body">Rich content</label>
-                        <div class="mb-2"><label class="btn btn-outline-primary mb-0" for="blog-inline-images">Add images to article</label><input id="blog-inline-images" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden><span id="blog-image-status" class="ml-2" role="status" aria-live="polite"></span><small class="text-muted d-block mt-1">Place the cursor where the image belongs, then choose images. You can also drag or paste images into the editor. JPG, PNG, WebP or GIF, up to 10 MB each.</small></div>
+                        <div class="mb-2"><label class="btn btn-outline-primary mb-0" for="blog-inline-images">Add images to article</label><input id="blog-inline-images" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden><label class="btn btn-outline-secondary mb-0 ml-1" for="blog-inline-audio">Add MP3 audio</label><input id="blog-inline-audio" type="file" accept="audio/mpeg,.mp3" hidden><span id="blog-image-status" class="ml-2" role="status" aria-live="polite"></span><span id="blog-audio-status" class="ml-2" role="status" aria-live="polite"></span><small class="text-muted d-block mt-1">Place the cursor where the media belongs, then choose images or an MP3 audio file. Images up to 10 MB; MP3 files up to 200 MB.</small></div>
                         <textarea class="form-control" id="blog-body" name="body" rows="16" required>{{ old('body', str_replace('//storage/', '/storage/', $post?->body ?? '')) }}</textarea>
                     </div>
                     <div class="form-group"><label>Video URL <small class="text-muted">(for video posts)</small></label><input class="form-control" type="url" name="video_url" value="{{ old('video_url', $post?->video_url) }}"></div>
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ['table', 'link', 'image', 'video', 'fullScreen', 'showBlocks', 'codeView', 'preview']
         ],
         placeholder: 'Start writing your story…',
-        attributesWhitelist: { all: 'style|src|alt|width|height|class|target|rel' }
+        attributesWhitelist: { all: 'style|src|alt|width|height|class|target|rel|controls|preload|type' }
     });
 
     var uploading = false;
@@ -214,6 +214,45 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         editor.insertImage(transfer.files);
         imageInput.value = '';
+    });
+
+    var audioInput = document.querySelector('#blog-inline-audio');
+    var audioStatus = document.querySelector('#blog-audio-status');
+    audioInput.addEventListener('change', function () {
+        var file = audioInput.files[0];
+        if (!file) return;
+        if (file.type !== 'audio/mpeg' && !file.name.toLowerCase().endsWith('.mp3')) {
+            audioStatus.textContent = 'Choose an MP3 audio file.';
+            audioStatus.classList.add('text-danger');
+            audioInput.value = '';
+            return;
+        }
+        if (file.size > 200 * 1024 * 1024) {
+            audioStatus.textContent = 'Choose an MP3 file under 200 MB.';
+            audioStatus.classList.add('text-danger');
+            audioInput.value = '';
+            return;
+        }
+        var data = new FormData();
+        data.append('file-0', file);
+        uploading = true;
+        audioStatus.classList.remove('text-danger');
+        audioStatus.textContent = 'Uploading audio…';
+        fetch(uploadUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' }, body: data })
+            .then(function (response) { return response.ok ? response.json() : response.json().then(function (body) { return Promise.reject(body.message || 'The audio could not be uploaded.'); }); })
+            .then(function (body) {
+                var media = body.result && body.result[0];
+                if (!media || media.type !== 'audio' || !media.url) throw new Error('The audio could not be uploaded.');
+                var safeUrl = media.url.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                editor.insertHTML('<p><audio controls preload="metadata" src="' + safeUrl + '"></audio></p>');
+                editor.save();
+                audioStatus.textContent = 'Audio uploaded and added to the article.';
+            })
+            .catch(function (error) {
+                audioStatus.textContent = error.message || String(error) || 'The audio could not be uploaded.';
+                audioStatus.classList.add('text-danger');
+            })
+            .finally(function () { uploading = false; audioInput.value = ''; });
     });
 
     form.addEventListener('submit', function (event) {

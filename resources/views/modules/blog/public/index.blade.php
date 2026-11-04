@@ -3,6 +3,10 @@
 @section('description', 'Latest news, stories and updates from GOFAMINT Students’ Fellowship campuses across Nigeria.')
 @section('mainClass', 'public-page newsroom-page')
 @section('activeSection', 'news')
+@php
+    $newsViewer = auth()->user();
+    $newsEditRoute = 'admin.blog.posts.edit';
+@endphp
 @section('content')
 <section class="inner-hero inner-hero--directory">
     <div class="inner-hero__pattern" aria-hidden="true"></div>
@@ -47,6 +51,7 @@
                     <h2><a href="{{ route('blog.show', $featuredPost->slug) }}">{{ $featuredPost->title }}</a></h2>
                     <p>{{ $featuredPost->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($featuredPost->body), 250) }}</p>
                     <a class="newsroom-read-link" href="{{ route('blog.show', $featuredPost->slug) }}">Read the story <span aria-hidden="true">↗</span></a>
+                    @if(\App\Modules\Blog\BlogPermissions::canEditPost($newsViewer, $featuredPost))<a class="newsroom-edit-link" href="{{ route($newsEditRoute, $featuredPost) }}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit post</a>@endif
                 </div>
             </section>
         @endif
@@ -68,6 +73,7 @@
                                 <h3><a href="{{ route('blog.show', $post->slug) }}">{{ $post->title }}</a></h3>
                                 <p>{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body), 145) }}</p>
                                 <a class="newsroom-read-link" href="{{ route('blog.show', $post->slug) }}">Read story <span aria-hidden="true">→</span></a>
+                                @if(\App\Modules\Blog\BlogPermissions::canEditPost($newsViewer, $post))<a class="newsroom-edit-link" href="{{ route($newsEditRoute, $post) }}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit post</a>@endif
                             </div>
                         </article>
                     @empty

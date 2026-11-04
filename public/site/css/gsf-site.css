@@ -1988,6 +1988,8 @@ button { color: inherit; }
 .newsroom-lead--text .newsroom-lead__copy > p { color:rgba(255,255,255,.72); }
 .newsroom-read-link { display:inline-flex; align-items:center; gap:8px; color:var(--forest-800); font-size:12px; font-weight:850; text-decoration:none; }
 .newsroom-read-link:hover { color:#a47b24; }
+.newsroom-edit-link { display:inline-flex; align-items:center; gap:7px; margin-top:10px; color:var(--ink-soft); font-size:11px; font-weight:800; text-decoration:none; }
+.newsroom-edit-link:hover { color:var(--forest-700); }
 .newsroom-lead--text .newsroom-read-link { color:var(--gold); }
 .newsroom-section-heading { display:flex; align-items:end; justify-content:space-between; gap:24px; margin:70px 0 26px; }
 .newsroom-section-heading .eyebrow { margin-bottom:10px; }

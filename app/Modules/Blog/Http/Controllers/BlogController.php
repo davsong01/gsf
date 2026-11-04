@@ -273,20 +273,24 @@ class BlogController extends Controller
             ->flatten()
             ->filter(fn ($file) => $file instanceof \Illuminate\Http\UploadedFile)
             ->values();
-        abort_unless($files->isNotEmpty(), 422, 'No image file was uploaded.');
+        abort_unless($files->isNotEmpty(), 422, 'No media file was uploaded.');
 
         $results = $files->map(function ($file) {
+            $isAudio = strtolower($file->getClientOriginalExtension()) === 'mp3';
             Validator::make(['upload' => $file], [
-                'upload' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'],
+                'upload' => $isAudio
+                    ? ['required', 'file', 'mimes:mp3', 'mimetypes:audio/mpeg', 'max:204800']
+                    : ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'],
             ])->validate();
             $size = $file->getSize();
-            $path = BlogMedia::upload($file, 'content');
+            $path = BlogMedia::upload($file, 'content', null);
             $url = BlogMedia::url($path);
 
             return [
                 'url' => $url,
                 'name' => basename($path),
                 'size' => $size,
+                'type' => $isAudio ? 'audio' : 'image',
             ];
         })->all();
 
