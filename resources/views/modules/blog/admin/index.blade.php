@@ -66,12 +66,13 @@
             <table class="bpa-table">
                 <thead><tr>
                     @if(!$isStakeholder && !empty($bulkActions))<th class="blog-post-select"><input type="checkbox" data-select-all-posts aria-label="Select all posts on this page"></th>@endif
-                    <th>Story</th><th>Type</th><th>Status</th><th>Author</th><th>Views</th><th>Comments</th><th>Updated</th><th>Actions</th>
+                    <th>Story</th><th>Type</th><th>Status</th><th>Author</th><th>Views</th><th>Comments</th><th>Timeline</th><th>Actions</th>
                 </tr></thead>
                 <tbody>
                 @forelse($posts as $post)
                     @php($imageUrl = \App\Modules\Blog\BlogMedia::url($post->featured_image))
                     @php($canEditRow = \App\Modules\Blog\BlogPermissions::canEditPost($viewer, $post))
+                    @php($primaryPostDate = $post->published_at ?: $post->created_at)
                     <tr>
                         @if(!$isStakeholder && !empty($bulkActions))<td class="blog-post-select"><input type="checkbox" name="post_ids[]" value="{{ $post->id }}" form="blog-bulk-action-form" data-post-checkbox aria-label="Select {{ $post->title }}"></td>@endif
                         <td class="bpa-story"><div class="bpa-story__wrap">@if($imageUrl)<a class="bpa-story__image" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer"><img src="{{ $imageUrl }}" alt="" loading="lazy"></a>@endif<div><a class="bpa-story__title" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer">{{ $post->title }}</a><span class="bpa-story__meta">{{ $post->categories->pluck('name')->join(', ') ?: 'Uncategorised' }}@if($post->is_featured)<span class="bpa-featured">★ Featured</span>@endif</span></div></div></td>
@@ -80,7 +81,7 @@
                         <td class="bpa-author">{{ $post->author?->name ?: $post->author?->email ?: '—' }}</td>
                         <td class="bpa-number">{{ number_format($post->view_count) }}</td>
                         <td class="bpa-number">@if(!$isStakeholder && $canManageComments)<a href="{{ route('admin.blog.comments.index', ['post_id' => $post->id]) }}" aria-label="View comments on {{ $post->title }}">{{ number_format($post->comments_count) }}</a>@else{{ number_format($post->comments_count) }}@endif</td>
-                        <td class="bpa-date">{{ $post->updated_at?->format('d M Y') }}<small>{{ $post->updated_at?->format('g:i a') }}</small></td>
+                        <td class="bpa-date"><span>{{ $post->published_at ? 'Published' : 'Created' }}: {{ $primaryPostDate?->format('d M Y') }}</span><small>{{ $primaryPostDate?->format('g:i a') }}</small><span class="d-block mt-1">Updated: {{ $post->updated_at?->format('d M Y') }}</span><small>{{ $post->updated_at?->format('g:i a') }}</small></td>
                         <td class="bpa-actions"><div class="bpa-actions__group">
                             <a class="bpa-actions__view" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer" aria-label="View {{ $post->title }}"><i class="fa fa-external-link" aria-hidden="true"></i> View</a>
                             @if($canEditRow)<a class="bpa-actions__edit" href="{{ route($prefix.'.blog.posts.edit', $post) }}" aria-label="Edit {{ $post->title }}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a>@endif

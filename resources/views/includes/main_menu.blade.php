@@ -29,7 +29,7 @@
             @elseif(auth()->user()->role == 3)
                 {{-- Publicity sec menu --}}
                 @include('includes.subadminmenu')
-            @else
+            @elseif((int) auth()->user()->role !== 1)
                 @if(!$isAdmin)
                     @include('includes.membermenu')
                 @endif

@@ -435,10 +435,6 @@ if (!function_exists('flattenPermissionTree')) {
 if (!function_exists('menuNodeVisible')) {
     function menuNodeVisible(array $menu, array $userPermissions): bool
     {
-        if (auth()->check() && (int) auth()->user()->role === 1) {
-            return true;
-        }
-
         if (in_array($menu['slug'] ?? '', $userPermissions, true)) {
             return true;
         }
