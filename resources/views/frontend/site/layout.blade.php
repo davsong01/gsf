@@ -2,9 +2,11 @@
 <html lang="en">
 @php
     $siteLogoPath = \App\Models\GeneralSetting::query()->value('site_logo');
-    $siteLogoUrl = $siteLogoPath
-        ? \Illuminate\Support\Facades\Storage::disk('public')->url($siteLogoPath)
-        : asset('frontend/img/logo.png');
+    $siteLogoUrl = !$siteLogoPath
+        ? asset('frontend/img/logo.png')
+        : (filter_var($siteLogoPath, FILTER_VALIDATE_URL)
+            ? $siteLogoPath
+            : \Illuminate\Support\Facades\Storage::disk('public')->url($siteLogoPath));
 @endphp
 <head>
     <meta charset="utf-8">

@@ -66,7 +66,7 @@
             @endif
         </div>
         @if(filled($siteSettings?->gsf_family_song_lyrics))
-            <div class="family-song-section__lyrics">{!! nl2br(e($siteSettings->gsf_family_song_lyrics)) !!}</div>
+            <div class="family-song-section__lyrics">{{ $siteSettings->gsf_family_song_lyrics }}</div>
         @endif
     </div>
 </section>

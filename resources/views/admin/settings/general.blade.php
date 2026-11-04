@@ -43,7 +43,12 @@
                                     <small class="form-text text-muted">PNG, JPG or WebP, up to 5 MB. This logo appears in the admin sidebar and across the public website.</small>
                                     @error('site_logo')<div class="text-danger mt-50">{{ $message }}</div>@enderror
                                     @if(filled($settings->site_logo))
-                                        <div class="site-logo-current"><img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($settings->site_logo) }}" alt="Current website logo"><span class="text-muted">Current website logo</span></div>
+                                        @php
+                                            $currentSiteLogoUrl = filter_var($settings->site_logo, FILTER_VALIDATE_URL)
+                                                ? $settings->site_logo
+                                                : \Illuminate\Support\Facades\Storage::disk('public')->url($settings->site_logo);
+                                        @endphp
+                                        <div class="site-logo-current"><img src="{{ $currentSiteLogoUrl }}" alt="Current website logo"><span class="text-muted">Current website logo</span></div>
                                     @endif
                                 </div>
 

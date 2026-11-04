@@ -8,6 +8,7 @@ use App\Services\FileUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class SettingController extends Controller
 {
@@ -38,8 +39,21 @@ class SettingController extends Controller
 
         if ($request->hasFile('site_logo')) {
             $replacedFiles[] = $settings->site_logo;
-            $settings->site_logo = app(FileUploadService::class)
-                ->storePublicImage($request->file('site_logo'), 'site-images');
+            $oldPublicUpload = null;
+            if (filter_var($settings->site_logo, FILTER_VALIDATE_URL)) {
+                $oldPath = ltrim((string) parse_url($settings->site_logo, PHP_URL_PATH), '/');
+                if (str_starts_with($oldPath, 'uploads/site-images/')) {
+                    $oldPublicUpload = $oldPath;
+                }
+            }
+
+            $extension = $request->file('site_logo')->getClientOriginalExtension();
+            $settings->site_logo = app(FileUploadService::class)->publicUpload(
+                $request->file('site_logo'),
+                'site-images',
+                $oldPublicUpload ?? '',
+                Str::uuid().'.'.strtolower($extension)
+            );
         }
 
         $documents = [

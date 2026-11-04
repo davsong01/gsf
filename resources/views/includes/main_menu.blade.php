@@ -17,9 +17,11 @@
     <div class="shadow-bottom"></div>
     @php
         $siteLogoPath = \App\Models\GeneralSetting::query()->value('site_logo');
-        $siteLogoUrl = $siteLogoPath
-            ? \Illuminate\Support\Facades\Storage::disk('public')->url($siteLogoPath)
-            : asset('frontend/img/logo.png');
+        $siteLogoUrl = !$siteLogoPath
+            ? asset('frontend/img/logo.png')
+            : (filter_var($siteLogoPath, FILTER_VALIDATE_URL)
+                ? $siteLogoPath
+                : \Illuminate\Support\Facades\Storage::disk('public')->url($siteLogoPath));
     @endphp
     <div><a class="navbar-brand" href="/"><img style="text-align: center; width:30%; display: block; margin-left: 80px;margin-right: auto;" class="logo" src="{{ $siteLogoUrl }}" alt="GSF logo"></a></div>
     <div class="main-menu-content">
