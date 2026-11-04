@@ -40,6 +40,9 @@
             ? route('stakeholders.loginpage')
             : url('/');
         $backUrl = url()->previous();
+        $resetUrl = IlluminateSupportFacadesRoute::has('session.reset')
+            ? route('session.reset', ['scope' => $stakeholderRequest ? 'stakeholder' : 'web'])
+            : $homeUrl;
     @endphp
     <div class="error-shell" style="--accent:{{ $accent ?? '#3159a5' }}">
         <section class="error-card" aria-labelledby="error-title">
@@ -49,7 +52,8 @@
                 <h1 id="error-title">{{ $title }}</h1>
                 <p class="error-card__message">{{ $message }}</p>
                 <div class="error-actions">
-                    <a class="error-button error-button--primary" href="{{ $homeUrl }}"><span class="error-button__icon" aria-hidden="true">⌂</span>{{ $homeLabel ?? 'Go to homepage' }}</a>
+                    <a class="error-button error-button--primary" href="{{ $resetUrl }}"><span class="error-button__icon" aria-hidden="true">↻</span>Start a fresh session</a>
+                    <a class="error-button" href="{{ $homeUrl }}"><span class="error-button__icon" aria-hidden="true">⌂</span>{{ $homeLabel ?? 'Go to homepage' }}</a>
                     @if(!empty($showLogin) && \Illuminate\Support\Facades\Route::has('login'))
                         <a class="error-button" href="{{ route('login') }}">Sign in</a>
                     @else

@@ -66,10 +66,24 @@ use App\Services\DynamicImageGenerator;
 use App\Services\EmailService;
 use App\Services\FileUploadService;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+
+Route::get('/session/reset', function (Request $request) {
+    $isStakeholder = $request->string('scope')->toString() === 'stakeholder';
+
+    Auth::guard('stakeholder')->logout();
+    Auth::guard('web')->logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()
+        ->route($isStakeholder ? 'stakeholders.loginpage' : 'login')
+        ->with('message', 'Your old session was cleared. Please sign in again.');
+})->name('session.reset');
 
 
 // Route::get('migrate-award-entries', [CronController::class, 'migrateAwardEntries'])->name('verify.registration.show');

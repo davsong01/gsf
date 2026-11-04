@@ -394,6 +394,7 @@
                                             <th>Role / Placement</th>
                                             <th>Appraisal Access</th>
                                             <th>Status</th>
+                                            <th>Last login</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -468,8 +469,13 @@
                                                     {{-- @if($stakeholder->credentials_sent)
                                                         <div><small class="text-success">Credentials sent</small></div>
                                                     @endif --}}
+                                                </td>
+                                                <td>
                                                     @if($stakeholder->last_login)
-                                                        <div><small class="text-muted">Last login: {{ $stakeholder->last_login }}</small></div>
+                                                        <span class="text-nowrap">{{ \Carbon\Carbon::parse($stakeholder->last_login)->format('M j, Y') }}</span>
+                                                        <small class="text-muted d-block">{{ \Carbon\Carbon::parse($stakeholder->last_login)->format('g:i A') }}</small>
+                                                    @else
+                                                        <span class="text-muted">Never</span>
                                                     @endif
                                                 </td>
                                                 <td>

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -27,10 +28,6 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->renderable(function (TokenMismatchException $e, Request $request): Response {
-            $loginRoute = $request->is('stakeholders*')
-                ? route('stakeholders.loginpage')
-                : route('login');
-
             $preservedInput = collect($request->except([
                 '_token',
                 'password',
@@ -38,8 +35,13 @@ class Handler extends ExceptionHandler
                 'current_password',
             ]))->toArray();
 
+            Auth::guard('stakeholder')->logout();
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             return redirect()
-                ->guest($loginRoute)
+                ->route($request->is('stakeholders*') ? 'stakeholders.loginpage' : 'login')
                 ->withInput($preservedInput)
                 ->with('error', 'Your session expired. Please log in again and continue.');
         });
