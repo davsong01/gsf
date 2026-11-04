@@ -24,6 +24,7 @@ class SettingController extends Controller
         abort_unless((isAdmin()['status'] ?? false) && userHasPermission('general-settings.edit'), 403);
 
         $request->validate([
+            'site_logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'gsf_constitution_document' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
             'gsf_code_of_conduct_document' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
             'gsf_family_song_lyrics' => ['nullable', 'string', 'max:30000'],
@@ -33,6 +34,11 @@ class SettingController extends Controller
 
         $settings = GeneralSetting::firstOrFail();
         $replacedFiles = [];
+
+        if ($request->hasFile('site_logo')) {
+            $replacedFiles[] = $settings->site_logo;
+            $settings->site_logo = $request->file('site_logo')->store('site-images', 'public');
+        }
 
         $documents = [
             'gsf_constitution_document' => 'gsf_constitution_path',

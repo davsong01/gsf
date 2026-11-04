@@ -15,7 +15,13 @@
     </div>
 
     <div class="shadow-bottom"></div>
-    <div><a class="navbar-brand" href="/"><img style="text-align: center; width:30%; display: block; margin-left: 80px;margin-right: auto;" class="logo" src="{{ asset($edition->conference_logo ?? 'frontend/img/logo.png') }}"></a></div>
+    @php
+        $siteLogoPath = \App\Models\GeneralSetting::query()->value('site_logo');
+        $siteLogoUrl = $siteLogoPath
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($siteLogoPath)
+            : asset('frontend/img/logo.png');
+    @endphp
+    <div><a class="navbar-brand" href="/"><img style="text-align: center; width:30%; display: block; margin-left: 80px;margin-right: auto;" class="logo" src="{{ $siteLogoUrl }}" alt="GSF logo"></a></div>
     <div class="main-menu-content">
         <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation" data-icon-style="lines">
             @if(auth()->user()->isSwitchingUser() )

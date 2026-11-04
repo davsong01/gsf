@@ -41,6 +41,7 @@ jobs:
             # php artisan db:seed --class="Database\Seeders\FormatImportedWordPressBlogPostsSeeder" --force
             # php artisan db:seed --class="Database\Seeders\ImportWordPressBlogMediaSeeder" --force
             # php artisan db:seed --class="Database\Seeders\WebsiteConsolidationAnnouncementSeeder" --force
+            
             php artisan db:seed --class="Database\Seeders\Conference2017Seeder" --force
 
             rm -rf ../site && cp -r public/site ../site

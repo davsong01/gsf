@@ -25,6 +25,10 @@
     .conference-hub__table tbody td { padding: 17px 16px; border-top: 1px solid #edf1f5; vertical-align: middle; color: #34435d; font-size: 13px; }
     .conference-hub__number { display: grid; place-items: center; width: 31px; height: 31px; border-radius: 9px; color: #174a83; background: #edf5fc; font-weight: 800; }
     .conference-hub__ministry strong, .conference-hub__theme strong { display: block; color: #172641; font-size: 14px; }
+    .conference-hub__theme-cell { display:flex; align-items:center; gap:12px; min-width:240px; }
+    .conference-hub__banner { display:block; flex:0 0 84px; width:84px; height:54px; overflow:hidden; border:1px solid #e1e8f0; border-radius:9px; background:linear-gradient(135deg,#e7eef8,#dce9f5); }
+    .conference-hub__banner img { display:block; width:100%; height:100%; object-fit:cover; }
+    .conference-hub__banner--empty { display:grid; place-items:center; color:#50749d; font-size:18px; }
     .conference-hub__ministry span { color: #7a879b; font-size: 11px; }
     .conference-hub__status { display: inline-flex; margin-top: 6px; padding: 4px 8px; border-radius: 999px; color: #8a4d14; background: #fff3dc; font-size: 9px; font-weight: 850; letter-spacing: .05em; text-transform: uppercase; }
     .conference-hub__status.is-active { color: #087052; background: #e5f6ef; }
@@ -33,6 +37,7 @@
     .conference-hub__actions { display: flex; flex-wrap: wrap; gap: 7px; }
     .conference-hub__actions .btn { margin: 0 !important; padding: 8px 11px; border-radius: 8px; font-size: 11px; font-weight: 750; }
     .conference-hub__actions .btn i { position: static !important; }
+    .conference-hub__actions form { display:inline-flex; margin:0; }
     .conference-hub__empty { padding: 50px 20px !important; color: #7a879b !important; text-align: center; }
     .conference-hub .dataTables_wrapper { padding: 0 20px 18px; }
     .conference-hub .dataTables_wrapper .table-responsive { margin-inline: -20px; }
@@ -71,7 +76,7 @@
                         <tr>
                             <td><span class="conference-hub__number">{{ $loop->iteration }}</span></td>
                             <td class="conference-hub__ministry"><strong>{{ optional($edition->ministry)->name ?? 'Not assigned' }}</strong><span>{{ optional($edition->ministry)->code ?? '—' }}</span></td>
-                            <td class="conference-hub__theme"><strong>{{ $edition->conference_theme }}</strong><span class="conference-hub__status {{ $edition->status === 'active' ? 'is-active' : '' }}">{{ $edition->status }}</span></td>
+                            <td class="conference-hub__theme"><div class="conference-hub__theme-cell">@if($edition->banner)<span class="conference-hub__banner"><img src="{{ asset($edition->banner) }}" alt="{{ $edition->conference_theme }} banner" loading="lazy"></span>@else<span class="conference-hub__banner conference-hub__banner--empty" aria-hidden="true"><i class="fa fa-image"></i></span>@endif<div><strong>{{ $edition->conference_theme }}</strong><span class="conference-hub__status {{ $edition->status === 'active' ? 'is-active' : '' }}">{{ $edition->status }}</span></div></div></td>
                             <td class="conference-hub__dates">
                                 <strong>{{ $edition->start_date ? \Carbon\Carbon::parse($edition->start_date)->format('d M Y') : 'Date pending' }} — {{ $edition->end_date ? \Carbon\Carbon::parse($edition->end_date)->format('d M Y') : 'Date pending' }}</strong>
                                 <span>Registration: {{ $edition->start_registration ? \Carbon\Carbon::parse($edition->start_registration)->format('d M Y') : '—' }} to {{ $edition->close_registration ? \Carbon\Carbon::parse($edition->close_registration)->format('d M Y') : '—' }}</span>
@@ -79,7 +84,8 @@
                             <td><div class="conference-hub__actions">
                                 <a href="{{ route('show.conference.edition', $edition->id) }}" class="btn btn-primary"><i class="fa fa-eye mr-1"></i> Open dashboard</a>
                                 @if(auth()->user()->conference_role == 'superadmin')
-                                    <a href="{{ route('clone.conference.edition', $edition->id) }}" class="btn btn-outline-secondary"><i class="fa fa-copy mr-1"></i> Clone</a>
+                                    <form method="POST" action="{{ route('clone.conference.edition', $edition->id) }}" onsubmit="return window.confirm('Clone this conference edition?')">@csrf<button type="submit" class="btn btn-outline-secondary"><i class="fa fa-copy mr-1"></i> Clone</button></form>
+                                    <form method="POST" action="{{ route('conferenceeditions.destroy', $edition->id) }}" onsubmit="return window.confirm('Permanently delete this conference edition? This cannot be undone.')">@csrf @method('DELETE')<button type="submit" class="btn btn-outline-danger"><i class="fa fa-trash mr-1"></i> Delete</button></form>
                                 @endif
                             </div></td>
                         </tr>

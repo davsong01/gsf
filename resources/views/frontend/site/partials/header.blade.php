@@ -19,7 +19,7 @@
     @endphp
     <div class="site-container site-header__inner">
         <a class="brand" href="{{ route('home.index') }}" aria-label="GSF homepage">
-            <img src="{{ asset('frontend/img/logo.png') }}" alt="GSF logo">
+            <img src="{{ $siteLogoUrl }}" alt="GSF logo">
             <span class="brand__copy">
                 <strong>GOFAMINT Students’ Fellowship</strong>
                 <small>National Secretariat</small>

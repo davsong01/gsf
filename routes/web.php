@@ -426,9 +426,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::controller(ConferenceEditionController::class)->group(function () {
         Route::get('conferenceeditions/{id}/edit', 'edit')->name('edit.conference.edition');
-        Route::get('deleteedition/{id}', 'destroy')->name('delete.conference.edition');
         Route::get('showedition/{id}', 'show')->name('show.conference.edition');
-        Route::get('clone-edition/{id}', 'clone')->name('clone.conference.edition');
+        Route::post('clone-edition/{id}', 'clone')->name('clone.conference.edition');
         Route::get('chart-data/{id}', 'chart')->name('conference.edition.chart');
     });
 

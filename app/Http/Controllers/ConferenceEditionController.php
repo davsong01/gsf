@@ -225,15 +225,18 @@ class ConferenceEditionController extends Controller
 
     public function clone(ConferenceEdition $conferenceEdition, $id)
     {
-        if (auth()->user()->role == 1) {
-            $edition = ConferenceEdition::find($id);
-            $new = $edition->replicate();
-            $new->status = 'inactive';
-            $new->conference_theme = $edition->conference_theme . '_copy';
-            $new->save();
+        abort_unless(
+            auth()->check() && auth()->user()->role == 1 && auth()->user()->conference_role === 'superadmin',
+            403
+        );
 
-            return back()->with('message','Copy Succesfull');
-        }
+        $edition = ConferenceEdition::findOrFail($id);
+        $new = $edition->replicate();
+        $new->status = 'inactive';
+        $new->conference_theme = $edition->conference_theme . '_copy';
+        $new->save();
+
+        return back()->with('message', 'Conference edition cloned successfully.');
     }
     /**
      * Show the form for editing the specified resource.
@@ -278,8 +281,14 @@ class ConferenceEditionController extends Controller
      */
     public function destroy($id)
     {
-        $edition = ConferenceEdition::find($id);
+        abort_unless(
+            auth()->check() && auth()->user()->role == 1 && auth()->user()->conference_role === 'superadmin',
+            403
+        );
+
+        $edition = ConferenceEdition::findOrFail($id);
         $edition->delete();
-        return back()->with('message', 'Operation Successful');
+
+        return back()->with('message', 'Conference edition deleted successfully.');
     }
 }
