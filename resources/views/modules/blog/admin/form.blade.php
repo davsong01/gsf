@@ -209,6 +209,34 @@
 <script src="https://cdn.jsdelivr.net/npm/suneditor@2.47.12/dist/suneditor.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-choice-group]').forEach(function (group) {
+        var search = group.querySelector('[data-choice-search]');
+        if (!search) return;
+        var choices = Array.from(group.querySelectorAll('[data-choice-list] label'));
+        var summary = group.querySelector('[data-choice-summary]');
+        var empty = group.querySelector('[data-choice-empty]');
+
+        function filterChoices() {
+            var query = search.value.trim().toLocaleLowerCase();
+            var shown = 0;
+            var selected = 0;
+            choices.forEach(function (choice) {
+                var checked = choice.querySelector('input').checked;
+                if (checked) selected++;
+                choice.hidden = !!query && !checked && !choice.textContent.toLocaleLowerCase().includes(query);
+                if (!choice.hidden) shown++;
+            });
+            summary.textContent = query
+                ? shown + ' of ' + choices.length + ' shown · ' + selected + ' selected'
+                : choices.length + ' available · ' + selected + ' selected';
+            empty.hidden = shown > 0;
+        }
+
+        search.addEventListener('input', filterChoices);
+        group.addEventListener('change', filterChoices);
+        filterChoices();
+    });
+
     var dropzone = document.querySelector('[data-featured-dropzone]');
     var featuredInput = document.querySelector('#blog-featured-image');
     var featuredPreview = document.querySelector('[data-featured-preview]');
