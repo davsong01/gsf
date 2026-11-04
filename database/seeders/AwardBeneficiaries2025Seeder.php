@@ -117,7 +117,6 @@ class AwardBeneficiaries2025Seeder extends Seeder
                         'course_of_study' => $record['course'] ?: null,
                         'gender' => $record['gender'] ?: null,
                         'phone_number' => $record['phone_number'] ?: null,
-                        'account_details' => $record['account_details'] ?: null,
                         'account_number' => $accountNumber,
                         'bank_name' => $bankName,
                         'current_level' => $record['current_level'] ?? null,
