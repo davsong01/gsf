@@ -26,7 +26,8 @@ jobs:
             set -e
             cd public_html/MF
             git stash
-            git pull origin development
+            git fetch origin refs/heads/development:refs/remotes/origin/development
+            git merge --ff-only refs/remotes/origin/development
             php artisan migrate --force
             php artisan optimize:clear
 
