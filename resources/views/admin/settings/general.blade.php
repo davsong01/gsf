@@ -136,7 +136,7 @@
                                     @error('gsf_family_song_audio')<div class="text-danger mt-50">{{ $message }}</div>@enderror
                                     <div class="mt-1">
                                         @if(filled($settings->gsf_family_song_audio_path))
-                                            <audio controls preload="none" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($settings->gsf_family_song_audio_path) }}">Your browser does not support audio playback.</audio>
+                                            <audio controls preload="none" src="{{ filter_var($settings->gsf_family_song_audio_path, FILTER_VALIDATE_URL) ? $settings->gsf_family_song_audio_path : \Illuminate\Support\Facades\Storage::disk('public')->url($settings->gsf_family_song_audio_path) }}">Your browser does not support audio playback.</audio>
                                         @else
                                             <span class="badge badge-light-warning">No Family Song audio uploaded</span>
                                         @endif

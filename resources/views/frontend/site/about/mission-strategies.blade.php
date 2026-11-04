@@ -62,7 +62,7 @@
             <h2>The GSF Family Song</h2>
             <p>A song that brings our fellowship family together in faith and shared purpose.</p>
             @if(filled($siteSettings?->gsf_family_song_audio_path))
-                <audio class="family-song-section__audio" controls preload="none" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($siteSettings->gsf_family_song_audio_path) }}">Your browser does not support audio playback.</audio>
+                <audio class="family-song-section__audio" controls preload="none" src="{{ filter_var($siteSettings->gsf_family_song_audio_path, FILTER_VALIDATE_URL) ? $siteSettings->gsf_family_song_audio_path : \Illuminate\Support\Facades\Storage::disk('public')->url($siteSettings->gsf_family_song_audio_path) }}">Your browser does not support audio playback.</audio>
             @endif
         </div>
         @if(filled($siteSettings?->gsf_family_song_lyrics))

@@ -73,7 +73,14 @@ class SettingController extends Controller
 
         if ($request->hasFile('gsf_family_song_audio')) {
             $replacedFiles[] = $settings->gsf_family_song_audio_path;
-            $settings->gsf_family_song_audio_path = $request->file('gsf_family_song_audio')->store('site-audio', 'public');
+            $audio = $request->file('gsf_family_song_audio');
+            $extension = strtolower($audio->getClientOriginalExtension());
+            $settings->gsf_family_song_audio_path = $fileUploadService->publicUpload(
+                $audio,
+                'site-audio',
+                '',
+                Str::uuid().'.'.$extension
+            );
         }
 
         $settings->save();
