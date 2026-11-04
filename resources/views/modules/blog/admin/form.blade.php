@@ -5,67 +5,188 @@
 @section('title', $post ? 'Edit Post' : 'Create Post')
 @section('active')<li class="breadcrumb-item">{{ $post ? 'Edit Post' : 'Create Post' }}</li>@endsection
 @section('content')
-<div class="content-body">
-    <section><div class="card"><div class="card-header"><h4 class="card-title">{{ $post ? 'Edit post' : 'Create a post' }}</h4>@include('includes.alerts')</div><div class="card-body">
-        <form id="blog-post-form" method="POST" enctype="multipart/form-data" action="{{ $post ? route($prefix.'.blog.posts.update', $post) : route($prefix.'.blog.posts.store') }}">
-            @csrf @if($post) @method('PUT') @endif
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="form-group"><label>Title</label><input class="form-control" name="title" required value="{{ old('title', $post?->title) }}"></div>
-                    <div class="form-group"><label>Slug</label><input class="form-control" name="slug" value="{{ old('slug', $post?->slug) }}"><small class="text-muted">Leave blank to generate from the title.</small></div>
-                    <div class="form-group"><label>Excerpt</label><textarea class="form-control" name="excerpt" rows="3">{{ old('excerpt', $post?->excerpt) }}</textarea></div>
-                    <div class="form-group">
-                        <label for="blog-body">Rich content</label>
-                        <div class="mb-2"><label class="btn btn-outline-primary mb-0" for="blog-inline-images">Add images to article</label><input id="blog-inline-images" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden><label class="btn btn-outline-secondary mb-0 ml-1" for="blog-inline-audio">Add MP3 audio</label><input id="blog-inline-audio" type="file" accept="audio/mpeg,.mp3" hidden><span id="blog-image-status" class="ml-2" role="status" aria-live="polite"></span><span id="blog-audio-status" class="ml-2" role="status" aria-live="polite"></span><small class="text-muted d-block mt-1">Place the cursor where the media belongs, then choose images or an MP3 audio file. Images up to 10 MB; MP3 files up to 200 MB.</small></div>
-                        <textarea class="form-control" id="blog-body" name="body" rows="16" required>{{ old('body', str_replace('//storage/', '/storage/', $post?->body ?? '')) }}</textarea>
+<div class="content-body blog-composer">
+    <header class="blog-composer__hero">
+        <div class="blog-composer__hero-copy">
+            <span class="blog-composer__eyebrow"><span></span> GSF News · Editorial workspace</span>
+            <h1>{{ $post ? 'Edit your story' : 'Create a story' }}</h1>
+            <p>{{ $post ? 'Refine your article, update its media and manage how it appears across GSF News.' : 'Bring your story to life, then choose when and where it appears on GSF News.' }}</p>
+        </div>
+        <div class="blog-composer__hero-actions">
+            <a href="{{ route($prefix.'.blog.posts.index') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> All posts</a>
+            @if($post)<a href="{{ route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> View saved post</a>@endif
+        </div>
+    </header>
+    @include('includes.alerts')
+
+    <form id="blog-post-form" class="blog-composer__form" method="POST" enctype="multipart/form-data" action="{{ $post ? route($prefix.'.blog.posts.update', $post) : route($prefix.'.blog.posts.store') }}">
+        @csrf @if($post) @method('PUT') @endif
+        <div class="blog-composer__grid">
+            <div class="blog-composer__main">
+                <section class="blog-composer__panel" aria-labelledby="blog-story-heading">
+                    <div class="blog-composer__panel-head"><span class="blog-composer__step">01</span><div><span class="blog-composer__section-label">The essentials</span><h2 id="blog-story-heading">Story details</h2></div></div>
+                    <div class="blog-composer__panel-body">
+                        <div class="form-group"><label for="blog-title">Headline <span class="blog-composer__required">Required</span></label><input id="blog-title" class="form-control blog-composer__title-input" name="title" required placeholder="Give your story a clear, memorable headline" value="{{ old('title', $post?->title) }}"></div>
+                        <div class="form-group"><label for="blog-slug">Story URL</label><div class="blog-composer__slug-field"><span>/news/</span><input id="blog-slug" class="form-control" name="slug" placeholder="Created from headline if left blank" value="{{ old('slug', $post?->slug) }}"></div><small class="blog-composer__help">Use a short, readable URL. Leave blank to generate it automatically.</small></div>
+                        <div class="form-group mb-0"><label for="blog-excerpt">Summary</label><textarea id="blog-excerpt" class="form-control" name="excerpt" rows="3" placeholder="A short introduction for news cards and social sharing">{{ old('excerpt', $post?->excerpt) }}</textarea><small class="blog-composer__help">If left empty, a summary is taken from the beginning of the story.</small></div>
                     </div>
-                    <div class="form-group"><label>Video URL <small class="text-muted">(for video posts)</small></label><input class="form-control" type="url" name="video_url" value="{{ old('video_url', $post?->video_url) }}"></div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="form-group"><label>Post type</label><select class="form-control" name="type"><option value="article" @selected(old('type', $post?->type) === 'article')>Article</option><option value="video" @selected(old('type', $post?->type) === 'video')>Video</option></select></div>
-                    @php($selectedCategoryIds = collect(old('category_ids', $post?->categories?->pluck('id')->all() ?? []))->map('strval')->all())
-                    <div class="form-group"><label>Categories</label><select class="form-control" name="category_ids[]" multiple size="5" aria-describedby="blog-categories-help">@foreach($categories as $category)<option value="{{ $category->id }}" @selected(in_array((string) $category->id, $selectedCategoryIds, true))>{{ $category->name }}</option>@endforeach</select><small id="blog-categories-help" class="text-muted">Select one or more categories. Hold Ctrl (Windows) or Command (Mac) to select multiple.</small></div>
-                    @if($post && !empty($canChangeAuthor))
-                    @php($currentAuthorKey = $post->author_type && $post->author_id ? $post->author_type.':'.$post->author_id : '')
-                    <div class="form-group"><label for="blog-post-author">Post author</label><select class="form-control" id="blog-post-author" name="author_key"><option value="">Keep current author</option>@foreach($authors as $author)<option value="{{ $author['key'] }}" @selected(old('author_key', $currentAuthorKey) === $author['key'])>{{ $author['name'] }}{{ !empty($author['email']) ? ' · '.$author['email'] : '' }}</option>@endforeach</select><small class="text-muted">Choose an account with permission to create blog posts.</small>@error('author_key')<small class="text-danger d-block">{{ $message }}</small>@enderror</div>
-                    @endif
-                    @php($selectedTagIds = collect(old('tag_ids', $post?->tags?->pluck('id')->all() ?? []))->map('strval')->all())
-                    <div class="form-group"><label for="blog-post-tags">Tags</label><select class="form-control" id="blog-post-tags" name="tag_ids[]" multiple size="5" aria-describedby="blog-tags-help">@foreach($tags as $tag)<option value="{{ $tag->id }}" @selected(in_array((string) $tag->id, $selectedTagIds, true))>{{ $tag->name }}</option>@endforeach</select><small id="blog-tags-help" class="text-muted">Select one or more tags. Hold Ctrl (Windows) or Command (Mac) to select multiple.</small></div>
-                    @unless($isStakeholder)
-                    <div class="form-group"><label>Status</label><select class="form-control" name="status">@foreach(['draft','review','scheduled','published','archived'] as $status)<option value="{{ $status }}" @selected(old('status', $post?->status ?: 'draft') === $status)>{{ ucfirst($status) }}</option>@endforeach</select></div>
-                    @endunless
-                    <div class="form-group"><label>Publication date</label><input class="form-control" type="datetime-local" name="published_at" value="{{ old('published_at', $post?->published_at?->format('Y-m-d\\TH:i')) }}"></div>
-                    @if($canFeaturePosts)<div class="form-group"><label class="d-flex align-items-center"><input class="mr-2" type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post?->is_featured ?? false))> Feature this post in GSF News</label><small class="text-muted">Featured posts appear in the lead story area on the public news page.</small></div>@endif
-                    @php($featuredImageUrl = $post ? (\App\Modules\Blog\BlogMedia::url($post->featured_image) ?: (filter_var($post->featured_image, FILTER_VALIDATE_URL) && str_starts_with($post->featured_image, 'https://') ? $post->featured_image : null)) : null)
-                    <div class="form-group">
-                        <label for="blog-featured-image">Featured image</label>
+                </section>
+
+                <section class="blog-composer__panel blog-composer__writing-panel" aria-labelledby="blog-content-heading">
+                    <div class="blog-composer__panel-head"><span class="blog-composer__step">02</span><div><span class="blog-composer__section-label">Write &amp; enrich</span><h2 id="blog-content-heading">Your article</h2></div></div>
+                    <div class="blog-composer__panel-body">
+                        <div class="blog-composer__media-tools">
+                            <div class="blog-composer__media-actions">
+                                <label class="blog-composer__tool" for="blog-inline-images"><i class="fa fa-picture-o" aria-hidden="true"></i> Add images</label><input id="blog-inline-images" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+                                <label class="blog-composer__tool" for="blog-inline-audio"><i class="fa fa-music" aria-hidden="true"></i> Add MP3 audio</label><input id="blog-inline-audio" type="file" accept="audio/mpeg,.mp3" hidden>
+                            </div>
+                            <small>Place the cursor in the article before adding media. Images up to 10 MB; MP3 audio up to 200 MB.</small>
+                            <span id="blog-image-status" role="status" aria-live="polite"></span><span id="blog-audio-status" role="status" aria-live="polite"></span>
+                        </div>
+                        <label class="sr-only" for="blog-body">Article content</label>
+                        <textarea class="form-control" id="blog-body" name="body" rows="16" required>{{ old('body', str_replace('//storage/', '/storage/', $post?->body ?? '')) }}</textarea>
+                        <div class="blog-composer__editor-footer"><span><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Use headings, quotes and images to make longer stories easier to read.</span><span data-blog-word-count>0 words</span></div>
+                    </div>
+                </section>
+
+                <section class="blog-composer__panel" aria-labelledby="blog-video-heading">
+                    <div class="blog-composer__panel-head"><span class="blog-composer__step">03</span><div><span class="blog-composer__section-label">Optional media</span><h2 id="blog-video-heading">Video</h2></div></div>
+                    <div class="blog-composer__panel-body"><div class="form-group mb-0"><label for="blog-video-url">Video URL</label><input id="blog-video-url" class="form-control" type="url" name="video_url" placeholder="https://…" value="{{ old('video_url', $post?->video_url) }}"><small class="blog-composer__help">Add a link when publishing a video post.</small></div></div>
+                </section>
+            </div>
+
+            <aside class="blog-composer__sidebar" aria-label="Post settings">
+                <section class="blog-composer__panel" aria-labelledby="blog-publish-heading">
+                    <div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Visibility</span><h2 id="blog-publish-heading">Publishing</h2></div></div>
+                    <div class="blog-composer__panel-body">
+                        <div class="form-group"><label for="blog-type">Post type</label><select id="blog-type" class="form-control" name="type"><option value="article" @selected(old('type', $post?->type ?: 'article') === 'article')>Article</option><option value="video" @selected(old('type', $post?->type) === 'video')>Video</option></select></div>
+                        @unless($isStakeholder)<div class="form-group"><label for="blog-status">Status</label><select id="blog-status" class="form-control" name="status">@foreach(['draft','review','scheduled','published','archived'] as $status)<option value="{{ $status }}" @selected(old('status', $post?->status ?: 'draft') === $status)>{{ ucfirst($status) }}</option>@endforeach</select></div>@endunless
+                        <div class="form-group"><label for="blog-published-at">Publication date</label><input id="blog-published-at" class="form-control" type="datetime-local" name="published_at" value="{{ old('published_at', $post?->published_at?->format('Y-m-d\\TH:i')) }}"><small class="blog-composer__help">Choose a future date to schedule a post.</small></div>
+                        @if($canFeaturePosts)<label class="blog-composer__switch"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post?->is_featured ?? false))><span><strong>Feature on GSF News</strong><small>Show in the lead story area.</small></span></label>@endif
+                        <label class="blog-composer__switch"><input type="checkbox" name="allow_comments" value="1" @checked(old('allow_comments', $post?->allow_comments ?? true))><span><strong>Allow comments</strong><small>Let readers respond to this story.</small></span></label>
+                    </div>
+                </section>
+
+                @php($featuredImageUrl = $post ? (\App\Modules\Blog\BlogMedia::url($post->featured_image) ?: (filter_var($post->featured_image, FILTER_VALIDATE_URL) && str_starts_with($post->featured_image, 'https://') ? $post->featured_image : null)) : null)
+                <section class="blog-composer__panel" aria-labelledby="blog-featured-heading">
+                    <div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-image" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Visual identity</span><h2 id="blog-featured-heading">Featured image</h2></div></div>
+                    <div class="blog-composer__panel-body">
                         <label class="blog-featured-dropzone" for="blog-featured-image" data-featured-dropzone tabindex="0" role="button" aria-describedby="blog-featured-help blog-featured-status">
                             <img class="blog-featured-dropzone__preview" data-featured-preview src="{{ $featuredImageUrl ?: '' }}" alt="Featured image preview" @if(!$featuredImageUrl) hidden @endif>
+                            <span class="blog-featured-dropzone__icon"><i class="fa fa-cloud-upload" aria-hidden="true"></i></span>
                             <span class="blog-featured-dropzone__prompt" data-featured-prompt>{{ $featuredImageUrl ? 'Drop a new image here or click to replace it' : 'Drop an image here or click to choose one' }}</span>
                         </label>
                         <input id="blog-featured-image" class="blog-featured-dropzone__input" type="file" name="featured_image" accept="image/jpeg,image/png,image/webp,image/gif">
-                        <small id="blog-featured-help" class="text-muted d-block">JPG, PNG, WebP or GIF, up to 5 MB. Saving the post replaces the featured image.</small>
+                        <small id="blog-featured-help" class="blog-composer__help">JPG, PNG, WebP or GIF · up to 5 MB. A wide image works best.</small>
                         <small id="blog-featured-status" class="d-block" role="status" aria-live="polite"></small>
                         @error('featured_image')<small class="text-danger d-block">{{ $message }}</small>@enderror
                     </div>
-                    <div class="form-group"><label>SEO title</label><input class="form-control" name="seo_title" value="{{ old('seo_title', $post?->seo_title) }}"></div>
-                    <div class="form-group"><label>SEO description</label><textarea class="form-control" name="seo_description" rows="3">{{ old('seo_description', $post?->seo_description) }}</textarea></div>
-                    <div class="form-group"><label>Canonical URL</label><input class="form-control" type="url" name="canonical_url" value="{{ old('canonical_url', $post?->canonical_url) }}"></div>
-                    <div class="form-group"><label class="d-flex align-items-center"><input class="mr-2" type="checkbox" name="allow_comments" value="1" @checked(old('allow_comments', $post?->allow_comments ?? true))> Allow comments</label></div>
-                </div>
-            </div>
-            @if($post)<a class="btn btn-outline-secondary" href="{{ route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener">View post</a>@endif
-            <button class="btn btn-primary" name="submit_review" value="1">{{ $isStakeholder ? 'Save and submit for review' : 'Save post' }}</button>
-        </form>
-    </div></div></section>
+                </section>
+
+                <section class="blog-composer__panel" aria-labelledby="blog-organize-heading">
+                    <div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-tags" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Discovery</span><h2 id="blog-organize-heading">Organize</h2></div></div>
+                    <div class="blog-composer__panel-body">
+                        @php($selectedCategoryIds = collect(old('category_ids', $post?->categories?->pluck('id')->all() ?? []))->map('strval')->all())
+                        <fieldset class="blog-composer__fieldset"><legend>Categories</legend><div class="blog-composer__choices">@forelse($categories as $category)<label><input type="checkbox" name="category_ids[]" value="{{ $category->id }}" @checked(in_array((string) $category->id, $selectedCategoryIds, true))><span>{{ $category->name }}</span></label>@empty<span class="blog-composer__help">No categories available.</span>@endforelse</div></fieldset>
+                        @php($selectedTagIds = collect(old('tag_ids', $post?->tags?->pluck('id')->all() ?? []))->map('strval')->all())
+                        <fieldset class="blog-composer__fieldset"><legend>Tags</legend><div class="blog-composer__choices">@forelse($tags as $tag)<label><input type="checkbox" name="tag_ids[]" value="{{ $tag->id }}" @checked(in_array((string) $tag->id, $selectedTagIds, true))><span>{{ $tag->name }}</span></label>@empty<span class="blog-composer__help">No tags available.</span>@endforelse</div></fieldset>
+                    </div>
+                </section>
+
+                @if($post && !empty($canChangeAuthor))
+                @php($currentAuthorKey = $post->author_type && $post->author_id ? $post->author_type.':'.$post->author_id : '')
+                <section class="blog-composer__panel" aria-labelledby="blog-author-heading"><div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-user-o" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Attribution</span><h2 id="blog-author-heading">Author</h2></div></div><div class="blog-composer__panel-body"><label for="blog-post-author">Post author</label><select class="form-control" id="blog-post-author" name="author_key"><option value="">Keep current author</option>@foreach($authors as $author)<option value="{{ $author['key'] }}" @selected(old('author_key', $currentAuthorKey) === $author['key'])>{{ $author['name'] }}{{ !empty($author['email']) ? ' · '.$author['email'] : '' }}</option>@endforeach</select><small class="blog-composer__help">Choose an account with permission to create blog posts.</small>@error('author_key')<small class="text-danger d-block">{{ $message }}</small>@enderror</div></section>
+                @endif
+
+                <section class="blog-composer__panel" aria-labelledby="blog-seo-heading"><div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-search" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Search appearance</span><h2 id="blog-seo-heading">SEO settings</h2></div></div><div class="blog-composer__panel-body"><div class="form-group"><label for="blog-seo-title">SEO title</label><input id="blog-seo-title" class="form-control" name="seo_title" placeholder="Optional search result title" value="{{ old('seo_title', $post?->seo_title) }}"></div><div class="form-group"><label for="blog-seo-description">SEO description</label><textarea id="blog-seo-description" class="form-control" name="seo_description" rows="3" placeholder="Optional search result summary">{{ old('seo_description', $post?->seo_description) }}</textarea></div><div class="form-group mb-0"><label for="blog-canonical-url">Canonical URL</label><input id="blog-canonical-url" class="form-control" type="url" name="canonical_url" placeholder="https://…" value="{{ old('canonical_url', $post?->canonical_url) }}"></div></div></section>
+            </aside>
+        </div>
+        <div class="blog-composer__savebar"><span><i class="fa fa-info-circle" aria-hidden="true"></i> {{ $isStakeholder ? 'Your story will be submitted for review.' : 'Choose the status above, then save your changes.' }}</span><div><a href="{{ route($prefix.'.blog.posts.index') }}" class="blog-composer__cancel">Back to posts</a><button class="blog-composer__save" type="submit" name="submit_review" value="1"><i class="fa fa-check" aria-hidden="true"></i> {{ $isStakeholder ? 'Save and submit for review' : ($post ? 'Save changes' : 'Save post') }}</button></div></div>
+    </form>
 </div>
 <style>
-.blog-featured-dropzone { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; min-height:170px; padding:16px; border:2px dashed #a9b9d0; border-radius:12px; background:#f7f9fc; cursor:pointer; text-align:center; transition:border-color .2s, background-color .2s; }
-.blog-featured-dropzone:hover, .blog-featured-dropzone:focus, .blog-featured-dropzone.is-dragging { border-color:#3166a7; background:#eef5fc; outline:none; }
+.blog-composer { max-width:1560px; margin:0 auto; padding-bottom:32px; color:#1d3151; }
+.blog-composer__hero { position:relative; display:flex; align-items:center; justify-content:space-between; gap:24px; overflow:hidden; min-height:178px; margin-bottom:24px; padding:32px 38px; border-radius:20px; background:linear-gradient(115deg,#102646,#1e4d7a 70%,#2f7491); box-shadow:0 16px 34px rgba(18,48,84,.13); }
+.blog-composer__hero::after { position:absolute; right:-64px; bottom:-210px; width:430px; height:430px; border:1px solid rgba(255,255,255,.16); border-radius:50%; box-shadow:0 0 0 55px rgba(255,255,255,.035),0 0 0 110px rgba(255,255,255,.025); content:""; pointer-events:none; }
+.blog-composer__hero-copy,.blog-composer__hero-actions { position:relative; z-index:1; }
+.blog-composer__eyebrow { display:inline-flex; align-items:center; gap:8px; color:#cde5fa; font-size:10px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+.blog-composer__eyebrow span { width:7px; height:7px; border-radius:50%; background:#e7c278; box-shadow:0 0 0 4px rgba(231,194,120,.17); }
+.blog-composer__hero h1 { margin:11px 0 6px; color:#fff; font-size:clamp(27px,3vw,37px); font-weight:800; letter-spacing:-.035em; line-height:1.1; }
+.blog-composer__hero p { max-width:590px; margin:0; color:#d1e0f0; font-size:13px; line-height:1.6; }
+.blog-composer__hero-actions { display:flex; flex-wrap:wrap; gap:9px; justify-content:flex-end; }
+.blog-composer__hero-actions a { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px; padding:9px 14px; border:1px solid rgba(255,255,255,.34); border-radius:9px; color:#fff; background:rgba(255,255,255,.1); font-size:12px; font-weight:750; text-decoration:none; white-space:nowrap; }
+.blog-composer__hero-actions a:hover { color:#fff; background:rgba(255,255,255,.2); }
+.blog-composer__form { padding-bottom:8px; }
+.blog-composer__grid { display:grid; grid-template-columns:minmax(0,1.8fr) minmax(300px,1fr); align-items:start; gap:22px; }
+.blog-composer__main,.blog-composer__sidebar { display:grid; min-width:0; gap:20px; }
+.blog-composer__panel { min-width:0; overflow:hidden; border:1px solid #dfe7f1; border-radius:17px; background:#fff; box-shadow:0 7px 24px rgba(25,49,83,.045); }
+.blog-composer__panel-head { display:flex; align-items:center; gap:14px; min-height:90px; padding:20px 25px; border-bottom:1px solid #e9eef4; background:linear-gradient(105deg,#fff,#f9fbfe); }
+.blog-composer__panel-head--compact { min-height:76px; padding:16px 20px; }
+.blog-composer__step,.blog-composer__side-icon { display:grid; flex:0 0 42px; width:42px; height:42px; place-items:center; border:1px solid #d8e5f5; border-radius:12px; color:#245485; background:#ebf3fc; font-size:14px; font-weight:850; }
+.blog-composer__side-icon { flex-basis:38px; width:38px; height:38px; font-size:16px; }
+.blog-composer__section-label { display:block; margin-bottom:3px; color:#8796a9; font-size:10px; font-weight:850; letter-spacing:.12em; text-transform:uppercase; }
+.blog-composer__panel h2 { margin:0; color:#1d3151; font-size:19px; font-weight:800; line-height:1.2; }
+.blog-composer__panel-head--compact h2 { font-size:17px; }
+.blog-composer__panel-body { padding:23px 25px 25px; }
+.blog-composer__sidebar .blog-composer__panel-body { padding:20px; }
+.blog-composer .form-group { margin-bottom:20px; }
+.blog-composer .form-group:last-child { margin-bottom:0; }
+.blog-composer .form-group > label,.blog-composer__panel-body > label:not(.blog-featured-dropzone):not(.blog-composer__switch) { display:block; margin-bottom:8px; color:#344762; font-size:12px; font-weight:800; }
+.blog-composer__required { margin-left:6px; color:#b27327; font-size:10px; font-weight:700; }
+.blog-composer .form-control { width:100%; min-width:0; min-height:44px; border:1px solid #d6e0ed; border-radius:9px; color:#243a59; background:#fff; font-size:13px; box-shadow:none; }
+.blog-composer .form-control:focus { border-color:#3e83b2; box-shadow:0 0 0 3px rgba(62,131,178,.13); }
+.blog-composer textarea.form-control { height:auto; padding:12px 14px; line-height:1.55; }
+.blog-composer .form-control::placeholder { color:#a0acbc; opacity:1; }
+.blog-composer__title-input { height:55px; padding:12px 15px; font-size:17px!important; font-weight:700; }
+.blog-composer__help { display:block; margin-top:7px; color:#8492a5; font-size:11px; line-height:1.5; }
+.blog-composer__slug-field { display:flex; align-items:center; min-width:0; overflow:hidden; border:1px solid #d6e0ed; border-radius:9px; }
+.blog-composer__slug-field:focus-within { border-color:#3e83b2; box-shadow:0 0 0 3px rgba(62,131,178,.13); }
+.blog-composer__slug-field span { flex:0 0 auto; padding:0 12px; color:#5d7089; background:#f3f7fb; font-size:12px; font-weight:750; line-height:44px; }
+.blog-composer__slug-field .form-control { min-height:42px; border:0; border-radius:0; box-shadow:none; }
+.blog-composer__media-tools { margin-bottom:17px; padding:13px 15px; border:1px solid #e2eaf4; border-radius:11px; background:#f7faff; }
+.blog-composer__media-actions { display:flex; flex-wrap:wrap; gap:9px; }
+.blog-composer__tool { display:inline-flex; align-items:center; gap:8px; min-height:36px; margin:0; padding:7px 11px; border:1px solid #c9dcf0; border-radius:8px; color:#245687; background:#fff; font-size:11px; font-weight:800; cursor:pointer; }
+.blog-composer__tool:hover { border-color:#82add3; color:#194674; background:#eff6fd; }
+.blog-composer__media-tools small { display:block; margin-top:10px; color:#788ba2; font-size:11px; line-height:1.5; }
+#blog-image-status:not(:empty),#blog-audio-status:not(:empty) { display:block; margin-top:7px; color:#247159; font-size:11px; font-weight:700; }
+#blog-image-status.text-danger,#blog-audio-status.text-danger { color:#b44242!important; }
+.blog-composer .sun-editor { overflow:hidden; border:1px solid #d6e0ed; border-radius:10px; box-shadow:none; }
+.blog-composer .sun-editor .se-toolbar { background:#fbfcfe; }
+.blog-composer .sun-editor .sun-editor-editable { padding:22px; color:#283b55; font-size:15px; line-height:1.75; }
+.blog-composer__editor-footer { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:12px; color:#8290a2; font-size:11px; }
+.blog-composer__editor-footer [data-blog-word-count] { flex:0 0 auto; color:#4c6885; font-weight:800; }
+.blog-composer__switch { display:flex; align-items:flex-start; gap:11px; margin:0; padding:13px 0; border-top:1px solid #edf1f6; cursor:pointer; }
+.blog-composer__switch input { width:16px; height:16px; margin:2px 0 0; accent-color:#245d91; }
+.blog-composer__switch span { display:block; }
+.blog-composer__switch strong,.blog-composer__switch small { display:block; }
+.blog-composer__switch strong { color:#314660; font-size:12px; }
+.blog-composer__switch small { margin-top:3px; color:#8a97a8; font-size:11px; line-height:1.4; }
+.blog-featured-dropzone { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-height:180px; padding:17px; border:2px dashed #abc5df; border-radius:12px; background:#f6faff; cursor:pointer; text-align:center; transition:border-color .2s,background-color .2s; }
+.blog-featured-dropzone:hover,.blog-featured-dropzone:focus,.blog-featured-dropzone.is-dragging { border-color:#3477ac; background:#edf6ff; outline:none; }
+.blog-featured-dropzone__icon { display:grid; width:44px; height:44px; place-items:center; border-radius:11px; color:#2c6597; background:#e5f1fb; font-size:20px; }
 .blog-featured-dropzone__preview { display:block; max-width:100%; max-height:240px; border-radius:8px; object-fit:contain; }
-.blog-featured-dropzone__preview[hidden] { display:none; }
-.blog-featured-dropzone__prompt { color:#31527c; font-weight:600; }
+.blog-featured-dropzone__preview[hidden],.blog-featured-dropzone__preview:not([hidden]) + .blog-featured-dropzone__icon { display:none; }
+.blog-featured-dropzone__prompt { max-width:230px; color:#31527c; font-size:12px; font-weight:750; line-height:1.5; }
 .blog-featured-dropzone__input { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; }
+.blog-composer__fieldset { min-width:0; margin:0 0 19px; padding:0; border:0; }
+.blog-composer__fieldset:last-child { margin-bottom:0; }
+.blog-composer__fieldset legend { width:auto; margin-bottom:9px; color:#344762; font-size:12px; font-weight:800; }
+.blog-composer__choices { display:flex; flex-wrap:wrap; gap:7px; max-height:195px; overflow:auto; }
+.blog-composer__choices label { display:inline-flex; align-items:center; gap:6px; max-width:100%; margin:0; padding:7px 9px; border:1px solid #dbe4ef; border-radius:8px; color:#5a6d84; background:#fbfcfe; font-size:11px; font-weight:700; line-height:1.3; cursor:pointer; }
+.blog-composer__choices label:has(input:checked) { border-color:#85afd0; color:#194d7b; background:#eaf4fc; }
+.blog-composer__choices input { flex:0 0 auto; width:14px; height:14px; margin:0; accent-color:#28659a; }
+.blog-composer__savebar { position:sticky; z-index:20; bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:22px; padding:13px 16px 13px 20px; border:1px solid #d7e3f0; border-radius:13px; background:rgba(255,255,255,.97); box-shadow:0 13px 35px rgba(19,47,80,.14); backdrop-filter:blur(10px); }
+.blog-composer__savebar > span { color:#697e97; font-size:11px; font-weight:600; }
+.blog-composer__savebar > span i { margin-right:6px; color:#3c7faf; }
+.blog-composer__savebar > div { display:flex; align-items:center; gap:9px; }
+.blog-composer__cancel,.blog-composer__save { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px; padding:9px 15px; border-radius:8px; font-size:12px; font-weight:800; text-decoration:none; white-space:nowrap; cursor:pointer; }
+.blog-composer__cancel { border:1px solid #d3e0ed; color:#526a84; background:#fff; }
+.blog-composer__cancel:hover { color:#245687; background:#f5f9fd; }
+.blog-composer__save { border:1px solid #1c5b91; color:#fff; background:#1c5b91; box-shadow:0 4px 10px rgba(28,91,145,.18); }
+.blog-composer__save:hover { color:#fff; background:#164c7b; }
+@media(max-width:1050px) { .blog-composer__grid { grid-template-columns:minmax(0,1.35fr) minmax(280px,1fr); gap:15px; }.blog-composer__main,.blog-composer__sidebar { gap:15px; } }
+@media(max-width:820px) { .blog-composer__hero { align-items:flex-start; flex-direction:column; padding:28px; }.blog-composer__hero-actions { justify-content:flex-start; }.blog-composer__grid { grid-template-columns:1fr; }.blog-composer__sidebar { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; } }
+@media(max-width:620px) { .blog-composer__hero { min-height:0; padding:25px 21px; border-radius:14px; }.blog-composer__hero-actions a { min-height:38px; }.blog-composer__sidebar { grid-template-columns:1fr; }.blog-composer__panel-head { min-height:76px; padding:16px 18px; }.blog-composer__panel-body { padding:18px; }.blog-composer__sidebar .blog-composer__panel-body { padding:18px; }.blog-composer__editor-footer { align-items:flex-start; flex-direction:column; gap:5px; }.blog-composer__savebar { bottom:0; flex-direction:column; align-items:stretch; margin:16px -10px 0; padding:11px 14px; border-radius:12px 12px 0 0; }.blog-composer__savebar > div { justify-content:flex-end; }.blog-composer__savebar > span { font-size:10px; } }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/suneditor@2.47.12/dist/css/suneditor.min.css">
 <script src="https://cdn.jsdelivr.net/npm/suneditor@2.47.12/dist/suneditor.min.js"></script>
@@ -171,6 +292,15 @@ document.addEventListener('DOMContentLoaded', function () {
         placeholder: 'Start writing your story…',
         attributesWhitelist: { all: 'style|src|alt|width|height|class|target|rel|controls|preload|type' }
     });
+
+    var wordCount = document.querySelector('[data-blog-word-count]');
+    function updateWordCount() {
+        var words = (editor.getText() || '').trim().match(/\S+/g);
+        var count = words ? words.length : 0;
+        wordCount.textContent = count.toLocaleString() + (count === 1 ? ' word' : ' words');
+    }
+    editor.onChange = updateWordCount;
+    updateWordCount();
 
     var uploading = false;
     editor.onImageUploadBefore = function () {
