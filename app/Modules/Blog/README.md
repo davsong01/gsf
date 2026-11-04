@@ -26,15 +26,18 @@ The module uses these capability slugs:
 - `blog.archive`
 - `blog.categories`
 - `blog.comments`
+- `blog.comments.clear-all`
+- `blog.settings`
+- `make_post_featured`
 
 Admin web users can use the workspace through the existing admin role. Stakeholders receive scoped ownership based on their chapter, field, or zone assignment; categories remain admin/editorial capabilities.
 
 ## Routes
 
-- Public newsroom: `/blog`
-- Article: `/blog/{slug}`
-- RSS: `/blog/rss.xml`
-- Sitemap: `/blog/sitemap.xml`
-- Scoped newsroom: `/blog/network/{scopeType}/{scopeId}`
+- Public newsroom: `/news`
+- Article: `/news/{slug}`
+- RSS: `/news/rss.xml`
+- Sitemap: `/news/sitemap.xml`
+- Scoped newsroom: `/news/network/{scopeType}/{scopeId}`
 - Admin workspace: `/admin/blog/posts`
 - Stakeholder workspace: `/stakeholders/blog/posts`

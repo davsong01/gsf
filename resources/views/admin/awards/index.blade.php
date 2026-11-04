@@ -225,7 +225,7 @@
     <section id="awards-dashboard" class="award-workspace {{ $isAdmin ? 'award-workspace--admin' : 'award-workspace--stakeholder' }}">
         <header class="award-hero">
             <div class="award-hero__copy">
-                <div class="award-hero__eyebrow">Education &amp; Excellence Awards</div>
+                <div class="award-hero__eyebrow">Education Awards</div>
                 <h1>{{ $title }}</h1>
                 <p>{{ $isArchivedView ? 'Review and manage archived nominations.' : 'Review submissions, follow the approval journey, and manage nominations.' }}</p>
                 <span class="award-hero__count"><i class="fa fa-file-text-o" aria-hidden="true"></i>{{ number_format($awards->total()) }} {{ $isArchivedView ? 'archived' : 'active' }} {{ \Illuminate\Support\Str::plural('submission', $awards->total()) }}</span>

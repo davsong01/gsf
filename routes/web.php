@@ -199,6 +199,10 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index')->name('home.index');
     Route::get('/about/foundational-concept', [HomeController::class, 'foundationalConcept'])->name('about.foundational-concept');
     Route::get('/about/mission-strategies', [HomeController::class, 'missionStrategies'])->name('about.mission-strategies');
+    Route::get('/about/contact', [HomeController::class, 'contact'])->name('about.contact');
+    Route::post('/about/contact', [HomeController::class, 'submitContact'])->middleware('throttle:5,1')->name('about.contact.submit');
+    Route::get('/privacy', [HomeController::class, 'privacy'])->name('site.privacy');
+    Route::get('/terms', [HomeController::class, 'terms'])->name('site.terms');
     Route::get('/leaders/our-fathers', [HomeController::class, 'ourFathers'])->name('leaders.fathers');
     Route::get('/documents/{document}', [HomeController::class, 'siteDocument'])
         ->whereIn('document', ['constitution', 'code-of-conduct'])
@@ -363,10 +367,10 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('nec', NecController::class);
     Route::get('award-settings', [AwardController::class, 'awardSettings'])->name('award.settings');
     Route::post('award-settings', [AwardController::class, 'updateAwardSettings'])->name('award.settings.update');
-    Route::get('site-settings/documents', [SettingController::class, 'editSiteDocuments'])
-        ->name('site-settings.documents.edit');
-    Route::patch('site-settings/documents', [SettingController::class, 'updateSiteDocuments'])
-        ->name('site-settings.documents.update');
+    Route::get('general-settings', [SettingController::class, 'editGeneralSettings'])
+        ->name('general-settings.edit');
+    Route::patch('general-settings', [SettingController::class, 'updateGeneralSettings'])
+        ->name('general-settings.update');
 
 
     Route::get('archived-nec', [NecController::class, 'archivedNec'])->name('archive.nec.index');
@@ -821,3 +825,20 @@ Route::get('/protected-files/{file}', fn ($file) =>
 Route::get('/admin-protected-files/{file}', fn ($file) =>
     app(FileUploadService::class)->serveProtectedFile($file)
 )->middleware('auth')->name('admin.protected.download');
+
+// Keep old blog links working after the public newsroom moved to /news.
+Route::redirect('/blog', '/news', 301)->name('blog.legacy.index');
+Route::get('/blog/{slug}', fn (string $slug) => redirect()->route('blog.show', $slug, 301))
+    ->where('slug', '[^/]+')->name('blog.legacy.show');
+
+// Preserve original WordPress article URLs after import.
+Route::get('/{legacyPath}', function (string $legacyPath) {
+    $fromPath = '/'.trim($legacyPath, '/');
+    $redirect = \Illuminate\Support\Facades\DB::table('blog_redirects')
+        ->where('from_path', $fromPath)
+        ->first();
+
+    abort_unless($redirect, 404);
+
+    return redirect($redirect->to_path, (int) $redirect->status_code);
+})->where('legacyPath', '.*')->name('legacy.blog.redirect');

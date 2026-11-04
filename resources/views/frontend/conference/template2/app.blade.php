@@ -240,6 +240,8 @@
          });
       </script>
       @yield('script')
+      @include('frontend.site.partials.legacy-legal-links')
+      @include('frontend.site.partials.privacy-notice')
    </div>
    <!-- Body inner end -->
 </body>

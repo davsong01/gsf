@@ -138,7 +138,7 @@
     <div class="site-container">
         <div class="home-awards__heading">
             <div>
-                <div class="eyebrow"><span></span> Education &amp; Excellence Awards</div>
+                <div class="eyebrow"><span></span> Education Awards</div>
                 <h2 id="home-awards-title">Recognising learning, promise and excellence.</h2>
             </div>
             <p>Explore the Education Trust Fund and GO’s Excellence Beneficiary Award, and meet the students recognised through each programme.</p>
@@ -221,10 +221,10 @@
 
 <section class="section section--programs">
     <div class="site-container">
-        <div class="section-heading section-heading--split section-heading--dark">
+        {{-- <div class="section-heading section-heading--split section-heading--dark">
             <div><div class="eyebrow"><span></span> Programs &amp; Initiatives</div><h2>Spaces designed for growth and connection.</h2></div>
             <a class="text-link" href="{{ route('people.programs') }}">View all programs <span aria-hidden="true">→</span></a>
-        </div>
+        </div> --}}
         <div class="program-grid">
             <article class="program-card program-card--large">
                 <span class="program-card__tag">Formation</span>

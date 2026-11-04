@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             AppraisalQuestionSeeder::class,
             AppraisalRolePermissionSeeder::class,
             BlogPermissionSeeder::class,
+            FormatImportedWordPressBlogPostsSeeder::class,
         ]);
     }
 }

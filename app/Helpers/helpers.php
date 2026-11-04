@@ -85,6 +85,9 @@ if (!function_exists('rootPermissions')) {
                     ['id' => 201, 'slug' => 'admin.blog.posts.index', 'name' => 'All Posts'],
                     ['id' => 202, 'slug' => 'admin.blog.posts.create', 'name' => 'New Post'],
                     ['id' => 203, 'slug' => 'admin.blog.categories.index', 'name' => 'Categories'],
+                    ['id' => 206, 'slug' => 'blog.tags', 'name' => 'Tags', 'route' => 'admin.blog.tags.index'],
+                    ['id' => 204, 'slug' => 'blog.comments', 'name' => 'Comments', 'route' => 'admin.blog.comments.index'],
+                    ['id' => 205, 'slug' => 'blog.settings', 'name' => 'Settings', 'route' => 'admin.blog.settings.index'],
                 ],
             ],
             [
@@ -147,7 +150,7 @@ if (!function_exists('rootPermissions')) {
                     [
                         'id' => 2,
                         'slug' => 'awards.etf',
-                        'name' => 'Education & Excellence Awards',
+                        'name' => 'Education Awards',
                         'icon' => 'fa fa-trophy',
                         'children' => [
                             [
@@ -456,7 +459,7 @@ if (!function_exists('menuNodeActive')) {
         $currentRoute = request()->route()?->getName();
         $slug = $menu['slug'] ?? null;
 
-        if ($slug && $currentRoute && Str::is($slug, $currentRoute)) {
+        if ($currentRoute && (($menu['route'] ?? null) === $currentRoute || ($slug && Str::is($slug, $currentRoute)))) {
             return true;
         }
 
@@ -659,6 +662,34 @@ if (!function_exists('rootActionPermissions')) {
                 'name' => 'Moderate Blog Comments',
                 'parent_slug' => 'admin.blog.posts.index',
                 'description' => 'Can moderate comments on blog posts.'
+            ],
+            [
+                'id' => 1110,
+                'slug' => 'make_post_featured',
+                'name' => 'Feature Blog Posts',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can choose which published posts appear as featured stories on the public news page.'
+            ],
+            [
+                'id' => 1111,
+                'slug' => 'blog.settings',
+                'name' => 'Manage Blog Settings',
+                'parent_slug' => 'blog.index',
+                'description' => 'Can access and update blog module settings.'
+            ],
+            [
+                'id' => 1112,
+                'slug' => 'blog.comments.clear-all',
+                'name' => 'Clear All Blog Comments',
+                'parent_slug' => 'blog.comments',
+                'description' => 'Can permanently delete every blog comment.'
+            ],
+            [
+                'id' => 1113,
+                'slug' => 'blog.tags',
+                'name' => 'Manage Blog Tags',
+                'parent_slug' => 'admin.blog.posts.index',
+                'description' => 'Can create and remove blog tags.'
             ],
         ]);
     }

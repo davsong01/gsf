@@ -19,7 +19,11 @@ class BlogPermissionSeeder extends Seeder
             'blog.publish' => 'Publish and schedule blog posts',
             'blog.archive' => 'Archive blog posts',
             'blog.categories' => 'Manage blog categories',
+            'blog.tags' => 'Manage blog tags',
             'blog.comments' => 'Moderate blog comments',
+            'blog.comments.clear-all' => 'Permanently clear all blog comments',
+            'make_post_featured' => 'Choose featured posts for the public news page',
+            'blog.settings' => 'Manage blog settings',
         ];
 
         foreach ($permissions as $slug => $name) {
@@ -31,11 +35,11 @@ class BlogPermissionSeeder extends Seeder
             'Chapter Representative' => ['blog.view', 'blog.create', 'blog.manage-own'],
             'Field Pastor' => ['blog.view', 'blog.create', 'blog.manage-own'],
             'Zonal Pastor' => ['blog.view', 'blog.create', 'blog.manage-own'],
-            'Secretariat' => ['blog.view', 'blog.create', 'blog.manage-own', 'blog.review', 'blog.publish'],
-            'NCP' => ['blog.view', 'blog.create', 'blog.manage-own', 'blog.review', 'blog.publish', 'blog.archive', 'blog.comments', 'blog.categories'],
+            'Secretariat' => ['blog.view', 'blog.create', 'blog.manage-own', 'blog.review', 'blog.publish', 'blog.tags'],
+            'NCP' => ['blog.view', 'blog.create', 'blog.manage-own', 'blog.review', 'blog.publish', 'blog.archive', 'blog.comments', 'blog.categories', 'blog.tags'],
             'Blog Writer' => ['blog.view', 'blog.create', 'blog.manage-own'],
-            'Blog Editor' => ['blog.view', 'blog.create', 'blog.edit', 'blog.review', 'blog.comments'],
-            'Blog Publisher' => ['blog.view', 'blog.create', 'blog.edit', 'blog.review', 'blog.publish', 'blog.archive', 'blog.comments', 'blog.categories'],
+            'Blog Editor' => ['blog.view', 'blog.create', 'blog.edit', 'blog.review', 'blog.comments', 'blog.tags'],
+            'Blog Publisher' => ['blog.view', 'blog.create', 'blog.edit', 'blog.review', 'blog.publish', 'blog.archive', 'blog.comments', 'blog.categories', 'blog.tags'],
         ];
 
         foreach ($rolePermissions as $roleName => $slugs) {

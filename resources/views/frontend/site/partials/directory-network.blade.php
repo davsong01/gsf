@@ -6,6 +6,12 @@
         ->orderBy('name')
         ->limit(6)
         ->get();
+    $campusesByState = \App\Models\Chapter::query()
+        ->where('id', '<>', 86)
+        ->whereNotNull('state')
+        ->selectRaw('state, COUNT(*) as campus_count')
+        ->groupBy('state')
+        ->get();
 @endphp
 
 <section class="directory-network" aria-labelledby="directory-network-title">
@@ -37,6 +43,23 @@
         <div class="directory-network__map" aria-label="GSF chapters across Nigeria">
             <div class="directory-network__map-frame">
                 <img src="{{ asset('gsfcom/images/nigeriamap.jpg') }}" alt="Map of Nigeria representing the GSF national network">
+                @foreach($campusesByState as $group)
+                    @php
+                        $coordinates = config('gsf_states.'.$group->state);
+                    @endphp
+                    @if($coordinates)
+                        @php
+                            // Calibrated to the illustration's Nigeria outline; positions are approximate state capitals.
+                            $left = 13 + (($coordinates[1] - 2.5) / 12) * 76;
+                            $top = 20 + ((13.9 - $coordinates[0]) / 9.7) * 60;
+                        @endphp
+                        <a class="directory-network__marker" href="{{ route('people.campuses', ['state' => $group->state]) }}"
+                           style="left: {{ $left }}%; top: {{ $top }}%"
+                           data-label="{{ $group->state }} · {{ $group->campus_count }} {{ \Illuminate\Support\Str::plural('campus', $group->campus_count) }}"
+                           aria-label="View {{ $group->campus_count }} {{ \Illuminate\Support\Str::plural('campus', $group->campus_count) }} in {{ $group->state }}"
+                           title="{{ $group->state }}: {{ $group->campus_count }} {{ \Illuminate\Support\Str::plural('campus', $group->campus_count) }}"></a>
+                    @endif
+                @endforeach
             </div>
             <div class="directory-network__map-label"><span></span> Connected across Nigeria</div>
         </div>

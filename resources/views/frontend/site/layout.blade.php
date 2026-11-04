@@ -17,8 +17,11 @@
         @yield('content')
     </main>
 
-    @include('frontend.site.partials.directory-network')
+    @unless(trim($__env->yieldContent('hideDirectoryNetwork')) === '1')
+        @include('frontend.site.partials.directory-network')
+    @endunless
     @include('frontend.site.partials.footer')
+    @include('frontend.site.partials.privacy-notice')
 
     <script src="{{ asset('site/js/gsf-site.js') }}" defer></script>
     @stack('scripts')

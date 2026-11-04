@@ -9,6 +9,8 @@
         @yield('body')            
 
         @include('includes.ffooter')
+        @include('frontend.site.partials.legacy-legal-links')
+        @include('frontend.site.partials.privacy-notice')
 
         <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
 

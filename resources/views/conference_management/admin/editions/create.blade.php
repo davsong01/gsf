@@ -92,6 +92,16 @@
                                     </fieldset>
                                 </div>
                                 <div class="col-sm-6 col-md-6">
+                                    <label for="registration_tickers_enabled">Registration tickers</label>
+                                    <fieldset class="form-group">
+                                        <select class="form-control" name="registration_tickers_enabled" id="registration_tickers_enabled" required>
+                                            <option value="1" {{ old('registration_tickers_enabled', '1') == '1' ? 'selected' : '' }}>Enabled</option>
+                                            <option value="0" {{ old('registration_tickers_enabled', '1') == '0' ? 'selected' : '' }}>Disabled</option>
+                                        </select>
+                                        <small class="text-muted">Show brief registration confirmations from completed registrants on this conference page.</small>
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
                                     <label for="hostel_assignment_type">Hostel Assignment Type</label>
                                     <fieldset class="form-group ">
                                         <select class="form-control" name="hostel_assignment_type" id="hostel_assignment_type" required>

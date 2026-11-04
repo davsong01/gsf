@@ -20,7 +20,8 @@ class ConferenceEdition extends Model
         'template_settings' => 'array',
         'conference_speakers' => 'array',
         'faq_ids' => 'array',
-        'speaker_ids' => 'array'
+        'speaker_ids' => 'array',
+        'registration_tickers_enabled' => 'boolean',
     ];
 
     public function transactions(){

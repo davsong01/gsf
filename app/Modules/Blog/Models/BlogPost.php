@@ -20,6 +20,7 @@ class BlogPost extends Model
     protected $casts = [
         'published_at' => 'datetime',
         'allow_comments' => 'boolean',
+        'is_featured' => 'boolean',
     ];
 
     public function author(): MorphTo { return $this->morphTo(); }
@@ -27,6 +28,30 @@ class BlogPost extends Model
     public function tags(): BelongsToMany { return $this->belongsToMany(BlogTag::class, 'blog_post_tag', 'post_id', 'tag_id'); }
     public function related(): BelongsToMany { return $this->belongsToMany(self::class, 'blog_post_related', 'post_id', 'related_post_id'); }
     public function comments() { return $this->hasMany(BlogComment::class, 'post_id'); }
+
+    public function suggestedRelated(int $limit = 3)
+    {
+        $tagIds = $this->tags()->pluck('blog_tags.id');
+        if (!$this->category_id && $tagIds->isEmpty()) {
+            return self::query()->whereRaw('1 = 0')->get();
+        }
+
+        return self::published()
+            ->forNetwork($this->scope_type, $this->scope_id)
+            ->where($this->getQualifiedKeyName(), '<>', $this->getKey())
+            ->where(function (Builder $query) use ($tagIds) {
+                if ($this->category_id) {
+                    $query->where('category_id', $this->category_id);
+                }
+                if ($tagIds->isNotEmpty()) {
+                    $query->orWhereHas('tags', fn (Builder $tags) => $tags->whereIn('blog_tags.id', $tagIds));
+                }
+            })
+            ->with('category')
+            ->inRandomOrder()
+            ->limit($limit)
+            ->get();
+    }
 
     public function scopePublished(Builder $query): Builder
     {

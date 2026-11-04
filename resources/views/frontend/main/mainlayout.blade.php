@@ -12,5 +12,7 @@
         @include('includes.toastr')
         @yield('content')
         @include('includes.main.footer')
+        @include('frontend.site.partials.legacy-legal-links')
+        @include('frontend.site.partials.privacy-notice')
     </body>
 </html>

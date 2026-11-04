@@ -1,0 +1,11 @@
+.gsf-privacy-notice[hidden] { display: none !important; }
+.gsf-privacy-notice { position: fixed; z-index: 10000; right: 22px; bottom: 22px; left: 22px; display: flex; align-items: center; justify-content: space-between; gap: 24px; max-width: 680px; padding: 18px 20px; border: 1px solid #cfd8e7; border-radius: 15px; color: #132345; background: #fff; box-shadow: 0 20px 55px rgba(7,20,47,.22); font-family: Arial, sans-serif; }
+.gsf-privacy-notice__copy strong { display: block; margin-bottom: 4px; color: #102650; font-size: 15px; }
+.gsf-privacy-notice__copy p { margin: 0; color: #45536f; font-size: 13px; line-height: 1.5; }
+.gsf-privacy-notice__copy a { color: #116e9e; text-decoration: underline; text-underline-offset: 2px; }
+.gsf-privacy-notice > button { flex: 0 0 auto; padding: 10px 17px; border: 0; border-radius: 8px; color: #fff; background: #123f7a; cursor: pointer; font: 700 13px Arial, sans-serif; }
+.gsf-privacy-notice > button:hover, .gsf-privacy-notice > button:focus-visible { background: #0c2a54; }
+.gsf-legacy-legal { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 22px; padding: 16px 22px; color: #f4f6fc; background: #0b1e40; font: 13px Arial, sans-serif; }
+.gsf-legacy-legal a, .gsf-legacy-legal button { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.gsf-legacy-legal button { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; }
+@media (max-width: 600px) { .gsf-privacy-notice { right: 12px; bottom: 12px; left: 12px; align-items: stretch; flex-direction: column; gap: 14px; padding: 17px; } .gsf-privacy-notice > button { width: 100%; } }

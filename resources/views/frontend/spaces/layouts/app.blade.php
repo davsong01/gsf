@@ -13,6 +13,7 @@
         @yield('content')
     </main>
     @include('frontend.spaces.includes.footer')
+    @include('frontend.site.partials.privacy-notice')
 </body>
 
 </html>

@@ -53,6 +53,25 @@
     <meta name="twitter:image" content="{{ $conferenceImageUrl }}">
 @endpush
 
+@if(($edition->registration_tickers_enabled ?? true) && $registrationTickerPeople->isNotEmpty())
+    @push('head')
+        <style>
+            .registration-ticker { position:fixed; z-index:1000; right:24px; bottom:24px; width:min(390px,calc(100vw - 32px)); padding:15px 46px 15px 15px; border:1px solid rgba(255,255,255,.82); border-radius:18px; color:#122447; background:rgba(255,255,255,.94); box-shadow:0 18px 55px rgba(14,37,75,.2),0 2px 8px rgba(14,37,75,.08); backdrop-filter:blur(18px); opacity:0; pointer-events:none; transform:translate3d(calc(100% + 40px),0,0); transition:opacity .3s ease,transform .42s cubic-bezier(.2,.8,.2,1); }
+            .registration-ticker.is-visible { opacity:1; pointer-events:auto; transform:translate3d(0,0,0); }
+            .registration-ticker__row { display:flex; align-items:center; gap:12px; }
+            .registration-ticker__icon { display:grid; width:42px; height:42px; flex:0 0 42px; place-items:center; border:1px solid rgba(12,120,92,.12); border-radius:14px; color:#087c5a; background:linear-gradient(145deg,#e7f8f1,#d5f1e7); font-size:20px; font-weight:800; }
+            .registration-ticker__copy { min-width:0; }
+            .registration-ticker__label { display:block; margin-bottom:3px; color:#74809a; font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+            .registration-ticker__message { display:block; color:#172744; font-size:13px; line-height:1.5; }
+            .registration-ticker__message strong { font-weight:800; }
+            .registration-ticker__close { position:absolute; top:10px; right:10px; display:grid; width:30px; height:30px; place-items:center; border:0; border-radius:50%; color:#71809a; background:transparent; cursor:pointer; font-size:20px; line-height:1; }
+            .registration-ticker__close:hover { color:#172744; background:#f0f3f8; }
+            @media(max-width:600px) { .registration-ticker { right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); width:calc(100vw - 24px); padding:13px 42px 13px 13px; border-radius:16px; } .registration-ticker__icon { width:38px; height:38px; flex-basis:38px; } }
+            @media(prefers-reduced-motion:reduce) { .registration-ticker { transition:none; } }
+        </style>
+    @endpush
+@endif
+
 @section('content')
 <section class="conference-detail-hero">
     <div class="conference-detail-hero__image"><img src="{{ $conferenceImageUrl }}" alt="{{ $edition->conference_theme }}" fetchpriority="high"></div>
@@ -209,7 +228,81 @@
         </div>
     </section>
 @endif
+
+@if(($edition->registration_tickers_enabled ?? true) && $registrationTickerPeople->isNotEmpty())
+    <aside class="registration-ticker" data-registration-ticker role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
+        <div class="registration-ticker__row">
+            <span class="registration-ticker__icon" aria-hidden="true">✓</span>
+            <span class="registration-ticker__copy">
+                <span class="registration-ticker__label">Registration confirmed</span>
+                <span class="registration-ticker__message" data-registration-ticker-message></span>
+            </span>
+        </div>
+        <button class="registration-ticker__close" type="button" data-registration-ticker-close aria-label="Dismiss registration update">×</button>
+    </aside>
+@endif
 @endsection
+
+@if(($edition->registration_tickers_enabled ?? true) && $registrationTickerPeople->isNotEmpty())
+    @push('scripts')
+        <script>
+            (() => {
+                const ticker = document.querySelector('[data-registration-ticker]');
+                const message = ticker?.querySelector('[data-registration-ticker-message]');
+                const closeButton = ticker?.querySelector('[data-registration-ticker-close]');
+                const people = @json($registrationTickerPeople->values(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+                if (!ticker || !message || !Array.isArray(people) || people.length === 0) return;
+
+                let queue = [];
+                let previousIndex = -1;
+                let hideTimer;
+                let nextTimer;
+                let dismissed = false;
+
+                const refillQueue = () => {
+                    queue = people.map((_, index) => index);
+                    for (let index = queue.length - 1; index > 0; index--) {
+                        const swapIndex = Math.floor(Math.random() * (index + 1));
+                        [queue[index], queue[swapIndex]] = [queue[swapIndex], queue[index]];
+                    }
+                    if (queue.length > 1 && queue[0] === previousIndex) {
+                        [queue[0], queue[1]] = [queue[1], queue[0]];
+                    }
+                };
+
+                const showNext = () => {
+                    if (dismissed) return;
+                    if (queue.length === 0) refillQueue();
+                    const index = queue.shift();
+                    previousIndex = index;
+                    const person = people[index];
+                    message.replaceChildren();
+                    const name = document.createElement('strong');
+                    name.textContent = person.name;
+                    message.append(name, document.createTextNode(` from ${person.campus} has registered.`));
+                    ticker.classList.add('is-visible');
+                    ticker.setAttribute('aria-hidden', 'false');
+                    window.clearTimeout(hideTimer);
+                    hideTimer = window.setTimeout(() => {
+                        ticker.classList.remove('is-visible');
+                        ticker.setAttribute('aria-hidden', 'true');
+                        nextTimer = window.setTimeout(showNext, 4500 + Math.random() * 3500);
+                    }, 6500);
+                };
+
+                closeButton?.addEventListener('click', () => {
+                    dismissed = true;
+                    window.clearTimeout(hideTimer);
+                    window.clearTimeout(nextTimer);
+                    ticker.classList.remove('is-visible');
+                    ticker.setAttribute('aria-hidden', 'true');
+                });
+
+                window.setTimeout(showNext, 2800 + Math.random() * 2200);
+            })();
+        </script>
+    @endpush
+@endif
 
 @if($isUpcoming)
     @push('scripts')

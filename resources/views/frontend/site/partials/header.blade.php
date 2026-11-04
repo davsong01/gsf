@@ -41,6 +41,7 @@
                     <ul class="nav-dropdown__menu">
                         <li><a href="{{ route('about.mission-strategies') }}">GSF Mission Strategies</a></li>
                         <li><a href="{{ route('about.foundational-concept') }}">GSF Foundational Concept</a></li>
+                        <li><a href="{{ route('about.contact') }}">Contact Us</a></li>
                     </ul>
                 </li>
                 <li class="nav-dropdown">
@@ -66,7 +67,7 @@
                 </li>
                 <li class="nav-dropdown">
                     <button class="{{ ($activeSection ?? '') === 'awards' ? 'is-active' : '' }}" type="button" aria-expanded="false" data-dropdown-toggle>
-                        Education &amp; Excellence Awards <span aria-hidden="true">⌄</span>
+                        Education Awards <span aria-hidden="true">⌄</span>
                     </button>
                     <ul class="nav-dropdown__menu">
                         <li><a href="{{ route('public.awards.etf') }}">Education Trust Fund (ETF)</a></li>

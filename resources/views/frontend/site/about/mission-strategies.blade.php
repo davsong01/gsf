@@ -54,6 +54,24 @@
     </div>
 </section>
 
+@if(filled($siteSettings?->gsf_family_song_lyrics) || filled($siteSettings?->gsf_family_song_audio_path))
+<section class="family-song-section">
+    <div class="site-container family-song-section__grid">
+        <div class="family-song-section__heading">
+            <div class="eyebrow"><span></span> Our Fellowship Song</div>
+            <h2>The GSF Family Song</h2>
+            <p>A song that brings our fellowship family together in faith and shared purpose.</p>
+            @if(filled($siteSettings?->gsf_family_song_audio_path))
+                <audio class="family-song-section__audio" controls preload="none" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($siteSettings->gsf_family_song_audio_path) }}">Your browser does not support audio playback.</audio>
+            @endif
+        </div>
+        @if(filled($siteSettings?->gsf_family_song_lyrics))
+            <div class="family-song-section__lyrics">{!! nl2br(e($siteSettings->gsf_family_song_lyrics)) !!}</div>
+        @endif
+    </div>
+</section>
+@endif
+
 <section class="document-section">
     <div class="site-container">
         <div class="document-section__heading"><div class="eyebrow"><span></span> Governance Documents</div><h2>Read the documents that guide the Fellowship.</h2></div>
@@ -85,10 +103,4 @@
     </div>
 </section>
 
-<section class="page-next">
-    <div class="site-container page-next__card">
-        <div><span>Experience the mission</span><h2>Explore programs that bring these constitutional objectives to life.</h2></div>
-        <a class="button button--blue" href="{{ route('people.programs') }}">View programs <span aria-hidden="true">→</span></a>
-    </div>
-</section>
 @endsection

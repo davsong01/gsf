@@ -81,7 +81,7 @@
 <section class="public-award-hero">
     <div class="site-container">
         <div class="public-award-hero__copy">
-            <span class="public-award-kicker">Education &amp; Excellence Awards</span>
+            <span class="public-award-kicker">Education Awards</span>
             <h1>{{ $title }}</h1>
             <p>Browse award applications by year and see each applicant’s campus, zone, field and approval status.</p>
             <span class="public-award-years"><i class="fa fa-calendar" aria-hidden="true"></i> {{ number_format($yearGroups->count()) }} {{ \Illuminate\Support\Str::plural('year', $yearGroups->count()) }} represented</span>

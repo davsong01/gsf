@@ -58,7 +58,7 @@
                 <li class="nav-item has-sub {{ Str::startsWith($currentRoute, 'stakeholders.award.') ? 'open is_shown' : '' }}">
                     <a href="#">
                         <i class="fa fa-graduation-cap" aria-hidden="true"></i>
-                        <span class="menu-title" data-i18n="User">Education &amp; Excellence Awards</span>
+                        <span class="menu-title" data-i18n="User">Education Awards</span>
                     </a>
                     <ul class="menu-content">
                         <li class="{{ $currentRoute === 'stakeholders.award.etf' ? 'active' : '' }}">

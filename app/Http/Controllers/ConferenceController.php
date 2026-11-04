@@ -11,6 +11,7 @@ use App\Models\ConferenceEdition;
 use App\Models\ConferenceFaq;
 use App\Models\ConferenceSchedule;
 use App\Models\ConferenceSpeaker;
+use App\Models\Transaction;
 use App\Http\Controllers\Controller;
 
 class ConferenceController extends Controller
@@ -52,6 +53,45 @@ class ConferenceController extends Controller
             }])->where('slug', $slug)->firstOrFail();
         $edition->registrations_count = $this->registrationCount($edition);
 
+        $registrationTickerPeople = collect();
+        if ($edition->registration_tickers_enabled ?? true) {
+            $registrations = Transaction::query()
+                ->with(['user.campus', 'allocationFields'])
+                ->where('conference_edition_id', $edition->id)
+                ->where('purpose', 'conference')
+                ->where('registration_status', 'Complete')
+                ->whereNotNull('user_id')
+                ->latest('created_at')
+                ->get()
+                ->unique('user_id')
+                ->values();
+
+            $chapterIds = $registrations
+                ->map(fn ($registration) => $registration->allocationFields->firstWhere('key', 'chapter')?->value)
+                ->filter(fn ($id) => is_numeric($id))
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values();
+            $chapterNames = $chapterIds->isEmpty()
+                ? collect()
+                : Chapter::whereIn('id', $chapterIds)->pluck('name', 'id');
+
+            $registrationTickerPeople = $registrations
+                ->map(function ($registration) use ($chapterNames) {
+                    $name = trim((string) ($registration->user?->name ?? ''));
+                    $chapterValue = $registration->allocationFields->firstWhere('key', 'chapter')?->value;
+                    $campus = $registration->user?->campus?->name
+                        ?? (is_numeric($chapterValue) ? $chapterNames->get((int) $chapterValue) : $chapterValue);
+
+                    return [
+                        'name' => $name,
+                        'campus' => trim((string) $campus),
+                    ];
+                })
+                ->filter(fn ($person) => $person['name'] !== '' && $person['campus'] !== '')
+                ->values();
+        }
+
         $activeEdition = activeConferenceEdition();
         $isRegistrationOpen = $activeEdition && (int) $activeEdition->id === (int) $edition->id;
         $isUpcoming = $edition->start_date && Carbon::parse($edition->start_date)->isFuture();
@@ -76,7 +116,7 @@ class ConferenceController extends Controller
 
         return view('frontend.site.conferences.show', compact(
             'edition', 'isRegistrationOpen', 'isUpcoming', 'speakers', 'faqs', 'schedule',
-            'showSpeakerSection', 'showScheduleSection', 'showFaqSection'
+            'showSpeakerSection', 'showScheduleSection', 'showFaqSection', 'registrationTickerPeople'
         ));
     }
 

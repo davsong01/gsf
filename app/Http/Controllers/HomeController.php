@@ -23,6 +23,8 @@ use App\Modules\Blog\Models\BlogPost;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -116,6 +118,60 @@ class HomeController extends Controller
         $siteSettings = GeneralSetting::first();
 
         return view('frontend.site.about.mission-strategies', compact('siteSettings'));
+    }
+
+    public function contact()
+    {
+        $siteSettings = GeneralSetting::first();
+
+        return view('frontend.site.about.contact', compact('siteSettings'));
+    }
+
+    public function submitContact(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email:rfc', 'max:255'],
+            'subject' => ['required', 'string', 'max:160'],
+            'message' => ['required', 'string', 'max:5000'],
+            'website' => ['nullable', 'max:0'],
+        ]);
+
+        $siteSettings = GeneralSetting::first();
+        $recipient = $siteSettings?->site_contact_email ?: $siteSettings?->official_email;
+
+        if (blank($recipient)) {
+            return back()->withInput()->with('contact_error', 'The contact address is unavailable right now. Please try again later.');
+        }
+
+        try {
+            $body = "Name: {$data['name']}\nEmail: {$data['email']}\nSubject: {$data['subject']}\n\n{$data['message']}";
+            Mail::raw($body, function ($mail) use ($data, $recipient) {
+                $mail->to($recipient)
+                    ->replyTo($data['email'], $data['name'])
+                    ->subject('GSF website: '.$data['subject']);
+            });
+        } catch (\Throwable $exception) {
+            Log::error('Public contact form delivery failed.', ['exception' => $exception]);
+
+            return back()->withInput()->with('contact_error', 'Your message could not be sent. Please try the email address shown on this page.');
+        }
+
+        return back()->with('contact_success', 'Your message has been sent. Thank you for reaching out.');
+    }
+
+    public function privacy()
+    {
+        $siteSettings = GeneralSetting::first();
+
+        return view('frontend.site.legal.privacy', compact('siteSettings'));
+    }
+
+    public function terms()
+    {
+        $siteSettings = GeneralSetting::first();
+
+        return view('frontend.site.legal.terms', compact('siteSettings'));
     }
 
     public function ourFathers()
@@ -340,11 +396,13 @@ class HomeController extends Controller
                 $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
             }])
             ->where('id', '<>', 86)
+            ->when($request->filled('state'), fn ($query) => $query->where('state', $request->input('state')))
             ->when($request->filled('q'), function ($query) use ($request) {
                 $term = '%'.$request->string('q').'%';
                 $query->where(function ($search) use ($term) {
                     $search->where('name', 'LIKE', $term)
                         ->orWhere('address', 'LIKE', $term)
+                        ->orWhere('state', 'LIKE', $term)
                         ->orWhereHas('field', fn ($field) => $field->where('name', 'LIKE', $term))
                         ->orWhereHas('zone', fn ($zone) => $zone->where('name', 'LIKE', $term));
                 });
@@ -356,6 +414,7 @@ class HomeController extends Controller
         return view('frontend.site.directory.campuses', [
             'chapters' => $chapters,
             'searchTerm' => $request->input('q', ''),
+            'selectedState' => $request->input('state', ''),
         ]);
     }
 

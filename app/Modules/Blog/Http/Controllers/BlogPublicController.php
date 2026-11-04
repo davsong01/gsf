@@ -3,9 +3,14 @@
 namespace App\Modules\Blog\Http\Controllers;
 
 use App\Modules\Blog\Models\BlogCategory;
+use App\Modules\Blog\Models\BlogSetting;
 use App\Modules\Blog\Models\BlogPost;
+use App\Models\Chapter;
+use App\Models\Stakeholder;
+use App\Modules\Blog\BlogPermissions;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Str;
 
 class BlogPublicController extends Controller
 {
@@ -13,9 +18,39 @@ class BlogPublicController extends Controller
     {
         $scope = $request->string('scope', 'national')->toString();
         $scopeId = $request->integer('scope_id') ?: null;
-        $posts = BlogPost::published()->forNetwork($scope, $scopeId)->with(['category', 'author'])->latest('published_at')->paginate(12)->withQueryString();
+        $categorySlug = $request->string('category')->toString();
+        $searchTerm = trim($request->string('search')->toString());
+        $query = BlogPost::published()->forNetwork($scope, $scopeId)->with(['category', 'author'])->latest('published_at');
+        if ($categorySlug !== '') {
+            $query->whereHas('category', fn ($builder) => $builder->where('slug', $categorySlug));
+        }
+        if ($searchTerm !== '') {
+            $query->where(function ($builder) use ($searchTerm) {
+                $builder->where('title', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('excerpt', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('body', 'like', '%'.$searchTerm.'%');
+            });
+        }
+
+        $posts = $query->paginate(12)->withQueryString();
+        $featuredPost = $posts->currentPage() === 1
+            ? (clone $query)->where('is_featured', true)->first()
+            : null;
+        $listingPosts = $posts->getCollection()->values();
+        if ($featuredPost) {
+            $listingPosts = $listingPosts->reject(fn ($post) => $post->id === $featuredPost->id)->values();
+        }
+        $mostReadQuery = BlogPost::published()->forNetwork($scope, $scopeId)
+            ->where('view_count', '>', 0)
+            ->with('category')
+            ->orderByDesc('view_count')
+            ->orderByDesc('published_at');
+        if ($categorySlug !== '') {
+            $mostReadQuery->whereHas('category', fn ($builder) => $builder->where('slug', $categorySlug));
+        }
+        $mostRead = $mostReadQuery->limit(5)->get();
         $categories = BlogCategory::withCount(['posts' => fn ($query) => $query->published()])->orderBy('name')->get();
-        return view('modules.blog.public.index', compact('posts', 'categories', 'scope', 'scopeId'));
+        return view('modules.blog.public.index', compact('posts', 'categories', 'scope', 'scopeId', 'categorySlug', 'searchTerm', 'featuredPost', 'listingPosts', 'mostRead'));
     }
 
     public function network(string $scopeType, int $scopeId, Request $request)
@@ -27,17 +62,104 @@ class BlogPublicController extends Controller
 
     public function show(string $slug)
     {
-        $post = BlogPost::published()->with(['category', 'tags', 'author', 'related'])->where('slug', $slug)->firstOrFail();
-        BlogPost::whereKey($post->id)->increment('view_count');
-        return view('modules.blog.public.show', compact('post'));
+        $post = BlogPost::published()
+            ->with(['category', 'tags', 'author', 'related'])
+            ->withCount(['comments as approved_comments_count' => fn ($query) => $query->where('status', 'approved')])
+            ->where('slug', $slug)
+            ->firstOrFail();
+        if ($post->author instanceof Stakeholder) {
+            $post->author->loadMissing('chapter');
+        }
+        $relatedPosts = $post->suggestedRelated();
+        $approvedComments = $post->comments()->where('status', 'approved')->with('chapter')->latest()->limit(50)->get();
+        $adjacentPosts = fn () => BlogPost::published()->forNetwork($post->scope_type, $post->scope_id);
+        $previousPost = $adjacentPosts()
+            ->where(fn ($query) => $query->where('published_at', '<', $post->published_at)
+                ->orWhere(fn ($tie) => $tie->where('published_at', $post->published_at)->where('id', '<', $post->id)))
+            ->orderByDesc('published_at')->orderByDesc('id')->first();
+        $nextPost = $adjacentPosts()
+            ->where(fn ($query) => $query->where('published_at', '>', $post->published_at)
+                ->orWhere(fn ($tie) => $tie->where('published_at', $post->published_at)->where('id', '>', $post->id)))
+            ->orderBy('published_at')->orderBy('id')->first();
+        $viewer = auth('stakeholder')->user() ?: auth()->user();
+        $countsAsView = !BlogPermissions::isWorkspaceUser($viewer);
+        if ($countsAsView) {
+            BlogPost::whereKey($post->id)->increment('view_count');
+        }
+        $challenge = $this->newCommentChallenge($post->id);
+        $mathToken = $challenge['token'];
+        $mathQuestion = $challenge['question'];
+        $campuses = $post->allow_comments ? Chapter::orderBy('name')->get(['id', 'name']) : collect();
+
+        return view('modules.blog.public.show', compact('post', 'mathToken', 'mathQuestion', 'campuses', 'countsAsView', 'relatedPosts', 'approvedComments', 'previousPost', 'nextPost'));
     }
 
     public function comment(Request $request, BlogPost $post)
     {
         abort_unless($post->status === 'published' && $post->allow_comments, 404);
-        $data = $request->validate(['name' => ['required', 'string', 'max:120'], 'email' => ['required', 'email', 'max:255'], 'body' => ['required', 'string', 'max:5000']]);
-        $post->comments()->create($data + ['user_id' => auth()->id()]);
-        return back()->with('message', 'Your comment has been submitted for review.');
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'chapter_id' => ['nullable', 'exists:chapters,id'],
+            'body' => ['required', 'string', 'max:5000'],
+            'math_token' => ['required', 'string', 'size:40'],
+            'math_answer' => ['required', 'integer'],
+        ]);
+
+        $challenge = session()->pull('blog_comment_math_'.$post->id);
+        if (!$challenge || !hash_equals((string) $challenge['token'], $data['math_token'])
+            || !hash_equals((string) $challenge['answer'], (string) $data['math_answer'])) {
+            if ($request->expectsJson()) {
+                $nextChallenge = $this->newCommentChallenge($post->id);
+                return response()->json([
+                    'message' => 'Please solve the new math question correctly.',
+                    'errors' => ['math_answer' => ['Please solve the math question correctly.']],
+                    'challenge' => $nextChallenge,
+                ], 422);
+            }
+            return back()->withErrors(['math_answer' => 'Please solve the math question correctly.'])->withInput();
+        }
+
+        $status = BlogSetting::commentsRequireApproval() ? 'pending' : 'approved';
+        $comment = $post->comments()->create([
+            'name' => $data['name'],
+            'email' => $data['email'] ?? null,
+            'ip_address' => $request->ip(),
+            'chapter_id' => $data['chapter_id'] ?? null,
+            'body' => $data['body'],
+            'user_id' => auth()->id(),
+            'status' => $status,
+        ]);
+        if ($request->expectsJson()) {
+            $comment->load('chapter');
+            $nextChallenge = $this->newCommentChallenge($post->id);
+            $approvedCount = $post->comments()->where('status', 'approved')->count();
+            return response()->json([
+                'status' => $status,
+                'message' => $status === 'approved'
+                    ? 'Your comment has been published.'
+                    : 'Your comment has been submitted for review.',
+                'comment' => [
+                    'name' => $comment->name ?: 'GSF reader',
+                    'campus' => $comment->chapter?->name,
+                    'body' => $comment->body,
+                    'date' => $comment->created_at?->format('d M Y'),
+                ],
+                'approved_comments_count' => $approvedCount,
+                'challenge' => $nextChallenge,
+            ], 201);
+        }
+
+        return back()->with('message', $status === 'approved' ? 'Your comment has been published.' : 'Your comment has been submitted for review.');
+    }
+
+    private function newCommentChallenge(int $postId): array
+    {
+        $a = random_int(1, 9);
+        $b = random_int(1, 9);
+        $token = Str::random(40);
+        session()->put('blog_comment_math_'.$postId, ['token' => $token, 'answer' => $a + $b]);
+        return ['token' => $token, 'question' => "{$a} + {$b}"];
     }
 
     public function rss()

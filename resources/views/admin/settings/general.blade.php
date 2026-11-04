@@ -1,9 +1,9 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Website Documents')
+@section('title', 'General Settings')
 
 @section('active')
-<li class="breadcrumb-item active">Website Documents</li>
+<li class="breadcrumb-item active">General Settings</li>
 @endsection
 
 @section('content')
@@ -14,14 +14,14 @@
                 <div class="card">
                     <div class="card-header">
                         <div>
-                            <h4 class="card-title mb-50">Website Documents</h4>
-                            <p class="text-muted mb-0">Upload the governance documents shown on the Mission Strategies page.</p>
+                            <h4 class="card-title mb-50">General Settings</h4>
+                            <p class="text-muted mb-0">Manage GSF governance documents and the Family Song displayed on the public website.</p>
                         </div>
                     </div>
 
                     <div class="card-content">
                         <div class="card-body">
-                            <form action="{{ route('site-settings.documents.update') }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('general-settings.update') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 @method('PATCH')
 
@@ -82,8 +82,40 @@
                                 </div>
 
                                 <hr>
+                                <h5 class="mb-1">GSF Family Song</h5>
+                                <p class="text-muted">These lyrics and audio will appear on the Mission Strategies page.</p>
+                                <div class="form-group">
+                                    <label for="gsf_family_song_lyrics"><strong>Family Song Lyrics</strong></label>
+                                    <textarea class="form-control @error('gsf_family_song_lyrics') is-invalid @enderror" id="gsf_family_song_lyrics" name="gsf_family_song_lyrics" rows="12" maxlength="30000">{{ old('gsf_family_song_lyrics', $settings->gsf_family_song_lyrics) }}</textarea>
+                                    @error('gsf_family_song_lyrics')<div class="text-danger mt-50">{{ $message }}</div>@enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="gsf_family_song_audio"><strong>Upload Family Song Audio</strong></label>
+                                    <input class="form-control-file @error('gsf_family_song_audio') is-invalid @enderror" id="gsf_family_song_audio" name="gsf_family_song_audio" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/aac,.mp3,.wav,.ogg,.m4a,.aac">
+                                    <small class="form-text text-muted">MP3, WAV, OGG, M4A or AAC, up to 50 MB. Uploading replaces the current audio.</small>
+                                    @error('gsf_family_song_audio')<div class="text-danger mt-50">{{ $message }}</div>@enderror
+                                    <div class="mt-1">
+                                        @if(filled($settings->gsf_family_song_audio_path))
+                                            <audio controls preload="none" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($settings->gsf_family_song_audio_path) }}">Your browser does not support audio playback.</audio>
+                                        @else
+                                            <span class="badge badge-light-warning">No Family Song audio uploaded</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <hr>
+                                <h5 class="mb-1">Public Contact</h5>
+                                <div class="form-group">
+                                    <label for="site_contact_email"><strong>Contact Us Email</strong></label>
+                                    <input class="form-control @error('site_contact_email') is-invalid @enderror" id="site_contact_email" name="site_contact_email" type="email" value="{{ old('site_contact_email', $settings->site_contact_email ?: $settings->official_email) }}" placeholder="contact@gsfnational.org">
+                                    <small class="form-text text-muted">Contact form messages are sent here. If blank, the existing official email is used.</small>
+                                    @error('site_contact_email')<div class="text-danger mt-50">{{ $message }}</div>@enderror
+                                </div>
+
+                                <hr>
                                 <button class="btn btn-primary" type="submit">
-                                    <i class="bx bx-upload"></i> Save website documents
+                                    <i class="bx bx-save"></i> Save General Settings
                                 </button>
                             </form>
                         </div>

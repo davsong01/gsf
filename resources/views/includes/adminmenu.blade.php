@@ -7,9 +7,9 @@
 {!! renderMenuTree(rootPermissions()->toArray(), $userPermissions) !!}
 
 @if($isAdmin)
-<li class="nav-item {{ Request::is('site-settings*') ? 'active' : '' }}">
-    <a href="{{ route('site-settings.documents.edit') }}">
-        <i class="fa fa-file-pdf-o"></i><span class="menu-title">Website Documents</span>
+<li class="nav-item {{ Request::is('general-settings*') ? 'active' : '' }}">
+    <a href="{{ route('general-settings.edit') }}">
+        <i class="fa fa-cog"></i><span class="menu-title">General Settings</span>
     </a>
 </li>
 @endif

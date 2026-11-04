@@ -2,20 +2,18 @@
 
 namespace App\Modules\Blog\Http\Controllers;
 
-use App\Models\Chapter;
-use App\Models\Field;
 use App\Models\Stakeholder;
 use App\Models\User;
-use App\Models\Zone;
 use App\Modules\Blog\BlogPermissions;
+use App\Modules\Blog\BlogMedia;
 use App\Modules\Blog\Models\BlogCategory;
 use App\Modules\Blog\Models\BlogPost;
 use App\Modules\Blog\Models\BlogTag;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class BlogController extends Controller
 {
@@ -25,16 +23,129 @@ class BlogController extends Controller
         $this->authorize($user, BlogPermissions::VIEW);
         $isStakeholder = $user instanceof Stakeholder;
 
-        $query = BlogPost::with(['category', 'author'])->latest('updated_at');
+        $query = BlogPost::with(['category', 'author'])->withCount('comments')->latest('updated_at');
         if ($isStakeholder) $query->where('author_type', $user::class)->where('author_id', $user->id);
-        if ($request->filled('status')) $query->where('status', $request->string('status'));
-        if ($request->filled('type')) $query->where('type', $request->string('type'));
-        if ($request->filled('search')) $query->where('title', 'like', '%'.$request->string('search').'%');
+
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:120',
+            'status' => 'nullable|in:draft,review,scheduled,published,archived',
+            'type' => 'nullable|in:article,video',
+            'category' => 'nullable|integer|exists:blog_categories,id',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+        ]);
+
+        if (!empty($filters['status'])) $query->where('status', $filters['status']);
+        if (!empty($filters['type'])) $query->where('type', $filters['type']);
+        if (!empty($filters['category'])) $query->where('category_id', $filters['category']);
+        if (!empty($filters['date_from'])) $query->whereRaw('DATE(COALESCE(published_at, created_at)) >= ?', [$filters['date_from']]);
+        if (!empty($filters['date_to'])) $query->whereRaw('DATE(COALESCE(published_at, created_at)) <= ?', [$filters['date_to']]);
+        if (!empty($filters['search'])) {
+            $search = trim($filters['search']);
+            $query->where(function ($posts) use ($search) {
+                $posts->where('title', 'like', '%'.$search.'%')
+                    ->orWhereHasMorph('author', [User::class, Stakeholder::class], function ($author) use ($search) {
+                        $author->where('name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%');
+                    });
+            });
+        }
+
+        $summaryQuery = BlogPost::query();
+        if ($isStakeholder) {
+            $summaryQuery->where('author_type', $user::class)->where('author_id', $user->id);
+        }
+        $statusCounts = $summaryQuery->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')->pluck('total', 'status');
 
         return view('modules.blog.admin.index', [
             'posts' => $query->paginate(20)->withQueryString(),
             'isStakeholder' => $isStakeholder,
+            'viewer' => $user,
+            'canCreate' => BlogPermissions::allows($user, BlogPermissions::CREATE),
+            'canArchive' => BlogPermissions::allows($user, BlogPermissions::ARCHIVE),
+            'statusSummary' => [
+                'all' => $statusCounts->sum(),
+                'draft' => (int) ($statusCounts['draft'] ?? 0),
+                'review' => (int) ($statusCounts['review'] ?? 0),
+                'scheduled' => (int) ($statusCounts['scheduled'] ?? 0),
+                'published' => (int) ($statusCounts['published'] ?? 0),
+                'archived' => (int) ($statusCounts['archived'] ?? 0),
+            ],
+            'categories' => BlogCategory::orderBy('name')->get(),
+            'canManageComments' => BlogPermissions::allows($user, BlogPermissions::COMMENTS),
+            'bulkActions' => $isStakeholder ? [] : collect([
+                'delete' => 'Delete',
+                'change-category' => 'Change category',
+                'archive' => 'Archive',
+                'review' => 'Move to review',
+            ])->filter(function ($label, $action) use ($user) {
+                return match ($action) {
+                    'delete', 'change-category' => BlogPermissions::allows($user, BlogPermissions::MANAGE_OWN)
+                        || BlogPermissions::allows($user, BlogPermissions::EDIT),
+                    'archive' => BlogPermissions::allows($user, BlogPermissions::ARCHIVE),
+                    'review' => BlogPermissions::allows($user, BlogPermissions::REVIEW),
+                    default => false,
+                };
+            })->all(),
         ]);
+    }
+
+    public function bulkAction(Request $request)
+    {
+        $user = $this->user();
+        $validated = $request->validate([
+            'action' => 'required|in:delete,archive,review,change-category',
+            'post_ids' => 'required|array|min:1|max:100',
+            'post_ids.*' => 'required|integer|distinct',
+            'category_id' => [
+                'nullable',
+                'required_if:action,change-category',
+                Rule::in(array_merge(['uncategorized'], BlogCategory::query()->pluck('id')->map(fn ($id) => (string) $id)->all())),
+            ],
+        ]);
+
+        $posts = BlogPost::whereIn('id', $validated['post_ids'])->get();
+        $updated = 0;
+        $skipped = count($validated['post_ids']) - $posts->count();
+
+        foreach ($posts as $post) {
+            $ownsPost = $post->author_type === $user::class && (int) $post->author_id === (int) $user->id;
+            $allowed = match ($validated['action']) {
+                'delete', 'change-category' => $ownsPost
+                    ? BlogPermissions::allows($user, BlogPermissions::MANAGE_OWN)
+                    : BlogPermissions::allows($user, BlogPermissions::EDIT),
+                'archive' => BlogPermissions::allows($user, BlogPermissions::ARCHIVE),
+                'review' => BlogPermissions::allows($user, BlogPermissions::REVIEW),
+            };
+
+            if (!$allowed) {
+                $skipped++;
+                continue;
+            }
+
+            match ($validated['action']) {
+                'delete' => $post->delete(),
+                'change-category' => $post->update([
+                    'category_id' => $validated['category_id'] === 'uncategorized'
+                        ? null
+                        : (int) $validated['category_id'],
+                ]),
+                'archive' => $post->update(['status' => 'archived']),
+                'review' => $post->update(['status' => 'review']),
+            };
+            $updated++;
+        }
+
+        $actionLabel = $validated['action'] === 'change-category'
+            ? 'Category change'
+            : ucfirst($validated['action']);
+        $message = "{$actionLabel} applied to {$updated} post(s).";
+        if ($skipped > 0) {
+            $message .= " {$skipped} post(s) were skipped because they were missing or you do not have permission.";
+        }
+
+        return redirect()->route($this->routePrefix($user).'.index')->with('message', $message);
     }
 
     public function create()
@@ -42,7 +153,7 @@ class BlogController extends Controller
         $user = $this->user();
         $this->authorize($user, BlogPermissions::CREATE);
 
-        return view('modules.blog.admin.form', array_merge($this->formData(), ['post' => null]));
+        return view('modules.blog.admin.form', array_merge($this->formData($user), ['post' => null]));
     }
 
     public function store(Request $request)
@@ -66,7 +177,28 @@ class BlogController extends Controller
         $user = $this->user();
         $this->authorizePost($user, $post, BlogPermissions::EDIT);
 
-        return view('modules.blog.admin.form', array_merge($this->formData(), compact('post')));
+        return view('modules.blog.admin.form', array_merge($this->formData($user), [
+            'post' => $post->load('author'),
+            'authors' => $user instanceof User && BlogPermissions::allows($user, BlogPermissions::EDIT)
+                ? $this->eligibleAuthors()
+                : collect(),
+            'canChangeAuthor' => $user instanceof User && BlogPermissions::allows($user, BlogPermissions::EDIT),
+        ]));
+    }
+
+    public function preview(BlogPost $post)
+    {
+        $user = $this->user();
+        $this->authorizePost($user, $post, BlogPermissions::EDIT);
+        $post->load(['category', 'tags', 'author', 'related'])
+            ->loadCount(['comments as approved_comments_count' => fn ($query) => $query->where('status', 'approved')]);
+        if ($post->author instanceof Stakeholder) {
+            $post->author->loadMissing('chapter');
+        }
+
+        $relatedPosts = $post->suggestedRelated();
+
+        return view('modules.blog.public.show', ['post' => $post, 'relatedPosts' => $relatedPosts, 'isPreview' => true]);
     }
 
     public function update(Request $request, BlogPost $post)
@@ -74,6 +206,18 @@ class BlogController extends Controller
         $user = $this->user();
         $this->authorizePost($user, $post, BlogPermissions::EDIT);
         $data = $this->validated($request, $user, $post);
+        if ($request->filled('author_key')) {
+            abort_unless($user instanceof User && BlogPermissions::allows($user, BlogPermissions::EDIT), 403);
+            $authors = $this->eligibleAuthors()->keyBy('key');
+            $validatedAuthor = $request->validate([
+                'author_key' => ['required', 'string', Rule::in($authors->keys()->all())],
+            ])['author_key'];
+            [$data['author_type'], $data['author_id']] = explode(':', $validatedAuthor, 2);
+            $data['author_id'] = (int) $data['author_id'];
+            if (\Illuminate\Support\Facades\Schema::hasColumn('blog_posts', 'legacy_author_name')) {
+                $data['legacy_author_name'] = null;
+            }
+        }
         if ($this->isStakeholder($user)) $data['status'] = $request->boolean('submit_review') ? 'review' : ($post->status === 'published' ? 'published' : 'draft');
         $data['published_at'] = $this->publicationDate($data, $post);
         $post->update($data);
@@ -132,8 +276,8 @@ class BlogController extends Controller
             Validator::make(['upload' => $file], [
                 'upload' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'],
             ])->validate();
-            $path = $file->store('blog/content', 'public');
-            $url = Storage::disk('public')->url($path);
+            $path = BlogMedia::upload($file, 'content');
+            $url = BlogMedia::url($path);
 
             return [
                 'url' => $url,
@@ -147,16 +291,39 @@ class BlogController extends Controller
         ]);
     }
 
-    protected function formData(): array
+    protected function formData($user): array
     {
         return [
+            'canFeaturePosts' => BlogPermissions::canFeaturePosts($user),
             'categories' => BlogCategory::orderBy('name')->get(),
             'tags' => BlogTag::orderBy('name')->get(),
-            'chapters' => Chapter::orderBy('name')->get(),
-            'fields' => Field::orderBy('name')->get(),
-            'zones' => Zone::orderBy('name')->get(),
-            'relatedPosts' => BlogPost::orderByDesc('created_at')->limit(100)->get(['id', 'title']),
         ];
+    }
+
+    protected function eligibleAuthors()
+    {
+        $users = User::query()
+            ->where(function ($query) {
+                $query->where('role', 1)->orWhereJsonContains('permissions', BlogPermissions::CREATE);
+            })
+            ->get(['id', 'name', 'email'])
+            ->map(fn (User $author) => [
+                'key' => User::class.':'.$author->id,
+                'name' => $author->name ?: $author->email,
+                'email' => $author->email,
+            ]);
+
+        $stakeholders = Stakeholder::query()
+            ->whereHas('role.permissions', fn ($query) => $query->where('slug', BlogPermissions::CREATE))
+            ->with('role')
+            ->get(['id', 'name', 'email'])
+            ->map(fn (Stakeholder $author) => [
+                'key' => Stakeholder::class.':'.$author->id,
+                'name' => $author->name ?: $author->email,
+                'email' => $author->email,
+            ]);
+
+        return $users->concat($stakeholders)->sortBy(fn ($author) => mb_strtolower($author['name'] ?? ''))->values();
     }
 
     protected function validated(Request $request, $user, ?BlogPost $post = null): array
@@ -175,21 +342,25 @@ class BlogController extends Controller
             'seo_description' => ['nullable', 'string', 'max:320'],
             'canonical_url' => ['nullable', 'url', 'max:2048'],
             'tag_names' => ['nullable', 'string', 'max:1000'],
-            'scope_type' => ['nullable', 'in:national,field,zone,chapter'],
-            'scope_id' => ['nullable', 'integer'],
             'allow_comments' => ['nullable', 'boolean'],
+            'is_featured' => ['nullable', 'boolean'],
             'featured_image' => ['nullable', 'image', 'max:5120'],
-            'social_image' => ['nullable', 'image', 'max:5120'],
         ]);
 
         $data['slug'] = Str::slug($data['slug'] ?: $data['title']);
-        $data['scope_type'] = $data['scope_type'] ?? 'national';
-        $data['scope_id'] = $this->scopeId($user, $data['scope_type'], $data['scope_id'] ?? null);
+        $data['scope_type'] = $post?->scope_type ?? $this->defaultScopeType($user);
+        $data['scope_id'] = $post?->scope_id ?? $this->scopeId($user, $data['scope_type'], null);
         $data['allow_comments'] = $request->boolean('allow_comments');
-
-        foreach (['featured_image', 'social_image'] as $field) {
-            if ($request->hasFile($field)) $data[$field] = $request->file($field)->store('blog', 'public');
+        if (BlogPermissions::canFeaturePosts($user)) {
+            $data['is_featured'] = $request->boolean('is_featured');
+        } else {
+            unset($data['is_featured']);
         }
+
+        if ($request->hasFile('featured_image')) $data['featured_image'] = BlogMedia::upload($request->file('featured_image'), 'featured_image');
+
+        // Tags are stored in blog_tags and synced after the post save.
+        unset($data['tag_names']);
 
         return $data;
     }
@@ -206,7 +377,6 @@ class BlogController extends Controller
         }
         $tagIds = $tagIds->unique()->map('intval')->all();
         $post->tags()->sync($tagIds);
-        $post->related()->sync(collect($request->input('related_ids', []))->filter()->reject(fn ($id) => (int) $id === $post->id)->map('intval')->all());
     }
 
     protected function publicationDate(array $data, ?BlogPost $post = null)
@@ -226,6 +396,15 @@ class BlogController extends Controller
         };
     }
 
+    protected function defaultScopeType($user): string
+    {
+        if (!$this->isStakeholder($user)) return 'national';
+        if ($user->chapter_id) return 'chapter';
+        if ($user->zone_id) return 'zone';
+        if ($user->field_id) return 'field';
+        return 'national';
+    }
+
     protected function user() { return auth('stakeholder')->user() ?: auth()->user(); }
     protected function isStakeholder($user): bool { return $user instanceof Stakeholder; }
     protected function routePrefix($user): string { return $this->isStakeholder($user) ? 'stakeholders.blog' : 'admin.blog'; }
@@ -237,8 +416,11 @@ class BlogController extends Controller
 
     protected function authorizePost($user, BlogPost $post, string $permission): void
     {
-        $owns = $post->author_type === $user::class && (int) $post->author_id === (int) $user->id;
-        $this->authorize($user, $owns ? BlogPermissions::MANAGE_OWN : $permission);
-        abort_unless($owns || BlogPermissions::allows($user, $permission), 403);
+        abort_unless(
+            $permission === BlogPermissions::EDIT
+                ? BlogPermissions::canEditPost($user, $post)
+                : BlogPermissions::allows($user, $permission),
+            403
+        );
     }
 }
