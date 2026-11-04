@@ -204,6 +204,8 @@ Route::get('/education-excellence-awards/etf', [AwardController::class, 'publicE
     ->name('public.awards.etf');
 Route::get('/education-excellence-awards/go', [AwardController::class, 'publicGoExcellenceBeneficiaries'])
     ->name('public.awards.go');
+Route::get('/education-excellence-awards/applicants/{award}/photo', [AwardController::class, 'publicApplicantPhoto'])
+    ->name('public.awards.applicant-photo');
 Route::get('/education-excellence-awards/{type}/{year}/applicants', [AwardController::class, 'publicBeneficiaryYearApplicants'])
     ->whereIn('type', ['etf', 'go'])
     ->whereNumber('year')

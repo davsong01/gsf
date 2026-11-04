@@ -42,7 +42,12 @@
                     ])));
                 @endphp
                 <article class="public-award-beneficiary" data-applicant-row data-applicant-search="{{ $searchText }}">
-                    <span class="public-award-beneficiary__initials" aria-hidden="true">{{ $initials ?: 'GS' }}</span>
+                    <span class="public-award-beneficiary__initials" aria-hidden="true">
+                        {{ $initials ?: 'GS' }}
+                        @if(filled($applicant->entry?->picture))
+                            <img class="public-award-beneficiary__photo" src="{{ route('public.awards.applicant-photo', ['award' => $applicant->id]) }}" alt="" loading="lazy" width="43" height="43">
+                        @endif
+                    </span>
                     <div class="public-award-beneficiary__info">
                         <strong class="public-award-beneficiary__name" title="{{ $applicantName }}">{{ $applicantName }}</strong>
                         <p class="public-award-beneficiary__location"><strong>Campus:</strong> {{ $chapterName }}</p>

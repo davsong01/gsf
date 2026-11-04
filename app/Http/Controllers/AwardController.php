@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
 class AwardController extends Controller
@@ -112,6 +113,28 @@ class AwardController extends Controller
     public function publicGoExcellenceBeneficiaries()
     {
         return $this->publicBeneficiaryDashboard('go');
+    }
+
+    public function publicApplicantPhoto(Award $award)
+    {
+        abort_unless(in_array($award->type, ['etf', 'go'], true), 404);
+
+        $path = base64_decode($award->entry?->picture ?? '', true);
+        abort_unless(is_string($path)
+            && preg_match('~^uploads/award-files/[a-zA-Z0-9._-]+\.(?:jpe?g|png|gif|webp|avif)$~i', $path), 404);
+
+        $disk = Storage::disk('protected_uploads');
+        abort_unless($disk->exists($path), 404);
+
+        $mimeType = $disk->mimeType($path);
+        abort_unless(in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'], true), 404);
+
+        return response()->file($disk->path($path), [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline',
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'public, max-age=300',
+        ]);
     }
 
     public function publicBeneficiaryYearApplicants(string $type, int $year)

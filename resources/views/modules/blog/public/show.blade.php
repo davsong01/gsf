@@ -14,11 +14,16 @@
         : ($post->author instanceof \App\Models\Stakeholder ? $post->author->chapter?->name : null);
 @endphp
 @push('head')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/suneditor@2.47.12/dist/css/suneditor.min.css">
 <style>
-.blog-article-body { text-align: justify; text-justify: inter-word; }
+.blog-article-body { text-align: left; overflow-wrap: anywhere; }
 .blog-article-body img { max-width: 100%; height: auto; }
 .blog-article-body > p { margin: 0 0 1.2em; }
 .blog-article-body > p:last-child { margin-bottom: 0; }
+.blog-article-body blockquote { margin: 1.5em 0; padding: .3em 1.25em; border-left: 4px solid var(--gold-dark); color: var(--ink); font-style: italic; }
+.blog-article-body figure { max-width: 100%; margin: 1.5em auto; }
+.blog-article-body iframe { max-width: 100%; }
+.blog-article-body table { display: block; max-width: 100%; overflow-x: auto; }
 .blog-post-meta { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:24px 0 8px; }
 .blog-post-meta__item { display:inline-flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid #e3e8f0; border-radius:999px; background:#f7f9fc; color:#30415f; font-size:13px; font-weight:700; letter-spacing:.02em; text-decoration:none; }
 .blog-post-meta__item svg, .blog-post-author svg { width:17px; height:17px; flex:0 0 17px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
@@ -90,7 +95,7 @@ a.blog-post-meta__item:hover { background:#eaf0f9; color:#173e79; }
     @if($post->allow_comments)<a class="blog-post-meta__item blog-comments-link" href="#comment-body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8v.5Z"/></svg><span data-comment-count>{{ number_format($post->approved_comments_count ?? 0) }}</span> comments</a>@endif
 </div>
 @if($postAuthorName)<div class="blog-post-author"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>By: {{ $postAuthorName }}@if($postAuthorAffiliation) - {{ $postAuthorAffiliation }}@endif</span></div>@endif
-@if($featuredImageUrl)<img style="width:100%;max-height:520px;object-fit:cover;border-radius:18px;margin:28px 0 38px" src="{{ $featuredImageUrl }}" alt="{{ $post->title }}">@endif<div class="blog-article-body" style="font-size:17px;line-height:1.9;color:var(--ink-soft)">{!! \App\Modules\Blog\BlogMedia::htmlWithAvailableImages(str_replace('//storage/', '/storage/', $post->body)) !!}</div>
+@if($featuredImageUrl)<img style="width:100%;max-height:520px;object-fit:cover;border-radius:18px;margin:28px 0 38px" src="{{ $featuredImageUrl }}" alt="{{ $post->title }}">@endif<div class="blog-article-body sun-editor-editable" style="font-size:17px;line-height:1.9;color:var(--ink-soft)">{!! \App\Modules\Blog\BlogMedia::htmlWithAvailableImages(str_replace('//storage/', '/storage/', $post->body)) !!}</div>
 <div class="blog-share" aria-label="Share this post">
     <span class="blog-share__label">Share this story</span>
     <a class="blog-share__link" href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('blog.show', $post->slug)) }}" target="_blank" rel="noopener noreferrer"><svg class="blog-share__icon blog-share__icon--facebook" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-8.2h2.8l.4-3.2h-3.2v-2c0-.9.3-1.6 1.6-1.6H17V3.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.3H7.5v3.2h2.8V21h3.2Z"/></svg>Facebook</a>

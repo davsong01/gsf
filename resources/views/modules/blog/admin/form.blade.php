@@ -16,7 +16,7 @@
                     <div class="form-group"><label>Excerpt</label><textarea class="form-control" name="excerpt" rows="3">{{ old('excerpt', $post?->excerpt) }}</textarea></div>
                     <div class="form-group">
                         <label for="blog-body">Rich content</label>
-                        <div class="mb-2"><label class="btn btn-outline-primary mb-0" for="blog-inline-images">Add images to article</label><input id="blog-inline-images" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden><span id="blog-image-status" class="ml-2" role="status" aria-live="polite"></span></div>
+                        <div class="mb-2"><label class="btn btn-outline-primary mb-0" for="blog-inline-images">Add images to article</label><input id="blog-inline-images" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden><span id="blog-image-status" class="ml-2" role="status" aria-live="polite"></span><small class="text-muted d-block mt-1">Place the cursor where the image belongs, then choose images. You can also drag or paste images into the editor. JPG, PNG, WebP or GIF, up to 10 MB each.</small></div>
                         <textarea class="form-control" id="blog-body" name="body" rows="16" required>{{ old('body', str_replace('//storage/', '/storage/', $post?->body ?? '')) }}</textarea>
                     </div>
                     <div class="form-group"><label>Video URL <small class="text-muted">(for video posts)</small></label><input class="form-control" type="url" name="video_url" value="{{ old('video_url', $post?->video_url) }}"></div>
@@ -36,7 +36,18 @@
                     @endunless
                     <div class="form-group"><label>Publication date</label><input class="form-control" type="datetime-local" name="published_at" value="{{ old('published_at', $post?->published_at?->format('Y-m-d\\TH:i')) }}"></div>
                     @if($canFeaturePosts)<div class="form-group"><label class="d-flex align-items-center"><input class="mr-2" type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post?->is_featured ?? false))> Feature this post in GSF News</label><small class="text-muted">Featured posts appear in the lead story area on the public news page.</small></div>@endif
-                    <div class="form-group"><label>Featured image</label><input class="form-control-file" type="file" name="featured_image" accept="image/*"></div>
+                    @php($featuredImageUrl = $post ? (\App\Modules\Blog\BlogMedia::url($post->featured_image) ?: (filter_var($post->featured_image, FILTER_VALIDATE_URL) && str_starts_with($post->featured_image, 'https://') ? $post->featured_image : null)) : null)
+                    <div class="form-group">
+                        <label for="blog-featured-image">Featured image</label>
+                        <label class="blog-featured-dropzone" for="blog-featured-image" data-featured-dropzone tabindex="0" role="button" aria-describedby="blog-featured-help blog-featured-status">
+                            <img class="blog-featured-dropzone__preview" data-featured-preview src="{{ $featuredImageUrl ?: '' }}" alt="Featured image preview" @if(!$featuredImageUrl) hidden @endif>
+                            <span class="blog-featured-dropzone__prompt" data-featured-prompt>{{ $featuredImageUrl ? 'Drop a new image here or click to replace it' : 'Drop an image here or click to choose one' }}</span>
+                        </label>
+                        <input id="blog-featured-image" class="blog-featured-dropzone__input" type="file" name="featured_image" accept="image/jpeg,image/png,image/webp,image/gif">
+                        <small id="blog-featured-help" class="text-muted d-block">JPG, PNG, WebP or GIF, up to 5 MB. Saving the post replaces the featured image.</small>
+                        <small id="blog-featured-status" class="d-block" role="status" aria-live="polite"></small>
+                        @error('featured_image')<small class="text-danger d-block">{{ $message }}</small>@enderror
+                    </div>
                     <div class="form-group"><label>SEO title</label><input class="form-control" name="seo_title" value="{{ old('seo_title', $post?->seo_title) }}"></div>
                     <div class="form-group"><label>SEO description</label><textarea class="form-control" name="seo_description" rows="3">{{ old('seo_description', $post?->seo_description) }}</textarea></div>
                     <div class="form-group"><label>Canonical URL</label><input class="form-control" type="url" name="canonical_url" value="{{ old('canonical_url', $post?->canonical_url) }}"></div>
@@ -48,17 +59,96 @@
         </form>
     </div></div></section>
 </div>
+<style>
+.blog-featured-dropzone { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; min-height:170px; padding:16px; border:2px dashed #a9b9d0; border-radius:12px; background:#f7f9fc; cursor:pointer; text-align:center; transition:border-color .2s, background-color .2s; }
+.blog-featured-dropzone:hover, .blog-featured-dropzone:focus, .blog-featured-dropzone.is-dragging { border-color:#3166a7; background:#eef5fc; outline:none; }
+.blog-featured-dropzone__preview { display:block; max-width:100%; max-height:240px; border-radius:8px; object-fit:contain; }
+.blog-featured-dropzone__preview[hidden] { display:none; }
+.blog-featured-dropzone__prompt { color:#31527c; font-weight:600; }
+.blog-featured-dropzone__input { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; }
+</style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/suneditor@2.47.12/dist/css/suneditor.min.css">
 <script src="https://cdn.jsdelivr.net/npm/suneditor@2.47.12/dist/suneditor.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    var dropzone = document.querySelector('[data-featured-dropzone]');
+    var featuredInput = document.querySelector('#blog-featured-image');
+    var featuredPreview = document.querySelector('[data-featured-preview]');
+    var featuredPrompt = document.querySelector('[data-featured-prompt]');
+    var featuredStatus = document.querySelector('#blog-featured-status');
+    var savedImageUrl = featuredPreview.getAttribute('src');
+    var previewUrl = null;
+
+    function previewFeaturedImage(file) {
+        if (!file) return;
+        if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+            featuredInput.value = '';
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrl = null;
+            featuredPreview.src = savedImageUrl || '';
+            featuredPreview.hidden = !savedImageUrl;
+            featuredPrompt.textContent = savedImageUrl ? 'Drop a new image here or click to replace it' : 'Drop an image here or click to choose one';
+            featuredStatus.textContent = 'Choose a JPG, PNG, WebP or GIF image under 5 MB.';
+            featuredStatus.classList.add('text-danger');
+            return;
+        }
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = URL.createObjectURL(file);
+        featuredPreview.src = previewUrl;
+        featuredPreview.hidden = false;
+        featuredPrompt.textContent = 'Drop another image here or click to change it';
+        featuredStatus.classList.remove('text-danger');
+        featuredStatus.textContent = file.name + ' selected. Save the post to upload it.';
+    }
+
+    featuredInput.addEventListener('change', function () {
+        previewFeaturedImage(featuredInput.files[0]);
+    });
+    dropzone.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            featuredInput.click();
+        }
+    });
+    ['dragenter', 'dragover'].forEach(function (type) {
+        dropzone.addEventListener(type, function (event) {
+            event.preventDefault();
+            dropzone.classList.add('is-dragging');
+        });
+    });
+    ['dragleave', 'drop'].forEach(function (type) {
+        dropzone.addEventListener(type, function (event) {
+            event.preventDefault();
+            dropzone.classList.remove('is-dragging');
+        });
+    });
+    dropzone.addEventListener('drop', function (event) {
+        var file = event.dataTransfer.files[0];
+        if (!file) return;
+        if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+            featuredStatus.textContent = 'Choose a JPG, PNG, WebP or GIF image under 5 MB.';
+            featuredStatus.classList.add('text-danger');
+            return;
+        }
+        var transfer = new DataTransfer();
+        transfer.items.add(file);
+        featuredInput.files = transfer.files;
+        previewFeaturedImage(file);
+    });
+
     var textarea = document.querySelector('#blog-body');
-    if (!textarea || !window.SUNEDITOR) return;
+    if (!textarea) return;
 
     var form = document.querySelector('#blog-post-form');
-    var csrf = form.querySelector('input[name="_token"]').value;
     var imageInput = document.querySelector('#blog-inline-images');
     var imageStatus = document.querySelector('#blog-image-status');
+    if (!window.SUNEDITOR) {
+        imageStatus.textContent = 'The rich text editor could not load. Check your connection and reload the page.';
+        imageStatus.classList.add('text-danger');
+        imageInput.disabled = true;
+        return;
+    }
+    var csrf = form.querySelector('input[name="_token"]').value;
     var uploadUrl = @json(route($prefix.'.blog.media.upload'));
     var editor = SUNEDITOR.create(textarea, {
         height: '520px',
@@ -67,65 +157,57 @@ document.addEventListener('DOMContentLoaded', function () {
         imageResizing: true,
         imageFileInput: true,
         imageMultipleFile: true,
+        imageUrlInput: false,
         imageAccept: '.jpg,.jpeg,.png,.webp,.gif',
         imageUploadSizeLimit: 10 * 1024 * 1024,
         mediaAutoSelect: true,
         imageUploadUrl: uploadUrl,
-        imageUploadHeader: { 'X-CSRF-TOKEN': csrf },
+        imageUploadHeader: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
         buttonList: [
-            ['undo', 'redo', 'formatBlock', 'fontSize', 'bold', 'underline', 'italic', 'strike', 'removeFormat'],
-            ['fontColor', 'hiliteColor', 'align', 'outdent', 'indent', 'list', 'horizontalRule'],
-            ['table', 'link', 'image', 'video', 'fullScreen', 'showBlocks', 'codeView']
+            ['undo', 'redo', 'formatBlock', 'blockquote', 'fontSize', 'bold', 'underline', 'italic', 'strike', 'removeFormat'],
+            ['fontColor', 'hiliteColor', 'align', 'outdent', 'indent', 'list', 'horizontalRule', 'lineHeight'],
+            ['table', 'link', 'image', 'video', 'fullScreen', 'showBlocks', 'codeView', 'preview']
         ],
         placeholder: 'Start writing your story…',
         attributesWhitelist: { all: 'style|src|alt|width|height|class|target|rel' }
     });
 
+    var uploading = false;
+    editor.onImageUploadBefore = function () {
+        uploading = true;
+        imageStatus.classList.remove('text-danger');
+        imageStatus.textContent = 'Uploading images…';
+        return true;
+    };
+    editor.onImageUpload = function (element, index, state, info, remainingFilesCount) {
+        if (state !== 'create' && state !== 'update') return;
+        if (remainingFilesCount === 0) {
+            uploading = false;
+            imageStatus.classList.remove('text-danger');
+            imageStatus.textContent = 'Image uploaded and added to the article.';
+            editor.save();
+        }
+    };
     editor.onImageUploadError = function (message) {
+        uploading = false;
         imageStatus.textContent = message || 'The image could not be uploaded.';
         imageStatus.classList.add('text-danger');
         return false;
     };
 
-    var uploading = false;
-    imageInput.addEventListener('change', async function () {
+    imageInput.addEventListener('change', function () {
         if (!imageInput.files.length || uploading) return;
-        uploading = true;
-        imageStatus.classList.remove('text-danger');
-        imageStatus.textContent = 'Uploading images…';
-        var data = new FormData();
-        Array.from(imageInput.files).forEach(function (file, index) {
-            data.append('file-' + index, file);
+        var invalid = Array.from(imageInput.files).some(function (file) {
+            return !['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type) || file.size > 10 * 1024 * 1024;
         });
-
-        try {
-            var response = await fetch(uploadUrl, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
-                credentials: 'same-origin',
-                body: data
-            });
-            var result = await response.json();
-            if (!response.ok || !Array.isArray(result.result) || !result.result.length) {
-                throw new Error(result.message || result.errorMessage || 'Image upload failed.');
-            }
-
-            result.result.forEach(function (image) {
-                var element = document.createElement('img');
-                element.src = image.url;
-                element.alt = '';
-                element.style.maxWidth = '100%';
-                editor.insertHTML('<p>' + element.outerHTML + '</p>');
-            });
-            editor.save();
-            imageStatus.textContent = result.result.length + (result.result.length === 1 ? ' image added.' : ' images added.');
-        } catch (error) {
+        if (invalid) {
             imageStatus.classList.add('text-danger');
-            imageStatus.textContent = error.message || 'Image upload failed.';
-        } finally {
-            uploading = false;
+            imageStatus.textContent = 'Choose JPG, PNG, WebP or GIF images under 10 MB each.';
             imageInput.value = '';
+            return;
         }
+        editor.insertImage(imageInput.files);
+        imageInput.value = '';
     });
 
     form.addEventListener('submit', function (event) {

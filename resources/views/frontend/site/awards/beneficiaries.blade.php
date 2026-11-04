@@ -67,7 +67,8 @@
     .public-award-beneficiary { display:flex; min-width:0; gap:12px; padding:16px; border:1px solid var(--award-line); border-radius:16px; background:linear-gradient(145deg,#fff,#fbfcfe); transition:transform .18s ease,box-shadow .18s ease; }
     .public-award-beneficiary[hidden] { display:none !important; }
     .public-award-beneficiary:hover { transform:translateY(-2px); box-shadow:0 12px 25px rgba(31,55,79,.08); }
-    .public-award-beneficiary__initials { display:grid; width:43px; height:43px; flex:0 0 43px; place-items:center; border:1px solid #f1ddb4; border-radius:14px; color:#765616; background:linear-gradient(145deg,#fff9ec,#f4e4c3); font-size:13px; font-weight:850; }
+    .public-award-beneficiary__initials { position:relative; display:grid; width:43px; height:43px; flex:0 0 43px; overflow:hidden; place-items:center; border:1px solid #f1ddb4; border-radius:50%; color:#765616; background:linear-gradient(145deg,#fff9ec,#f4e4c3); font-size:13px; font-weight:850; }
+    .public-award-beneficiary__photo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
     .public-award-beneficiary__info { min-width:0; }
     .public-award-beneficiary__name { display:block; overflow:hidden; color:var(--award-ink); font-size:14px; font-weight:850; text-overflow:ellipsis; white-space:nowrap; }
     .public-award-beneficiary__location { margin:4px 0 8px; color:var(--award-muted); font-size:12px; line-height:1.45; }
@@ -167,6 +168,13 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('error', function (event) {
+        if (event.target.matches?.('.public-award-beneficiary__photo')) event.target.remove();
+    }, true);
+    document.querySelectorAll('.public-award-beneficiary__photo').forEach(function (photo) {
+        if (photo.complete && !photo.naturalWidth) photo.remove();
+    });
+
     const search = document.getElementById('awardYearSearch');
     const clear = document.getElementById('awardYearSearchClear');
     const cards = Array.from(document.querySelectorAll('[data-award-year-card]'));

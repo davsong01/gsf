@@ -279,13 +279,14 @@ class BlogController extends Controller
             Validator::make(['upload' => $file], [
                 'upload' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'],
             ])->validate();
+            $size = $file->getSize();
             $path = BlogMedia::upload($file, 'content');
             $url = BlogMedia::url($path);
 
             return [
                 'url' => $url,
                 'name' => basename($path),
-                'size' => $file->getSize(),
+                'size' => $size,
             ];
         })->all();
 
@@ -349,7 +350,7 @@ class BlogController extends Controller
             'tag_ids.*' => ['integer', 'distinct', 'exists:blog_tags,id'],
             'allow_comments' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],
-            'featured_image' => ['nullable', 'image', 'max:5120'],
+            'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
         ]);
 
         $data['slug'] = Str::slug($data['slug'] ?: $data['title']);
