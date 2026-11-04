@@ -14,6 +14,26 @@ use Illuminate\Support\Str;
 
 class BlogPublicController extends Controller
 {
+    public function media(Request $request)
+    {
+        $relative = (string) $request->query('path', '');
+        abort_unless(str_starts_with($relative, 'uploads/blog/') && !str_contains($relative, "\0"), 404);
+
+        $root = realpath(public_path('uploads/blog'));
+        $file = realpath(public_path($relative));
+        abort_unless($root && $file && str_starts_with($file, $root.DIRECTORY_SEPARATOR) && is_file($file), 404);
+
+        $mime = mime_content_type($file);
+        abort_unless(in_array($mime, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'application/pdf', 'audio/mpeg'], true), 404);
+
+        return response()->file($file, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => str_starts_with($mime, 'image/') ? 'inline' : 'attachment',
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    }
+
     public function index(Request $request)
     {
         $scope = $request->string('scope', 'national')->toString();

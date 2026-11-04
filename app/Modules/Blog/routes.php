@@ -12,6 +12,7 @@ Route::prefix('news')->name('blog.')->group(function () {
     Route::get('/', [BlogPublicController::class, 'index'])->name('index');
     Route::get('/rss.xml', [BlogPublicController::class, 'rss'])->name('rss');
     Route::get('/sitemap.xml', [BlogPublicController::class, 'sitemap'])->name('sitemap');
+    Route::get('/media', [BlogPublicController::class, 'media'])->name('media');
     Route::get('/network/{scopeType}/{scopeId}', [BlogPublicController::class, 'network'])->name('network');
     Route::get('/{slug}', [BlogPublicController::class, 'show'])->name('show');
     Route::post('/{post}/comments', [BlogPublicController::class, 'comment'])->name('comments.store');

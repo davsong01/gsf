@@ -31,7 +31,6 @@ class SwitchUserController extends Controller
             Session::put(self::IMPERSONATOR_GUARD_SESSION_KEY, 'stakeholder');
 
             Auth::guard('stakeholder')->loginUsingId($stakeholder->id);
-            $stakeholder->update(['last_login' => now()]);
 
             return match ($target) {
                 'appraisal-my' => redirect()->route('stakeholders.appraisal.my'),
@@ -48,16 +47,15 @@ class SwitchUserController extends Controller
         Auth::user()->setSwitchingUser($admin);
         Auth::loginUsingId($user->id);
 
+        if ((int) $user->role === 1) {
+            return redirect()->route('account');
+        }
+
         if(in_array($user->conference_role, ['admin'])){
             return redirect()->route('conferencemanagement.index');
         }
 
-        if(Auth::user()->role <> 1)
-        {
-            return redirect('/account');
-        }
-
-        return back()->with('error', 'Switch disabled for this user!');
+        return redirect()->route('account');
     }
 
     public function stopSwitching(Request $request)

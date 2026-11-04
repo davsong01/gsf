@@ -23,6 +23,12 @@ class BlogMedia
             return null;
         }
 
+        $mediaRoutePath = parse_url(route('blog.media'), PHP_URL_PATH);
+        if (parse_url($path, PHP_URL_PATH) === $mediaRoutePath) {
+            parse_str((string) parse_url($path, PHP_URL_QUERY), $query);
+            $path = $query['path'] ?? '';
+        }
+
         if (preg_match('~^(?:https?:)?//[^/]+(/[^?#]*)~i', $path, $matches)) {
             $path = $matches[1];
         }
@@ -35,7 +41,13 @@ class BlogMedia
 
         $publicPath = Str::startsWith($path, ['uploads/', 'storage/']) ? $path : 'storage/'.$path;
 
-        return is_file(public_path($publicPath)) ? asset($publicPath) : null;
+        if (!is_file(public_path($publicPath))) {
+            return null;
+        }
+
+        return Str::startsWith($publicPath, 'uploads/blog/')
+            ? route('blog.media', ['path' => $publicPath])
+            : asset($publicPath);
     }
 
     public static function htmlWithAvailableImages(string $html): string

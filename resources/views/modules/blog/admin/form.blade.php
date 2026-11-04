@@ -206,7 +206,13 @@ document.addEventListener('DOMContentLoaded', function () {
             imageInput.value = '';
             return;
         }
-        editor.insertImage(imageInput.files);
+        // Keep an independent FileList: clearing the input must not empty files
+        // while SunEditor is still uploading them.
+        var transfer = new DataTransfer();
+        Array.from(imageInput.files).forEach(function (file) {
+            transfer.items.add(file);
+        });
+        editor.insertImage(transfer.files);
         imageInput.value = '';
     });
 
