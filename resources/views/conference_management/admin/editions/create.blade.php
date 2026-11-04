@@ -144,6 +144,7 @@
                                             </select>
                                         </fieldset>
                                     </div>
+                                @include('conference_management.admin.editions._banner-upload', ['bannerUrl' => null])
                                 <div class="col-sm-12 col-md-12">
                                     <label for="conference_overview">Conference Overview</label><small> You can use html tags here</small>
                                     <fieldset class="form-group  ">

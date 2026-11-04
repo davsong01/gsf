@@ -10,8 +10,8 @@
         <!-- Website Analytics Starts-->
         <div class="col-md-12 col-sm-12">
             <div class="card">
-                <div class="card-header">
-                    <h5 style="color:blue">{{ $edition->conference_theme }} Conference Edition</h5>
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                    <h5 style="color:blue" class="mb-0">{{ $edition->conference_theme }} Conference Edition</h5>
                     <ul class="nav nav-tabs">
                       @if(isset($edition))
 

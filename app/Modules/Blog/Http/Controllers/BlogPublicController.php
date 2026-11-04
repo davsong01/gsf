@@ -52,7 +52,7 @@ class BlogPublicController extends Controller
             });
         }
 
-        $posts = $query->paginate(12)->withQueryString();
+        $posts = $query->paginate(16)->withQueryString();
         $featuredPost = $posts->currentPage() === 1
             ? (clone $query)->where('is_featured', true)->first()
             : null;

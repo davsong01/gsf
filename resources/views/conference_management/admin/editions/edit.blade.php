@@ -147,51 +147,7 @@
                                         </fieldset>
                                     </div>
 
-                                    @if( empty($edition->conference_logo))
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="conference_logo">Upload Logo</label>
-                                        <fieldset class="form-group ">
-                                            <input type="file" class="form-control" name="logo" value="{{ old('logo') }}" id="logo">
-                                        </fieldset>
-                                    </div>
-                                    @else
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="banner">Replace logo</label>
-                                        <fieldset class="form-group ">
-                                            <input type="file" class="form-control" name="logo" value="{{ old('logo') }}" id="logo">
-                                        </fieldset>
-                                    </div>
-                                    @endif
-                                    @if( empty($edition->conference_favicon))
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="favicon">Upload Favicon</label>
-                                        <fieldset class="form-group ">
-                                            <input type="file" class="form-control" name="favicon" value="{{ old('favicon') }}" id="favicon">
-                                        </fieldset>
-                                    </div>
-                                    @else
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="favicon">Replace Favicon</label>
-                                        <fieldset class="form-group ">
-                                            <input type="file" class="form-control" name="favicon" value="{{ old('favicon') }}" id="favicon">
-                                        </fieldset>
-                                    </div>
-                                    @endif
-                                    @if( empty($edition->banner))
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="banner">Upload Banner</label>
-                                        <fieldset class="form-group ">
-                                            <input type="file" class="form-control" name="ban" value="{{ old('ban') }}" id="banner">
-                                        </fieldset>
-                                    </div>
-                                    @else
-                                    <div class="col-sm-6 col-md-6">
-                                        <label for="banner">Replace banner</label>
-                                        <fieldset class="form-group ">
-                                            <input type="file" class="form-control" name="ban" value="{{ old('ban') }}" id="banner">
-                                        </fieldset>
-                                    </div>
-                                    @endif
+                                    @include('conference_management.admin.editions._banner-upload', ['bannerUrl' => !empty($edition->banner) ? asset($edition->banner) : null])
 
                                     <div class="col-sm-12 col-md-12">
                                         <label for="conference_overview">Conference Overview</label><small> You can use html tags here</small>

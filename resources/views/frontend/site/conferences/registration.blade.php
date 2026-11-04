@@ -1,7 +1,7 @@
 @extends('frontend.site.layout')
 
 @php
-    $flowImage = $setting->banner ?: $setting->conference_logo ?: 'site/images/community/gsf-worship.jpg';
+    $flowImage = $setting->banner ?: 'site/images/community/gsf-worship.jpg';
     $flowImageUrl = filter_var($flowImage, FILTER_VALIDATE_URL) ? $flowImage : asset($flowImage);
     $conferenceUrl = $setting->slug ? route('conferences.show', $setting->slug) : route('conferences.index');
 @endphp

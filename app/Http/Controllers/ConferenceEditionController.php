@@ -64,7 +64,14 @@ class ConferenceEditionController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->all();
+        $request->validate([
+            'ban' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
+        ]);
+
+        $data = $request->except(['ban', 'banner', 'logo', 'favicon', 'conference_logo', 'conference_favicon']);
+        if ($request->hasFile('ban')) {
+            $data['banner'] = $this->uploadImage($request->file('ban'), 'frontend/img/site');
+        }
 
         // Check if existing active
         $active = ConferenceEdition::where('status','active')->count();
@@ -152,6 +159,8 @@ class ConferenceEditionController extends Controller
                 ->leftJoin('hostels', 'hostels.id', '=', 'transactions.hostel_id')
                 ->leftJoin('food', 'food.id', '=', 'transactions.food_id')
                 ->leftJoin('chapters', 'chapters.id', '=', 'users.chapter_id')
+                ->leftJoin('zones', 'zones.id', '=', 'chapters.zone_id')
+                ->leftJoin('fields', 'fields.id', '=', 'chapters.field_id')
                 ->where('transactions.conference_edition_id', $id->id)
                 ->where('users.role', '!=', 1)
                 ->select(
@@ -163,6 +172,8 @@ class ConferenceEditionController extends Controller
                     'users.phone',
                     'chapters.name as chapter',
                     'chapters.id as chapter_id',
+                    'zones.name as zone',
+                    'fields.name as field',
                     'transactions.created_at as registration_date',
                     'transactions.amount_paid',
                     'transactions.level',
@@ -182,28 +193,32 @@ class ConferenceEditionController extends Controller
                 return $item;
             });
 
-            // Get unique chapters
-            $formattedLabels = [];
-            $formattedData = [
-                'label' => 'Participants',
-                'data' => [],
-                'backgroundColor' => 'rgba(54, 162, 235, 0.6)' // Static color for clarity
+            $buildBreakdown = function (string $property, string $label) use ($data): array {
+                $groups = $data
+                    ->filter(fn ($item) => strtolower(trim($item->level)) === 'participants')
+                    ->groupBy(fn ($item) => trim((string) ($item->{$property} ?? '')) ?: 'Unassigned')
+                    ->map(fn ($items) => $items->count())
+                    ->sortDesc();
+
+                return [
+                    'labels' => $groups->map(fn ($count, $name) => "{$name} ({$count})")->values()->all(),
+                    'datasets' => [[
+                        'label' => $label,
+                        'data' => $groups->values()->all(),
+                    ]],
+                ];
+            };
+
+            $breakdowns = [
+                'chapters' => $buildBreakdown('chapter', 'Registrations by chapter'),
+                'zones' => $buildBreakdown('zone', 'Registrations by zone'),
+                'fields' => $buildBreakdown('field', 'Registrations by field'),
             ];
 
-            foreach ($data->pluck('chapter')->filter()->unique()->values() as $chapter) {
-                $count = $data->filter(function ($item) use ($chapter) {
-                    return strtolower(trim($item->chapter)) === strtolower(trim($chapter)) &&
-                        strtolower(trim($item->level)) === 'participants';
-                })->count();
-
-                // Append count to chapter label (e.g., "Lagos (50)")
-                $formattedLabels[] = "{$chapter} - ({$count})";
-                $formattedData['data'][] = $count;
-            }
-
             return response()->json([
-                'labels' => $formattedLabels,
-                'datasets' => [$formattedData]
+                'labels' => $breakdowns['chapters']['labels'],
+                'datasets' => $breakdowns['chapters']['datasets'],
+                'breakdowns' => $breakdowns,
             ]);
         }
     }
@@ -236,21 +251,17 @@ class ConferenceEditionController extends Controller
      */
     public function update(Request $request, ConferenceEdition $conferenceEdition)
     {
+        $request->validate([
+            'ban' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
+        ]);
+
         $edition = ConferenceEdition::find($request->id);
-
-        if($request->has('ban')){
-			$request['banner'] = $this->uploadImage($request->ban, 'frontend/img/site');
+        $data = $request->except(['ban', 'banner', 'logo', 'favicon', 'conference_logo', 'conference_favicon', 'template_text_type', 'template_text_type_face', 'template_font_size', 'template_left_offset', 'template_top_offset', 'template_color', 'template']);
+        if ($request->hasFile('ban')) {
+            $data['banner'] = $this->uploadImage($request->file('ban'), 'frontend/img/site');
         }
 
-        if ($request->has('logo')) {
-			$request['conference_logo'] = $this->uploadImage($request->logo, 'frontend/img/site');
-        }
-
-        if ($request->has('favicon')) {
-            $request['conference_favicon'] = $this->uploadImage($request->favicon, 'frontend/img/site');
-        }
-
-        $edition->update($request->except(['ban','logo','favicon', 'template_text_type', 'template_text_type_face', 'template_font_size', 'template_left_offset', 'template_top_offset','template_color', 'template']));
+        $edition->update($data);
 
         if(!empty($request->template)){
             $generator = new DynamicImageGeneratorService();

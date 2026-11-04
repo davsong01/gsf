@@ -105,7 +105,7 @@ class ConferenceController extends Controller
             ->where('status', 1)->orderBy('date')->get();
 
         $showSpeakerSection = (int) $edition->speaker_section_status === 1
-            && ($speakers->isNotEmpty() || $isUpcoming);
+            && $speakers->isNotEmpty();
         $showScheduleSection = $schedule->isNotEmpty();
         $showFaqSection = (int) $edition->faq_section_status === 1;
 
