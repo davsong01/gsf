@@ -7,6 +7,7 @@ use App\Modules\Blog\BlogContentFormatter;
 use App\Modules\Blog\Models\BlogPost;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class FormatImportedWordPressBlogPostsSeeder extends Seeder
@@ -23,6 +24,7 @@ class FormatImportedWordPressBlogPostsSeeder extends Seeder
         }
 
         $updated = 0;
+        $excerptsUpdated = 0;
         $authorsUpdated = 0;
         foreach ($posts->cursor() as $post) {
             $body = BlogContentFormatter::paragraphize((string) $post->body);
@@ -30,6 +32,13 @@ class FormatImportedWordPressBlogPostsSeeder extends Seeder
             if ($body !== $post->body) {
                 $changes['body'] = $body;
                 $updated++;
+            }
+            if (trim((string) $post->excerpt) === '') {
+                $excerpt = $this->excerptFromContent($body);
+                if ($excerpt !== '') {
+                    $changes['excerpt'] = $excerpt;
+                    $excerptsUpdated++;
+                }
             }
             if ($firstSuperAdmin && (!$post->author_type || !$post->author_id || $post->legacy_author_name !== null)) {
                 $changes['author_type'] = User::class;
@@ -41,6 +50,16 @@ class FormatImportedWordPressBlogPostsSeeder extends Seeder
         }
 
         $this->command?->info("Added paragraph spacing to {$updated} imported posts.");
+        $this->command?->info("Generated excerpts for {$excerptsUpdated} imported posts.");
         $this->command?->info("Assigned {$authorsUpdated} imported posts to the first super admin.");
+    }
+
+    private function excerptFromContent(string $body): string
+    {
+        $text = html_entity_decode($body, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = strip_tags($text);
+        $text = preg_replace('/\s+/u', ' ', $text) ?? $text;
+
+        return Str::limit(trim($text), 300);
     }
 }

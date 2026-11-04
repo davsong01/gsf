@@ -31,7 +31,7 @@
                     <h2>{{ $activeConference->conference_theme }}</h2>
                     @if($activeConference->start_date)<p class="conference-date">{{ formatDates($activeConference->start_date, $activeConference->end_date) }}</p>@endif
                     <div class="conference-overview-copy">{!! $activeConference->conference_overview !!}</div>
-                    <div class="conference-featured__stats">@if($activeConference->registrations_count > 0)<strong>{{ number_format($activeConference->registrations_count) }}<small> registrations</small></strong>@endif<a href="{{ route('conferences.show', $activeConference->slug) }}">Conference details <span aria-hidden="true">→</span></a></div>
+                    <div class="conference-featured__stats"><a href="{{ route('conferences.show', $activeConference->slug) }}">Conference details <span aria-hidden="true">→</span></a></div>
                 </div>
             </article>
         </div>
@@ -62,7 +62,7 @@
                             <small>{{ $edition->start_date ? \Carbon\Carbon::parse($edition->start_date)->format('Y') : 'GSF Conference' }}</small>
                             <h3><a href="{{ route('conferences.show', $edition->slug) }}">{{ $edition->conference_theme }}</a></h3>
                             @if($edition->start_date)<p>{{ formatDates($edition->start_date, $edition->end_date) }}</p>@endif
-                            <div class="conference-card__footer">@if($edition->registrations_count > 0)<span><strong>{{ number_format($edition->registrations_count) }}</strong> registered</span>@endif<a href="{{ route('conferences.show', $edition->slug) }}">Explore <span aria-hidden="true">→</span></a></div>
+                            <div class="conference-card__footer"><a href="{{ route('conferences.show', $edition->slug) }}">Explore <span aria-hidden="true">→</span></a></div>
                         </div>
                     </article>
                 @endforeach

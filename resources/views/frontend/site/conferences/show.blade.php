@@ -53,7 +53,7 @@
     <meta name="twitter:image" content="{{ $conferenceImageUrl }}">
 @endpush
 
-@if(($edition->registration_tickers_enabled ?? true) && $registrationTickerPeople->isNotEmpty())
+@if($showRegistrationTicker && $registrationTickerPeople->isNotEmpty())
     @push('head')
         <style>
             .registration-ticker { position:fixed; z-index:1000; right:24px; bottom:24px; width:min(390px,calc(100vw - 32px)); padding:15px 46px 15px 15px; border:1px solid rgba(255,255,255,.82); border-radius:18px; color:#122447; background:rgba(255,255,255,.94); box-shadow:0 18px 55px rgba(14,37,75,.2),0 2px 8px rgba(14,37,75,.08); backdrop-filter:blur(18px); opacity:0; pointer-events:none; transform:translate3d(calc(100% + 40px),0,0); transition:opacity .3s ease,transform .42s cubic-bezier(.2,.8,.2,1); }
@@ -115,7 +115,6 @@
 
 <section class="conference-detail-stats">
     <div class="site-container conference-detail-stats__grid">
-        @if($edition->registrations_count > 0)<div><strong>{{ number_format($edition->registrations_count) }}+</strong><span>Successful registrations</span></div>@endif
         <div><strong>{{ $edition->start_date ? \Carbon\Carbon::parse($edition->start_date)->format('Y') : 'GSF' }}</strong><span>Conference year</span></div>
         <div><strong>{{ $speakers->count() ?: 'Soon' }}</strong><span>{{ $speakers->count() === 1 ? 'Featured speaker' : 'Featured speakers' }}</span></div>
         <div><strong>{{ $dateLabel }}</strong><span>Gathering dates</span></div>
@@ -229,7 +228,7 @@
     </section>
 @endif
 
-@if(($edition->registration_tickers_enabled ?? true) && $registrationTickerPeople->isNotEmpty())
+@if($showRegistrationTicker && $registrationTickerPeople->isNotEmpty())
     <aside class="registration-ticker" data-registration-ticker role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
         <div class="registration-ticker__row">
             <span class="registration-ticker__icon" aria-hidden="true">✓</span>
@@ -243,7 +242,7 @@
 @endif
 @endsection
 
-@if(($edition->registration_tickers_enabled ?? true) && $registrationTickerPeople->isNotEmpty())
+@if($showRegistrationTicker && $registrationTickerPeople->isNotEmpty())
     @push('scripts')
         <script>
             (() => {
