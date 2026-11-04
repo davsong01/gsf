@@ -66,7 +66,7 @@
             <table class="bpa-table">
                 <thead><tr>
                     @if(!$isStakeholder && !empty($bulkActions))<th class="blog-post-select"><input type="checkbox" data-select-all-posts aria-label="Select all posts on this page"></th>@endif
-                    <th>Story</th><th>Type</th><th>Status</th><th>Author</th><th>Views</th><th>Comments</th><th>Timeline</th><th>Actions</th>
+                    <th>S/N</th><th>Story</th><th>Type</th><th>Status</th><th>Author</th><th>Views</th><th>Comments</th><th>Timeline</th><th>Actions</th>
                 </tr></thead>
                 <tbody>
                 @forelse($posts as $post)
@@ -75,6 +75,7 @@
                     @php($primaryPostDate = $post->published_at ?: $post->created_at)
                     <tr>
                         @if(!$isStakeholder && !empty($bulkActions))<td class="blog-post-select"><input type="checkbox" name="post_ids[]" value="{{ $post->id }}" form="blog-bulk-action-form" data-post-checkbox aria-label="Select {{ $post->title }}"></td>@endif
+                        <td class="bpa-number">{{ $posts->firstItem() + $loop->index }}</td>
                         <td class="bpa-story"><div class="bpa-story__wrap">@if($imageUrl)<a class="bpa-story__image" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer"><img src="{{ $imageUrl }}" alt="" loading="lazy"></a>@endif<div><a class="bpa-story__title" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer">{{ $post->title }}</a><span class="bpa-story__meta">{{ $post->categories->pluck('name')->join(', ') ?: 'Uncategorised' }}@if($post->is_featured)<span class="bpa-featured">★ Featured</span>@endif</span></div></div></td>
                         <td class="bpa-type"><i class="fa {{ $post->type === 'video' ? 'fa-play-circle-o' : 'fa-file-text-o' }}" aria-hidden="true"></i> {{ ucfirst($post->type) }}</td>
                         <td><span class="bpa-status bpa-status--{{ $post->status }}">{{ $post->status === 'review' ? 'In review' : ucfirst($post->status) }}</span></td>
@@ -91,7 +92,7 @@
                         </div></td>
                     </tr>
                 @empty
-                    <tr><td colspan="{{ !$isStakeholder && !empty($bulkActions) ? 9 : 8 }}" class="bpa-empty"><i class="fa fa-newspaper-o" aria-hidden="true"></i><strong>No stories match these filters</strong><span>Try another status or reset the filters.</span></td></tr>
+                    <tr><td colspan="{{ !$isStakeholder && !empty($bulkActions) ? 10 : 9 }}" class="bpa-empty"><i class="fa fa-newspaper-o" aria-hidden="true"></i><strong>No stories match these filters</strong><span>Try another status or reset the filters.</span></td></tr>
                 @endforelse
                 </tbody>
             </table>

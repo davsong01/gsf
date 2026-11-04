@@ -87,9 +87,19 @@
                     <div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-tags" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Discovery</span><h2 id="blog-organize-heading">Organize</h2></div></div>
                     <div class="blog-composer__panel-body">
                         @php($selectedCategoryIds = collect(old('category_ids', $post?->categories?->pluck('id')->all() ?? []))->map('strval')->all())
-                        <fieldset class="blog-composer__fieldset"><legend>Categories</legend><div class="blog-composer__choices">@forelse($categories as $category)<label><input type="checkbox" name="category_ids[]" value="{{ $category->id }}" @checked(in_array((string) $category->id, $selectedCategoryIds, true))><span>{{ $category->name }}</span></label>@empty<span class="blog-composer__help">No categories available.</span>@endforelse</div></fieldset>
+                        <fieldset class="blog-composer__fieldset" data-choice-group>
+                            <legend>Categories</legend>
+                            @if($categories->isNotEmpty())<label class="blog-composer__choice-search"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only">Search categories</span><input type="search" placeholder="Search categories…" autocomplete="off" data-choice-search></label>@endif
+                            <div class="blog-composer__choices" data-choice-list>@forelse($categories as $category)<label><input type="checkbox" name="category_ids[]" value="{{ $category->id }}" @checked(in_array((string) $category->id, $selectedCategoryIds, true))><span>{{ $category->name }}</span></label>@empty<span class="blog-composer__help">No categories available.</span>@endforelse</div>
+                            @if($categories->isNotEmpty())<small class="blog-composer__choice-summary" data-choice-summary aria-live="polite"></small><small class="blog-composer__choice-empty" data-choice-empty hidden>No categories match your search.</small>@endif
+                        </fieldset>
                         @php($selectedTagIds = collect(old('tag_ids', $post?->tags?->pluck('id')->all() ?? []))->map('strval')->all())
-                        <fieldset class="blog-composer__fieldset"><legend>Tags</legend><div class="blog-composer__choices">@forelse($tags as $tag)<label><input type="checkbox" name="tag_ids[]" value="{{ $tag->id }}" @checked(in_array((string) $tag->id, $selectedTagIds, true))><span>{{ $tag->name }}</span></label>@empty<span class="blog-composer__help">No tags available.</span>@endforelse</div></fieldset>
+                        <fieldset class="blog-composer__fieldset" data-choice-group>
+                            <legend>Tags</legend>
+                            @if($tags->isNotEmpty())<label class="blog-composer__choice-search"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only">Search tags</span><input type="search" placeholder="Search tags…" autocomplete="off" data-choice-search></label>@endif
+                            <div class="blog-composer__choices" data-choice-list>@forelse($tags as $tag)<label><input type="checkbox" name="tag_ids[]" value="{{ $tag->id }}" @checked(in_array((string) $tag->id, $selectedTagIds, true))><span>{{ $tag->name }}</span></label>@empty<span class="blog-composer__help">No tags available.</span>@endforelse</div>
+                            @if($tags->isNotEmpty())<small class="blog-composer__choice-summary" data-choice-summary aria-live="polite"></small><small class="blog-composer__choice-empty" data-choice-empty hidden>No tags match your search.</small>@endif
+                        </fieldset>
                     </div>
                 </section>
 
@@ -171,10 +181,17 @@
 .blog-composer__fieldset { min-width:0; margin:0 0 19px; padding:0; border:0; }
 .blog-composer__fieldset:last-child { margin-bottom:0; }
 .blog-composer__fieldset legend { width:auto; margin-bottom:9px; color:#344762; font-size:12px; font-weight:800; }
+.blog-composer__choice-search { display:flex; align-items:center; gap:9px; width:100%; min-height:38px; margin:0 0 10px; padding:0 11px; border:1px solid #d6e0ed; border-radius:8px; color:#8698ab; background:#fff; }
+.blog-composer__choice-search:focus-within { border-color:#3e83b2; box-shadow:0 0 0 3px rgba(62,131,178,.13); }
+.blog-composer__choice-search input { width:100%; min-width:0; height:36px; padding:0; border:0; outline:0; color:#243a59; background:transparent; font-size:12px; }
+.blog-composer__choice-search input::placeholder { color:#9aabc0; }
 .blog-composer__choices { display:flex; flex-wrap:wrap; gap:7px; max-height:195px; overflow:auto; }
 .blog-composer__choices label { display:inline-flex; align-items:center; gap:6px; max-width:100%; margin:0; padding:7px 9px; border:1px solid #dbe4ef; border-radius:8px; color:#5a6d84; background:#fbfcfe; font-size:11px; font-weight:700; line-height:1.3; cursor:pointer; }
+.blog-composer__choices label[hidden] { display:none; }
 .blog-composer__choices label:has(input:checked) { border-color:#85afd0; color:#194d7b; background:#eaf4fc; }
 .blog-composer__choices input { flex:0 0 auto; width:14px; height:14px; margin:0; accent-color:#28659a; }
+.blog-composer__choice-summary,.blog-composer__choice-empty { display:block; margin-top:8px; color:#8796a9; font-size:10px; line-height:1.4; }
+.blog-composer__choice-empty[hidden] { display:none; }
 .blog-composer__savebar { position:sticky; z-index:20; bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:22px; padding:13px 16px 13px 20px; border:1px solid #d7e3f0; border-radius:13px; background:rgba(255,255,255,.97); box-shadow:0 13px 35px rgba(19,47,80,.14); backdrop-filter:blur(10px); }
 .blog-composer__savebar > span { color:#697e97; font-size:11px; font-weight:600; }
 .blog-composer__savebar > span i { margin-right:6px; color:#3c7faf; }

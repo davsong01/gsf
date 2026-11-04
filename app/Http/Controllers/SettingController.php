@@ -12,7 +12,7 @@ class SettingController extends Controller
 {
     public function editGeneralSettings()
     {
-        abort_unless(isAdmin()['status'] ?? false, 403);
+        abort_unless((isAdmin()['status'] ?? false) && userHasPermission('general-settings.edit'), 403);
 
         $settings = GeneralSetting::firstOrFail();
 
@@ -21,7 +21,7 @@ class SettingController extends Controller
 
     public function updateGeneralSettings(Request $request)
     {
-        abort_unless(isAdmin()['status'] ?? false, 403);
+        abort_unless((isAdmin()['status'] ?? false) && userHasPermission('general-settings.edit'), 403);
 
         $request->validate([
             'gsf_constitution_document' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],

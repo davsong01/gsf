@@ -105,6 +105,7 @@ class BlogController extends Controller
         $posts = BlogPost::whereIn('id', $validated['post_ids'])->get();
         $updated = 0;
         $skipped = count($validated['post_ids']) - $posts->count();
+        $deletablePostIds = [];
 
         foreach ($posts as $post) {
             $ownsPost = $post->author_type === $user::class && (int) $post->author_id === (int) $user->id;
@@ -121,8 +122,13 @@ class BlogController extends Controller
                 continue;
             }
 
+            if ($validated['action'] === 'delete') {
+                $deletablePostIds[] = $post->id;
+                $updated++;
+                continue;
+            }
+
             match ($validated['action']) {
-                'delete' => $post->delete(),
                 'change-category' => $post->categories()->sync(
                     in_array('uncategorized', $validated['category_ids'], true)
                         ? []
@@ -132,6 +138,10 @@ class BlogController extends Controller
                 'review' => $post->update(['status' => 'review']),
             };
             $updated++;
+        }
+
+        if ($deletablePostIds) {
+            BlogPost::whereIn('id', $deletablePostIds)->forceDelete();
         }
 
         $actionLabel = $validated['action'] === 'change-category'

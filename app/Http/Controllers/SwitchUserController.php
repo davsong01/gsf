@@ -82,8 +82,11 @@ class SwitchUserController extends Controller
         }
 
         $message = "Welcome back boss!";
-        $smiley = '<b>These are bold texts</b>';
-        return redirect(route('stakeholderpersonnel.index'))->with('welcomeback', $message);   
+        $returnRoute = $guard === 'stakeholder'
+            ? 'stakeholderpersonnel.index'
+            : 'officials.index';
+
+        return redirect()->route($returnRoute)->with('welcomeback', $message);
 
     }
     
