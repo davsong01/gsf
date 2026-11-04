@@ -5,11 +5,11 @@
 @section('extra_styles')
     <link rel="stylesheet" href="{{ asset('app-assets/vendors/css/file-uploaders/dropzone.min.css') }}">
     <style>
-        #site-logo-dropzone { min-height: 150px; padding: 18px; border: 2px dashed #9aafd0; border-radius: 12px; background: #f7f9fd; }
-        #site-logo-dropzone .dz-message { position: static; width: auto; height: auto; margin: 25px 0; color: #536783; transform: none; }
-        #site-logo-dropzone .dz-preview .dz-image { border-radius: 10px; }
-        .site-logo-current { display:flex; align-items:center; gap:14px; margin-top:12px; }
-        .site-logo-current img { width:auto; max-width:160px; height:70px; padding:8px; border:1px solid #e5eaf2; border-radius:10px; object-fit:contain; background:#fff; }
+        .site-branding-dropzone { min-height: 150px; padding: 18px; border: 2px dashed #9aafd0; border-radius: 12px; background: #f7f9fd; }
+        .site-branding-dropzone .dz-message { position: static; width: auto; height: auto; margin: 25px 0; color: #536783; transform: none; }
+        .site-branding-dropzone .dz-preview .dz-image { border-radius: 10px; }
+        .site-branding-current { display:flex; align-items:center; gap:14px; margin-top:12px; }
+        .site-branding-current img { width:auto; max-width:180px; height:70px; padding:8px; border:1px solid #e5eaf2; border-radius:10px; object-fit:contain; background:#fff; }
     </style>
 @endsection
 
@@ -26,7 +26,7 @@
                     <div class="card-header">
                         <div>
                             <h4 class="card-title mb-50">General Settings</h4>
-                            <p class="text-muted mb-0">Manage the shared site logo, governance documents and Family Song displayed on the public website.</p>
+                            <p class="text-muted mb-0">Manage the shared site logo, favicon, governance documents and Family Song displayed on the public website.</p>
                         </div>
                     </div>
 
@@ -36,20 +36,32 @@
                                 @csrf
                                 @method('PATCH')
 
-                                <div class="form-group">
-                                    <label for="site-logo-dropzone"><strong>Website Logo</strong></label>
-                                    <div id="site-logo-dropzone" class="dropzone"></div>
-                                    <input class="d-none @error('site_logo') is-invalid @enderror" id="site_logo" name="site_logo" type="file" accept="image/jpeg,image/png,image/webp">
-                                    <small class="form-text text-muted">PNG, JPG or WebP, up to 5 MB. This logo appears in the admin sidebar and across the public website.</small>
-                                    @error('site_logo')<div class="text-danger mt-50">{{ $message }}</div>@enderror
-                                    @if(filled($settings->site_logo))
-                                        @php
-                                            $currentSiteLogoUrl = filter_var($settings->site_logo, FILTER_VALIDATE_URL)
-                                                ? $settings->site_logo
-                                                : \Illuminate\Support\Facades\Storage::disk('public')->url($settings->site_logo);
-                                        @endphp
-                                        <div class="site-logo-current"><img src="{{ $currentSiteLogoUrl }}" alt="Current website logo"><span class="text-muted">Current website logo</span></div>
-                                    @endif
+                                <div class="row">
+                                    @foreach([
+                                        'site_logo' => ['label' => 'Website Logo', 'dropzone' => 'site-logo-dropzone', 'types' => 'image/jpeg,image/png,image/webp', 'help' => 'PNG, JPG or WebP, up to 5 MB. Used in the admin sidebar and public website.'],
+                                        'site_favicon' => ['label' => 'Website Favicon', 'dropzone' => 'site-favicon-dropzone', 'types' => 'image/jpeg,image/png,image/webp,image/x-icon,.ico', 'help' => 'PNG, JPG, WebP or ICO, up to 2 MB. Used as the site browser icon.'],
+                                    ] as $field => $config)
+                                        <div class="col-12 col-lg-6">
+                                            <div class="form-group">
+                                                <label for="{{ $config['dropzone'] }}"><strong>{{ $config['label'] }}</strong></label>
+                                                <div id="{{ $config['dropzone'] }}" class="dropzone site-branding-dropzone" data-file-input="{{ $field }}"></div>
+                                                <input class="d-none @error($field) is-invalid @enderror" id="{{ $field }}" name="{{ $field }}" type="file" accept="{{ $config['types'] }}">
+                                                <small class="form-text text-muted">{{ $config['help'] }}</small>
+                                                @error($field)<div class="text-danger mt-50">{{ $message }}</div>@enderror
+                                                @if(filled($settings->{$field}))
+                                                    @php
+                                                        $currentImage = $settings->{$field};
+                                                        $currentImageUrl = filter_var($currentImage, FILTER_VALIDATE_URL)
+                                                            ? $currentImage
+                                                            : (str_starts_with($currentImage, 'uploads/')
+                                                                ? asset($currentImage)
+                                                                : \Illuminate\Support\Facades\Storage::disk('public')->url($currentImage));
+                                                    @endphp
+                                                    <div class="site-branding-current"><img src="{{ $currentImageUrl }}" alt="Current {{ strtolower($config['label']) }}"><span class="text-muted">Current {{ strtolower($config['label']) }}</span></div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
 
                                 <div class="row">
@@ -160,31 +172,33 @@
         Dropzone.autoDiscover = false;
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.querySelector('#website-document-settings form');
-            const fileInput = document.getElementById('site_logo');
-            const zone = document.getElementById('site-logo-dropzone');
+            if (!form) return;
 
-            if (!form || !fileInput || !zone) return;
+            document.querySelectorAll('.site-branding-dropzone').forEach(function (zone) {
+                const fileInput = document.getElementById(zone.dataset.fileInput);
+                if (!fileInput) return;
 
-            const uploader = new Dropzone(zone, {
-                url: form.action,
-                autoProcessQueue: false,
-                clickable: true,
-                maxFilesize: 5,
-                acceptedFiles: 'image/jpeg,image/png,image/webp',
-                addRemoveLinks: true,
-                dictDefaultMessage: 'Drop the website logo here or click to choose an image',
-                dictRemoveFile: 'Remove selected logo',
-                init: function () {
-                    this.on('addedfile', function (file) {
-                        if (this.files.length > 1) this.removeFile(this.files[0]);
-                        const transfer = new DataTransfer();
-                        transfer.items.add(file);
-                        fileInput.files = transfer.files;
-                    });
-                    this.on('removedfile', function () {
-                        fileInput.value = '';
-                    });
-                }
+                new Dropzone(zone, {
+                    url: form.action,
+                    autoProcessQueue: false,
+                    clickable: true,
+                    maxFilesize: zone.dataset.fileInput === 'site_favicon' ? 2 : 5,
+                    acceptedFiles: fileInput.accept,
+                    addRemoveLinks: true,
+                    dictDefaultMessage: 'Drop the image here or click to choose a file',
+                    dictRemoveFile: 'Remove selected file',
+                    init: function () {
+                        this.on('addedfile', function (file) {
+                            if (this.files.length > 1) this.removeFile(this.files[0]);
+                            const transfer = new DataTransfer();
+                            transfer.items.add(file);
+                            fileInput.files = transfer.files;
+                        });
+                        this.on('removedfile', function () {
+                            fileInput.value = '';
+                        });
+                    }
+                });
             });
         });
     </script>

@@ -27,6 +27,7 @@ class SettingController extends Controller
 
         $request->validate([
             'site_logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'site_favicon' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,ico', 'max:2048'],
             'gsf_constitution_document' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
             'gsf_code_of_conduct_document' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
             'gsf_family_song_lyrics' => ['nullable', 'string', 'max:30000'],
@@ -36,23 +37,20 @@ class SettingController extends Controller
 
         $settings = GeneralSetting::firstOrFail();
         $replacedFiles = [];
+        $fileUploadService = app(FileUploadService::class);
 
-        if ($request->hasFile('site_logo')) {
-            $replacedFiles[] = $settings->site_logo;
-            $oldPublicUpload = null;
-            if (filter_var($settings->site_logo, FILTER_VALIDATE_URL)) {
-                $oldPath = ltrim((string) parse_url($settings->site_logo, PHP_URL_PATH), '/');
-                if (str_starts_with($oldPath, 'uploads/site-images/')) {
-                    $oldPublicUpload = $oldPath;
-                }
+        foreach (['site_logo' => 'site-branding/logos', 'site_favicon' => 'site-branding/favicons'] as $input => $folder) {
+            if (!$request->hasFile($input)) {
+                continue;
             }
 
-            $extension = $request->file('site_logo')->getClientOriginalExtension();
-            $settings->site_logo = app(FileUploadService::class)->publicUpload(
-                $request->file('site_logo'),
-                'site-images',
-                $oldPublicUpload ?? '',
-                Str::uuid().'.'.strtolower($extension)
+            $replacedFiles[] = $settings->{$input};
+            $extension = strtolower($request->file($input)->getClientOriginalExtension());
+            $settings->{$input} = $fileUploadService->publicUpload(
+                $request->file($input),
+                $folder,
+                '',
+                Str::uuid().'.'.$extension
             );
         }
 
@@ -81,7 +79,18 @@ class SettingController extends Controller
         $settings->save();
 
         foreach (array_filter($replacedFiles) as $file) {
-            Storage::disk('public')->delete($file);
+            $path = filter_var($file, FILTER_VALIDATE_URL)
+                ? ltrim((string) parse_url($file, PHP_URL_PATH), '/')
+                : ltrim((string) $file, '/');
+
+            if (str_starts_with($path, 'uploads/')) {
+                $absolutePath = public_path($path);
+                if (is_file($absolutePath)) {
+                    @unlink($absolutePath);
+                }
+            } else {
+                Storage::disk('public')->delete(str_starts_with($path, 'storage/') ? substr($path, 8) : $path);
+            }
         }
 
         return back()->with('message', 'Website settings updated successfully.');

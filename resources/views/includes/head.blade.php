@@ -10,8 +10,18 @@
 	<title>@yield('title')</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	{{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script> --}}
-	<link rel="apple-touch-icon" href="{{ asset('frontend/img/logo.png') }}">
-	<link rel="shortcut icon" type="image/x-icon" href="{{ asset('frontend/img/logo.png') }}">
+	@php
+		$siteFaviconPath = \App\Models\GeneralSetting::query()->value('site_favicon');
+		$siteFaviconUrl = !$siteFaviconPath
+			? asset('frontend/img/logo.png')
+			: (filter_var($siteFaviconPath, FILTER_VALIDATE_URL)
+				? $siteFaviconPath
+				: (str_starts_with($siteFaviconPath, 'uploads/')
+					? asset($siteFaviconPath)
+					: \Illuminate\Support\Facades\Storage::disk('public')->url($siteFaviconPath)));
+	@endphp
+	<link rel="apple-touch-icon" href="{{ $siteFaviconUrl }}">
+	<link rel="shortcut icon" href="{{ $siteFaviconUrl }}">
 	<link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500,600%7CIBM+Plex+Sans:300,400,500,600,700"
 		rel="stylesheet">
 
