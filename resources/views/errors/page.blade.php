@@ -40,7 +40,7 @@
             ? route('stakeholders.loginpage')
             : url('/');
         $backUrl = url()->previous();
-        $resetUrl = IlluminateSupportFacadesRoute::has('session.reset')
+        $resetUrl = \Illuminate\Support\Facades\Route::has('session.reset')
             ? route('session.reset', ['scope' => $stakeholderRequest ? 'stakeholder' : 'web'])
             : $homeUrl;
     @endphp
