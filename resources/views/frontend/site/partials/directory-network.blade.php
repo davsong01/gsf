@@ -6,12 +6,14 @@
         ->orderBy('name')
         ->limit(6)
         ->get();
-    $campusesByState = \App\Models\Chapter::query()
-        ->where('id', '<>', 86)
-        ->whereNotNull('state')
-        ->selectRaw('state, COUNT(*) as campus_count')
-        ->groupBy('state')
-        ->get();
+    $campusesByState = \Illuminate\Support\Facades\Schema::hasColumn('chapters', 'state')
+        ? \App\Models\Chapter::query()
+            ->where('id', '<>', 86)
+            ->whereNotNull('state')
+            ->selectRaw('state, COUNT(*) as campus_count')
+            ->groupBy('state')
+            ->get()
+        : collect();
 @endphp
 
 <section class="directory-network" aria-labelledby="directory-network-title">

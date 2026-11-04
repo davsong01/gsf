@@ -23,6 +23,7 @@ jobs:
           port: 21098
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
+            set -e
             cd public_html/MF
             git stash
             git pull origin development

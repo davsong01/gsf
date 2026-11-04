@@ -9,9 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('chapters', function (Blueprint $table) {
-            $table->string('state', 40)->nullable()->after('address')->index();
-        });
+        if (!Schema::hasColumn('chapters', 'state')) {
+            Schema::table('chapters', function (Blueprint $table) {
+                $table->string('state', 40)->nullable()->after('address')->index();
+            });
+        }
 
         (new BackfillChapterStatesSeeder())->run();
     }

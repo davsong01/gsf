@@ -408,18 +408,19 @@ class HomeController extends Controller
     }
 
     public function chapters(Request $request) {
+        $hasStateColumn = Schema::hasColumn('chapters', 'state');
         $chapters = Chapter::with(['field', 'zone'])
             ->withCount(['users as members_count' => function ($query) {
                 $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
             }])
             ->where('id', '<>', 86)
-            ->when($request->filled('state'), fn ($query) => $query->where('state', $request->input('state')))
-            ->when($request->filled('q'), function ($query) use ($request) {
+            ->when($hasStateColumn && $request->filled('state'), fn ($query) => $query->where('state', $request->input('state')))
+            ->when($request->filled('q'), function ($query) use ($request, $hasStateColumn) {
                 $term = '%'.$request->string('q').'%';
-                $query->where(function ($search) use ($term) {
+                $query->where(function ($search) use ($term, $hasStateColumn) {
                     $search->where('name', 'LIKE', $term)
                         ->orWhere('address', 'LIKE', $term)
-                        ->orWhere('state', 'LIKE', $term)
+                        ->when($hasStateColumn, fn ($query) => $query->orWhere('state', 'LIKE', $term))
                         ->orWhereHas('field', fn ($field) => $field->where('name', 'LIKE', $term))
                         ->orWhereHas('zone', fn ($zone) => $zone->where('name', 'LIKE', $term));
                 });
@@ -431,7 +432,7 @@ class HomeController extends Controller
         return view('frontend.site.directory.campuses', [
             'chapters' => $chapters,
             'searchTerm' => $request->input('q', ''),
-            'selectedState' => $request->input('state', ''),
+            'selectedState' => $hasStateColumn ? $request->input('state', '') : '',
         ]);
     }
 
