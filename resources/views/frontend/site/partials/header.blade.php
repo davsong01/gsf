@@ -39,6 +39,7 @@
                         About GSF <span aria-hidden="true">⌄</span>
                     </button>
                     <ul class="nav-dropdown__menu">
+                        <li><a href="{{ route('about.our-story') }}">Our Story</a></li>
                         <li><a href="{{ route('about.mission-strategies') }}">GSF Mission Strategies</a></li>
                         <li><a href="{{ route('about.foundational-concept') }}">GSF Foundational Concept</a></li>
                         <li><a href="{{ route('about.contact') }}">Contact Us</a></li>

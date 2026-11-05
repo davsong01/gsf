@@ -218,6 +218,7 @@ Route::get('/education-excellence-awards/{type}/{year}/applicants', [AwardContro
 Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index')->name('home.index');
     Route::get('/about/foundational-concept', [HomeController::class, 'foundationalConcept'])->name('about.foundational-concept');
+    Route::get('/about/our-story', [HomeController::class, 'ourStory'])->name('about.our-story');
     Route::get('/about/mission-strategies', [HomeController::class, 'missionStrategies'])->name('about.mission-strategies');
     Route::get('/about/contact', [HomeController::class, 'contact'])->name('about.contact');
     Route::post('/about/contact', [HomeController::class, 'submitContact'])->middleware('throttle:5,1')->name('about.contact.submit');

@@ -88,6 +88,15 @@
                         <div class="form-group"><label for="blog-published-at">{{ !empty($eventsWorkspace) ? 'Program Date' : 'Publication date' }}</label><input id="blog-published-at" class="form-control" type="datetime-local" name="published_at" value="{{ old('published_at', $post?->published_at?->format('Y-m-d\\TH:i')) }}"><small class="blog-composer__help">{{ !empty($eventsWorkspace) ? 'Choose when this program listing should go live. A future date schedules it.' : 'Choose a future date to schedule a post.' }}</small></div>
                         @if($canFeaturePosts)<label class="blog-composer__switch"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post?->is_featured ?? false))><span><strong>{{ !empty($eventsWorkspace) ? 'Feature this event' : 'Feature on GSF News' }}</strong><small>{{ !empty($eventsWorkspace) ? 'Highlight this program in the public events list.' : 'Show in the lead story area.' }}</small></span></label>@endif
                         @if(!$isCampusStakeholder || $campusPostsCanAllowComments)<label class="blog-composer__switch"><input type="checkbox" name="allow_comments" value="1" @checked(old('allow_comments', $post?->allow_comments ?? true))><span><strong>Allow comments</strong><small>Let readers respond to this story.</small></span></label>@endif
+                        @if($isCampusStakeholder && $campusFacebookPublishingEnabled)
+                            <label class="blog-composer__switch"><input type="checkbox" name="publish_on_facebook" value="1" @checked(old('publish_on_facebook', $post?->facebook_publish_requested ?? false))><span><strong>Publish on GSF National Facebook</strong><small>{{ $campusFacebookReviewRequired ? 'This request will go to Facebook review, separately from website review.' : 'This will publish to Facebook when you save.' }}</small></span></label>
+                        @endif
+                        @if($post && $post->facebook_publish_requested)
+                            <div class="alert {{ $post->facebook_status === 'failed' ? 'alert-danger' : ($post->facebook_status === 'published' ? 'alert-success' : 'alert-info') }} mt-1 mb-0" role="status">
+                                <strong>Facebook:</strong> {{ str($post->facebook_status)->replace('_', ' ')->title() }}
+                                @if($post->facebook_error)<br><small>{{ $post->facebook_error }}</small>@endif
+                            </div>
+                        @endif
                     </div>
                 </section>
 

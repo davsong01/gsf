@@ -130,6 +130,11 @@ class HomeController extends Controller
         return view('frontend.site.about.foundational-concept');
     }
 
+    public function ourStory()
+    {
+        return view('frontend.site.about.our-story');
+    }
+
     public function missionStrategies()
     {
         $siteSettings = GeneralSetting::first();

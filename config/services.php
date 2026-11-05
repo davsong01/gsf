@@ -33,4 +33,8 @@ return [
 
     'stakeholder_master_password' => env('STAKEHOLDER_MASTER_PASSWORD'),
 
+    'facebook' => [
+        'graph_version' => env('FACEBOOK_GRAPH_VERSION', 'v26.0'),
+    ],
+
 ];

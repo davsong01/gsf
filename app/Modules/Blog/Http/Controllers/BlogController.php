@@ -9,6 +9,7 @@ use App\Models\Zone;
 use App\Models\User;
 use App\Modules\Blog\BlogPermissions;
 use App\Modules\Blog\BlogMedia;
+use App\Modules\Blog\FacebookPagePublisher;
 use App\Modules\Blog\Models\BlogCategory;
 use App\Modules\Blog\Models\BlogPost;
 use App\Modules\Blog\Models\BlogSetting;
@@ -56,6 +57,7 @@ class BlogController extends Controller
         $filters = $request->validate([
             'search' => 'nullable|string|max:120',
             'status' => 'nullable|in:draft,review,scheduled,published,archived',
+            'facebook_status' => 'nullable|in:not_requested,pending_review,waiting_for_publication,pending,published,failed,rejected',
             'mine' => 'nullable|boolean',
             'field_id' => 'nullable|integer|exists:fields,id',
             'zone_id' => 'nullable|integer|exists:zones,id',
@@ -103,6 +105,7 @@ class BlogController extends Controller
             });
         }
         if (!empty($filters['status'])) $query->where('status', $filters['status']);
+        if (!empty($filters['facebook_status'])) $query->where('facebook_status', $filters['facebook_status']);
         if (!empty($filters['type'])) $query->where('type', $filters['type']);
         if (!empty($filters['category'])) $query->whereHas('categories', fn ($categories) => $categories->where('blog_categories.id', $filters['category']));
         if (!empty($filters['tag'])) $query->whereHas('tags', fn ($tags) => $tags->where('blog_tags.id', $filters['tag']));
@@ -275,9 +278,11 @@ class BlogController extends Controller
             $data['status'] = $this->isStakeholder($user) ? ($request->boolean('submit_review') ? 'review' : 'draft') : ($data['status'] ?? 'draft');
         }
         $data['published_at'] = $this->publicationDate($data);
+        $data = array_merge($data, $this->facebookPublishingFields($request, $user, $data));
 
         $post = BlogPost::create($data);
         if (!$this->eventWorkspace()) $this->syncTaxonomy($post, $categoryIds, $tagIds);
+        $this->publishToFacebookWhenReady($post);
 
         return redirect()->route($this->routePrefix($user).'.posts.edit', $post)->with('message', 'Post saved successfully.');
     }
@@ -344,8 +349,10 @@ class BlogController extends Controller
             $data['status'] = $request->boolean('submit_review') ? 'review' : ($post->status === 'published' ? 'published' : 'draft');
         }
         $data['published_at'] = $this->publicationDate($data, $post);
+        $data = array_merge($data, $this->facebookPublishingFields($request, $user, $data, $post));
         $post->update($data);
         if (!$this->eventWorkspace()) $this->syncTaxonomy($post, $categoryIds, $tagIds);
+        $this->publishToFacebookWhenReady($post);
 
         return back()->with('message', 'Post updated successfully.');
     }
@@ -362,7 +369,39 @@ class BlogController extends Controller
         $this->authorize($this->user(), BlogPermissions::PUBLISH);
         $publishedAt = $request->date('published_at') ?: now();
         $post->update(['status' => $publishedAt->isFuture() ? 'scheduled' : 'published', 'published_at' => $publishedAt]);
+        if ($post->facebook_status === 'waiting_for_publication' && $post->status === 'published') {
+            $post->update(['facebook_status' => 'pending']);
+            $this->publishToFacebookWhenReady($post);
+        }
         return back()->with('message', 'Post publication status updated.');
+    }
+
+    public function facebookReview(Request $request, BlogPost $post)
+    {
+        $this->authorize($this->user(), BlogPermissions::PUBLISH);
+        $decision = $request->validate(['decision' => ['required', Rule::in(['approve', 'reject', 'retry'])]])['decision'];
+
+        if ($decision === 'reject') {
+            abort_unless($post->facebook_status === 'pending_review', 422);
+            $post->update(['facebook_status' => 'rejected', 'facebook_error' => null]);
+
+            return back()->with('message', 'Facebook publication request rejected. Website publication was not changed.');
+        }
+
+        abort_unless(
+            $decision === 'approve'
+                ? $post->facebook_status === 'pending_review'
+                : $post->facebook_status === 'failed',
+            422
+        );
+
+        $post->update(['facebook_status' => 'pending', 'facebook_error' => null]);
+        $published = app(FacebookPagePublisher::class)->publish($post);
+
+        return back()->with(
+            $published ? 'message' : 'error',
+            $published ? 'Published to the GSF National Facebook Page.' : 'Facebook publication failed. Check the Facebook status and credentials in Blog Settings.'
+        );
     }
 
     public function archive(BlogPost $post)
@@ -438,6 +477,12 @@ class BlogController extends Controller
             'userCampusAddress' => $userCampusAddress,
             'campusPostsRequireReview' => BlogSetting::campusPostsRequireReview(),
             'campusPostsCanAllowComments' => BlogSetting::campusPostsCanAllowComments(),
+            'campusFacebookPublishingEnabled' => $this->eventWorkspace()
+                ? BlogSetting::campusEventsCanPublishToFacebook()
+                : BlogSetting::campusPostsCanPublishToFacebook(),
+            'campusFacebookReviewRequired' => $this->eventWorkspace()
+                ? BlogSetting::campusEventsFacebookRequireReview()
+                : BlogSetting::campusPostsFacebookRequireReview(),
             'categories' => BlogCategory::orderBy('name')->get(),
             'fields' => Field::orderBy('name')->get(),
             'zones' => Zone::with('field')->orderBy('name')->get(),
@@ -499,6 +544,7 @@ class BlogController extends Controller
             'tag_ids' => ['nullable', 'array'],
             'tag_ids.*' => ['integer', 'distinct', 'exists:blog_tags,id'],
             'allow_comments' => ['nullable', 'boolean'],
+            'publish_on_facebook' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],
             'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
         ]);
@@ -548,6 +594,58 @@ class BlogController extends Controller
     {
         if (($data['status'] ?? $post?->status) === 'published' && empty($data['published_at'])) return $post?->published_at ?: now();
         return $data['published_at'] ?? $post?->published_at;
+    }
+
+    protected function facebookPublishingFields(Request $request, $user, array $data, ?BlogPost $post = null): array
+    {
+        $isEvent = ($data['type'] ?? $post?->type) === 'event';
+        $enabled = $isEvent
+            ? BlogSetting::campusEventsCanPublishToFacebook()
+            : BlogSetting::campusPostsCanPublishToFacebook();
+        $campusStakeholder = $this->isCampusStakeholder($user);
+        $nationalAdminPost = ! $this->isStakeholder($user) && ($data['scope_type'] ?? $post?->scope_type ?? 'national') === 'national';
+        $requested = $enabled && ($campusStakeholder
+            ? $request->boolean('publish_on_facebook')
+            : $nationalAdminPost);
+
+        if ($post?->facebook_status === 'published') {
+            return [
+                'facebook_publish_requested' => true,
+                'facebook_status' => 'published',
+            ];
+        }
+
+        if (! $requested) {
+            return [
+                'facebook_publish_requested' => false,
+                'facebook_status' => 'not_requested',
+                'facebook_error' => null,
+            ];
+        }
+
+        if ($campusStakeholder) {
+            $requiresReview = $isEvent
+                ? BlogSetting::campusEventsFacebookRequireReview()
+                : BlogSetting::campusPostsFacebookRequireReview();
+            $status = $requiresReview ? 'pending_review' : 'pending';
+        } else {
+            $status = ($data['status'] ?? $post?->status) === 'published'
+                ? 'pending'
+                : 'waiting_for_publication';
+        }
+
+        return [
+            'facebook_publish_requested' => true,
+            'facebook_status' => $status,
+            'facebook_error' => null,
+        ];
+    }
+
+    protected function publishToFacebookWhenReady(BlogPost $post): void
+    {
+        if ($post->facebook_publish_requested && $post->facebook_status === 'pending') {
+            app(FacebookPagePublisher::class)->publish($post);
+        }
     }
 
     protected function campusPublicationStatus($publishedAt): string

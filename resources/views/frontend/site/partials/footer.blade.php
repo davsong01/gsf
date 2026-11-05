@@ -10,6 +10,7 @@
         <div>
             <h2>Explore</h2>
             <ul>
+                <li><a href="{{ route('about.our-story') }}">Our Story</a></li>
                 <li><a href="{{ route('about.foundational-concept') }}">About GSF</a></li>
                 <li><a href="{{ route('conferences.index') }}">GSF Conferences</a></li>
                 <li><a href="{{ route('blog.index') }}">News</a></li>

@@ -76,6 +76,9 @@
                         @endforeach
                     </select>
                 </div>
+                @unless($isStakeholder)
+                    <div class="bpa-filters__field"><label for="facebook-status-filter">Facebook status</label><select class="form-control" id="facebook-status-filter" name="facebook_status"><option value="">All Facebook statuses</option>@foreach(['pending_review' => 'Pending review', 'waiting_for_publication' => 'Waiting for website publication', 'pending' => 'Ready to publish', 'published' => 'Published', 'failed' => 'Failed', 'rejected' => 'Rejected'] as $facebookStatus => $label)<option value="{{ $facebookStatus }}" @selected(request('facebook_status') === $facebookStatus)>{{ $label }}</option>@endforeach</select></div>
+                @endunless
                 @if (empty($eventsWorkspace))
                     <div class="bpa-filters__field"><label for="post-type">Type</label><select class="form-control"
                             id="post-type" name="type">
@@ -219,6 +222,7 @@
                                                 <br>
                                                 <i class="fa {{ $post->type === 'event' ? 'fa-calendar-o' : ($post->type === 'video' ? 'fa-play-circle-o' : 'fa-file-text-o') }}"
                                                     aria-hidden="true"></i> {{ ucfirst($post->type) }}
+                                                @if($post->facebook_publish_requested)<br><small class="text-primary">Facebook: {{ str($post->facebook_status)->replace('_', ' ')->title() }}</small>@endif
                                             </span>
                                         </div>
                                     </div>
@@ -257,6 +261,12 @@
                                                     class="bpa-actions__archive" type="submit"
                                                     aria-label="Archive {{ $post->title }}"><i class="fa fa-archive"
                                                         aria-hidden="true"></i> Archive</button></form>
+                                        @endif
+                                        @if(!$isStakeholder && \App\Modules\Blog\BlogPermissions::allows($viewer, \App\Modules\Blog\BlogPermissions::PUBLISH) && $post->facebook_status === 'pending_review')
+                                            <form method="POST" action="{{ route('admin.blog.posts.facebook-review', $post) }}">@csrf<input type="hidden" name="decision" value="approve"><button class="btn btn-sm btn-success" type="submit">Approve Facebook</button></form>
+                                            <form method="POST" action="{{ route('admin.blog.posts.facebook-review', $post) }}">@csrf<input type="hidden" name="decision" value="reject"><button class="btn btn-sm btn-outline-danger" type="submit">Reject Facebook</button></form>
+                                        @elseif(!$isStakeholder && \App\Modules\Blog\BlogPermissions::allows($viewer, \App\Modules\Blog\BlogPermissions::PUBLISH) && $post->facebook_status === 'failed')
+                                            <form method="POST" action="{{ route('admin.blog.posts.facebook-review', $post) }}">@csrf<input type="hidden" name="decision" value="retry"><button class="btn btn-sm btn-outline-warning" type="submit">Retry Facebook</button></form>
                                         @endif
                                     </div>
                                 </td>

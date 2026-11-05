@@ -35,7 +35,7 @@
                     <h1>Forming students for <em>Christ-like influence.</em></h1>
                     <p class="hero__lead">A national fellowship community where students grow in faith, discover purpose, build enduring relationships and become equipped to serve their world.</p>
                     <div class="hero__actions">
-                        <a class="button button--gold" href="{{ route('about.foundational-concept') }}">Discover GSF <span aria-hidden="true">→</span></a>
+                        <a class="button button--gold" href="{{ route('about.our-story') }}">Discover GSF <span aria-hidden="true">→</span></a>
                         <a class="button button--ghost" href="{{ route('people.campuses') }}">Find a campus</a>
                     </div>
                     <div class="hero__proof">
