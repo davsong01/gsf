@@ -1,6 +1,5 @@
 @extends('frontend.site.layout')
 @section('title', ($post->seo_title ?: $post->title).($post->type === 'event' ? ' — GSF Programs & Events' : ' — GSF News'))
-@section('description', $post->seo_description ?: $post->excerpt)
 @section('activeSection', $post->type === 'event' ? 'events' : 'news')
 @php
     $postViewer = auth('stakeholder')->user() ?: auth()->user();
@@ -9,6 +8,10 @@
     $postEditRoute = ($postViewer instanceof \App\Models\Stakeholder ? 'stakeholders' : 'admin').($post->type === 'event' ? '.events.posts.edit' : '.blog.posts.edit');
     $featuredImageUrl = \App\Modules\Blog\BlogMedia::url($post->featured_image);
     $socialImageUrl = \App\Modules\Blog\BlogMedia::url($post->social_image ?: $post->featured_image);
+    $socialDescriptionSource = $post->seo_description ?: ($post->excerpt ?: $post->body);
+    $socialDescription = trim(html_entity_decode(strip_tags((string) $socialDescriptionSource), ENT_QUOTES | ENT_HTML5));
+    $socialDescription = preg_replace('/\s+/u', ' ', $socialDescription) ?: '';
+    $socialDescription = \Illuminate\Support\Str::limit($socialDescription, 200, '…');
     $isCampusPostAuthor = $post->author instanceof \App\Models\Stakeholder && $post->author->chapter;
     $postAuthorName = $isCampusPostAuthor
         ? $post->author->chapter->name
@@ -18,6 +21,7 @@
         ? 'National Admin'
         : ($post->author instanceof \App\Models\Stakeholder && !$isCampusPostAuthor ? $post->author->chapter?->name : null);
 @endphp
+@section('description', $socialDescription ?: $post->title)
 @push('head')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/suneditor@2.47.12/dist/css/suneditor.min.css">
 <style>
@@ -104,8 +108,8 @@ a.blog-post-meta__item:hover { background:#eaf0f9; color:#173e79; }
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" defer></script>
 <link rel="canonical" href="{{ $post->canonical_url ?: $postUrl }}">
 @if($isPreview ?? false)<meta name="robots" content="noindex,nofollow">@endif
-<meta property="og:type" content="{{ $post->type === 'event' ? 'event' : 'article' }}"><meta property="og:title" content="{{ $post->seo_title ?: $post->title }}"><meta property="og:description" content="{{ $post->seo_description ?: $post->excerpt }}"><meta property="og:url" content="{{ $postUrl }}">@if($socialImageUrl)<meta property="og:image" content="{{ $socialImageUrl }}">@endif
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{{ $post->seo_title ?: $post->title }}"><meta name="twitter:description" content="{{ $post->seo_description ?: $post->excerpt }}">@if($socialImageUrl)<meta name="twitter:image" content="{{ $socialImageUrl }}">@endif
+<meta property="og:type" content="{{ $post->type === 'event' ? 'event' : 'article' }}"><meta property="og:title" content="{{ $post->seo_title ?: $post->title }}"><meta property="og:description" content="{{ $socialDescription ?: $post->title }}"><meta property="og:url" content="{{ $postUrl }}">@if($socialImageUrl)<meta property="og:image" content="{{ $socialImageUrl }}">@endif
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{{ $post->seo_title ?: $post->title }}"><meta name="twitter:description" content="{{ $socialDescription ?: $post->title }}">@if($socialImageUrl)<meta name="twitter:image" content="{{ $socialImageUrl }}">@endif
 @php
     $structuredPost = $post->type === 'event' && $post->event_starts_at
         ? ['@context' => 'https://schema.org', '@type' => 'Event', 'name' => $post->title, 'description' => $post->seo_description ?: $post->excerpt, 'startDate' => $post->event_starts_at->toIso8601String(), 'url' => $postUrl, 'location' => ['@type' => 'Place', 'name' => $post->event_venue ?: 'Campus Fellowship']]
