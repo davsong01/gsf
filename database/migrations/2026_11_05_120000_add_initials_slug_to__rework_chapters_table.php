@@ -10,9 +10,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('chapters', function (Blueprint $table) {
-            $table->string('slug')->nullable()->after('name');
-        });
+        if(!Schema::hasColumn('chapters', 'slug')) {
+            Schema::table('chapters', function (Blueprint $table) {
+                $table->string('slug')->nullable()->after('name');
+            });
+        }
 
         $usedSlugs = [];
 
