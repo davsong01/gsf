@@ -42,9 +42,8 @@ class FileUploadService
     {
         $folder = 'uploads/'.$folder;
 
-        // Match uploadImage(): uploads are stored under the project uploads directory,
-        // which is the web-served uploads directory in this deployment.
-        $folderPath = base_path(trim($folder, '/'));
+        $publicUploadRoot = rtrim(config('filesystems.image_upload_path', public_path()), '/');
+        $folderPath = $publicUploadRoot.'/'.trim($folder, '/');
         $filename   = $filename ?? $file->getClientOriginalName();
 
         // Ensure folder exists
@@ -53,8 +52,14 @@ class FileUploadService
         }
 
         // Delete old file if exists
-        if ($oldFile && file_exists(public_path($oldFile))) {
-            unlink(public_path($oldFile));
+        if ($oldFile) {
+            $oldPath = filter_var($oldFile, FILTER_VALIDATE_URL)
+                ? ltrim((string) parse_url($oldFile, PHP_URL_PATH), '/')
+                : ltrim($oldFile, '/');
+            $oldAbsolutePath = $publicUploadRoot.'/'.$oldPath;
+            if (is_file($oldAbsolutePath)) {
+                unlink($oldAbsolutePath);
+            }
         }
 
         // Move file to public folder

@@ -87,7 +87,7 @@ class ImportWordPressBlogImagesSeeder extends Seeder
         }
 
         $destination = 'uploads/blog/'.hash('sha256', $url).'-'.basename($relative);
-        if (!is_file(public_path($destination))) {
+        if (!is_file(\App\Modules\Blog\BlogMedia::absolutePath($destination))) {
             if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'], true) && !getimagesize($file)) {
                 $this->missing[$url] = true;
                 return null;
@@ -117,14 +117,14 @@ class ImportWordPressBlogImagesSeeder extends Seeder
 
     private function relocateExistingFiles(): void
     {
-        $oldDirectory = public_path('uploads/blog/wordpress-import');
+        $oldDirectory = \App\Modules\Blog\BlogMedia::absolutePath('uploads/blog/wordpress-import');
         if (is_dir($oldDirectory)) {
             foreach (scandir($oldDirectory) ?: [] as $entry) {
                 if ($entry === '.' || $entry === '..') {
                     continue;
                 }
                 $old = $oldDirectory.'/'.$entry;
-                $new = public_path('uploads/blog/'.$entry);
+                $new = \App\Modules\Blog\BlogMedia::absolutePath('uploads/blog/'.$entry);
                 if (!is_file($old) || (is_file($new) && hash_file('sha256', $old) !== hash_file('sha256', $new))) {
                     throw new RuntimeException('Cannot safely relocate imported file: '.$old);
                 }

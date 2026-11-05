@@ -331,7 +331,7 @@ class ImportWordPressWxr extends Command
         $path = $matches[1];
 
         $relative = 'uploads/blog/'.hash('sha256', $url).'-'.basename($path);
-        if (is_file(public_path($relative))) {
+        if (is_file(\App\Modules\Blog\BlogMedia::absolutePath($relative))) {
             return $relative;
         }
         try {

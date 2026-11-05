@@ -2,6 +2,9 @@
 
 return [
 
+    'image_upload_path' => env('IMAGE_UPLOAD_PATH', public_path()),
+
+
     /*
     |--------------------------------------------------------------------------
     | Default Filesystem Disk

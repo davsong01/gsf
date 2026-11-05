@@ -8,6 +8,7 @@ use App\Modules\Blog\Models\BlogPost;
 use App\Models\Chapter;
 use App\Models\Stakeholder;
 use App\Modules\Blog\BlogPermissions;
+use App\Modules\Blog\BlogMedia;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
@@ -19,9 +20,20 @@ class BlogPublicController extends Controller
         $relative = (string) $request->query('path', '');
         abort_unless(str_starts_with($relative, 'uploads/blog/') && !str_contains($relative, "\0"), 404);
 
-        $root = realpath(public_path('uploads/blog'));
-        $file = realpath(public_path($relative));
-        abort_unless($root && $file && str_starts_with($file, $root.DIRECTORY_SEPARATOR) && is_file($file), 404);
+        $file = null;
+        $blogRoots = array_values(array_unique([
+            BlogMedia::absolutePath('uploads/blog'),
+            public_path('uploads/blog'),
+        ]));
+        foreach ($blogRoots as $blogRoot) {
+            $root = realpath($blogRoot);
+            $candidate = realpath(rtrim(dirname($blogRoot), '/').'/'.basename($blogRoot).'/'.substr($relative, strlen('uploads/blog/')));
+            if ($root && $candidate && str_starts_with($candidate, $root.DIRECTORY_SEPARATOR) && is_file($candidate)) {
+                $file = $candidate;
+                break;
+            }
+        }
+        abort_unless($file, 404);
 
         $mime = mime_content_type($file);
         abort_unless(in_array($mime, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'application/pdf', 'audio/mpeg'], true), 404);

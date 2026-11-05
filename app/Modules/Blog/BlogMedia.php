@@ -41,13 +41,37 @@ class BlogMedia
 
         $publicPath = Str::startsWith($path, ['uploads/', 'storage/']) ? $path : 'storage/'.$path;
 
-        if (!is_file(public_path($publicPath))) {
+        if (!self::existingAbsolutePath($publicPath)) {
             return null;
         }
 
         return Str::startsWith($publicPath, 'uploads/blog/')
             ? route('blog.media', ['path' => $publicPath])
             : asset($publicPath);
+    }
+
+    public static function absolutePath(string $relativePath): string
+    {
+        return rtrim(config('filesystems.image_upload_path', public_path()), '/').'/'.ltrim($relativePath, '/');
+    }
+
+    public static function absolutePathCandidates(string $relativePath): array
+    {
+        return array_values(array_unique([
+            self::absolutePath($relativePath),
+            public_path(ltrim($relativePath, '/')),
+        ]));
+    }
+
+    public static function existingAbsolutePath(string $relativePath): ?string
+    {
+        foreach (self::absolutePathCandidates($relativePath) as $path) {
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+
+        return null;
     }
 
     public static function htmlWithAvailableImages(string $html): string

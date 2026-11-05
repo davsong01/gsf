@@ -58,8 +58,8 @@ class BackfillBlogFeaturedCoversSeeder extends Seeder
                 $post->update(['featured_image' => $uploadedPath]);
                 $updated++;
             } catch (Throwable $exception) {
-                if ($uploadedPath && is_file(public_path($uploadedPath))) {
-                    unlink(public_path($uploadedPath));
+                if ($uploadedPath && is_file(\App\Modules\Blog\BlogMedia::absolutePath($uploadedPath))) {
+                    unlink(\App\Modules\Blog\BlogMedia::absolutePath($uploadedPath));
                 }
                 throw $exception;
             } finally {

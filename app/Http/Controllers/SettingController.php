@@ -91,7 +91,8 @@ class SettingController extends Controller
                 : ltrim((string) $file, '/');
 
             if (str_starts_with($path, 'uploads/')) {
-                foreach ([base_path($path), public_path($path)] as $absolutePath) {
+                $publicUploadRoot = rtrim(config('filesystems.image_upload_path', public_path()), '/');
+                foreach ([$publicUploadRoot.'/'.$path, public_path($path), base_path($path)] as $absolutePath) {
                     if (is_file($absolutePath)) {
                         @unlink($absolutePath);
                         break;
