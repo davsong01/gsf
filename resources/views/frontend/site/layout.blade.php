@@ -22,7 +22,7 @@
     <meta name="theme-color" content="#0b2452">
     <meta name="description" content="{{ trim($__env->yieldContent('description')) ?: "GOFAMINT Students' Fellowship — a connected community of students growing in faith, leadership and service." }}">
     <link rel="icon" href="{{ $siteFaviconUrl }}">
-    <link rel="stylesheet" href="{{ asset('site/css/gsf-site.css') }}?v={{ filemtime(public_path('site/css/gsf-site.css')) }}">
+    <link rel="stylesheet" href="{{ asset('site/css/gsf-site.css') }}">
     <title>@yield('title', "GOFAMINT Students' Fellowship")</title>
     @stack('head')
 </head>
