@@ -51,6 +51,9 @@ class BackfillNecStakeholderAvatarsSeeder extends Seeder
             ->where(function ($query) {
                 $query->whereNull('avatar')->orWhere('avatar', '');
             })
+            ->whereDoesntHave('role', function ($query) {
+                $query->where('slug', 'chapter-representative');
+            })
             ->get(['id', 'name']);
 
         $stakeholdersByName = $stakeholders->groupBy(fn (Stakeholder $stakeholder) => Str::slug($stakeholder->name));
