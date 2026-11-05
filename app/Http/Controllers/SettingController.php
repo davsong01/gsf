@@ -91,9 +91,11 @@ class SettingController extends Controller
                 : ltrim((string) $file, '/');
 
             if (str_starts_with($path, 'uploads/')) {
-                $absolutePath = public_path($path);
-                if (is_file($absolutePath)) {
-                    @unlink($absolutePath);
+                foreach ([base_path($path), public_path($path)] as $absolutePath) {
+                    if (is_file($absolutePath)) {
+                        @unlink($absolutePath);
+                        break;
+                    }
                 }
             } else {
                 Storage::disk('public')->delete(str_starts_with($path, 'storage/') ? substr($path, 8) : $path);

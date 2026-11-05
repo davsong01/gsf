@@ -42,7 +42,9 @@ class FileUploadService
     {
         $folder = 'uploads/'.$folder;
 
-        $folderPath = public_path(trim($folder, '/')); // e.g., public/uploads
+        // Match uploadImage(): uploads are stored under the project uploads directory,
+        // which is the web-served uploads directory in this deployment.
+        $folderPath = base_path(trim($folder, '/'));
         $filename   = $filename ?? $file->getClientOriginalName();
 
         // Ensure folder exists
