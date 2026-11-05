@@ -66,7 +66,7 @@
         <div class="directory-featured__grid">
             @foreach($featuredCampuses as $campus)
                 <a class="directory-campus-mini" href="{{ route('campus.single', $campus->slug) }}">
-                    <span class="directory-campus-mini__image"><img src="{{ asset(campusImagePath($campus)) }}" alt="{{ $campus->name }} campus gate or fellowship illustration" loading="lazy"></span>
+                    <span class="directory-campus-mini__image"><img src="{{ versionedAsset(campusImagePath($campus)) }}" alt="{{ $campus->name }} campus gate or fellowship illustration" loading="lazy"></span>
                     <span class="directory-campus-mini__copy"><small>{{ $campus->field?->name ?: 'GSF Campus' }}</small><strong>{{ $campus->name }}</strong><span>{{ $campus->zone?->name ?: 'Nigeria' }} · {{ number_format($campus->members_count) }} {{ \Illuminate\Support\Str::plural('member', $campus->members_count) }}</span></span>
                     <b aria-hidden="true">↗</b>
                 </a>

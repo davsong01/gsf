@@ -13,7 +13,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ReportAnalyticsService;
 use App\Models\StakeholderQuestionSection;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 
 class StakeholderReportsController extends Controller
@@ -285,7 +286,7 @@ class StakeholderReportsController extends Controller
     {
         $data = app(ReportService::class)->prepareViewData($report, false);
 
-        return view('reports.pdf_template', [
+        return view('stakeholder.show', [
             'report'     => $report,
             'isAdmin'     => false,
             'sections'   => $data['sections']
@@ -332,19 +333,17 @@ class StakeholderReportsController extends Controller
         //
     }
 
-    public function download(StakeholderReport $report): BinaryFileResponse
+    public function download(StakeholderReport $report)
     {
-        $path = $report->file_location;
+        $data = app(ReportService::class)->prepareViewData($report, auth()->check());
+        $monthName = date('F', mktime(0, 0, 0, (int) $report->month, 10));
+        $fileName = Str::slug("{$report->chapter->name} {$monthName} {$report->year} report").'.pdf';
 
-        abort_unless(file_exists($path), 404, 'Report file not found');
-
-        return response()->download(
-            $path,
-            basename($path), // filename
-            [
-                'Content-Type' => 'application/pdf',
-            ]
-        );
+        return Pdf::loadView('reports.pdf_template', [
+            'report' => $report,
+            'isAdmin' => auth()->check(),
+            'sections' => $data['sections'],
+        ])->setPaper('a4', 'portrait')->download($fileName);
     }
 
     public function financialReports(Request $request)

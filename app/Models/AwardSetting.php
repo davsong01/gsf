@@ -25,5 +25,7 @@ class AwardSetting extends Model
 
         'first_class_awards_deadline' => 'datetime',
         'etf_awards_deadline' => 'datetime',
+        'go_submission_enabled' => 'boolean',
+        'etf_submission_enabled' => 'boolean',
     ];
 }

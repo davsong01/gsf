@@ -20,7 +20,7 @@
 <script src="{{ asset('gsfcom/js/jquery.vmap.usa.js')}}"></script>
 <script src="{{ asset('gsfcom/js/jquery.slideform.js')}}"></script>
 <script src="{{ asset('gsfcom/js/gsf.js')}}"></script>
-<script src="{{ asset('site/js/gsf-site.js') }}" defer></script>
+<script src="{{ versionedAsset('site/js/gsf-site.js') }}" defer></script>
 <script>
     document.querySelectorAll('.toggle-password').forEach(function(toggle) {
         toggle.addEventListener('click', function() {

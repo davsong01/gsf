@@ -213,11 +213,28 @@ class AwardController extends Controller
         return view('frontend.site.awards.beneficiaries', [
             'type' => $type,
             'title' => $titles[$type],
+            'submissionRoute' => $type === 'etf' ? 'award.etf-entry-submission' : 'award.first-class-entry-submission',
+            'submissionOpen' => $this->awardSubmissionOpen($type),
             'yearGroups' => $yearGroups,
             'latestYear' => $latestYear,
             'initialApplicants' => $initialApplicants,
             'initialApprovedCount' => $initialApprovedCount,
         ]);
+    }
+
+    private function awardSubmissionOpen(string $type): bool
+    {
+        $settings = AwardSetting::first();
+        if (!$settings) {
+            return true;
+        }
+
+        $enabledColumn = $type === 'etf' ? 'etf_submission_enabled' : 'go_submission_enabled';
+        $deadlineColumn = $type === 'etf' ? 'etf_awards_deadline' : 'first_class_awards_deadline';
+        $enabled = $settings->{$enabledColumn} ?? true;
+        $deadline = $settings->{$deadlineColumn};
+
+        return (bool) $enabled && (!$deadline || now()->lessThanOrEqualTo($deadline));
     }
 
     private function publicAwardApplicantsQuery(string $type, int $year)
@@ -1738,6 +1755,8 @@ class AwardController extends Controller
                 'allow_field_edit'       => null,
                 'allow_field_comment'    => null,
                 'allow_field_approval'   => null,
+                'go_submission_enabled'  => true,
+                'etf_submission_enabled' => true,
             ]
         );
 
@@ -1745,9 +1764,24 @@ class AwardController extends Controller
     }
 
     public function updateAwardSettings(Request $request){
-        $settings = AwardSetting::first();
+        $validated = $request->validate([
+            'go_submission_enabled' => ['required', 'boolean'],
+            'etf_submission_enabled' => ['required', 'boolean'],
+            'first_class_awards_deadline' => ['nullable', 'date'],
+            'etf_awards_deadline' => ['nullable', 'date'],
+            'allow_chapter_edit' => ['nullable', 'date'],
+            'allow_chapter_comment' => ['nullable', 'date'],
+            'allow_chapter_approval' => ['nullable', 'date'],
+            'allow_zone_edit' => ['nullable', 'date'],
+            'allow_zone_comment' => ['nullable', 'date'],
+            'allow_zone_approval' => ['nullable', 'date'],
+            'allow_field_edit' => ['nullable', 'date'],
+            'allow_field_comment' => ['nullable', 'date'],
+            'allow_field_approval' => ['nullable', 'date'],
+        ]);
 
-        $settings->update($request->except(['_token']));
+        $settings = AwardSetting::firstOrCreate(['id' => 1]);
+        $settings->update($validated);
 
         return redirect()->back()->with('message', 'System configurations saved successfully.');
     }
@@ -1845,10 +1879,8 @@ class AwardController extends Controller
     public function firstClassSubmission()
     {
         $type = 'go';
-        $settings = AwardSetting::first();
 
-        // Check if deadline exists and if it has passed
-        if ($settings && $settings->first_class_awards_deadline && Carbon::now()->greaterThan($settings->first_class_awards_deadline)) {
+        if (!$this->awardSubmissionOpen($type)) {
             return view('frontend.' . frontendTemplate() . '.award-closed', compact('type'));
         }
 
@@ -1861,9 +1893,8 @@ class AwardController extends Controller
     public function etfEntrySubmission()
     {
         $type = 'etf';
-        $settings = AwardSetting::first();
 
-        if ($settings && $settings->etf_awards_deadline && Carbon::now()->greaterThan($settings->etf_awards_deadline)) {
+        if (!$this->awardSubmissionOpen($type)) {
             return view('frontend.' . frontendTemplate() . '.award-closed', compact('type'));
         }
 
@@ -1876,18 +1907,9 @@ class AwardController extends Controller
     public function submitAwardEntry(Request $request)
     {
         $type = $request->type;
+        abort_unless(in_array($type, ['go', 'etf'], true), 422);
 
-        $settings = AwardSetting::first();
-
-        $deadlineColumn = $type === 'go'
-            ? 'first_class_awards_deadline'
-            : 'etf_awards_deadline';
-
-        if (
-            $settings &&
-            filled($settings->{$deadlineColumn}) &&
-            now()->greaterThan($settings->{$deadlineColumn})
-        ) {
+        if (!$this->awardSubmissionOpen($type)) {
             abort(403, 'Award submissions are closed for this award type.');
         }
 

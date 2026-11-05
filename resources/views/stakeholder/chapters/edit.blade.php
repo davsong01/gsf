@@ -100,7 +100,7 @@
                                             <label for="chapter_banner">{{ isset($chapter) ? 'Change banner' : 'Upload banner' }}</label>
                                             <div class="stakeholder-chapter-banner">
                                                 @if(isset($chapter))
-                                                    <img src="{{ asset(campusImagePath($chapter)) }}" alt="Current campus image for {{ $chapter->name }}" class="stakeholder-chapter-banner__preview">
+                                                    <img src="{{ versionedAsset(campusImagePath($chapter)) }}" alt="Current campus image for {{ $chapter->name }}" class="stakeholder-chapter-banner__preview">
                                                 @else
                                                     <div class="stakeholder-chapter-banner__preview d-flex align-items-center justify-content-center text-muted">No banner yet</div>
                                                 @endif

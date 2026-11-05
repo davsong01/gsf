@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="{{asset('gsfcom/fancybox/min.css')}}">
     <link rel="stylesheet" href="{{asset('gsfcom/jqvmap/min.css')}}">
     <link type="text/css" href="{{asset('gsfcom/css/style.css')}}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('site/css/gsf-site.css') }}">
+    <link rel="stylesheet" href="{{ versionedAsset('site/css/gsf-site.css') }}">
     <style>
         .counter{
             background: #0d1b48;

@@ -8,12 +8,32 @@
 @section('content')
 @php
     $isChapter = in_array($user->role_id, chapterStakeholders());
+    $isZoneStakeholder = in_array($user->role_id, zoneStakeholders());
+    $isFieldStakeholder = in_array($user->role_id, fieldStakeholders());
+    $isNationalStakeholder = in_array($user->role_id, array_merge(secretariatStakeholders(), ncpStakeholders()));
     $isFinance = finStakeholders($user);
     $field = $chapter?->field ?? $user->field;
     $zone = $chapter?->zone ?? $user->zone;
     $fieldPastor = $field?->fieldCord;
-    $zonePastors = $zone?->zonalCords ?? collect();
-    $workspaceName = $chapter?->name ?? $zone?->name ?? $field?->name ?? 'National Secretariat';
+    if ($fieldPastor && (int) $fieldPastor->id === (int) $user->id) {
+        $fieldPastor = null;
+    }
+    $zonePastors = ($zone?->zonalCords ?? collect())
+        ->reject(fn ($pastor) => (int) $pastor->id === (int) $user->id)
+        ->values();
+    $workspaceName = $chapter?->name ?? $zone?->name ?? $field?->name ?? ($isNationalStakeholder ? 'National Secretariat' : ($isFinance ? 'Finance workspace' : 'Stakeholder workspace'));
+    $workspaceLabel = $isChapter ? 'Chapter workspace' : ($isZoneStakeholder ? 'Zone workspace' : ($isFieldStakeholder ? 'Field workspace' : ($isFinance ? 'Finance workspace' : ($isNationalStakeholder ? 'National workspace' : 'Stakeholder workspace'))));
+    $welcomeCopy = $isChapter
+        ? 'Support your campus community and keep your reporting moving.'
+        : ($isZoneStakeholder
+            ? 'Coordinate reports and support campus leaders across your zone.'
+            : ($isFieldStakeholder
+                ? 'Coordinate reporting and leadership across your field.'
+                : ($isFinance
+                    ? 'Manage financial reporting and keep records moving.'
+                    : ($isNationalStakeholder
+                        ? 'Coordinate national work and stay connected across the network.'
+                        : 'Manage your assigned GSF responsibilities from this workspace.'))));
     $roleName = $user->role?->name ?: 'GSF Stakeholder';
     $canSubmitReport = $isChapter && $chapter && canAddReport($chapter->id)['eligible'];
     $canCreatePosts = $user->hasPermission('blog.create');
@@ -23,9 +43,9 @@
 <main class="sh-dashboard content-body">
     <section class="sh-hero" aria-labelledby="sh-dashboard-title">
         <div class="sh-hero__copy">
-            <span class="sh-eyebrow"><span></span> Your GSF workspace</span>
+            <span class="sh-eyebrow"><span></span> Stakeholder workspace</span>
             <h1 id="sh-dashboard-title">Good to have you here.</h1>
-            <p>Welcome back, <strong>{{ $user->name }}</strong>. Keep your fellowship connected and your work moving forward from one place.</p>
+            <p>Welcome back, <strong>{{ $user->name }}</strong>. {{ $welcomeCopy }}</p>
             <div class="sh-hero__actions">
                 @if($canSubmitReport)
                     <a class="sh-button sh-button--primary" href="{{ route('stakeholders.reports.create') }}"><i class="fa fa-plus" aria-hidden="true"></i> Submit a report <span aria-hidden="true">↗</span></a>
@@ -38,7 +58,7 @@
             </div>
         </div>
         <div class="sh-hero__identity">
-            <span class="sh-hero__identity-label">Your fellowship</span>
+            <span class="sh-hero__identity-label">{{ $workspaceLabel }}</span>
             <strong>{{ $workspaceName }}</strong>
             <span class="sh-hero__role"><i class="fa fa-circle" aria-hidden="true"></i> {{ $roleName }}</span>
             @if($zone || $field)
@@ -58,7 +78,7 @@
             @else
                 <a class="sh-action sh-action--blue" href="{{ route('stakeholders.reports.index') }}"><span class="sh-action__icon"><i class="fa fa-folder-open-o" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>All reports</strong><small>Browse and manage monthly reports</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
                 @if($canSubmitReport)
-                    <a class="sh-action sh-action--gold" href="{{ route('stakeholders.reports.create') }}"><span class="sh-action__icon"><i class="fa fa-plus" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Submit a report</strong><small>Start this month’s chapter report</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+                    <a class="sh-action sh-action--gold" href="{{ route('stakeholders.reports.create') }}"><span class="sh-action__icon"><i class="fa fa-plus" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Submit a report</strong><small>Start this month’s report</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
                 @endif
             @endif
             @if($isChapter && $chapter)
@@ -67,7 +87,7 @@
                 <a class="sh-action sh-action--blue" href="{{ route('stakeholders.chapters.edit', $chapter->id) }}"><span class="sh-action__icon"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Chapter details</strong><small>Keep your campus information current</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
             @endif
             @if($canManagePosts)
-                <a class="sh-action sh-action--gold" href="{{ route('stakeholders.blog.posts.index') }}"><span class="sh-action__icon"><i class="fa fa-newspaper-o" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Posts &amp; stories</strong><small>Share news from your fellowship</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+                <a class="sh-action sh-action--gold" href="{{ route('stakeholders.blog.posts.index') }}"><span class="sh-action__icon"><i class="fa fa-newspaper-o" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Posts &amp; stories</strong><small>Share news and updates from your area</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
             @endif
             @if($canOpenAppraisal && ($appraisalAccess['my_appraisal'] ?? false))
                 <a class="sh-action sh-action--teal" href="{{ route('stakeholders.appraisal.my') }}"><span class="sh-action__icon"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Self appraisal</strong><small>Reflect on your work and growth</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
@@ -84,8 +104,8 @@
                 <div class="sh-panel__heading"><span class="sh-panel__symbol sh-panel__symbol--gold"><i class="fa fa-file-text-o" aria-hidden="true"></i></span><div><span class="sh-section__eyebrow">Reporting journey</span><h2 id="sh-reviews-title">Follow every review</h2></div></div>
                 <p class="sh-panel__intro">Open reports at each stage and see what needs attention.</p>
                 <div class="sh-review-list">
-                    <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'zone_pending']) }}"><span class="sh-review-list__step">01</span><span><strong>Pending zonal review</strong><small>Waiting for your zonal pastor</small></span><span aria-hidden="true">→</span></a>
-                    <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'field_pending']) }}"><span class="sh-review-list__step">02</span><span><strong>Pending field review</strong><small>Waiting for your field pastor</small></span><span aria-hidden="true">→</span></a>
+                    <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'zone_pending']) }}"><span class="sh-review-list__step">01</span><span><strong>Pending zonal review</strong><small>Reports awaiting zonal review</small></span><span aria-hidden="true">→</span></a>
+                    <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'field_pending']) }}"><span class="sh-review-list__step">02</span><span><strong>Pending field review</strong><small>Reports awaiting field review</small></span><span aria-hidden="true">→</span></a>
                     <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'national_pending']) }}"><span class="sh-review-list__step">03</span><span><strong>Pending national review</strong><small>Waiting for the national team</small></span><span aria-hidden="true">→</span></a>
                     <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'national_approved']) }}"><span class="sh-review-list__step sh-review-list__step--done"><i class="fa fa-check" aria-hidden="true"></i></span><span><strong>Approved reports</strong><small>Completed national approvals</small></span><span aria-hidden="true">→</span></a>
                 </div>
@@ -93,7 +113,7 @@
         @endunless
         <section class="sh-panel" aria-labelledby="sh-leadership-title">
             <div class="sh-panel__heading"><span class="sh-panel__symbol sh-panel__symbol--blue"><i class="fa fa-heart-o" aria-hidden="true"></i></span><div><span class="sh-section__eyebrow">People to know</span><h2 id="sh-leadership-title">Leadership circle</h2></div></div>
-            <p class="sh-panel__intro">Stay connected with the people supporting your fellowship.</p>
+            <p class="sh-panel__intro">Contact leaders connected to your assigned area.</p>
             @if($fieldPastor || $zonePastors->isNotEmpty())
                 <div class="sh-leaders">
                     @if($fieldPastor)
@@ -120,14 +140,14 @@
                     @endforeach
                 </div>
             @else
-                <div class="sh-empty"><i class="fa fa-users" aria-hidden="true"></i><strong>Leadership contacts will appear here.</strong><span>Your field and zone details will show when they are available.</span></div>
+                <div class="sh-empty"><i class="fa fa-users" aria-hidden="true"></i><strong>No leadership contacts are listed here yet.</strong><span>Contacts will appear when leaders are assigned to your area.</span></div>
             @endif
         </section>
     </div>
 
     @if($canManagePosts)
         <section class="sh-section sh-publishing" aria-labelledby="sh-publishing-title">
-            <div class="sh-section__heading"><div><span class="sh-section__eyebrow">Share your story</span><h2 id="sh-publishing-title">Posts, programs &amp; events</h2></div><p>A home for what your fellowship is sharing and planning.</p></div>
+            <div class="sh-section__heading"><div><span class="sh-section__eyebrow">Communication &amp; gatherings</span><h2 id="sh-publishing-title">Posts, programs &amp; events</h2></div><p>Recent updates and upcoming events from your area.</p></div>
             <div class="sh-publishing__grid">
                 <article class="sh-publishing__card">
                     <div class="sh-publishing__head"><span class="sh-publishing__icon"><i class="fa fa-newspaper-o" aria-hidden="true"></i></span><div><h3>Blog posts</h3><p>News, reflections and stories</p></div><a href="{{ route('stakeholders.blog.posts.index') }}">View all <span aria-hidden="true">↗</span></a></div>

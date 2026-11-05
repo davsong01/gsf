@@ -1,477 +1,104 @@
-<div class="content-body">
-    <section id="reports-dashboard">
-        <h4 class="card-title">All Reports</h4>
-        @if($isAdmin)
-        <a class="btn btn-primary btn-sm" href="{{route('report.fix.orphan')}}">Fix orphan reports</a>
+@section('extra_styles')
+<style>
+    .reports-workspace{--ink:#23364d;--muted:#728094;--navy:#17375f;--teal:#246d68;--gold:#b77a38;--line:#e7ddcf;--cream:#fffaf2;--peach:#fff4ee;padding-bottom:3rem}.reports-workspace *,.reports-workspace *:before,.reports-workspace *:after{box-sizing:border-box}
+    .reports-hero{position:relative;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:2rem;align-items:end;overflow:hidden;margin-bottom:1.25rem;padding:clamp(1.7rem,4vw,3rem);border-radius:1.5rem;color:#fff;background:linear-gradient(125deg,#17375f 0%,#184b69 62%,#9b6834 145%);box-shadow:0 20px 55px rgba(30,48,70,.16)}.reports-hero:after{position:absolute;top:-8rem;right:-4rem;width:20rem;height:20rem;border:1px solid rgba(255,255,255,.13);border-radius:50%;box-shadow:0 0 0 3.6rem rgba(255,255,255,.035),0 0 0 7.2rem rgba(255,255,255,.025);content:""}.reports-hero__copy,.reports-hero__actions{position:relative;z-index:1}.reports-eyebrow{display:inline-flex;align-items:center;gap:.5rem;margin-bottom:.75rem;color:#f3cf8b;font-size:.7rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.reports-hero h1{margin:0 0 .65rem;color:#fff;font-size:clamp(2rem,4vw,3rem);font-weight:800;line-height:1.08;letter-spacing:-.035em}.reports-hero p{max-width:650px;margin:0;color:#d8e5ed;font-size:.95rem;line-height:1.65}.reports-hero__actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.65rem}
+    .reports-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.65rem;padding:.68rem .95rem;border:1px solid transparent;border-radius:.75rem;font-size:.76rem;font-weight:800;line-height:1.2;text-decoration:none;transition:.18s}.reports-btn:hover{transform:translateY(-1px);text-decoration:none}.reports-btn--light{border-color:rgba(255,255,255,.28);color:#fff;background:rgba(255,255,255,.12)}.reports-btn--light:hover{color:#fff;background:rgba(255,255,255,.2)}.reports-btn--gold{color:#503713;background:#f0ca82;box-shadow:0 8px 20px rgba(18,31,48,.18)}.reports-btn--gold:hover{color:#3d290d;background:#f6d99d}.reports-btn--primary{color:#fff;background:var(--teal)}.reports-btn--primary:hover{color:#fff;background:#195a56}.reports-btn--outline{border-color:#d9cbb9;color:#634a2e;background:#fff}.reports-btn--outline:hover{color:#4e391f;background:#fff8ed}
+    .reports-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.85rem;margin-bottom:1.25rem}.reports-summary__card{position:relative;overflow:hidden;min-height:112px;padding:1.15rem 1.2rem;border:1px solid var(--line);border-radius:1rem;background:#fff;box-shadow:0 10px 30px rgba(65,54,43,.055)}.reports-summary__card:nth-child(2){background:var(--cream)}.reports-summary__card:nth-child(3){background:#f1f8f3}.reports-summary__card:nth-child(4){background:var(--peach)}.reports-summary__card i{position:absolute;top:1rem;right:1rem;color:#b9a78e;font-size:1.05rem}.reports-summary__card span,.reports-summary__card strong{display:block}.reports-summary__card span{margin-bottom:.45rem;color:#7d756b;font-size:.64rem;font-weight:850;letter-spacing:.1em;text-transform:uppercase}.reports-summary__card strong{color:var(--ink);font-size:1.85rem;font-weight:800;line-height:1}.reports-summary__card small{display:block;margin-top:.55rem;color:#89919c;font-size:.69rem}
+    .reports-panel{margin-bottom:1.2rem;border:1px solid var(--line);border-radius:1.25rem;background:#fff;box-shadow:0 14px 38px rgba(61,49,37,.06)}.reports-filter{padding:1.25rem;background:linear-gradient(120deg,#fffaf2,#fff7f1)}.reports-panel__head{margin-bottom:1rem}.reports-panel__head h2{margin:0 0 .22rem;color:#362f28;font-size:1.15rem;font-weight:800}.reports-panel__head p{margin:0;color:#837b72;font-size:.76rem}.reports-filter__grid{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:.8rem;align-items:end}.reports-field label{display:block;margin:0 0 .38rem!important;color:#64594d;font-size:.65rem;font-weight:850;letter-spacing:.07em;text-transform:uppercase}.reports-field .form-control{width:100%;height:2.7rem;margin:0;border:1px solid #ded3c5;border-radius:.7rem;color:#35445a;background:#fff;box-shadow:none;font-size:.77rem}.reports-field .form-control:focus{border-color:#b77a38;box-shadow:0 0 0 3px rgba(183,122,56,.12)}.reports-filter__actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem;padding-top:1rem;border-top:1px solid #ebdfd0}
+    .reports-list{overflow:hidden}.reports-list__head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.25rem 1.35rem;border-bottom:1px solid #eee6dc}.reports-list__head h2{margin:0 0 .2rem;color:#302a24;font-size:1.2rem;font-weight:800}.reports-list__head p{margin:0;color:#84909d;font-size:.75rem}.reports-table-wrap{overflow-x:auto}.reports-table{width:100%;margin:0;border-collapse:collapse}.reports-table th{padding:.9rem 1rem;border:0;color:#756755;background:#f8efe2;font-size:.63rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}.reports-table td{padding:1rem;border-top:1px solid #eee8e0;color:#49576a;font-size:.77rem;vertical-align:middle}.reports-table tbody tr:first-child td{border-top:0}.reports-table tbody tr:hover{background:#fffcf7}.report-serial{display:grid;width:2rem;height:2rem;place-items:center;border-radius:.58rem;color:#7c613f;background:#f5e6d0;font-weight:850}.report-campus strong,.report-period strong{display:block;color:#283a50;font-size:.82rem;line-height:1.45}.report-campus small,.report-period small,.report-date small{display:block;margin-top:.25rem;color:#8993a0;font-size:.68rem;line-height:1.5}.report-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.45rem}.report-tag{display:inline-flex;align-items:center;gap:.28rem;padding:.27rem .48rem;border-radius:999px;color:#386558;background:#e8f3ed;font-size:.6rem;font-weight:800}.report-tag--draft{color:#805c20;background:#fff0cf}.report-tag--school{color:#815044;background:#f9e6e0}.report-edit-control{display:flex;align-items:center;gap:.45rem;margin-top:.6rem}.report-edit-control label{margin:0!important;color:#7f8791;font-size:.62rem;line-height:1.35}
+    .review-stack{display:grid;gap:.38rem;min-width:145px}.review-step{display:grid;grid-template-columns:55px 1fr auto;gap:.4rem;align-items:center}.review-step__label{color:#7b8592;font-size:.62rem;font-weight:750}.review-pill{display:inline-flex;width:max-content;align-items:center;gap:.3rem;padding:.25rem .48rem;border-radius:999px;font-size:.59rem;font-weight:850}.review-pill--approved{color:#286247;background:#e7f3eb}.review-pill--rejected{color:#963d36;background:#fbe9e6}.review-pill--pending{color:#80601f;background:#fff2d2}.review-feedback{color:#a24d43;font-size:.8rem}.report-actions{display:flex;flex-wrap:wrap;gap:.4rem;min-width:148px}.report-action{display:inline-grid;width:2.1rem;height:2.1rem;place-items:center;padding:0;border:1px solid #dfd6ca;border-radius:.58rem;color:#53677e;background:#fff;cursor:pointer;text-decoration:none}.report-action:hover{color:#17375f;background:#f5f8fb;text-decoration:none}.report-action--edit{color:#8a622d;background:#fff8e9}.report-action--download{color:#34705e;background:#edf7f1}.report-action--nudge{color:#6a5d96;background:#f3f0fb}.report-action--danger{color:#a54b43;background:#fff1ee}
+    .reports-empty{padding:3.5rem 1.5rem;text-align:center}.reports-empty__icon{display:grid;width:3.5rem;height:3.5rem;margin:0 auto 1rem;place-items:center;border-radius:1rem;color:#8a6232;background:#f6e7d1;font-size:1.25rem}.reports-empty h3{margin:0 0 .4rem;color:#344358;font-size:1.1rem}.reports-empty p{max-width:430px;margin:0 auto;color:#88919d;font-size:.78rem;line-height:1.6}.reports-pagination{padding:1rem 1.25rem;border-top:1px solid #eee6dc}.reports-modal .modal-content{overflow:hidden;border:0;border-radius:1rem;box-shadow:0 22px 60px rgba(27,39,53,.24)}.reports-modal .modal-header{color:#fff;background:linear-gradient(125deg,#17375f,#246d68)}.reports-modal .modal-title{color:#fff;font-weight:750}.reports-modal .close{color:#fff;opacity:.8}.reports-modal .modal-body{padding:1.3rem;background:#fffaf4}.reports-modal .modal-footer{border-top:1px solid #eee3d5}
+    @media(max-width:1100px){.reports-filter__grid{grid-template-columns:repeat(3,minmax(0,1fr))}.reports-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:767.98px){.reports-hero{grid-template-columns:1fr;padding:1.4rem;border-radius:1.1rem}.reports-hero__actions{justify-content:flex-start}.reports-summary{gap:.65rem}.reports-summary__card{min-height:100px;padding:1rem}.reports-filter__grid{grid-template-columns:1fr 1fr}.reports-table thead{display:none}.reports-table,.reports-table tbody,.reports-table tr,.reports-table td{display:block;width:100%}.reports-table tr{padding:1rem;border-top:1px solid #eee6dc}.reports-table tr:first-child{border-top:0}.reports-table td{display:grid;grid-template-columns:105px minmax(0,1fr);gap:.7rem;padding:.45rem 0;border:0}.reports-table td:before{color:#847767;font-size:.61rem;font-weight:850;letter-spacing:.06em;text-transform:uppercase;content:attr(data-label)}.reports-table td.report-cell--serial{display:none}.report-actions,.review-stack{min-width:0}.reports-list__head{align-items:flex-start;flex-direction:column}}@media(max-width:480px){.reports-summary{grid-template-columns:1fr 1fr}.reports-summary__card strong{font-size:1.5rem}.reports-filter__grid{grid-template-columns:1fr}.reports-btn{width:100%}.reports-filter__actions{display:grid;grid-template-columns:1fr}.reports-table td{grid-template-columns:90px minmax(0,1fr)}}
+</style>
+@endsection
+
+@php
+    $eligibleMonth = !$isAdmin ? canAddReport($user->chapter_id) : ['eligible' => false, 'month' => null, 'year' => null];
+    $canViewChapter = $isAdmin || in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders()));
+    $canViewZone = $isAdmin || in_array($user->role_id, array_merge(fieldStakeholders(), secretariatStakeholders(), ncpStakeholders()));
+    $canViewField = $isAdmin || in_array($user->role_id, array_merge(secretariatStakeholders(), ncpStakeholders()));
+    $canToggleEdit = $isAdmin || in_array($user->role_id, array_merge(secretariatStakeholders(), ncpStakeholders()));
+    $approvalStatuses = ['zone_pending'=>'Zone Pending','zone_approved'=>'Zone Approved','zone_rejected'=>'Zone Rejected','field_pending'=>'Field Pending','field_approved'=>'Field Approved','field_rejected'=>'Field Rejected','national_pending'=>'National Pending','national_approved'=>'National Approved','national_rejected'=>'National Rejected'];
+    $summary = $reportSummary ?? ['total'=>$reports->total(),'in_review'=>0,'approved'=>0,'attention'=>0];
+    $analyticsRoute = $isAdmin ? 'reports.analytics' : 'stakeholders.reports.analytics';
+@endphp
+
+<div class="content-body reports-workspace">
+    <header class="reports-hero">
+        <div class="reports-hero__copy"><span class="reports-eyebrow"><i class="fa fa-file-text-o"></i> Monthly fellowship reporting</span><h1>{{ $isAdmin ? 'Reports across the fellowship' : 'Your reporting workspace' }}</h1><p>{{ $isAdmin ? 'Review campus submissions, follow each approval journey and keep monthly reporting moving.' : 'Prepare monthly reports, follow their review progress and keep a clear record of your fellowship’s work.' }}</p></div>
+        <div class="reports-hero__actions">
+            @if($isAdmin)<a class="reports-btn reports-btn--light" href="{{ route('report.fix.orphan') }}"><i class="fa fa-wrench"></i> Repair report links</a>@endif
+            @if($canViewZone || $canViewChapter || $canViewField)<a class="reports-btn reports-btn--light" href="{{ route($analyticsRoute) }}"><i class="fa fa-line-chart"></i> View analytics</a>@endif
+            @if($eligibleMonth['eligible'])<a class="reports-btn reports-btn--gold" href="{{ route('stakeholders.reports.create') }}"><i class="fa fa-plus"></i> Add {{ $eligibleMonth['month'] }} {{ $eligibleMonth['year'] }} report</a>@endif
+        </div>
+    </header>
+
+    <section class="reports-summary" aria-label="Report summary">
+        <article class="reports-summary__card"><i class="fa fa-folder-open-o"></i><span>All reports</span><strong>{{ number_format($summary['total']) }}</strong><small>Within the current filters</small></article>
+        <article class="reports-summary__card"><i class="fa fa-clock-o"></i><span>In review</span><strong>{{ number_format($summary['in_review']) }}</strong><small>Moving through approvals</small></article>
+        <article class="reports-summary__card"><i class="fa fa-check-circle-o"></i><span>Fully approved</span><strong>{{ number_format($summary['approved']) }}</strong><small>Completed review journey</small></article>
+        <article class="reports-summary__card"><i class="fa fa-exclamation-circle"></i><span>Needs attention</span><strong>{{ number_format($summary['attention']) }}</strong><small>One or more rejections</small></article>
+    </section>
+
+    <section class="reports-panel reports-filter">
+        <div class="reports-panel__head"><h2>Find a report</h2><p>Narrow the list by period, ministry structure or review status.</p></div>
+        <form method="GET"><div class="reports-filter__grid">
+            <div class="reports-field"><label for="report-from">From</label><input id="report-from" type="date" name="from_date" class="form-control" value="{{ request('from_date') }}"></div>
+            <div class="reports-field"><label for="report-to">To</label><input id="report-to" type="date" name="to_date" class="form-control" value="{{ request('to_date') }}"></div>
+            @if($canViewField)<div class="reports-field"><label for="report-field">Field</label><select id="report-field" name="field_filter" class="form-control"><option value="">All fields</option>@foreach($fields as $field)<option value="{{ $field->id }}" @selected(request('field_filter') == $field->id)>{{ $field->name }}</option>@endforeach</select></div>@endif
+            @if($canViewZone)<div class="reports-field"><label for="report-zone">Zone</label><select id="report-zone" name="zone_filter" class="form-control"><option value="">All zones</option>@foreach($zones as $zone)<option value="{{ $zone->id }}" @selected(request('zone_filter') == $zone->id)>{{ $zone->name }}</option>@endforeach</select></div>@endif
+            @if($canViewChapter)<div class="reports-field"><label for="report-chapter">Campus</label><select id="report-chapter" name="chapter_filter" class="form-control"><option value="">All campuses</option>@foreach($chapters as $chapter)<option value="{{ $chapter->id }}" @selected(request('chapter_filter') == $chapter->id)>{{ $chapter->name }}</option>@endforeach</select></div>@endif
+            <div class="reports-field"><label for="report-status">Review status</label><select id="report-status" name="status_filter" class="form-control"><option value="">All statuses</option>@foreach($approvalStatuses as $key=>$label)<option value="{{ $key }}" @selected(request('status_filter') === $key)>{{ $label }}</option>@endforeach</select></div>
+        </div><div class="reports-filter__actions"><button class="reports-btn reports-btn--primary" type="submit"><i class="fa fa-filter"></i> Apply filters</button><a class="reports-btn reports-btn--outline" href="{{ url()->current() }}"><i class="fa fa-refresh"></i> Reset</a>@if($canViewZone || $canViewChapter || $canViewField)<a class="reports-btn reports-btn--outline" href="{{ url()->current().'?'.http_build_query(array_merge(request()->query(),['download'=>1])) }}"><i class="fa fa-download"></i> Download filtered list</a>@endif</div></form>
+    </section>
+
+    <section class="reports-panel reports-list">
+        <header class="reports-list__head"><div><h2>Monthly reports</h2><p>{{ number_format($reports->total()) }} {{ \Illuminate\Support\Str::plural('submission',$reports->total()) }} found</p></div>@if($reports->hasPages())<small>Page {{ $reports->currentPage() }} of {{ $reports->lastPage() }}</small>@endif</header>
+        @if($reports->isEmpty())
+            <div class="reports-empty"><span class="reports-empty__icon"><i class="fa fa-file-text-o"></i></span><h3>No reports match this view</h3><p>Adjust the filters or create the next monthly report when the reporting window opens.</p></div>
+        @else
+            <div class="reports-table-wrap"><table class="reports-table"><thead><tr><th>S/N</th>@if($canViewChapter)<th>Campus</th>@endif<th>Reporting period</th><th>Review journey</th><th>Session</th><th>Submitted</th><th>Actions</th></tr></thead><tbody>
+            @foreach($reports as $report)
+                @php
+                    $canEdit = app(\App\Services\ReportService::class)->canEditReport($report,$user,$isAdmin);
+                    $statuses = ['Zone'=>['value'=>$report->zone_status,'modal'=>'zoneRejection'],'Field'=>['value'=>$report->field_status,'modal'=>'fieldRejection'],'National'=>['value'=>$report->national_status,'modal'=>'secretariatRejection']];
+                    $serial = ($reports->firstItem() ?? 1) + $loop->index;
+                @endphp
+                <tr>
+                    <td class="report-cell--serial" data-label="S/N"><span class="report-serial">{{ str_pad($serial,2,'0',STR_PAD_LEFT) }}</span></td>
+                    @if($canViewChapter)<td data-label="Campus"><div class="report-campus"><strong>{{ $report->chapter->name ?? 'Campus unavailable' }}</strong><small>{{ $report->zone->name ?? 'No zone' }} · {{ $report->field->name ?? 'No field' }}</small></div></td>@endif
+                    <td data-label="Reporting period"><div class="report-period"><strong>{{ date('F',mktime(0,0,0,$report->month,10)) }}, {{ $report->year }}</strong><div class="report-tags">@if($report->school_not_in_session)<span class="report-tag report-tag--school">School not in session</span>@endif<span class="report-tag {{ $report->edit_mode ? 'report-tag--draft' : '' }}">{{ $report->edit_mode ? 'Editing open' : 'Final submission' }}</span></div>@if($canToggleEdit)<div class="report-edit-control"><input class="js-edit-toggle" type="checkbox" id="editSwitch{{ $report->id }}" data-id="{{ $report->id }}" {{ $report->edit_mode ? 'checked' : '' }}><label for="editSwitch{{ $report->id }}">{{ $report->edit_mode ? 'Editing enabled' : 'Editing disabled' }}</label></div>@endif</div></td>
+                    <td data-label="Review journey"><div class="review-stack">@foreach($statuses as $label=>$data)<div class="review-step"><span class="review-step__label">{{ $label }}</span>@if($data['value']==2)<span class="review-pill review-pill--rejected"><i class="fa fa-times-circle"></i> Rejected</span><a class="review-feedback" href="#{{ $data['modal'] }}{{ $report->id }}" data-toggle="modal" title="View feedback"><i class="fa fa-comment-o"></i></a>@elseif($data['value']==1)<span class="review-pill review-pill--approved"><i class="fa fa-check-circle"></i> Approved</span><span></span>@else<span class="review-pill review-pill--pending"><i class="fa fa-clock-o"></i> Pending</span><span></span>@endif</div>@endforeach</div></td>
+                    <td data-label="Session"><strong>{{ $report->session ?: '—' }}</strong></td>
+                    <td data-label="Submitted"><div class="report-date"><strong>{{ $report->created_at->format('d M Y') }}</strong><small>{{ $report->created_at->format('g:i A') }}</small></div></td>
+                    <td data-label="Actions"><div class="report-actions">@if($isAdmin)<button type="button" class="report-action" data-toggle="modal" data-target="#statusAdjustModal{{ $report->id }}" title="Adjust approval status"><i class="fa fa-sliders"></i></button>@endif<a class="report-action" href="{{ route($isAdmin?'stakeholderreports.show':'stakeholders.reports.show',$report->id) }}" title="View report"><i class="fa fa-eye"></i></a>@if($canEdit['canEdit'])<a class="report-action report-action--edit" href="{{ route($isAdmin?'stakeholderreports.edit':'stakeholders.reports.edit',$report->id) }}" title="Edit report" onclick="return confirm('Are you sure you want to edit this report?');"><i class="fa fa-pencil"></i></a>@endif @if($canEdit['allApproved'])<a class="report-action report-action--download" href="{{ route($isAdmin?'stakeholderreports.download':'stakeholders.reports.download',$report->id) }}" target="_blank" title="Download PDF"><i class="fa fa-file-pdf-o"></i></a>@else<a class="report-action report-action--nudge" href="{{ route($isAdmin?'stakeholderreports.nudge':'stakeholders.reports.nudge',$report->id) }}" title="Send reminder"><i class="fa fa-bell-o"></i></a>@endif @if($isAdmin && !$canEdit['allApproved'])<button type="button" class="report-action report-action--danger" title="Delete report" onclick="if(confirm('Are you sure you want to delete this report?')) document.getElementById('delete-report-{{ $report->id }}').submit();"><i class="fa fa-trash-o"></i></button><form id="delete-report-{{ $report->id }}" action="{{ route('stakeholderreports.destroy',$report->id) }}" method="POST" class="d-none">@csrf @method('DELETE')</form>@endif</div></td>
+                </tr>
+            @endforeach
+            </tbody></table></div>
+            @if($reports->hasPages())<div class="reports-pagination">{{ $reports->appends(request()->query())->links() }}</div>@endif
         @endif
-        {{-- {{dd(canAddNextMonthReport($user))}} --}}
-        @php
-            $eligibleMonth = canAddReport($user->chapter_id);
-        @endphp
-
-        @if($eligibleMonth['eligible'] && !$isAdmin)
-        <div class="row mb-3">
-            <div class="col-12 d-flex justify-content-between">
-                <a href="{{ route('stakeholders.reports.create') }}" class="btn btn-primary">
-                    Add {{ $eligibleMonth['month']}} {{$eligibleMonth['year']}}’s Report
-                </a>
-            </div>
-        </div>
-        @endif
-        <!-- Filters -->
-        @php
-            $canViewChapter = in_array($user->role_id, array_merge(
-                fieldStakeholders(),
-                zoneStakeholders(),
-                secretariatStakeholders(),
-                ncpStakeholders()
-            ));
-
-            $canViewZone = in_array($user->role_id, array_merge(
-                fieldStakeholders(),
-                secretariatStakeholders(),
-                ncpStakeholders()
-            ));
-
-            $canViewField = in_array($user->role_id, array_merge(
-                secretariatStakeholders(),
-                ncpStakeholders()
-            ));
-
-            $hierarchyCount = collect([
-                $canViewField,
-                $canViewZone,
-                $canViewChapter
-            ])->filter()->count();
-
-            $hierarchyCol = $hierarchyCount > 1 ? intval(12 / $hierarchyCount) : 5;
-
-
-            $approval_statuses = [
-                'zone_pending'     => 'Zone Pending',
-                'zone_approved'    => 'Zone Approved',
-                'zone_rejected'    => 'Zone Rejected',
-
-                'field_pending'    => 'Field Pending',
-                'field_approved'   => 'Field Approved',
-                'field_rejected'   => 'Field Rejected',
-
-                'national_pending' => 'National Pending',
-                'national_approved'=> 'National Approved',
-                'national_rejected'=> 'National Rejected',
-            ];
-        @endphp
-
-        <div class="row mb-3">
-            <div class="col-12">
-                <form method="GET" class="row g-2 align-items-end">
-                    {{-- Date range --}}
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label">From</label>
-                        <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
-                    </div>
-
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label">To</label>
-                        <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
-                    </div>
-
-                    {{-- Field (highest first) --}}
-                    @if($canViewField)
-                        <div class="col-md-{{ $hierarchyCol }} mb-2">
-                            <label class="form-label">Field</label>
-                            <select name="field_filter" class="form-control">
-                                <option value="">All Fields</option>
-                                @foreach($fields as $field)
-                                    <option value="{{ $field->id }}" @selected(request('field_filter') == $field->id)>
-                                        {{ $field->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-
-                    {{-- Zone --}}
-                    @if($canViewZone)
-                        <div class="col-md-{{ $hierarchyCol }} mb-2">
-                            <label class="form-label">Zone</label>
-                            <select name="zone_filter" class="form-control">
-                                <option value="">All Zones</option>
-                                @foreach($zones as $zone)
-                                    <option value="{{ $zone->id }}" @selected(request('zone_filter') == $zone->id)>
-                                        {{ $zone->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-
-                    {{-- Chapter --}}
-                    @if($canViewChapter)
-                        <div class="col-md-{{ $hierarchyCol }} mb-2">
-                            <label class="form-label">Chapter</label>
-                            <select name="chapter_filter" class="form-control">
-                                <option value="">All Chapters</option>
-                                @foreach($chapters as $chapter)
-                                    <option value="{{ $chapter->id }}" @selected(request('chapter_filter') == $chapter->id)>
-                                        {{ $chapter->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-
-                    {{-- Status --}}
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label">Approval Status</label>
-                        <select name="status_filter" class="form-control">
-                            <option value="">All Status</option>
-                            @foreach($approval_statuses as $key => $label)
-                                <option value="{{ $key }}" @selected(request('status_filter') == $key)>
-                                    {{ $label }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Button --}}
-                    <div class="col-md-2 mb-2">
-                        <button class="btn btn-secondary w-100">Filter</button>
-                    </div>
-
-                    @if($canViewZone || $canViewChapter || $canViewField)
-                    @php
-                        if($isAdmin){
-                            $route = 'reports.analytics';
-                        }else{
-                            $route = 'stakeholders.reports.analytics';
-                        }
-                    @endphp
-                    <div class="col-md-2 mb-2">
-                        <a href="{{route($route)}}" class="btn btn-primary w-100">View Analytics</a>
-                    </div>
-
-                    <div class="col-md-2 mb-2">
-                        <a href="{{ url()->current() . '?' . http_build_query(array_merge(request()->query(), ['download' => 1])) }}"
-                        class="btn btn-success w-100">
-                            Download
-                        </a>
-                    </div>
-                    @endif
-                </form>
-            </div>
-        </div>
-
-
-        <!-- Reports Table -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body table-responsive">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead >
-                                    <tr>
-                                        <th>S/N</th>
-                                        @if(in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
-                                            <th>Chapter</th>
-                                        @endif
-                                        <th>Month/Year</th>
-                                        <th>Approval Status</th>
-                                        <th>Academic Session</th>
-                                        <th>Created On</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @foreach($reports as $report)
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-
-                                        @if(in_array($user->role_id, array_merge(fieldStakeholders(), zoneStakeholders(), secretariatStakeholders(), ncpStakeholders())))
-                                            <td>
-                                                {{ $report->chapter->name ?? '—' }} <br>
-                                                <small>
-                                                    <strong>Zone:</strong> {{ $report->zone->name ?? 'N/A' }}<br>
-                                                    <strong>Field:</strong> {{ $report->field->name ?? 'N/A' }}<br>
-                                                </small>
-
-                                            </td>
-                                        @endif
-                                        <td>
-                                            {{ date('F', mktime(0, 0, 0, $report->month, 10)) }}, {{ $report->year }}
-                                            <br>
-                                            @if($report->school_not_in_session)
-                                                <span class="badge bg-warning text-dark">School not in Session</span><br>
-                                            @endif
-                                            <span class="badge {{ $report->edit_mode ? 'bg-warning' : 'bg-success' }}">
-                                                {{ $report->edit_mode ? 'Currently Editing' : 'Final Submission' }}
-                                            </span>
-                                            @if($isAdmin || in_array($user->role_id, array_merge(secretariatStakeholders(), ncpStakeholders())))
-                                                <div class="form-check form-switch">
-                                                    <input
-                                                        class="form-check-input js-edit-toggle"
-                                                        type="checkbox"
-                                                        role="switch"
-                                                        id="editSwitch{{ $report->id }}"
-                                                        data-id="{{ $report->id }}"
-                                                        {{ $report->edit_mode ? 'checked' : '' }}
-                                                    >
-
-                                                    <label class="form-check-label" for="editSwitch{{ $report->id }}">
-                                                        {{ $report->edit_mode ? 'Edit Mode Enabled, Turn off' : 'Edit Mode Disabled, Turn on' }}
-                                                    </label>
-                                                </div>
-                                            @endif
-                                        </td>
-
-
-                                        <td class="text-start">
-                                            @php
-                                                $canEdit  = app(\App\Services\ReportService::class)->canEditReport($report, $user, $isAdmin);
-                                                
-                                                $statuses = [
-                                                    'Zone' => [
-                                                        'value' => $report->zone_status,
-                                                        'modal' => 'zoneRejection',
-                                                        'view'  => 'stakeholder.modals.zone_rejection_comment',
-                                                    ],
-                                                    'Field' => [
-                                                        'value' => $report->field_status,
-                                                        'modal' => 'fieldRejection',
-                                                        'view'  => 'stakeholder.modals.field_rejection_comment',
-                                                    ],
-                                                    'National' => [
-                                                        'value' => $report->national_status,
-                                                        'modal' => 'secretariatRejection',
-                                                        'view'  => 'stakeholder.modals.secretariat_rejection_comment',
-                                                    ],
-                                                ];
-                                            @endphp
-
-                                            @foreach($statuses as $label => $data)
-                                                <div class="d-flex align-items-center gap-2 mb-1">
-                                                    <small class="text-muted fw-medium pr-1">{{ $label }}</small>
-
-                                                    @if($data['value'] == 2)
-                                                        <span class="badge bg-danger">Rejected</span>
-
-                                                        <a href="#{{ $data['modal'] }}{{ $report->id }}"
-                                                        data-toggle="modal"
-                                                        class="text-danger"
-                                                        title="View feedback">
-                                                            <i class="bx bx-message-rounded-dots"></i>
-                                                        </a>
-
-                                                        @include($data['view'])
-
-                                                    @elseif($data['value'] == 1)
-                                                        <span class="badge bg-success">Approved</span>
-                                                    @else
-                                                        <span class="badge bg-warning text-dark">Pending</span>
-                                                    @endif
-                                                </div>
-                                            @endforeach
-                                        </td>
-
-                                        <td>{{ $report->session }}</td>
-                                        <td>{{ $report->created_at->format('d M Y, h:i A') }}</td>
-
-                                        <td class="text-center">
-                                            {{-- View --}}
-                                            @if($isAdmin)
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-link text-primary mx-1"
-                                                    data-toggle="modal"
-                                                    data-target="#statusAdjustModal{{ $report->id }}"
-                                                    title="Adjust Approval Status">
-                                                    <i class="fa fa-cog"></i>
-                                                </button>
-                                            @endif
-                                            <a href="{{ route($isAdmin ? 'stakeholderreports.show' : 'stakeholders.reports.show', $report->id) }}" class="text-primary mx-1" title="View Report">
-                                                <i class="fa fa-eye"></i>
-                                            </a>
-
-                                            {{-- Edit --}}
-                                            @if($canEdit['canEdit'])
-                                                <a
-                                                    href="{{ route($isAdmin ? 'stakeholderreports.edit' : 'stakeholders.reports.edit', $report->id) }}"
-                                                    class="text-warning mx-1"
-                                                    title="Edit Report"
-                                                    onclick="return confirm('Are you sure you want to edit this report?');"
-                                                >
-                                                    <i class="fa fa-edit"></i>
-                                                </a>
-                                            @endif
-
-                                            {{-- Download --}}
-                                            @if($canEdit['allApproved'])
-                                                <a
-                                                    href="{{ route($isAdmin ? 'stakeholderreports.download' : 'stakeholders.reports.download', $report->id) }}"
-                                                    target="_blank"
-                                                    class="text-success mx-1"
-                                                    title="Download Report"
-                                                >
-                                                    <i class="fa fa-download"></i>
-                                                </a>
-                                            @endif
-
-                                            {{-- Nudge --}}
-                                            @if(!$canEdit['allApproved'])
-                                            <a
-                                                href="{{ route($isAdmin ? 'stakeholderreports.nudge' : 'stakeholders.reports.nudge', $report->id) }}"
-                                                class="text-indigo-600 mx-1"
-                                                title="Send Nudge"
-                                            >
-                                                <i class="fa fa-bullhorn"></i>
-                                            </a>
-                                            @endif
-
-                                            {{-- Delete --}}
-                                            @if($isAdmin && !$canEdit['allApproved'])
-                                                <a
-                                                    href="#"
-                                                    class="text-danger mx-1"
-                                                    title="Delete Report"
-                                                    onclick="
-                                                        event.preventDefault();
-                                                        if (confirm('Are you sure you want to delete this report?')) {
-                                                            document.getElementById('delete-report-{{ $report->id }}').submit();
-                                                        }
-                                                    "
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
-                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polyline points="3 6 5 6 21 6"/>
-                                                        <path d="M19 6l-2 14H7L5 6"/>
-                                                        <path d="M10 11v6"/>
-                                                        <path d="M14 11v6"/>
-                                                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                                                    </svg>
-                                                </a>
-
-                                                {{-- Hidden destroy form --}}
-                                                <form
-                                                    id="delete-report-{{ $report->id }}"
-                                                    action="{{ route('stakeholderreports.destroy', $report->id) }}"
-                                                    method="POST"
-                                                    class="d-none"
-                                                >
-                                                    @csrf
-                                                    @method('DELETE')
-                                                </form>
-                                            @endif
-
-
-                                        </td>
-                                    </tr>
-                                    @if($isAdmin)
-                                        <div class="modal fade" id="statusAdjustModal{{ $report->id }}" tabindex="-1" role="dialog">
-                                            <div class="modal-dialog" role="document">
-                                                <form method="POST" action="{{ route('stakeholderreports.adjust.status', $report->id) }}">
-                                                    @csrf
-
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Adjust Approval Status</h5>
-                                                            <button type="button" class="close" data-dismiss="modal">
-                                                                <span>&times;</span>
-                                                            </button>
-                                                        </div>
-
-                                                        <div class="modal-body">
-                                                            <div class="form-group">
-                                                                <label>Approval Status</label>
-                                                                <select name="approval_status" class="form-control" required>
-                                                                    <option value="">-- Select Status --</option>
-                                                                    @foreach($approval_statuses as $key => $label)
-                                                                        @if(!in_array($key, ['zone_pending','field_pending', 'national_pending']))
-                                                                        <option value="{{ $key }}" @selected(request('approval_status') == $key)>
-                                                                            {{ $label }}
-                                                                        </option>
-                                                                        @endif
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-
-                                                            <div class="form-group">
-                                                                <label>Reason</label>
-                                                                <textarea
-                                                                    name="rejection_reason"
-                                                                    class="form-control"
-                                                                    rows="3"
-                                                                    placeholder="Enter reason (optional)">
-                                                                </textarea>
-                                                            </div>
-
-                                                        </div>
-
-                                                        <div class="modal-footer">
-                                                            <button type="submit" class="btn btn-success">Submit</button>
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                        </div>
-
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    @endif
-                                    @endforeach
-                                </tbody>
-                            </table>
-
-                            <div class="mt-3">
-                                {{ $reports->links() }}
-                            </div>
-                        </div>
-
-                        <!-- Pagination -->
-                    </div>
-                </div>
-            </div>
-        </div>
     </section>
 </div>
+
+@foreach($reports as $report)
+    @if($report->zone_status==2)@include('stakeholder.modals.zone_rejection_comment')@endif
+    @if($report->field_status==2)@include('stakeholder.modals.field_rejection_comment')@endif
+    @if($report->national_status==2)@include('stakeholder.modals.secretariat_rejection_comment')@endif
+    @if($isAdmin)
+        <div class="modal fade reports-modal" id="statusAdjustModal{{ $report->id }}" tabindex="-1" role="dialog" aria-labelledby="statusAdjustTitle{{ $report->id }}" aria-hidden="true"><div class="modal-dialog modal-dialog-centered" role="document"><form method="POST" action="{{ route('stakeholderreports.adjust.status',$report->id) }}">@csrf<div class="modal-content">
+            <div class="modal-header"><div><small>Report #{{ $report->id }}</small><h5 class="modal-title" id="statusAdjustTitle{{ $report->id }}">Adjust approval status</h5></div><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+            <div class="modal-body"><div class="form-group"><label for="approvalStatus{{ $report->id }}">Approval status</label><select id="approvalStatus{{ $report->id }}" name="approval_status" class="form-control reports-status-select" required><option value="">Select status</option>@foreach($approvalStatuses as $key=>$label)@unless(in_array($key,['zone_pending','field_pending','national_pending']))<option value="{{ $key }}">{{ $label }}</option>@endunless @endforeach</select></div><div class="form-group mb-0"><label for="rejectionReason{{ $report->id }}">Reason or note</label><textarea id="rejectionReason{{ $report->id }}" name="rejection_reason" class="form-control" rows="4" placeholder="Add context when needed"></textarea></div></div>
+            <div class="modal-footer"><button type="button" class="reports-btn reports-btn--outline" data-dismiss="modal">Cancel</button><button type="submit" class="reports-btn reports-btn--primary">Save status</button></div>
+        </div></form></div></div>
+    @endif
+@endforeach
+
 <script>
-$(document).on('change', '.js-edit-toggle', function () {
-
-    const toggle = $(this);
-    const reportId = toggle.data('id');
-    const isOn = toggle.is(':checked') ? 1 : 0;
-
-    const label = toggle.closest('.form-check').find('label');
-
-    toggle.prop('disabled', true);
-
-    $.ajax({
-        url: '/admin/reports/toggle-edit-mode',
-        type: 'POST',
-        data: {
-            _token: '{{ csrf_token() }}',
-            report_id: reportId,
-            edit_mode: isOn
-        },
-        success: function (res) {
-
-            if (res.status) {
-                label.text(isOn ? 'Edit Mode Enabled' : 'Edit Mode Disabled');
-                alert(res.message || 'Updated successfully');
-                location.reload();
-            } else {
-                toggle.prop('checked', !isOn);
-                alert(res.message || 'Update failed');
-            }
-        },
-        error: function () {
-            toggle.prop('checked', !isOn);
-            alert('Something went wrong');
-        },
-        complete: function () {
-            toggle.prop('disabled', false);
-        }
-    });
-
+$(document).on('shown.bs.modal','.reports-modal',function(){
+    const modal=$(this),select=modal.find('.reports-status-select');
+    if(!$.fn.select2||!select.length)return;
+    if(select.hasClass('select2-hidden-accessible'))select.select2('destroy');
+    select.select2({width:'100%',dropdownParent:modal,minimumResultsForSearch:0});
 });
+$(document).on('change','.js-edit-toggle',function(){const toggle=$(this),reportId=toggle.data('id'),isOn=toggle.is(':checked')?1:0,label=toggle.closest('.report-edit-control').find('label');toggle.prop('disabled',true);label.text('Saving…');$.ajax({url:'/admin/reports/toggle-edit-mode',type:'POST',data:{_token:'{{ csrf_token() }}',report_id:reportId,edit_mode:isOn},success:function(response){if(response.status){label.text(isOn?'Editing enabled':'Editing disabled')}else{toggle.prop('checked',!isOn);label.text(!isOn?'Editing enabled':'Editing disabled')}},error:function(){toggle.prop('checked',!isOn);label.text(!isOn?'Editing enabled':'Editing disabled');alert('The edit setting could not be updated. Please try again.')},complete:function(){toggle.prop('disabled',false)}})});
 </script>

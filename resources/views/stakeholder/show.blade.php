@@ -1,240 +1,62 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title>GSF - {{ $report->chapter->name }} Report for {{ date("F", mktime(0,0,0,$report->month,10)) . ', ' . $report->year }}</title>
-    <style type="text/css">
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 13px;
-            color: #000;
-        }
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            border: 1px solid #000;
-            padding: 15px;
-            box-sizing: border-box;
-        }
-        .header {
-            display: flex;
-            align-items: center;
-            border-bottom: 2px solid #000;
-            padding-bottom: 8px;
-            margin-bottom: 20px;
-        }
-        .header img {
-            width: 90px;
-            margin-right: 15px;
-        }
-        .header .details {
-            flex-grow: 1;
-            text-align: center;
-            line-height: 1.3;
-        }
-        h1 {
-            margin: 0;
-            font-size: 18px;
-        }
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-            font-size: 12.5px;
-        }
-        .table th, .table td {
-            border: 1px solid #000;
-            padding: 5px;
-            vertical-align: top;
-        }
-        .table th {
-            /* background: #000;
-            color: #fff; */
-            text-transform: uppercase;
-            text-align: inherit;
-        }
-        .section-title {
-            background: #193085;
-            font-weight: bold;
-            padding: 6px;
-            border: 1px solid #000;
-            margin-top: 25px;
-            color:white
-        }
-        .subsection-title {
-            background: #0281cc;
-            font-weight: bold;
-            padding: 3px 6px;
-            margin-top: 8px;
-            border: 1px solid #ccc;
-            color:white
-        }
-        .signatures {
-            width: 100px;
-            height: auto;
-            margin-top: 5px;
-        }
-        .signature-block {
-            width: 50%;
-            display: inline-block;
-            vertical-align: top;
-            margin-top: 10px;
-        }
-        .signature-block span {
-            display: block;
-            font-weight: bold;
-        }
-        .actions {
-            text-align: center;
-            margin-top: 20px;
-        }
-        @media print {
-            .actions { display: none; }
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <img src="{{ asset('frontend/img/logo.png') }}" alt="Logo">
-            <div class="details">
-                <h1>GOFAMINT STUDENTS’ FELLOWSHIP</h1>
-                <strong>GOFAMINT International Headquarters, Aseese, Ogun State, Nigeria</strong>
-                <p>MONTHLY REPORT for <strong>{{ $report->chapter->name }}</strong> — <strong>{{ date("F", mktime(0,0,0,$report->month,10)) . ', ' . $report->year }}</strong></p>
-            </div>
-        </div>
-        <!-- Legend / Key -->
-        <div class="section" style="margin-top: 15px; margin-bottom: 25px;">
-            <div class="section-title" style="background: #f0f0f0; font-weight: bold; padding: 6px; border: 1px solid #ccc;">
-                LEGEND / GUIDE
-            </div>
-
-            <table class="table" style="font-size: 10px; text-align: center;margin-bottom: 5px">
-                <tbody>
-                    <tr>
-                        <td>1 - Poor</td>
-                        <td>2 - Fair</td>
-                        <td>3 - Good</td>
-                        <td>4 - Very Good</td>
-                        <td>5 - Excellent</td>
-                    </tr>
-
-                </tbody>
-            </table>
-
-            <p style="margin-top: 2px; font-size: 13px;">
-                <strong>Note:</strong> The scale above applies where applicable.</strong>
-            </p>
-        </div>
-
-        <!-- Report Sections -->
-        @foreach($sections as $section)
-            <div class="section">
-                <div class="section-title">{{ $section->name }}</div>
-
-                @foreach($section->subsections as $subsection)
-                    <div class="subsection-title">{{ $subsection->name }}</div>
-
-                    <table class="table">
-                        <tbody>
-                            @foreach($subsection->questions as $question)
-                                @php
-                                    $value = null;
-                                    if(isset($report) && $report->answers) {
-                                        $answer = $report->answers->firstWhere('question_id', $question->id);
-                                        if($answer) {
-                                            $decoded = json_decode($answer->answer_value, true);
-                                            $value = is_array($decoded) ? $decoded : $answer->answer_value;
-                                        }
-                                    }
-                                @endphp
-
-                                @if(in_array($question->type, ['text','year','month','number','date','textarea','select']))
-                                    <tr>
-                                        <th width="60%">{{ $question->label }}</th>
-                                        <td>{{ $value ?: '-' }}</td>
-                                    </tr>
-                                @elseif($question->type === 'dynamic_table' && is_array($value))
-                                    <tr>
-                                        <td colspan="2">
-                                            <table class="table">
-                                                <thead>
-                                                    <tr>
-                                                        @foreach($question->options as $col)
-                                                            <th>{{ $col['label'] ?? $col }}</th>
-                                                        @endforeach
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @forelse($value as $row)
-                                                        <tr>
-                                                            @foreach($question->options as $col)
-                                                                @php $colLabel = $col['label'] ?? $col; @endphp
-                                                                <td>{{ $row[$colLabel] ?? '-' }}</td>
-                                                            @endforeach
-                                                        </tr>
-                                                    @empty
-                                                        <tr><td colspan="{{ count($question->options) }}" class="text-center">No data</td></tr>
-                                                    @endforelse
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                @elseif($question->type === 'income_table')
-                                    <tr>
-                                        <td colspan="2">
-                                            <table class="table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Week</th>
-                                                        @foreach($question->options['columns'] as $col)
-                                                            <th>{{ $col }}</th>
-                                                        @endforeach
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($question->options['rows'] as $week)
-                                                        <tr>
-                                                            <td>{{ $week }}</td>
-                                                            @foreach($question->options['columns'] as $col)
-                                                                <td>{{ $value[$week][$col] ?? '-' }}</td>
-                                                            @endforeach
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
-                @endforeach
-            </div>
+@extends($isAdmin ? 'layouts.dashboard' : 'layouts.stakeholderdashboard')
+@section('title', 'Monthly Report — '.$report->chapter->name)
+@section('item')<li class="breadcrumb-item"><a href="{{ route($isAdmin ? 'stakeholderreports.index' : 'stakeholders.reports.index') }}">Monthly Reports</a></li>@endsection
+@section('active')<li class="breadcrumb-item">Report #{{ $report->id }}</li>@endsection
+@section('extra_styles')
+<style>
+.report-view{color:#26384e}.report-hero{position:relative;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:28px;align-items:end;overflow:hidden;padding:34px;border-radius:22px;color:#fff;background:linear-gradient(125deg,#17375f,#19516d 67%,#8c6338 145%);box-shadow:0 20px 50px rgba(27,45,68,.15)}.report-hero:after{position:absolute;top:-130px;right:-80px;width:330px;height:330px;border:1px solid rgba(255,255,255,.12);border-radius:50%;box-shadow:0 0 0 55px rgba(255,255,255,.035),0 0 0 105px rgba(255,255,255,.02);content:""}.report-hero>*{position:relative;z-index:1}.report-eyebrow{display:block;margin-bottom:9px;color:#f0cb84;font-size:11px;font-weight:850;letter-spacing:.14em;text-transform:uppercase}.report-hero h1{margin:0;color:#fff;font-size:clamp(30px,4vw,48px);font-weight:820;line-height:1.08;letter-spacing:-.035em}.report-period{margin:14px 0 0;color:#d8e7ee;font-size:17px}.report-meta{display:grid;gap:9px;padding:10px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.09)}.report-meta div{padding:9px 11px;border-radius:9px;background:rgba(8,28,54,.2)}.report-meta span,.report-meta strong{display:block}.report-meta span{color:#b9d2de;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.report-meta strong{color:#fff;font-size:13px}.report-toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin:18px 0 22px}.report-toolbar>div{display:flex;flex-wrap:wrap;gap:9px}.report-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:9px 14px;border:1px solid #cad7e1;border-radius:9px;color:#244f73;background:#fff;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}.report-button:hover{border-color:#1a5a82;color:#fff;background:#1a5a82}.report-button--primary{border-color:#1d6c67;color:#fff;background:#1d6c67}.report-button--gold{border-color:#d6aa60;color:#64491e;background:#f7dda9}.report-status-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:22px}.report-status{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 17px;border:1px solid #e0e5e9;border-radius:13px;background:#fff}.report-status span{color:#738093;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.report-status strong{padding:5px 9px;border-radius:99px;font-size:10px}.is-approved{color:#286247;background:#e7f3eb}.is-rejected{color:#963d36;background:#fbe9e6}.is-pending{color:#80601f;background:#fff2d2}.report-notice{margin:20px 0;padding:24px;border:1px solid #e5c270;border-radius:15px;color:#705019;background:#fff5da;text-align:center}.report-notice strong{display:block;font-size:20px}.report-section{overflow:hidden;margin:18px 0;border:1px solid #eadcc7;border-radius:18px;background:#fffaf2;box-shadow:0 12px 30px rgba(73,55,37,.055)}.report-section:nth-of-type(3n+2){border-color:#ead9d4;background:#fff7f3}.report-section:nth-of-type(3n+3){border-color:#e4dcc7;background:#fbf8ec}.report-section__head{display:flex;align-items:center;gap:13px;padding:17px 20px;background:rgba(238,214,174,.52)}.report-section__number{display:grid;flex:0 0 38px;width:38px;height:38px;place-items:center;border-radius:10px;color:#fff;background:#946735;font-size:11px;font-weight:850}.report-section__head small{display:block;color:#836c55;font-size:9px;font-weight:850;letter-spacing:.11em;text-transform:uppercase}.report-section__head h2{margin:2px 0 0;color:#362c23;font-size:19px;font-weight:800}.report-subsection{margin:13px;padding:15px;border:1px solid rgba(184,154,119,.2);border-radius:13px;background:rgba(255,255,255,.85)}.report-subsection h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;color:#51402f;font-size:14px;font-weight:800}.report-subsection h3:before{width:19px;height:3px;border-radius:99px;background:#c38a4a;content:""}.report-answer-list{overflow:hidden;border:1px solid #e8e2da;border-radius:10px;background:#fff}.report-answer{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr);border-bottom:1px solid #eee9e3}.report-answer:last-child{border-bottom:0}.report-answer dt,.report-answer dd{margin:0;padding:11px 13px;overflow-wrap:anywhere}.report-answer dt{color:#657184;background:#faf8f4;font-size:11px;font-weight:750}.report-answer dd{color:#26384e;font-size:12px;line-height:1.55}.report-table{width:100%;margin:0;border-collapse:collapse;font-size:11px}.report-table th,.report-table td{padding:9px;border:1px solid #e5ded5;text-align:left;vertical-align:top}.report-table th{color:#654d35;background:#f7ecdd;font-size:9px;font-weight:850;text-transform:uppercase}.report-table tfoot th{background:#f2dfc1}.report-attachment{display:inline-flex;align-items:center;gap:6px;color:#285e80;font-weight:800}.report-signatures{margin:22px 0 45px;padding:20px;border:1px solid #dbe2e7;border-radius:16px;background:#fff}.report-signatures h2{margin:0 0 15px;font-size:18px}.report-signature-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.report-signature{min-height:105px;padding:13px;border:1px dashed #d2dbe2;border-radius:10px;background:#fafbfc}.report-signature span{display:block;color:#6e7b8c;font-size:9px;font-weight:850;letter-spacing:.07em;text-transform:uppercase}.report-signature img{display:block;max-width:110px;max-height:65px;margin-top:8px}.report-signature em{display:block;margin-top:15px;color:#9aa3ad;font-size:11px;font-style:normal}@media(max-width:800px){.report-hero{grid-template-columns:1fr;padding:25px}.report-status-grid{grid-template-columns:1fr}.report-signature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.report-answer{grid-template-columns:1fr}.report-answer dt{padding-bottom:4px}.report-answer dd{padding-top:4px}.report-signature-grid{grid-template-columns:1fr}.report-button{flex:1}.report-toolbar>div{width:100%}}@media print{.main-menu,.header-navbar,.content-header,.footer,.report-toolbar{display:none!important}.app-content{margin-left:0!important}.report-hero,.report-section{box-shadow:none}}
+</style>
+@endsection
+@section('content')
+@php
+    $monthName = date('F', mktime(0, 0, 0, (int) $report->month, 10));
+    $statusMeta = fn ($status) => $status == 1 ? ['Approved','is-approved'] : ($status == 2 ? ['Rejected','is-rejected'] : ['Pending','is-pending']);
+    $viewer = $isAdmin ? auth()->user() : auth('stakeholder')->user();
+    $canEditReport = $isAdmin || app(\App\Services\ReportService::class)->canEditReport($report, $viewer, false)['canEdit'];
+    $indexRoute = $isAdmin ? 'stakeholderreports.index' : 'stakeholders.reports.index';
+    $editRoute = $isAdmin ? 'stakeholderreports.edit' : 'stakeholders.reports.edit';
+    $downloadRoute = $isAdmin ? 'stakeholderreports.download' : 'stakeholders.reports.download';
+@endphp
+<div class="content-body report-view">
+    <header class="report-hero"><div><span class="report-eyebrow">GSF monthly fellowship report</span><h1>{{ $report->chapter->name }}</h1><p class="report-period">{{ $monthName }}, {{ $report->year }}</p></div><div class="report-meta"><div><span>Report reference</span><strong>#{{ $report->id }}</strong></div><div><span>Session</span><strong>{{ $report->session ?: 'Not specified' }}</strong></div><div><span>Last updated</span><strong>{{ $report->updated_at?->format('d M Y · g:i A') }}</strong></div></div></header>
+    <div class="report-toolbar"><div><a class="report-button" href="{{ route($indexRoute) }}"><i class="fa fa-arrow-left"></i> All reports</a></div><div>@if($canEditReport)<a class="report-button report-button--gold" href="{{ route($editRoute,$report) }}"><i class="fa fa-pencil"></i> Edit report</a>@endif<a class="report-button report-button--primary" href="{{ route($downloadRoute,$report) }}"><i class="fa fa-file-pdf-o"></i> Download PDF</a><button class="report-button" type="button" onclick="window.print()"><i class="fa fa-print"></i> Print</button></div></div>
+    <div class="report-status-grid">
+        @foreach(['Zone'=>$report->zone_status,'Field'=>$report->field_status,'National'=>$report->national_status] as $label=>$status)
+            @php
+                [$statusLabel, $statusClass] = $statusMeta($status);
+            @endphp
+            <div class="report-status"><span>{{ $label }} review</span><strong class="{{ $statusClass }}">{{ $statusLabel }}</strong></div>
         @endforeach
-
-        <!-- Signatures -->
-        <div class="section">
-            <div class="section-title">SIGNATURES</div>
-            @foreach(['president', 'gen_sec', 'fin_sec', 'evang_sec'] as $role)
-                <div class="signature-block">
-                    <span>{{ ucfirst(str_replace('_', ' ', $role)) }}</span>
-                    @if(!empty($report->chapter->{$role . '_signature'}))
-                        <img class="signatures" src="/stakeholdersignature/{{ $report->chapter->{$role . '_signature'} }}" alt="{{ $role }}">
-                    @else
-                        <p>No signature</p>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-
-        <!-- Actions -->
-        <div class="actions">
-            <a href="{{ route('stakeholders.dashboard') }}">Back</a> |
-            <a href="javascript:window.print();">Print</a>
-        </div>
     </div>
-</body>
-</html>
+    @if($report->school_not_in_session)
+        <div class="report-notice"><strong>School not in session</strong><span>No activity sections were submitted for this reporting period.</span></div>
+    @else
+        @foreach($sections as $section)
+            <section class="report-section"><header class="report-section__head"><span class="report-section__number">{{ str_pad($loop->iteration,2,'0',STR_PAD_LEFT) }}</span><div><small>Report section</small><h2>{{ $section->name }}</h2></div></header>
+            @foreach($section->subsections as $subsection)
+                <div class="report-subsection"><h3>{{ $subsection->name }}</h3><div class="report-answer-list">
+                @foreach($subsection->questions as $question)
+                    @php
+                        $answer=$report->answers->firstWhere('question_id',$question->id);
+                        $decoded=$answer ? json_decode($answer->answer_value,true) : null;
+                        $value=$answer ? (json_last_error()===JSON_ERROR_NONE ? $decoded : $answer->answer_value) : null;
+                    @endphp
+                    @if($question->type==='dynamic_table' && is_array($value))
+                        <div class="report-answer"><dt>{{ $question->label }}</dt><dd><div class="table-responsive"><table class="report-table"><thead><tr>@foreach($question->options as $col)<th>{{ $col['label'] ?? $col }}</th>@endforeach</tr></thead><tbody>@forelse($value as $row)<tr>@foreach($question->options as $col)@php($key=$col['label'] ?? $col)<td>{{ $row[$key] ?? '—' }}</td>@endforeach</tr>@empty<tr><td colspan="{{ count($question->options) }}">No entries</td></tr>@endforelse</tbody></table></div></dd></div>
+                    @elseif($question->type==='income_table')
+                        @php($totals=collect($question->options['columns'])->reject(fn($col)=>$col==='Remarks')->mapWithKeys(fn($col)=>[$col=>0])->all())
+                        <div class="report-answer"><dt>{{ $question->label }}</dt><dd><div class="table-responsive"><table class="report-table"><thead><tr><th>Week</th>@foreach($question->options['columns'] as $col)<th>{{ $col }}</th>@endforeach</tr></thead><tbody>@foreach($question->options['rows'] as $week)<tr><td>{{ $week }}</td>@foreach($question->options['columns'] as $col)@php($cell=$value[$week][$col] ?? null)@if($col!=='Remarks' && is_numeric($cell))@php($totals[$col]+=$cell)@endif<td>{{ $cell ?? '—' }}</td>@endforeach</tr>@endforeach</tbody><tfoot><tr><th>Totals</th>@foreach($question->options['columns'] as $col)<th>{{ $totals[$col] ?? '—' }}</th>@endforeach</tr></tfoot></table></div></dd></div>
+                    @elseif($question->type==='file')
+                        <div class="report-answer"><dt>{{ $question->label }}</dt><dd>@if($value)<a class="report-attachment" href="{{ route($isAdmin ? 'admin.protected.download' : 'protected.download',['file'=>$value]) }}" target="_blank"><i class="fa fa-paperclip"></i> View submitted attachment</a>@else—@endif</dd></div>
+                    @else
+                        <div class="report-answer"><dt>{{ $question->label }}</dt><dd>{{ filled($value) ? (is_array($value) ? json_encode($value) : $value) : '—' }}</dd></div>
+                    @endif
+                @endforeach
+                </div></div>
+            @endforeach
+            </section>
+        @endforeach
+    @endif
+    <section class="report-signatures"><h2>Chapter signatures</h2><div class="report-signature-grid">@foreach(['president'=>'President','gen_sec'=>'General Secretary','fin_sec'=>'Financial Secretary','evang_sec'=>'Evangelism Secretary'] as $role=>$label)<div class="report-signature"><span>{{ $label }}</span>@if(!empty($report->chapter->{$role.'_signature'}))<img src="{{ asset('stakeholdersignature/'.$report->chapter->{$role.'_signature'}) }}" alt="{{ $label }} signature">@else<em>No signature submitted</em>@endif</div>@endforeach</div></section>
+</div>
+@endsection

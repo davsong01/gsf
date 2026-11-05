@@ -34,7 +34,7 @@
     <div class="site-container fathers-grid">
         <article class="father-card father-card--featured">
             <div class="father-card__portrait">
-                <img src="{{ asset('site/images/leaders/e-o-abina.jpeg') }}" alt="Pastor Dr E. O. Abina">
+                <img src="{{ versionedAsset('site/images/leaders/e-o-abina.jpeg') }}" alt="Pastor Dr E. O. Abina">
                 <span>GOFAMINT</span>
             </div>
             <div class="father-card__copy"><span>01</span><h2>Pastor (Dr) E.O. Abina</h2><p>The General Overseer, GOFAMINT</p></div>
@@ -42,7 +42,7 @@
 
         <article class="father-card">
             <div class="father-card__portrait">
-                <img src="{{ asset('site/images/leaders/tunde-ojo.jpg') }}" alt="Pastor Engineer Tunde Ojo">
+                <img src="{{ versionedAsset('site/images/leaders/tunde-ojo.jpg') }}" alt="Pastor Engineer Tunde Ojo">
                 <span>Youth &amp; Campus</span>
             </div>
             <div class="father-card__copy"><span>02</span><h2>Pastor (Engr) Tunde Ojo</h2><p>Head, Youth and Campus Ministries</p></div>
@@ -50,7 +50,7 @@
 
         <article class="father-card">
             <div class="father-card__portrait">
-                <img src="{{ asset('site/images/leaders/joshua-taiwo-adebayo.jpg') }}" alt="Pastor Joshua Taiwo Olushola Adebayo">
+                <img src="{{ versionedAsset('site/images/leaders/joshua-taiwo-adebayo.jpg') }}" alt="Pastor Joshua Taiwo Olushola Adebayo">
                 <span>GSF National</span>
             </div>
             <div class="father-card__copy"><span>03</span><h2>Pastor Joshua Taiwo Olushola Adebayo</h2><p>National Campus Pastor, GSF</p></div>
@@ -58,7 +58,7 @@
 
         <article class="father-card">
             <div class="father-card__portrait">
-                <img src="{{ asset('site/images/leaders/olayemi-olanegan.jpg') }}" alt="Pastor Olayemi Olanegan">
+                <img src="{{ versionedAsset('site/images/leaders/olayemi-olanegan.jpg') }}" alt="Pastor Olayemi Olanegan">
                 <span>GSF National</span>
             </div>
             <div class="father-card__copy"><span>04</span><h2>Pastor Olayemi Olanegan</h2><p>National President, GSF</p></div>

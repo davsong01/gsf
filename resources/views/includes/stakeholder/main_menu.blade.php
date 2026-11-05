@@ -62,10 +62,10 @@
                     </a>
                     <ul class="menu-content">
                         <li class="{{ $currentRoute === 'stakeholders.award.etf' ? 'active' : '' }}">
-                            <a href="{{ route('stakeholders.award.etf') }}"><i class="fa fa-book" aria-hidden="true"></i><span class="menu-item">Education Trust Fund (ETF)</span></a>
+                            <a href="{{ route('stakeholders.award.etf') }}"><i class="fa fa-book" aria-hidden="true"></i><span class="menu-item">ETF</span></a>
                         </li>
                         <li class="{{ $currentRoute === 'stakeholders.award.go' ? 'active' : '' }}">
-                            <a href="{{ route('stakeholders.award.go') }}"><i class="fa fa-star" aria-hidden="true"></i><span class="menu-item">GO’s Excellence Beneficiary Award</span></a>
+                            <a href="{{ route('stakeholders.award.go') }}"><i class="fa fa-star" aria-hidden="true"></i><span class="menu-item">First Class Awards</span></a>
                         </li>
                     </ul>
                 </li>

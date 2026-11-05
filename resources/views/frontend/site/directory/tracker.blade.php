@@ -31,7 +31,7 @@
             @foreach($chapters as $campus)
                 <article class="campus-directory-card" data-tracker-campus data-search="{{ \Illuminate\Support\Str::lower($campus->name.' '.($campus->field?->name ?? '').' '.($campus->zone?->name ?? '')) }}">
                     <a class="campus-directory-card__image" href="{{ route('campus.single', $campus->slug) }}" aria-label="View {{ $campus->name }}">
-                        <img src="{{ asset(campusImagePath($campus)) }}" alt="{{ $campus->name }} campus gate or fellowship illustration" loading="lazy">
+                        <img src="{{ versionedAsset(campusImagePath($campus)) }}" alt="{{ $campus->name }} campus gate or fellowship illustration" loading="lazy">
                         <span>{{ number_format($campus->members_count) }} {{ \Illuminate\Support\Str::plural('member', $campus->members_count) }}</span>
                     </a>
                     <div class="campus-directory-card__body">

@@ -24,6 +24,8 @@
     .public-award-hero h1 { margin:15px 0 12px; color:#fff; font-size:clamp(34px,5vw,58px); font-weight:800; letter-spacing:-.045em; line-height:1.08; }
     .public-award-hero p { max-width:690px; margin:0; color:rgba(255,255,255,.78); font-size:16px; line-height:1.75; }
     .public-award-years { display:inline-flex; align-items:center; gap:9px; margin-top:23px; padding:9px 14px; border:1px solid rgba(255,255,255,.23); border-radius:999px; color:#fff; background:rgba(255,255,255,.09); font-size:13px; font-weight:700; }
+    .public-award-apply { display:inline-flex; align-items:center; gap:9px; margin:20px 10px 0 0; padding:12px 17px; border:1px solid #f1ce8c; border-radius:10px; color:#18334e; background:#f1ce8c; font-size:13px; font-weight:850; text-decoration:none; transition:background .18s ease,transform .18s ease; }
+    .public-award-apply:hover { color:#18334e; background:#ffdda0; transform:translateY(-1px); }
     .public-award-content { padding:38px 0 72px; }
     .public-award-stat-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:14px; margin-bottom:26px; }
     .public-award-stat { min-height:134px; padding:18px; border:1px solid rgba(255,255,255,.85); border-radius:17px; background:linear-gradient(145deg,#fff,#f9fbfd); box-shadow:0 11px 28px rgba(31,55,79,.065); }
@@ -94,11 +96,12 @@
             <span class="public-award-kicker">Education Awards</span>
             <h1>{{ $title }}</h1>
             <p>Browse award applications by year and see each applicant’s campus, zone, field and approval status.</p>
+            @if($submissionOpen)<a class="public-award-apply" href="{{ route($submissionRoute) }}">{{ $type === 'etf' ? 'Apply for ETF' : 'Apply for G.O. Award' }} <span aria-hidden="true">→</span></a>@endif
             <span class="public-award-years"><i class="fa fa-calendar" aria-hidden="true"></i> {{ number_format($yearGroups->count()) }} {{ \Illuminate\Support\Str::plural('year', $yearGroups->count()) }} represented</span>
         </div>
         <figure class="public-award-moments">
-            <img class="public-award-moments__group" src="{{ asset('site/images/awards/award-recipients.jpg') }}" alt="Award recipients standing together with medals and certificates" width="2048" height="1367" fetchpriority="high">
-            <img class="public-award-moments__portrait" src="{{ asset('site/images/awards/award-presentation.jpg') }}" alt="A recipient receiving an academic excellence award" width="1639" height="2048">
+            <img class="public-award-moments__group" src="{{ versionedAsset('site/images/awards/award-recipients.jpg') }}" alt="Award recipients standing together with medals and certificates" width="2048" height="1367" fetchpriority="high">
+            <img class="public-award-moments__portrait" src="{{ versionedAsset('site/images/awards/award-presentation.jpg') }}" alt="A recipient receiving an academic excellence award" width="1639" height="2048">
             <figcaption><span>Education &amp; excellence</span>Celebrating dedication and achievement.</figcaption>
         </figure>
     </div>

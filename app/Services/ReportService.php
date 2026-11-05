@@ -231,6 +231,26 @@ class ReportService
             return $this->downloadCompactReport($reportsCollection, $from, $to);
         }
 
+        $reportSummary = [
+            'total' => (clone $reports)->count(),
+            'approved' => (clone $reports)
+                ->where('zone_status', 1)
+                ->where('field_status', 1)
+                ->where('national_status', 1)
+                ->count(),
+            'attention' => (clone $reports)
+                ->where(function ($query) {
+                    $query->where('zone_status', 2)
+                        ->orWhere('field_status', 2)
+                        ->orWhere('national_status', 2);
+                })
+                ->count(),
+        ];
+        $reportSummary['in_review'] = max(
+            0,
+            $reportSummary['total'] - $reportSummary['approved'] - $reportSummary['attention']
+        );
+
         return [
             'reports'  => $reports->with(['chapter', 'zone', 'field'])
                               ->orderByDesc('year')  // Primary Sort
@@ -239,6 +259,7 @@ class ReportService
             'chapters' => $chaptersQuery->whereIn('id', $chapterIds)->orderBy('name')->get(),
             'zones'    => $zonesQuery->whereIn('id', $zoneIds)->orderBy('name')->get(),
             'fields'   => $fieldsQuery->whereIn('id', $fieldIds)->orderBy('name')->get(),
+            'reportSummary' => $reportSummary,
         ];
     }
 

@@ -36,7 +36,7 @@
                 @foreach($chapters as $campus)
                     <article class="campus-directory-card">
                         <a class="campus-directory-card__image" href="{{ route('campus.single', $campus->slug) }}" aria-label="View {{ $campus->name }}">
-                            <img src="{{ asset(campusImagePath($campus)) }}" alt="{{ $campus->name }} campus gate or fellowship illustration" loading="lazy">
+                            <img src="{{ versionedAsset(campusImagePath($campus)) }}" alt="{{ $campus->name }} campus gate or fellowship illustration" loading="lazy">
                             @if($campus->members_count > 0)
                                 <span>{{ number_format($campus->members_count) }} {{ \Illuminate\Support\Str::plural('member', $campus->members_count) }}</span>
                             @endif

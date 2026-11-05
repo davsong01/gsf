@@ -243,28 +243,156 @@
         display: none !important;
     }
 
+    .report-form-hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
+        gap: 2rem;
+        align-items: end;
+        overflow: hidden;
+        margin: 0 0 1.5rem;
+        padding: clamp(1.8rem, 4vw, 3.2rem);
+        border-radius: 1.5rem;
+        background: linear-gradient(125deg, #17375f 0%, #184b69 62%, #9b6834 145%);
+        box-shadow: 0 20px 55px rgba(30, 48, 70, .16);
+    }
+    .report-form-hero::after {
+        position: absolute;
+        top: -7rem;
+        right: -4rem;
+        width: 19rem;
+        height: 19rem;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 50%;
+        box-shadow: 0 0 0 3.5rem rgba(255,255,255,.035), 0 0 0 7rem rgba(255,255,255,.025);
+        content: '';
+        pointer-events: none;
+    }
+    .report-form-hero__copy, .report-form-hero__summary { position: relative; z-index: 1; }
+    .report-form-hero__eyebrow { display: inline-flex; align-items: center; gap: .55rem; margin-bottom: .8rem; color: #f3cf8b; font-size: .72rem; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
+    .report-form-hero h1 { max-width: 760px; margin: 0 0 .75rem; color: #fff; font-size: clamp(2rem, 4vw, 3.15rem); font-weight: 800; line-height: 1.08; letter-spacing: -.035em; }
+    .report-form-hero p { max-width: 680px; margin: 0; color: #d7e5ed; font-size: .98rem; line-height: 1.65; }
+    .report-form-hero__summary { display: grid; gap: .65rem; padding: .7rem; border: 1px solid rgba(255,255,255,.18); border-radius: 1rem; background: rgba(255,255,255,.1); backdrop-filter: blur(8px); }
+    .report-form-hero__summary div { padding: .65rem .75rem; border-radius: .7rem; background: rgba(8,28,54,.22); }
+    .report-form-hero__summary span, .report-form-hero__summary strong { display: block; }
+    .report-form-hero__summary span { margin-bottom: .2rem; color: #b9d3df; font-size: .65rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .report-form-hero__summary strong { color: #fff; font-size: .88rem; line-height: 1.4; }
+
+    .report-form-errors { display: flex; gap: 1rem; margin: 0 0 1.35rem; padding: 1rem 1.15rem; border: 1px solid #e7b6ad; border-radius: 1rem; color: #7f302a; background: #fff1ed; }
+    .report-form-errors__icon { display: grid; flex: 0 0 2.4rem; width: 2.4rem; height: 2.4rem; place-items: center; border-radius: .7rem; color: #a64238; background: #fbd8d1; }
+    .report-form-errors strong { display: block; margin-bottom: .35rem; }
+    .report-form-errors ul { padding-left: 1.15rem; font-size: .86rem; line-height: 1.6; }
+
+    .report-section-card.section-card { margin: 1.3rem 0; padding: 0; overflow: hidden; border: 1px solid #eadcc7; border-radius: 1.35rem; background: #fffaf2; box-shadow: 0 13px 35px rgba(75, 55, 35, .065); }
+    .report-section-card:nth-of-type(3n+2) { border-color: #ead9d4; background: #fff7f3; }
+    .report-section-card:nth-of-type(3n+3) { border-color: #e6deca; background: #fbf8ec; }
+    .report-section-card__header.header-section { display: flex; align-items: center; gap: 1rem; margin: 0; padding: 1.25rem 1.4rem; border: 0; border-radius: 0; color: #352b24; background: rgba(238, 214, 174, .52); }
+    .report-section-card:nth-of-type(3n+2) .report-section-card__header { background: rgba(237, 204, 193, .52); }
+    .report-section-card:nth-of-type(3n+3) .report-section-card__header { background: rgba(225, 211, 167, .46); }
+    .report-section-card__number { display: grid; flex: 0 0 2.9rem; width: 2.9rem; height: 2.9rem; place-items: center; border-radius: .85rem; color: #fff; background: #946735; box-shadow: 0 8px 18px rgba(126, 85, 42, .18); font-size: .85rem; font-weight: 850; }
+    .report-section-card:nth-of-type(3n+2) .report-section-card__number { background: #9b5f50; }
+    .report-section-card:nth-of-type(3n+3) .report-section-card__number { background: #786d3e; }
+    .report-section-card__header small { display: block; margin-bottom: .2rem; color: #826c58; font-size: .64rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+    .report-section-card__header h2 { margin: 0; color: #302820; font-size: 1.3rem; font-weight: 800; line-height: 1.25; }
+
+    .report-section-card .sub-section-card { margin: 1rem; padding: 1.2rem; border: 1px solid rgba(184, 154, 119, .2); border-left: 0; border-radius: 1rem; background: rgba(255,255,255,.82); box-shadow: 0 7px 20px rgba(71, 52, 34, .035); }
+    .sub-section-heading { display: flex; align-items: center; gap: .65rem; margin: 0 0 .7rem; }
+    .sub-section-heading > span { width: 1.4rem; height: 3px; border-radius: 99px; background: #c68d4c; }
+    .sub-section-heading .sub-section { margin: 0; color: #4a3a2c; font-size: 1rem; font-weight: 800; }
+
+    .report-question { min-width: 0; padding-top: .45rem; padding-bottom: .6rem; }
+    .report-question .report-question__label { min-height: 2.5rem; margin: 0 0 .5rem !important; color: #4a5566; font-size: .78rem; font-weight: 750; line-height: 1.45; }
+    .report-question .form-control, .report-question .form-select { width: 100%; min-height: 2.85rem; border: 1px solid #d9d4cb; border-radius: .7rem; color: #26384f; background-color: #fff; box-shadow: inset 0 1px 2px rgba(43,55,69,.025); font-size: .88rem; transition: border-color .2s, box-shadow .2s; }
+    .report-question textarea.form-control { min-height: 7rem; padding: .75rem .85rem; resize: vertical; }
+    .report-question .form-control:focus, .report-question .form-select:focus { border-color: #b47a3d; box-shadow: 0 0 0 3px rgba(180,122,61,.13); }
+    .report-question .form-control:disabled, .report-question .form-select:disabled { color: #697687; background: #f1eee8; }
+    .report-question__file-link { display: inline-flex; align-items: center; gap: .35rem; margin-left: auto; padding: .32rem .55rem; border: 1px solid #ccb28e; border-radius: 999px; color: #79572e; background: #fff9ef; font-size: .68rem; font-weight: 800; text-decoration: none; white-space: nowrap; }
+    .report-question__file-link:hover { color: #fff; background: #946735; }
+
+    .report-question .table-responsive { margin: .25rem 0 .5rem; border: 1px solid #e1d9cf; border-radius: .85rem; background: #fff; }
+    .report-question table { margin: 0; }
+    .report-question .dynamic-table th, .report-question .income-table th { padding: .75rem; border-color: #e8ded1; color: #654d35; background: #f7ecdd; font-size: .7rem; font-weight: 850; letter-spacing: .035em; text-transform: uppercase; }
+    .report-question .dynamic-table td, .report-question .income-table td { padding: .55rem; border-color: #eee7df; background: #fff; }
+    .report-question .dynamic-table input, .report-question .income-table input { min-width: 110px; height: 2.4rem; border-radius: .5rem; font-size: .8rem; }
+    .report-question .totals-row td { color: #594329; background: #f8ead6; }
+    .report-question .add-row, .report-question .remove-row { display: inline-grid; width: 1.9rem; height: 1.9rem; place-items: center; padding: 0 !important; border: 0; border-radius: .5rem; color: #fff; cursor: pointer; }
+    .report-question .add-row { background: #4d806a; }
+    .report-question .remove-row { background: #b9675d; }
+
+    .report-confirmation { display: flex; gap: 1rem; align-items: flex-start; margin: 1.5rem 0; padding: 1.25rem 1.35rem; border: 1px solid #dfcfb7; border-radius: 1.1rem; background: #fff8ec; box-shadow: 0 10px 28px rgba(78,57,31,.055); }
+    .report-confirmation__icon { display: grid; flex: 0 0 2.6rem; width: 2.6rem; height: 2.6rem; place-items: center; border-radius: .75rem; color: #fff; background: #6c8060; }
+    .report-confirmation__copy { min-width: 0; }
+    .report-confirmation__copy > strong { display: block; color: #3d372f; font-size: 1rem; }
+    .report-confirmation__copy > p { margin: .2rem 0 .75rem; color: #7a7065; font-size: .78rem; }
+    .report-confirmation .form-check { display: flex; gap: .6rem; align-items: flex-start; }
+    .report-confirmation .form-check-input { flex: 0 0 auto; margin-top: .18rem; }
+    .report-confirmation .form-check-label { color: #514b43; font-size: .82rem; line-height: 1.55; }
+
+    .report-form-actions { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin: 1.5rem 0 4rem; padding: 1.15rem 1.3rem; border: 1px solid #d8c8b0; border-radius: 1.1rem; background: #fff; box-shadow: 0 16px 38px rgba(52,46,39,.09); }
+    .report-form-actions--school { background: #fff7e7; }
+    .report-form-actions__copy strong, .report-form-actions__copy span { display: block; }
+    .report-form-actions__copy strong { margin-bottom: .15rem; color: #2f3f51; font-size: .95rem; }
+    .report-form-actions__copy span { color: #75808c; font-size: .75rem; }
+    .report-form-actions__buttons { display: flex; flex-wrap: wrap; gap: .65rem; }
+    .report-action { display: inline-flex; align-items: center; justify-content: center; gap: .55rem; min-height: 2.75rem; padding: .7rem 1rem; border: 1px solid transparent; border-radius: .75rem; font: inherit; font-size: .78rem; font-weight: 850; cursor: pointer; transition: transform .2s, box-shadow .2s, background .2s; }
+    .report-action:hover { transform: translateY(-2px); }
+    .report-action--draft { border-color: #d3a85e; color: #674b20; background: #f8dfad; }
+    .report-action--submit { color: #fff; background: #246d68; box-shadow: 0 8px 18px rgba(36,109,104,.2); }
+    .report-action--submit:hover { background: #195a56; }
+
     @media (max-width: 767.98px) {
+        .report-form-hero { grid-template-columns: 1fr; padding: 1.4rem; border-radius: 1.1rem; }
+        .report-form-hero h1 { font-size: 2rem; }
+        .report-form-hero__summary { grid-template-columns: 1fr 1fr; }
+        .report-section-card__header.header-section { padding: 1rem; }
+        .report-section-card .sub-section-card { margin: .7rem; padding: .9rem; }
+        .report-form-actions { align-items: stretch; flex-direction: column; }
+        .report-form-actions__buttons { display: grid; width: 100%; grid-template-columns: 1fr; }
+        .report-action { width: 100%; }
         .school-session-banner { align-items: flex-start; flex-wrap: wrap; padding: 1.15rem; gap: .9rem; }
         .school-session-icon { flex-basis: 2.8rem; width: 2.8rem; height: 2.8rem; }
         .school-session-copy { flex-basis: calc(100% - 3.8rem); }
         .school-session-title { font-size: 1.1rem; }
         .school-session-switch { margin-left: 3.7rem !important; }
     }
+    @media (max-width: 480px) {
+        .report-form-hero__summary { grid-template-columns: 1fr; }
+        .report-confirmation { padding: 1rem; }
+    }
 </style>
 @endsection
 @section('content')
 @php
     $userRole = $user->role_id;
+    $reportingMonth = old('report_month', $prefillData['month'] ?? $report->month ?? null);
+    $reportingYear = old('report_year', $prefillData['year'] ?? $report->year ?? null);
+    $reportingPeriod = is_numeric($reportingMonth)
+        ? \Carbon\Carbon::createFromDate((int) ($reportingYear ?: now()->year), (int) $reportingMonth, 1)->format('F, Y')
+        : ($reportingMonth ? trim($reportingMonth.($reportingYear ? ', '.$reportingYear : '')) : 'Current month');
 @endphp
 <div class="content-body">
+    <header class="report-form-hero">
+        <div class="report-form-hero__copy">
+            <span class="report-form-hero__eyebrow"><i class="fa fa-file-text-o" aria-hidden="true"></i> Monthly fellowship report</span>
+            <h1>{{ isset($report) ? 'Review and update report' : 'Tell the story of this month' }}</h1>
+            <p>Share the ministry, membership and financial details for the month. Your progress can be saved before final submission.</p>
+        </div>
+        <div class="report-form-hero__summary" aria-label="Report summary">
+            <div><span>Campus</span><strong>{{ $prefillData['chapter_name'] ?? $user->chapter?->name ?? 'Your fellowship' }}</strong></div>
+            <div><span>Reporting period</span><strong>{{ $reportingPeriod }}</strong></div>
+        </div>
+    </header>
+
     @if ($errors->any())
-        <div class="alert alert-danger">
-            <strong>Please fix the errors below:</strong>
+        <div class="report-form-errors" role="alert">
+            <span class="report-form-errors__icon"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
+            <div><strong>Please check the highlighted information</strong>
             <ul class="mb-0">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
+            </div>
         </div>
     @endif
 
@@ -302,20 +430,24 @@
                 <div class="school-session-readonly"><strong>School not in session</strong><br><span>This report records that the school was not in session for this reporting month.</span></div>
             @endif
 
-            @php $questionNumber = 1; @endphp
+            @php $questionNumber = 1; $visibleSectionNumber = 0; @endphp
 
             <fieldset id="reportSections" {{ $hideReportSections ? 'disabled' : '' }} class="border-0 p-0 m-0 {{ $hideReportSections ? 'd-none' : '' }}">
             @foreach($sections as $section)
                 @php $sectionAccess = app('App\Services\StakeholderRolePermissionService'::class)->sectionAccess($user, $section); @endphp
                 @if($sectionAccess['view'] || $isAdmin)
-                    <div class="section-card">
-                        <h3 class="header-section">{{ $section->name }}</h3>
+                    @php $visibleSectionNumber++; @endphp
+                    <section class="section-card report-section-card">
+                        <header class="header-section report-section-card__header">
+                            <span class="report-section-card__number">{{ str_pad($visibleSectionNumber, 2, '0', STR_PAD_LEFT) }}</span>
+                            <div><small>Report section</small><h2>{{ $section->name }}</h2></div>
+                        </header>
 
                         @foreach($section->subsections as $subsection)
                             @php $subAccess = app('App\Services\StakeholderRolePermissionService'::class)->sectionAccess($user, $subsection); @endphp
                             @if($subAccess['view'] || $isAdmin)
                                 <div class="sub-section-card">
-                                    <h5 class="sub-section">{{ $subsection->name }}</h5>
+                                    <div class="sub-section-heading"><span aria-hidden="true"></span><h3 class="sub-section">{{ $subsection->name }}</h3></div>
                                     <div class="row">
                                         @foreach($subsection->questions as $question)
                                             @php
@@ -336,8 +468,8 @@
                                                 $disabled = !$qAccess['edit'] ? 'disabled' : '';
                                             @endphp
 
-                                            <div class="{{ $question->width_class ?? 'col-md-6' }} mb-1">
-                                                <label for="{{ $question->slug }}" class="d-flex align-items-center gap-2">
+                                            <div class="{{ $question->width_class ?? 'col-md-6' }} mb-1 report-question">
+                                                <label for="{{ $question->slug }}" class="report-question__label d-flex align-items-center gap-2">
                                                     <span>
                                                         {{ $questionNumber }}. {{ $question->label }}
                                                         @if($question->is_required && $qAccess['edit'] && !$isAdmin)
@@ -346,8 +478,8 @@
                                                     </span>
 
                                                     @if($question->type === 'file' && !empty($value))
-                                                        <a style="margin-left:10px" href="{{ route('protected.download', ['file' => $value]) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                            View
+                                                        <a href="{{ route('protected.download', ['file' => $value]) }}" target="_blank" class="report-question__file-link">
+                                                            <i class="fa fa-eye" aria-hidden="true"></i> View current file
                                                         </a>
                                                     @endif
 
@@ -431,8 +563,8 @@
                                                                             @endforeach
                                                                             @if($qAccess['edit'])
                                                                                 <td>
-                                                                                    <button type="button" class="btn btn-sm btn-success add-row">+</button>
-                                                                                    <button type="button" class="btn btn-sm btn-danger remove-row">-</button>
+                                                                                    <button type="button" class="add-row" aria-label="Add row"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                                                                                    <button type="button" class="remove-row" aria-label="Remove row"><i class="fa fa-minus" aria-hidden="true"></i></button>
                                                                                 </td>
                                                                             @endif
                                                                         </tr>
@@ -509,13 +641,16 @@
                                 </div>
                             @endif
                         @endforeach
-                    </div>
+                    </section>
                 @endif
             @endforeach
             </fieldset>
 
-            <div id="reportConfirmation" class="card mb-4 {{ $hideReportSections ? 'd-none' : '' }}">
-                <div class="card-body">
+            <div id="reportConfirmation" class="report-confirmation {{ $hideReportSections ? 'd-none' : '' }}">
+                <span class="report-confirmation__icon"><i class="fa fa-check" aria-hidden="true"></i></span>
+                <div class="report-confirmation__copy">
+                    <strong>Final confirmation</strong>
+                    <p>Please confirm that you have reviewed the information before submitting.</p>
                     <div class="form-check">
                         <input type="checkbox" name="confirm_information" value="1" class="form-check-input" id="confirmInfo" required {{ $hideReportSections ? 'disabled' : '' }}>
                         <label style="margin-top: 0 !important" class="form-check-label fw-semibold" for="confirmInfo">
@@ -525,29 +660,27 @@
                 </div>
             </div>
 
-            <style>
-                .button-gap > * + * {
-                    margin-left: 15px; /* adjust gap as needed */
-                }
-            </style>
-
-            <div id="normalReportActions" class="mt-4 d-flex button-gap" {{ $schoolNotInSession ? 'hidden' : '' }}>
+            <div id="normalReportActions" class="report-form-actions" {{ $schoolNotInSession ? 'hidden' : '' }}>
+                <div class="report-form-actions__copy"><strong>Ready to continue?</strong><span>Save a draft or submit the completed report.</span></div>
+                <div class="report-form-actions__buttons">
                 @if(in_array($userRole, chapterStakeholders()) || $isAdmin)
-                <button class="btn btn-warning flex-fill" name="edit_mode" value="1" type="submit">
-                    Save and Submit later
+                <button class="report-action report-action--draft" name="edit_mode" value="1" type="submit">
+                    <i class="fa fa-save" aria-hidden="true"></i> Save and submit later
                 </button>
 
                 @endif
 
                 @if(!$isAdmin)
-                <button class="btn btn-success flex-fill" name="edit_mode" value="0" type="submit">
-                    {{ isset($report) ? 'Update and Final Submission' : 'Final Submission' }}
+                <button class="report-action report-action--submit" name="edit_mode" value="0" type="submit">
+                    <i class="fa fa-paper-plane" aria-hidden="true"></i> {{ isset($report) ? 'Update and submit' : 'Final submission' }}
                 </button>
                 @endif
+                </div>
             </div>
             @if(!$isAdmin)
-                <div id="schoolReportActions" class="mt-4" {{ $schoolNotInSession ? '' : 'hidden' }}>
-                    <button class="btn btn-warning btn-lg w-100 fw-bold" name="edit_mode" value="0" type="submit">Submit: School not in session</button>
+                <div id="schoolReportActions" class="report-form-actions report-form-actions--school" {{ $schoolNotInSession ? '' : 'hidden' }}>
+                    <div class="report-form-actions__copy"><strong>School was not in session</strong><span>Submit this status for the selected reporting period.</span></div>
+                    <button class="report-action report-action--draft" name="edit_mode" value="0" type="submit"><i class="fa fa-calendar-times-o" aria-hidden="true"></i> Submit status</button>
                 </div>
             @endif
         </form>
@@ -561,7 +694,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     form.addEventListener('submit', function (event) {
         if (toggle && toggle.checked) return;
-        if (!window.confirm('You are about to submit this report, action is irreversible')) {
+        const submitter = event.submitter;
+        const isFinalSubmission = submitter && submitter.name === 'edit_mode' && submitter.value === '0';
+        if (isFinalSubmission && !window.confirm('Submit this report as final? You will not be able to edit it afterwards.')) {
             event.preventDefault();
         }
     });

@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+@php
+    $siteLogoPath = \App\Models\GeneralSetting::query()->value('site_logo');
+    $siteLogoUrl = !$siteLogoPath
+        ? asset('frontend/img/logo.png')
+        : (filter_var($siteLogoPath, FILTER_VALIDATE_URL)
+            ? $siteLogoPath
+            : \Illuminate\Support\Facades\Storage::disk('public')->url($siteLogoPath));
+@endphp
 <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 @include('frontend.spaces.includes.head')
 <body class="directory-site-shell">

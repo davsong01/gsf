@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="{{ asset('site/css/privacy-notice.css') }}">
+<link rel="stylesheet" href="{{ versionedAsset('site/css/privacy-notice.css') }}">
 <div class="gsf-privacy-notice" data-privacy-notice hidden role="region" aria-label="Privacy notice">
     <div class="gsf-privacy-notice__copy">
         <strong>Privacy &amp; cookies</strong>
@@ -6,4 +6,4 @@
     </div>
     <button type="button" data-privacy-dismiss>Got it</button>
 </div>
-<script src="{{ asset('site/js/privacy-notice.js') }}" defer></script>
+<script src="{{ versionedAsset('site/js/privacy-notice.js') }}" defer></script>

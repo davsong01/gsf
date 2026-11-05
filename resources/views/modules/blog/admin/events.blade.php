@@ -26,12 +26,24 @@
             </div>
             <div class="event-workspace__filter-actions"><button type="submit"><i class="fa fa-filter" aria-hidden="true"></i> Apply filters</button><a href="{{ route($eventRoute.'.index') }}">Reset</a></div>
         </form>
-        <div class="table-responsive"><table class="table event-workspace__table"><thead><tr><th scope="col">S/N</th><th scope="col">Event</th><th scope="col">Date &amp; time</th><th scope="col">Venue</th><th scope="col">People</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody>
+        @if(!$isStakeholder && !empty($bulkActions))
+            <div class="row mx-0">
+                <div class="col-md-6">
+                    <form id="event-bulk-action-form" class="event-workspace__bulk" method="POST" action="{{ route($eventRoute.'.bulk-action') }}">
+                        @csrf
+                        <label class="sr-only" for="event-bulk-action">Bulk actions</label>
+                        <div class="event-workspace__bulk-controls"><select class="form-control" id="event-bulk-action" name="action" required><option value="">Bulk actions</option>@foreach($bulkActions as $action => $label)<option value="{{ $action }}">{{ $label }}</option>@endforeach</select><button type="submit"><i class="fa fa-check" aria-hidden="true"></i> Apply</button></div>
+                        <span data-selected-event-count>Select events to apply an action.</span>
+                    </form>
+                </div>
+            </div>
+        @endif
+        <div class="table-responsive"><table class="table event-workspace__table"><thead><tr>@if(!$isStakeholder && !empty($bulkActions))<th scope="col" class="event-workspace__select"><input type="checkbox" data-select-all-events aria-label="Select all events on this page"></th>@endif<th scope="col">S/N</th><th scope="col">Event</th><th scope="col">Date &amp; time</th><th scope="col">Venue</th><th scope="col">People</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody>
             @forelse($posts as $event)
                 @php($eventImage = \App\Modules\Blog\BlogMedia::url($event->featured_image))
-                <tr><td class="event-workspace__serial">{{ $posts->firstItem() + $loop->index }}</td><td><div class="event-workspace__event">@if($eventImage)<img src="{{ $eventImage }}" alt="" loading="lazy">@else<span class="event-workspace__placeholder"><i class="fa fa-calendar-o" aria-hidden="true"></i></span>@endif<div><strong>{{ $event->title }}</strong><small>{{ $event->author?->name ?: 'GSF' }}</small>@if($event->is_featured)<span class="event-workspace__featured"><i class="fa fa-star" aria-hidden="true"></i> Featured</span>@endif</div></div></td><td><strong>{{ $event->event_starts_at?->format('d M Y') ?: 'Date pending' }}</strong><small>{{ $event->event_starts_at?->format('g:i A') }}</small></td><td>{{ $event->event_venue ?: '—' }}</td><td>{{ count($event->event_speakers ?? []) }} listed</td><td><span class="event-workspace__status">{{ $event->status === 'review' ? 'In review' : ucfirst($event->status) }}</span></td><td><div class="event-workspace__actions">@if(\App\Modules\Blog\BlogPermissions::canEditPost($viewer, $event))<a href="{{ route($eventRoute.'.edit', $event) }}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a>@endif<a href="{{ $event->status === 'published' ? route('events.public.show', $event->slug) : route($eventRoute.'.preview', $event) }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> {{ $event->status === 'published' ? 'View' : 'Preview' }}</a></div></td></tr>
+                <tr>@if(!$isStakeholder && !empty($bulkActions))<td class="event-workspace__select"><input type="checkbox" name="post_ids[]" value="{{ $event->id }}" form="event-bulk-action-form" data-event-checkbox aria-label="Select {{ $event->title }}"></td>@endif<td class="event-workspace__serial">{{ $posts->firstItem() + $loop->index }}</td><td><div class="event-workspace__event">@if($eventImage)<img src="{{ $eventImage }}" alt="" loading="lazy">@else<span class="event-workspace__placeholder"><i class="fa fa-calendar-o" aria-hidden="true"></i></span>@endif<div><strong>{{ $event->title }}</strong><small>{{ $event->author?->name ?: 'GSF' }}</small>@if($event->is_featured)<span class="event-workspace__featured"><i class="fa fa-star" aria-hidden="true"></i> Featured</span>@endif</div></div></td><td><strong>{{ $event->event_starts_at?->format('d M Y') ?: 'Date pending' }}</strong><small>{{ $event->event_starts_at?->format('g:i A') }}</small></td><td>{{ $event->event_venue ?: '—' }}</td><td>{{ count($event->event_speakers ?? []) }} listed</td><td><span class="event-workspace__status">{{ $event->status === 'review' ? 'In review' : ucfirst($event->status) }}</span></td><td><div class="event-workspace__actions">@if(\App\Modules\Blog\BlogPermissions::canEditPost($viewer, $event))<a href="{{ route($eventRoute.'.edit', $event) }}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a>@endif<a href="{{ $event->status === 'published' ? route('events.public.show', $event->slug) : route($eventRoute.'.preview', $event) }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> {{ $event->status === 'published' ? 'View' : 'Preview' }}</a></div></td></tr>
             @empty
-                <tr><td colspan="7" class="text-center py-5">No events match these filters. @if($canCreate)<a href="{{ route($eventRoute.'.create') }}">Create the first event</a>.@endif</td></tr>
+                <tr><td colspan="{{ !$isStakeholder && !empty($bulkActions) ? 8 : 7 }}" class="text-center py-5">No events match these filters. @if($canCreate)<a href="{{ route($eventRoute.'.create') }}">Create the first event</a>.@endif</td></tr>
             @endforelse
         </tbody></table></div>
         <div class="event-workspace__pagination">{{ $posts->links() }}</div>
@@ -69,6 +81,13 @@
 .event-workspace__filter-actions button:hover { background:#143f67; }
 .event-workspace__filter-actions a { background:#fff; color:#1b5e8f; }
 .event-workspace__filter-actions a:hover { background:#edf5fa; }
+.event-workspace__bulk { display:grid; gap:8px; margin:0; padding:0 0 17px; }
+.event-workspace__bulk-controls { display:flex; align-items:center; gap:9px; }
+.event-workspace__bulk .form-control { flex:1 1 auto; width:1%; min-width:0; max-width:none; height:38px; border:1px solid #cfdae5; border-radius:8px; font-size:12px; }
+.event-workspace__bulk button { display:inline-flex; align-items:center; gap:7px; min-height:38px; padding:8px 15px; border:1px solid #1b5e8f; border-radius:8px; color:#fff; background:#1b5e8f; font-size:12px; font-weight:800; cursor:pointer; }
+.event-workspace__bulk > span { color:#708198; font-size:11px; }
+.event-workspace__select { width:38px; text-align:center; }
+.event-workspace__select input { width:16px; height:16px; cursor:pointer; }
 .event-workspace__table { margin:0; }
 .event-workspace__table th { white-space:nowrap; color:#65788d; font-size:11px; text-transform:uppercase; }
 .event-workspace__table td { vertical-align:middle; font-size:12px; }
@@ -89,4 +108,40 @@
 .event-workspace__pagination { padding:15px 20px; }
 @media(max-width:767px) { .event-workspace__stats { grid-template-columns:repeat(2,minmax(0,1fr)); }.event-workspace__filter-fields { grid-template-columns:1fr; }.event-workspace__hero { padding:22px; } }
 </style>
+@if(!$isStakeholder && !empty($bulkActions))
+<script>
+    (() => {
+        const master = document.querySelector('[data-select-all-events]');
+        const checkboxes = [...document.querySelectorAll('[data-event-checkbox]')];
+        const form = document.getElementById('event-bulk-action-form');
+        const action = document.getElementById('event-bulk-action');
+        const count = document.querySelector('[data-selected-event-count]');
+        if (!master || !form || !count) return;
+        const updateSelection = () => {
+            const selected = checkboxes.filter((checkbox) => checkbox.checked).length;
+            master.checked = checkboxes.length > 0 && selected === checkboxes.length;
+            master.indeterminate = selected > 0 && selected < checkboxes.length;
+            count.textContent = selected ? `${selected} event(s) selected.` : 'Select events to apply an action.';
+        };
+        master.addEventListener('change', () => {
+            checkboxes.forEach((checkbox) => { checkbox.checked = master.checked; });
+            updateSelection();
+        });
+        checkboxes.forEach((checkbox) => checkbox.addEventListener('change', updateSelection));
+        form.addEventListener('submit', (event) => {
+            const selected = checkboxes.filter((checkbox) => checkbox.checked);
+            if (!selected.length) {
+                event.preventDefault();
+                window.alert('Select at least one event first.');
+                return;
+            }
+            const label = action.selectedOptions[0]?.textContent?.trim() || 'this action';
+            const message = action.value === 'delete'
+                ? `Permanently delete ${selected.length} selected event(s)?`
+                : `Apply “${label}” to ${selected.length} selected event(s)?`;
+            if (!window.confirm(message)) event.preventDefault();
+        });
+    })();
+</script>
+@endif
 @endsection

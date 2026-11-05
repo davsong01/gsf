@@ -5,7 +5,7 @@
 @section('activeSection', 'directory')
 
 @section('content')
-<section class="campus-hero" style="--campus-image: url('{{ asset(campusImagePath($chapter)) }}')">
+<section class="campus-hero" style="--campus-image: url('{{ versionedAsset(campusImagePath($chapter)) }}')">
     <div class="campus-hero__shade"></div>
     <div class="site-container campus-hero__content">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ route('home.index') }}">Home</a><span>·</span><a href="{{ route('directory.index') }}">Directory</a><span>·</span><a href="{{ route('people.campuses') }}">Campuses</a></nav>
@@ -144,7 +144,7 @@
                     @foreach($events as $event)
                         <article class="campus-event-row">
                             <div class="campus-event-date"><strong>{{ $event->event_starts_at->format('d') }}</strong><span>{{ $event->event_starts_at->format('M') }}</span></div>
-                            <div><small>{{ $event->is_featured ? 'Featured · ' : '' }}{{ $event->event_starts_at->isPast() ? 'Past event' : 'Upcoming event' }} · {{ $event->event_venue ?: 'Campus Fellowship' }}</small><h3><a href="{{ route('events.public.show', $event->slug) }}">{{ $event->title }}</a></h3><p>{{ $event->event_starts_at->format('l, j F Y · g:i A') }}</p></div>
+                            <div><small>{{ $event->is_featured ? 'Featured · ' : '' }}{{ $event->event_starts_at->isPast() ? 'Past event' : 'Upcoming event' }} · {{ $event->event_venue ?: 'Campus Fellowship' }}</small><h3><a href="{{ route('events.public.show', $event->slug) }}">{{ $event->title }}</a></h3><p>{{ $event->event_starts_at->format('l, j F Y · g:i A') }}</p>@if(!empty($event->event_speakers))<p><strong>Host and Guest Minister:</strong> @foreach($event->event_speakers as $person){{ ($person['kind'] ?? 'speaker') === 'guest_minister' ? 'Guest Minister' : 'Host' }}: {{ $person['name'] }}@if(!$loop->last) · @endif @endforeach</p>@endif</div>
                             @if($eventImage = \App\Modules\Blog\BlogMedia::url($event->featured_image))<a class="campus-event-row__image" href="{{ route('events.public.show', $event->slug) }}" aria-label="View {{ $event->title }}"><img src="{{ $eventImage }}" alt="" loading="lazy"></a>@endif
                         </article>
                     @endforeach

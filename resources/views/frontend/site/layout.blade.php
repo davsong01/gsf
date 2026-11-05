@@ -19,10 +19,21 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0b2452">
+    <script>
+        (function () {
+            var savedTheme = null;
+            try { savedTheme = localStorage.getItem('gsf-site-theme'); } catch (error) {}
+            var theme = savedTheme === 'light' || savedTheme === 'dark'
+                ? savedTheme
+                : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.style.colorScheme = theme;
+        })();
+    </script>
+    <meta name="theme-color" content="#0b2452" data-theme-color>
     <meta name="description" content="{{ trim($__env->yieldContent('description')) ?: "GOFAMINT Students' Fellowship — a connected community of students growing in faith, leadership and service." }}">
     <link rel="icon" href="{{ $siteFaviconUrl }}">
-    <link rel="stylesheet" href="{{ asset('site/css/gsf-site.css') }}">
+    <link rel="stylesheet" href="{{ versionedAsset('site/css/gsf-site.css') }}">
     <title>@yield('title', "GOFAMINT Students' Fellowship")</title>
     @stack('head')
 </head>
@@ -39,7 +50,7 @@
     @include('frontend.site.partials.footer')
     @include('frontend.site.partials.privacy-notice')
 
-    <script src="{{ asset('site/js/gsf-site.js') }}" defer></script>
+    <script src="{{ versionedAsset('site/js/gsf-site.js') }}" defer></script>
     @stack('scripts')
 </body>
 </html>

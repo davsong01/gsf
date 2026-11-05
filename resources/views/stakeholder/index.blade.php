@@ -1,7 +1,7 @@
 @extends('layouts.stakeholderdashboard')
 @section('title', 'Reports')
 @section('active')
-<li class="breadcrumb-item">Reports Analytics</li>
+<li class="breadcrumb-item">Monthly Reports</li>
 @endsection
 
 @section('content')

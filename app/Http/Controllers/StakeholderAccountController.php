@@ -70,7 +70,9 @@ class StakeholderAccountController extends Controller
         $appraisalSummary = app(AppraisalService::class)->summary($user);
         $dashboardPosts = collect();
         $dashboardEvents = collect();
-        $canManagePosts = $user->hasPermission('blog.view') || $user->hasPermission('blog.create') || $user->hasPermission('blog.manage-own');
+        $canManagePosts = \App\Modules\Blog\BlogPermissions::allows($user, \App\Modules\Blog\BlogPermissions::VIEW)
+            || \App\Modules\Blog\BlogPermissions::allows($user, \App\Modules\Blog\BlogPermissions::CREATE)
+            || \App\Modules\Blog\BlogPermissions::allows($user, \App\Modules\Blog\BlogPermissions::MANAGE_OWN);
 
         if ($canManagePosts) {
             $authoredPosts = BlogPost::query()

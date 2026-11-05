@@ -46,7 +46,7 @@
 
                 <div class="hero__visual" aria-label="GSF fellowship community">
                     <div class="hero__image-wrap">
-                        <img src="{{ asset('site/images/community/gsf-gathering.jpg') }}" alt="GSF members worshipping together at a national gathering" width="2048" height="1367" fetchpriority="high" decoding="async">
+                        <img src="{{ versionedAsset('site/images/community/gsf-gathering.jpg') }}" alt="GSF members worshipping together at a national gathering" width="2048" height="1367" fetchpriority="high" decoding="async">
                         <div class="hero__image-shade"></div>
                         <div class="hero__image-caption"><span>Our community</span><strong>Faith comes alive in fellowship.</strong></div>
                     </div>
@@ -72,7 +72,7 @@
                 </div>
                 <div class="hero__visual" aria-label="A worship gathering">
                     <div class="hero__image-wrap hero__image-wrap--landscape">
-                        <img src="{{ asset('site/images/community/gsf-worship.jpg') }}" alt="A participant worshipping with raised hands at a GSF gathering" width="2048" height="1367" decoding="async">
+                        <img src="{{ versionedAsset('site/images/community/gsf-worship.jpg') }}" alt="A participant worshipping with raised hands at a GSF gathering" width="2048" height="1367" decoding="async">
                         <div class="hero__image-shade"></div>
                         <div class="hero__image-caption"><span>Spiritual formation</span><strong>Gathered around worship and the Word.</strong></div>
                     </div>
@@ -98,7 +98,7 @@
                 </div>
                 <div class="hero__visual" aria-label="GSF leadership and fellowship">
                     <div class="hero__image-wrap hero__image-wrap--learning">
-                        <img src="{{ asset('site/images/community/gsf-leadership-fellowship.jpg') }}" alt="Leaders and participants sharing a moment of fellowship at a GSF gathering" width="2048" height="1367" decoding="async">
+                        <img src="{{ versionedAsset('site/images/community/gsf-leadership-fellowship.jpg') }}" alt="Leaders and participants sharing a moment of fellowship at a GSF gathering" width="2048" height="1367" decoding="async">
                         <div class="hero__image-shade"></div>
                         <div class="hero__image-caption"><span>Leadership formation</span><strong>Purpose becomes practical through service.</strong></div>
                     </div>
@@ -160,7 +160,7 @@
     <div class="site-container about-grid">
         <div class="about-visual">
             <div class="about-visual__primary">
-                <img src="{{ asset('site/images/community/gsf-community.jpg') }}" alt="GSF members singing and celebrating together" width="2048" height="1365" loading="lazy" decoding="async">
+                <img src="{{ versionedAsset('site/images/community/gsf-community.jpg') }}" alt="GSF members singing and celebrating together" width="2048" height="1365" loading="lazy" decoding="async">
             </div>
             <div class="about-visual__note">
                 <span class="about-visual__symbol" aria-hidden="true">“</span>

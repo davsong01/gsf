@@ -160,7 +160,11 @@ class BlogController extends Controller
             'zones' => $canFilterZones ? $zonesQuery->get() : collect(),
             'chapters' => $canFilterChapters ? $chaptersQuery->get() : collect(),
             'canManageComments' => BlogPermissions::allows($user, BlogPermissions::COMMENTS),
-            'bulkActions' => ($isStakeholder || $eventsWorkspace) ? [] : collect([
+            'bulkActions' => $isStakeholder ? [] : collect($eventsWorkspace ? [
+                'delete' => 'Delete',
+                'archive' => 'Archive',
+                'review' => 'Move to review',
+            ] : [
                 'delete' => 'Delete',
                 'change-category' => 'Change category',
                 'archive' => 'Archive',
@@ -180,15 +184,18 @@ class BlogController extends Controller
     public function bulkAction(Request $request)
     {
         $user = $this->user();
+        $eventsWorkspace = $this->eventWorkspace();
         $validated = $request->validate([
-            'action' => 'required|in:delete,archive,review,change-category',
+            'action' => ['required', Rule::in($eventsWorkspace ? ['delete', 'archive', 'review'] : ['delete', 'archive', 'review', 'change-category'])],
             'post_ids' => 'required|array|min:1|max:100',
             'post_ids.*' => 'required|integer|distinct',
-            'category_ids' => ['required_if:action,change-category', 'array', 'min:1'],
+            'category_ids' => ['exclude_unless:action,change-category', 'required_if:action,change-category', 'array', 'min:1'],
             'category_ids.*' => [Rule::in(array_merge(['uncategorized'], BlogCategory::query()->pluck('id')->map(fn ($id) => (string) $id)->all()))],
         ]);
 
-        $posts = BlogPost::whereIn('id', $validated['post_ids'])->get();
+        $posts = BlogPost::whereIn('id', $validated['post_ids'])
+            ->where('type', $eventsWorkspace ? 'event' : '!=', 'event')
+            ->get();
         $updated = 0;
         $skipped = count($validated['post_ids']) - $posts->count();
         $deletablePostIds = [];
@@ -416,13 +423,19 @@ class BlogController extends Controller
     protected function formData($user): array
     {
         $isCampusStakeholder = $this->isCampusStakeholder($user);
+        if ($isCampusStakeholder) {
+            $user->loadMissing('chapter');
+        }
+        $userCampusAddress = $isCampusStakeholder
+            ? (filled($user->chapter?->address) ? trim($user->chapter->address) : null)
+            : null;
 
         return [
             'isStakeholder' => $this->isStakeholder($user),
             'canFeaturePosts' => BlogPermissions::canFeaturePosts($user)
                 || ($isCampusStakeholder && BlogSetting::campusPostsCanFeature()),
             'isCampusStakeholder' => $isCampusStakeholder,
-            'userCampusAddress' => $isCampusStakeholder ? $user->chapter?->address : null,
+            'userCampusAddress' => $userCampusAddress,
             'campusPostsRequireReview' => BlogSetting::campusPostsRequireReview(),
             'campusPostsCanAllowComments' => BlogSetting::campusPostsCanAllowComments(),
             'categories' => BlogCategory::orderBy('name')->get(),

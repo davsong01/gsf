@@ -2117,3 +2117,41 @@ if (!function_exists('campusImagePath')) {
         return $fallbacks[abs(crc32($name ?: (string) ($campus?->id ?? 'campus'))) % count($fallbacks)];
     }
 }
+
+if (!function_exists('versionedAsset')) {
+    /**
+     * Build a public asset URL with a filesystem version so changed files do not
+     * keep the same browser cache key after deployment or upload.
+     */
+    function versionedAsset(string $path): string
+    {
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        $relativePath = ltrim((string) parse_url($path, PHP_URL_PATH), '/');
+        // IMAGE_UPLOAD_PATH is the shared public_html directory in production.
+        // Prefer it so a copied or manually replaced public file drives the URL
+        // version; fall back to the checked-out application's public directory.
+        $candidates = [
+            rtrim((string) config('filesystems.image_upload_path', public_path()), '/').'/'.$relativePath,
+            base_path('public/'.$relativePath),
+        ];
+
+        $version = null;
+        foreach (array_unique($candidates) as $candidate) {
+            if (is_file($candidate)) {
+                $version = filemtime($candidate);
+                break;
+            }
+        }
+
+        $url = asset($relativePath);
+
+        if ($version === null) {
+            return $url;
+        }
+
+        return $url.(str_contains($url, '?') ? '&' : '?').'v='.$version;
+    }
+}

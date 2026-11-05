@@ -8,4 +8,9 @@
 .gsf-legacy-legal { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 22px; padding: 16px 22px; color: #f4f6fc; background: #0b1e40; font: 13px Arial, sans-serif; }
 .gsf-legacy-legal a, .gsf-legacy-legal button { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .gsf-legacy-legal button { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; }
+html[data-theme="dark"] .gsf-privacy-notice { border-color: rgba(185,204,229,.2); color: #edf3ff; background: #102038; box-shadow: 0 20px 55px rgba(0,0,0,.38); }
+html[data-theme="dark"] .gsf-privacy-notice__copy strong { color: #edf3ff; }
+html[data-theme="dark"] .gsf-privacy-notice__copy p { color: #aab7ca; }
+html[data-theme="dark"] .gsf-privacy-notice__copy a { color: #69c1e6; }
+html[data-theme="dark"] .gsf-privacy-notice > button { background: #2e79ad; }
 @media (max-width: 600px) { .gsf-privacy-notice { right: 12px; bottom: 12px; left: 12px; align-items: stretch; flex-direction: column; gap: 14px; padding: 17px; } .gsf-privacy-notice > button { width: 100%; } }

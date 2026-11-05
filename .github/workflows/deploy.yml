@@ -29,7 +29,6 @@ jobs:
             git fetch origin refs/heads/development:refs/remotes/origin/development
             git merge --ff-only refs/remotes/origin/development
             php artisan migrate --force
-            php artisan optimize:clear
 
             # php artisan db:seed
             # php artisan db:seed --class="Database\Seeders\CleanInjectedBlogSpamSeeder" --force
@@ -45,6 +44,9 @@ jobs:
             # php artisan db:seed --class="Database\Seeders\AwardBeneficiaries2025Seeder" --force
             php artisan db:seed --class="Database\Seeders\BackfillChapterDescriptionsSeeder" --force
 
-            rm -rf ../site && cp -r public/site ../site
-            echo "Deployment to Server completed!"
+            mkdir -p ../site
+            cp -R public/site/. ../site/
 
+            php artisan optimize:clear
+
+            echo "Deployment to Server completed!"

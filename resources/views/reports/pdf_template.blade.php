@@ -1,303 +1,142 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
 <head>
-    <title>GSF - {{ $report->chapter->name }} Report for {{ date("F", mktime(0,0,0,$report->month,10)) . ', ' . $report->year }}</title>
-    <style type="text/css">
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            color: #000;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 10px;
-            position: relative;
-            z-index: 1;
-        }
-        /* Watermark */
-        .watermark {
-            position: fixed;
-            top: 40%;
-            left: 20%;
-            width: 60%;
-            text-align: center;
-            font-size: 22px;
-            color: rgba(0,0,0,0.1); /* light but visible */
-            transform: rotate(-30deg);
-            z-index: 10; /* higher than container */
-            pointer-events: none;
-        }
-        /* Header */
-        .header-table {
-            width: 100%;
-            border-bottom: 2px solid #000;
-            margin-bottom: 10px;
-        }
-        .header-table td {
-            vertical-align: top;
-        }
-        .header-table img {
-            width: 80px;
-            height: auto;
-        }
-        .header-details h1 {
-            margin: 0;
-            font-size: 16px;
-        }
-        .header-details p, .status-info {
-            margin: 2px 0;
-            font-size: 12px;
-        }
-        .status-info span {
-            display: inline-block;
-            padding: 2px 5px;
-            font-size: 11px;
-            font-weight: bold;
-            border-radius: 3px;
-            color: #fff;
-        }
-        .approved { background-color: #28a745; }
-        .rejected { background-color: #dc3545; }
-        .pending  { background-color: #ffc107; color: #000; }
-        /* Sections */
-        .section-title {
-            background: #193085;
-            font-weight: bold;
-            padding: 5px 8px;
-            margin-top: 15px;
-            border: 1px solid #000;
-            color:white
-        }
-        .subsection-title {
-            background: #0281cc;
-            font-weight: bold;
-            padding: 3px 6px;
-            margin-top: 8px;
-            border: 1px solid #ccc;
-            color:white
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 5px 0 10px 0;
-        }
-        th, td {
-            border: 1px solid #000;
-            padding: 4px 6px;
-            text-align: left;
-            vertical-align: top;
-            font-size: 12px;
-        }
-        th { background: #f0f0f0; }
-        tfoot th { background: #ddd; font-weight: bold; }
-        .signature-block {
-            width: 48%;
-            display: inline-block;
-            vertical-align: top;
-            margin-top: 15px;
-        }
-        .signature-block img {
-            width: 100px;
-            height: auto;
-            margin-top: 3px;
-        }
-
-        .uploaded-file {
-            width: 50px;
-            height: 50px;
-        }
+    <meta charset="utf-8">
+    <title>GSF — {{ $report->chapter->name }} Report for {{ date('F',mktime(0,0,0,$report->month,10)) }}, {{ $report->year }}</title>
+    <style>
+        @page { margin: 28px 32px 36px; }
+        * { box-sizing: border-box; }
+        body { margin:0; color:#29384a; font-family:DejaVu Sans,Arial,sans-serif; font-size:10px; line-height:1.5; }
+        .page-footer { position:fixed; right:0; bottom:-22px; left:0; color:#89929d; font-size:8px; text-align:center; }
+        .page-footer .page:after { content:counter(page); }
+        .document-header { width:100%; margin-bottom:14px; padding:15px; border:0; border-radius:8px; color:#fff; background:#173b60; }
+        .document-header td { border:0; vertical-align:middle; }
+        .document-header__logo { width:72px; padding-right:14px; }
+        .document-header__logo img { width:60px; height:auto; }
+        .document-eyebrow { margin:0 0 3px; color:#ebc981; font-size:8px; font-weight:bold; letter-spacing:1.1px; text-transform:uppercase; }
+        .document-title { margin:0 0 3px; color:#fff; font-size:18px; line-height:1.2; }
+        .document-subtitle { margin:0; color:#d9e8ef; font-size:10px; }
+        .summary-table { width:100%; margin:0 0 12px; border-collapse:separate; border-spacing:5px 0; }
+        .summary-table td { width:25%; padding:8px 9px; border:1px solid #e4d8c8; border-radius:6px; background:#fff9ef; }
+        .summary-table span,.summary-table strong { display:block; }
+        .summary-table span { color:#806d58; font-size:7px; font-weight:bold; letter-spacing:.7px; text-transform:uppercase; }
+        .summary-table strong { margin-top:2px; color:#303d4c; font-size:9px; }
+        .status-table { width:100%; margin:0 0 14px; border-collapse:collapse; }
+        .status-table td { width:33.33%; padding:7px 9px; border:1px solid #dfe5e8; background:#fafbfc; }
+        .status-table b { display:block; margin-bottom:3px; color:#6e7a89; font-size:7px; letter-spacing:.7px; text-transform:uppercase; }
+        .status { display:inline-block; padding:2px 7px; border-radius:10px; font-size:7px; font-weight:bold; }
+        .approved { color:#285d42; background:#e6f2e9; }.rejected { color:#8b3832; background:#fae8e5; }.pending { color:#75571c; background:#fff0cd; }
+        .school-notice { margin:14px 0; padding:18px; border:1px solid #e4c36e; border-radius:7px; color:#6f511c; background:#fff5dc; text-align:center; }
+        .school-notice strong { display:block; margin-bottom:4px; font-size:14px; }
+        .report-section { margin:0 0 13px; border:1px solid #e8dac5; border-radius:7px; page-break-inside:auto; background:#fffaf2; }
+        .section-title { padding:9px 11px; color:#403226; background:#efd9b7; font-size:11px; font-weight:bold; }
+        .section-title .number { display:inline-block; margin-right:7px; padding:3px 6px; border-radius:4px; color:#fff; background:#936536; font-size:8px; }
+        .subsection { margin:8px; padding:8px; border:1px solid #eadfd3; border-radius:5px; background:#fff; page-break-inside:avoid; }
+        .subsection-title { margin:0 0 6px; padding-bottom:5px; border-bottom:2px solid #c98e4c; color:#584330; font-size:9px; font-weight:bold; }
+        .answers { width:100%; margin:0; border-collapse:collapse; }
+        .answers th,.answers td { padding:6px 7px; border:1px solid #e7e2dc; vertical-align:top; overflow-wrap:anywhere; }
+        .answers th { width:39%; color:#5f6c7b; background:#faf8f4; font-size:8px; text-align:left; }
+        .answers td { color:#29384a; background:#fff; font-size:8px; }
+        .data-table { width:100%; margin:2px 0; border-collapse:collapse; }
+        .data-table th,.data-table td { padding:4px; border:1px solid #dfd7ce; font-size:7px; text-align:left; }
+        .data-table th { color:#604a34; background:#f7ead8; text-transform:uppercase; }
+        .data-table tfoot th { background:#f0dbb9; }
+        .signatures { margin-top:15px; padding:10px; border:1px solid #dfe4e7; border-radius:7px; page-break-inside:avoid; }
+        .signatures h2 { margin:0 0 8px; color:#344253; font-size:11px; }
+        .signature-table { width:100%; border-collapse:separate; border-spacing:5px; }
+        .signature-table td { width:25%; height:75px; padding:7px; border:1px dashed #cfd8de; border-radius:5px; vertical-align:top; background:#fafbfc; }
+        .signature-table b { display:block; color:#6e7987; font-size:7px; text-transform:uppercase; }
+        .signature-table img { display:block; max-width:85px; max-height:45px; margin-top:6px; }
+        .signature-table em { display:block; margin-top:12px; color:#979fa8; font-size:7px; font-style:normal; }
     </style>
 </head>
 <body>
-    <div class="watermark">GOFAMINT STUDENTS' FELLOWSHIP</div>
+@php
+    $monthName=date('F',mktime(0,0,0,(int)$report->month,10));
+    $logoPath=public_path('frontend/img/logo.png');
+    $logoData=file_exists($logoPath) ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)) : null;
+    $statusMeta=fn($status)=>$status==1?['Approved','approved']:($status==2?['Rejected','rejected']:['Pending','pending']);
+@endphp
+<div class="page-footer">GOFAMINT Students’ Fellowship · Monthly Report · Page <span class="page"></span></div>
+<table class="document-header"><tr><td class="document-header__logo">@if($logoData)<img src="{{ $logoData }}" alt="GSF logo">@endif</td><td><p class="document-eyebrow">GOFAMINT Students’ Fellowship</p><h1 class="document-title">Monthly Fellowship Report</h1><p class="document-subtitle">{{ $report->chapter->name }} · {{ $monthName }}, {{ $report->year }}</p></td></tr></table>
+<table class="summary-table"><tr><td><span>Report reference</span><strong>#{{ $report->id }}</strong></td><td><span>Reporting period</span><strong>{{ $monthName }}, {{ $report->year }}</strong></td><td><span>Session</span><strong>{{ $report->session ?: 'Not specified' }}</strong></td><td><span>Last updated</span><strong>{{ $report->updated_at?->format('d M Y') }}</strong></td></tr></table>
+<table class="status-table"><tr>
+@foreach(['Zone'=>$report->zone_status,'Field'=>$report->field_status,'National'=>$report->national_status] as $label=>$status)
+    @php
+        [$statusLabel, $statusClass] = $statusMeta($status);
+    @endphp
+    <td><b>{{ $label }} review</b><span class="status {{ $statusClass }}">{{ $statusLabel }}</span></td>
+@endforeach
+</tr></table>
 
-    <div class="container">
-        <!-- Header -->
-        <table class="header-table">
-            <tr>
-                <td style="width: 90px;">
-                    {{-- <img src="{{ base_path('frontend/img/logo.png') }}" alt="Logo"> --}}
-                    @php
-                        $logoPath = public_path('frontend/img/logo.png');
-                        $logo = base64_encode(file_get_contents($logoPath));
-                    @endphp
-
-                    <img src="data:image/png;base64,{{ $logo }}" width="80">
-                </td>
-                <td class="header-details" style="padding-left: 10px;">
-                    <h1>GOFAMINT STUDENTS’ FELLOWSHIP</h1>
-                    <strong>International Headquarters, Ogunmakin, Lagos Ibadan Expressway. Ogun State</strong>
-                    <p>MONTHLY REPORT: <strong>{{ $report->chapter->name }}</strong><br>
-                    {{ date("F", mktime(0,0,0,$report->month,10)) . ', ' . $report->year }}</p>
-                    <p>LAST UPDATED: <strong>{{ $report->updated_at->format('d M Y H:i') }}</strong></p>
-
-                    {{-- Status Info --}}
-                    @php
-                        $statuses = [
-                            'Zone' => $report->zone_status,
-                            'Field' => $report->field_status,
-                            'National' => $report->national_status
-                        ];
-                    @endphp
-                    
-                    <div class="status-info">
-                        @foreach($statuses as $key => $status)
-                            <strong>{{ $key }}:</strong>
-                            @if($status == 1)
-                                <span class="approved">Approved</span>
-                            @elseif($status == 2)
-                                <span class="rejected">Rejected</span>
-                            @else
-                                <span class="pending">Pending</span>
-                            @endif
-                        @endforeach
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        @if($report->school_not_in_session)
-            <table style="margin: 14px 0; border: 3px solid #d39e00; background: #fff3cd;">
-                <tr>
-                    <td style="border: 0; padding: 14px; color: #664d03; font-size: 18px; font-weight: bold; text-align: center;">
-                        SCHOOL NOT IN SESSION
-                    </td>
-                </tr>
-            </table>
-            <p style="text-align: center; font-size: 13px;">No report sections were submitted for this month because the school was not in session.</p>
-        @else
-        <!-- Sections -->
-        @foreach($sections as $section)
-            <div class="section-title">{{ $section->name }}</div>
-
-            @foreach($section->subsections as $subsection)
-                <div class="subsection-title">{{ $subsection->name }}</div>
-
-                <table>
-                    <tbody>
-                        @foreach($subsection->questions as $question)
-                           @php
-                                $answer = $report->answers->firstWhere('question_id', $question->id);
-
-                                $value = isset($answer)
-                                    ? (($answer->question_label ?? $answer->answer_value) ?? json_decode($answer->answer_value, true))
-                                    : '-';
-                            @endphp
-
-
-                            <!-- Simple Inputs -->
-                            @if(in_array($question->type, ['text','number','date','year','month','textarea','select']))
-                                <tr>
-                                    <th width="60%">{{ $question->label ?? $question->label  }}</th>
-                                    <td>{{ $value ?? '-' }}</td>
-                                </tr>
-                            @endif
-
-                            @if(in_array($question->type, ['file']))
-                            @if($value)
-                                <tr>
-                                    <th width="60%">{{ $question->label ?? $question->label  }}</th>
-                                    <td>@if($value)<img class="uploaded-file" src="{{ route(($isAdmin ? 'admin.protected.download' : 'protected.download'), ['file' => $value]) }}" alt="{{ $value ?: '-' }}">@else {{'-'}} @endif</td>
-                                </tr>
-                            @endif
-                            @endif
-
-                            <!-- Dynamic Table -->
-                            @if($question->type === 'dynamic_table')
+@if($report->school_not_in_session)
+    <div class="school-notice"><strong>School not in session</strong>No activity sections were submitted for this reporting period.</div>
+@else
+    @foreach($sections as $section)
+        <div class="report-section"><div class="section-title"><span class="number">{{ str_pad($loop->iteration,2,'0',STR_PAD_LEFT) }}</span>{{ $section->name }}</div>
+        @foreach($section->subsections as $subsection)
+            <div class="subsection"><div class="subsection-title">{{ $subsection->name }}</div><table class="answers"><tbody>
+            @foreach($subsection->questions as $question)
+                @php
+                    $answer=$report->answers->firstWhere('question_id',$question->id);
+                    $decoded=$answer ? json_decode($answer->answer_value,true) : null;
+                    $value=$answer ? (json_last_error()===JSON_ERROR_NONE ? $decoded : $answer->answer_value) : null;
+                @endphp
+                @if($question->type==='dynamic_table' && is_array($value))
+                    <tr><th>{{ $question->label }}</th><td><table class="data-table">
+                        <thead><tr>@foreach($question->options as $col)<th>{{ $col['label'] ?? $col }}</th>@endforeach</tr></thead>
+                        <tbody>@forelse($value as $row)<tr>
+                            @foreach($question->options as $col)
                                 @php
-                                    $value = $answer ? json_decode($answer->answer_value, true) : [];
+                                    $key = $col['label'] ?? $col;
                                 @endphp
-                                @if($value)
-                                <tr>
-                                    <td colspan="2">
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    @foreach($question->options as $col)
-                                                        <th>{{ $col['label'] ?? $col }}</th>
-                                                    @endforeach
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @forelse($value as $row)
-                                                    <tr>
-                                                        @foreach($question->options as $col)
-                                                            @php $key = $col['label'] ?? $col; @endphp
-                                                            <td>
-                                                                {{ $row[$key] ?? '-' }}
-                                                            </td>
-                                                        @endforeach
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="{{ count($question->options) }}">No data</td>
-                                                    </tr>
-                                                @endforelse
-                                            </tbody>
-                                        </table>
-                                    </td>
-                                </tr>
-                                @endif
-                            @endif
-
-                            <!-- Income Table -->
-                            @if($question->type === 'income_table')
+                                <td>{{ $row[$key] ?? '—' }}</td>
+                            @endforeach
+                        </tr>@empty<tr><td colspan="{{ count($question->options) }}">No entries</td></tr>@endforelse</tbody>
+                    </table></td></tr>
+                @elseif($question->type==='income_table')
+                    @php
+                        $totals = collect($question->options['columns'])
+                            ->reject(fn ($col) => $col === 'Remarks')
+                            ->mapWithKeys(fn ($col) => [$col => 0])
+                            ->all();
+                    @endphp
+                    <tr><th>{{ $question->label }}</th><td><table class="data-table">
+                        <thead><tr><th>Week</th>@foreach($question->options['columns'] as $col)<th>{{ $col }}</th>@endforeach</tr></thead>
+                        <tbody>@foreach($question->options['rows'] as $week)<tr><td>{{ $week }}</td>
+                            @foreach($question->options['columns'] as $col)
                                 @php
-                                    $value = $answer ? json_decode($answer->answer_value, true) : [];
-
-                                    $totals = [];
-                                    foreach ($question->options['columns'] as $col) {
-                                        if ($col !== 'Remarks') $totals[$col] = 0;
+                                    $cell = $value[$week][$col] ?? null;
+                                    if ($col !== 'Remarks' && is_numeric($cell)) {
+                                        $totals[$col] += $cell;
                                     }
                                 @endphp
-                                <tr>
-                                    <td colspan="2">
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th>Week</th>
-                                                    @foreach($question->options['columns'] as $col)
-                                                        <th>{{ $col }}</th>
-                                                    @endforeach
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($question->options['rows'] as $week)
-                                                    <tr>
-                                                        <td>{{ $week }}</td>
-                                                        @foreach($question->options['columns'] as $col)
-                                                            @php
-                                                                $cell = $value[$week][$col] ?? null;
-                                                                if ($col !== 'Remarks' && is_numeric($cell)) $totals[$col] += $cell;
-                                                            @endphp
-                                                            <td>{{ $cell ?? '-' }}</td>
-                                                        @endforeach
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <th>Totals</th>
-                                                    @foreach($question->options['columns'] as $col)
-                                                        <th>{{ $totals[$col] ?? '-' }}</th>
-                                                    @endforeach
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </td>
-                                </tr>
-                            @endif
-                        @endforeach
-                    </tbody>
-                </table>
+                                <td>{{ $cell ?? '—' }}</td>
+                            @endforeach
+                        </tr>@endforeach</tbody>
+                        <tfoot><tr><th>Totals</th>@foreach($question->options['columns'] as $col)<th>{{ $totals[$col] ?? '—' }}</th>@endforeach</tr></tfoot>
+                    </table></td></tr>
+                @elseif($question->type==='file')
+                    <tr><th>{{ $question->label }}</th><td>{{ $value ? 'Attachment submitted' : '—' }}</td></tr>
+                @else
+                    <tr><th>{{ $question->label }}</th><td>{{ filled($value) ? (is_array($value) ? json_encode($value) : $value) : '—' }}</td></tr>
+                @endif
             @endforeach
+            </tbody></table></div>
         @endforeach
-        @endif
+        </div>
+    @endforeach
+@endif
 
-    </div>
+<div class="signatures"><h2>Chapter Signatures</h2><table class="signature-table"><tr>
+@foreach(['president'=>'President','gen_sec'=>'General Secretary','fin_sec'=>'Financial Secretary','evang_sec'=>'Evangelism Secretary'] as $role=>$label)
+    @php
+        $signatureName=$report->chapter->{$role.'_signature'};
+        $signaturePath=$signatureName ? public_path('stakeholdersignature/'.$signatureName) : null;
+        $signatureData=$signaturePath && file_exists($signaturePath) ? 'data:image/'.pathinfo($signaturePath,PATHINFO_EXTENSION).';base64,'.base64_encode(file_get_contents($signaturePath)) : null;
+    @endphp
+    <td><b>{{ $label }}</b>@if($signatureData)<img src="{{ $signatureData }}" alt="{{ $label }} signature">@else<em>No signature submitted</em>@endif</td>
+@endforeach
+</tr></table></div>
 </body>
 </html>

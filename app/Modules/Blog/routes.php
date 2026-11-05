@@ -22,12 +22,14 @@ Route::get('programs-events', [BlogPublicController::class, 'events'])->name('ev
 Route::get('programs-events/{slug}', [BlogPublicController::class, 'show'])->name('events.public.show');
 
 Route::middleware(['auth', 'SwitchUser'])->prefix('admin')->name('admin.')->group(function () {
+    Route::post('programs-events/bulk-action', [BlogController::class, 'bulkAction'])->name('events.posts.bulk-action');
     Route::resource('programs-events', BlogController::class)
         ->parameters(['programs-events' => 'post'])->names('events.posts')->except(['show']);
     Route::get('programs-events/{post}/preview', [BlogController::class, 'preview'])->name('events.posts.preview');
 });
 
 Route::middleware('stakeholder')->prefix('stakeholders')->name('stakeholders.')->group(function () {
+    Route::post('programs-events/bulk-action', [BlogController::class, 'bulkAction'])->name('events.posts.bulk-action');
     Route::resource('programs-events', BlogController::class)
         ->parameters(['programs-events' => 'post'])->names('events.posts')->except(['show']);
     Route::get('programs-events/{post}/preview', [BlogController::class, 'preview'])->name('events.posts.preview');

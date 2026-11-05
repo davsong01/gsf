@@ -6,6 +6,52 @@
     var primaryNav = document.querySelector('[data-primary-nav]');
     var dropdownToggles = document.querySelectorAll('[data-dropdown-toggle]');
     var heroSlider = document.querySelector('[data-hero-slider]');
+    var themeToggle = document.querySelector('[data-theme-toggle]');
+    var themeColor = document.querySelector('[data-theme-color]');
+    var themePreference = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function storedTheme() {
+        try { return window.localStorage.getItem('gsf-site-theme'); } catch (error) { return null; }
+    }
+
+    function applyTheme(theme, persist) {
+        var dark = theme === 'dark';
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        if (themeColor) themeColor.setAttribute('content', dark ? '#081426' : '#0b2452');
+        if (themeToggle) {
+            themeToggle.setAttribute('aria-pressed', String(dark));
+            themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+            var label = themeToggle.querySelector('[data-theme-label]');
+            if (label) label.textContent = dark ? 'Light mode' : 'Night mode';
+        }
+        if (persist) {
+            try { window.localStorage.setItem('gsf-site-theme', dark ? 'dark' : 'light'); } catch (error) {}
+        }
+    }
+
+    applyTheme(document.documentElement.dataset.theme || (themePreference.matches ? 'dark' : 'light'), false);
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function () {
+            applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
+        });
+    }
+
+    var syncSystemTheme = function (event) {
+        if (!storedTheme()) applyTheme(event.matches ? 'dark' : 'light', false);
+    };
+    if (themePreference.addEventListener) {
+        themePreference.addEventListener('change', syncSystemTheme);
+    } else if (themePreference.addListener) {
+        themePreference.addListener(syncSystemTheme);
+    }
+
+    window.addEventListener('storage', function (event) {
+        if (event.key === 'gsf-site-theme' && (event.newValue === 'light' || event.newValue === 'dark')) {
+            applyTheme(event.newValue, false);
+        }
+    });
 
     function closeDropdowns(except) {
         dropdownToggles.forEach(function (toggle) {

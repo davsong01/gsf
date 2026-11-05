@@ -13,6 +13,8 @@ return new class extends Migration
         if(!Schema::hasColumn('chapters', 'slug')) {
             Schema::table('chapters', function (Blueprint $table) {
                 $table->string('slug')->nullable()->after('name');
+                $table->string('slug')->nullable(false)->change();
+                $table->unique('slug');
             });
         }
 
@@ -36,11 +38,6 @@ return new class extends Migration
                     'slug' => $slug,
                 ]);
             }
-        });
-
-        Schema::table('chapters', function (Blueprint $table) {
-            $table->string('slug')->nullable(false)->change();
-            $table->unique('slug');
         });
     }
 

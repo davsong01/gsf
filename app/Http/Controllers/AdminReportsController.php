@@ -139,7 +139,7 @@ class AdminReportsController extends Controller
     {
         $data = app(ReportService::class)->prepareViewData($stakeholderreport, true);
 
-        return view('reports.pdf_template', [
+        return view('stakeholder.show', [
             'isAdmin' => true,
             'report' => $stakeholderreport,
             'sections' => $data['sections'],
