@@ -18,6 +18,8 @@ class BlogPost extends Model
     protected $guarded = [];
     protected $casts = [
         'published_at' => 'datetime',
+        'event_starts_at' => 'datetime',
+        'event_speakers' => 'array',
         'allow_comments' => 'boolean',
         'is_featured' => 'boolean',
     ];
@@ -38,6 +40,7 @@ class BlogPost extends Model
         }
 
         return self::published()
+            ->where('type', $this->type)
             ->forNetwork($this->scope_type, $this->scope_id)
             ->where($this->getQualifiedKeyName(), '<>', $this->getKey())
             ->where(function (Builder $query) use ($tagIds, $categoryIds) {

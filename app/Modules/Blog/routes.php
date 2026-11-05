@@ -18,6 +18,21 @@ Route::prefix('news')->name('blog.')->group(function () {
     Route::post('/{post}/comments', [BlogPublicController::class, 'comment'])->name('comments.store');
 });
 
+Route::get('programs-events', [BlogPublicController::class, 'events'])->name('events.public.index');
+Route::get('programs-events/{slug}', [BlogPublicController::class, 'show'])->name('events.public.show');
+
+Route::middleware(['auth', 'SwitchUser'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('programs-events', BlogController::class)
+        ->parameters(['programs-events' => 'post'])->names('events.posts')->except(['show']);
+    Route::get('programs-events/{post}/preview', [BlogController::class, 'preview'])->name('events.posts.preview');
+});
+
+Route::middleware('stakeholder')->prefix('stakeholders')->name('stakeholders.')->group(function () {
+    Route::resource('programs-events', BlogController::class)
+        ->parameters(['programs-events' => 'post'])->names('events.posts')->except(['show']);
+    Route::get('programs-events/{post}/preview', [BlogController::class, 'preview'])->name('events.posts.preview');
+});
+
 Route::middleware(['auth', 'SwitchUser'])->prefix('admin/blog')->name('admin.blog.')->group(function () {
     Route::get('comments', [BlogCommentAdminController::class, 'index'])->name('comments.index');
     Route::post('comments/bulk-action', [BlogCommentAdminController::class, 'bulkAction'])->name('comments.bulk-action');

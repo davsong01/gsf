@@ -92,7 +92,7 @@ class HomeController extends Controller
         $excludeAssemblyRepresentatives($leaderCountQuery);
 
         $impact = [
-            'campuses' => Chapter::count(),
+            'campuses' => Chapter::actualCampus()->count(),
             'fields' => Field::count(),
             'leaders' => $leaderCountQuery->count(),
         ];
@@ -108,16 +108,15 @@ class HomeController extends Controller
     public function directory()
     {
         $directoryStats = [
-            'campuses' => Chapter::where('id', '<>', 86)->count(),
-            'members' => User::where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0)->count(),
-            'alumni' => User::where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 1)->count(),
+            'campuses' => Chapter::actualCampus()->count(),
+            'members' => User::whereHas('campus', fn ($query) => $query->actualCampus())->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0)->count(),
+            'alumni' => User::whereHas('campus', fn ($query) => $query->actualCampus())->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 1)->count(),
         ];
 
-        $featuredCampuses = Chapter::with(['field', 'zone'])
+        $featuredCampuses = Chapter::actualCampus()->with(['field', 'zone'])
             ->withCount(['users as members_count' => function ($query) {
                 $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
             }])
-            ->where('id', '<>', 86)
             ->orderByDesc('members_count')
             ->limit(6)
             ->get();
@@ -334,7 +333,7 @@ class HomeController extends Controller
     }
     public function alumni(Request $request) {
         $alumnis = User::with(['campus', 'stakeholder.role', 'stakeholder.designation'])
-            ->whereHas('campus')
+            ->whereHas('campus', fn ($query) => $query->actualCampus())
             ->where('status', 'active')
             ->where('role', '<>', 1)
             ->where('is_graduated', 1)
@@ -381,7 +380,7 @@ class HomeController extends Controller
 
     public function students(Request $request) {
         $members = User::with(['campus', 'stakeholder.role', 'stakeholder.designation'])
-            ->whereHas('campus')
+            ->whereHas('campus', fn ($query) => $query->actualCampus())
             ->where('status', 'active')
             ->where('role', '<>', 1)
             ->where('is_graduated', 0)
@@ -411,11 +410,10 @@ class HomeController extends Controller
 
     public function chapters(Request $request) {
         $hasStateColumn = Schema::hasColumn('chapters', 'state');
-        $chapters = Chapter::with(['field', 'zone'])
+        $chapters = Chapter::actualCampus()->with(['field', 'zone'])
             ->withCount(['users as members_count' => function ($query) {
                 $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
             }])
-            ->where('id', '<>', 86)
             ->when($hasStateColumn && $request->filled('state'), fn ($query) => $query->where('state', $request->input('state')))
             ->when($request->filled('q'), function ($query) use ($request, $hasStateColumn) {
                 $term = '%'.$request->string('q').'%';
@@ -438,18 +436,25 @@ class HomeController extends Controller
         ]);
     }
 
-    public function studentsByChapter(Request $request, $id){
-        return $this->campusPeopleListing($request, $id, 'members');
+    public function studentsByChapter(Request $request, $slug){
+        return $this->campusPeopleListing($request, $slug, 'members');
     }
 
-    public function alumniByChapter(Request $request, $id)
+    public function alumniByChapter(Request $request, $slug)
     {
-        return $this->campusPeopleListing($request, $id, 'alumni');
+        return $this->campusPeopleListing($request, $slug, 'alumni');
     }
 
-    private function campusPeopleListing(Request $request, $id, string $directoryType)
+    private function campusPeopleListing(Request $request, string $slug, string $directoryType)
     {
-        $campus = Chapter::findOrFail($id);
+        if (is_numeric($slug)) {
+            $campus = Chapter::actualCampus()->findOrFail($slug);
+            $routeName = $directoryType === 'alumni' ? 'alumni.campus' : 'members.campus';
+
+            return redirect()->route($routeName, array_merge([$campus->slug], $request->query()), 301);
+        }
+
+        $campus = Chapter::actualCampus()->where('slug', $slug)->firstOrFail();
         $isAlumni = $directoryType === 'alumni';
 
         $people = User::with(['campus', 'stakeholder.role', 'stakeholder.designation'])
@@ -474,7 +479,7 @@ class HomeController extends Controller
     }
 
     private function getSidebar() {
-        $chapters = Chapter::all();
+        $chapters = Chapter::actualCampus()->get();
         $portfolios = getCommunityPortfolios();
 
         return ['chapters' => $chapters, 'portfolios' => $portfolios];
@@ -509,7 +514,7 @@ class HomeController extends Controller
     {
         if ($request->get('data')) {
             $data = $request->get('data');
-            $data = Chapter::select("name", "id")
+            $data = Chapter::actualCampus()->select("name", "id")
                 ->where("name","LIKE","%{$data}%")
                 ->take(3)->get();
 
@@ -528,7 +533,7 @@ class HomeController extends Controller
     {
         if ($request->get('data')) {
             $data = $request->get('data');
-            $data = Chapter::select("name", "id")
+            $data = Chapter::actualCampus()->select("name", "id")
                 ->where("name","LIKE","%{$data}%")
                 ->take(10)->get();
 
@@ -590,7 +595,7 @@ class HomeController extends Controller
 
         if ($request->ajax()) {
             $query = $request->get('query');
-            $data = Chapter::select("name", "id")
+            $data = Chapter::actualCampus()->select("name", "id")
                 ->where("name", "LIKE", "%{$query}%")
                 ->take(10)->get();
 
@@ -629,7 +634,7 @@ class HomeController extends Controller
     public function singleCampus($chapterId = null)
     {
         $identifier = $chapterId ?? request()->chapter ?? request()->chapter_id;
-        $chapterQuery = Chapter::with(['field', 'zone'])
+        $chapterQuery = Chapter::with(['field.fieldCord', 'zone.zonalCord', 'zone.field.fieldCord', 'meetings'])
             ->withCount([
                 'users as members_count' => function ($query) {
                     $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
@@ -662,11 +667,24 @@ class HomeController extends Controller
             return view('frontend.conference.campusView', compact('chapter', 'token', 'realToken'));
         }
 
-        $events = $chapter->events()
-            ->where('date', '>=', date('Y-m-d'))
-            ->orderBy('date')
-            ->limit(4)
-            ->get();
+        abort_if(strtolower(trim((string) $chapter->name)) === 'other', 404);
+
+        $campusEvents = BlogPost::published()
+            ->where('type', 'event')
+            ->whereNotNull('event_starts_at')
+            ->where(function ($query) use ($chapter) {
+                $query->where(fn ($scope) => $scope->where('scope_type', 'chapter')->where('scope_id', $chapter->id))
+                    ->orWhere(fn ($author) => $author->whereHasMorph('author', [Stakeholder::class], fn ($stakeholder) => $stakeholder->where('chapter_id', $chapter->id)));
+            });
+
+        $events = (clone $campusEvents)->where('event_starts_at', '>=', now())
+            ->orderByDesc('is_featured')->orderBy('event_starts_at')->limit(5)->get();
+        if ($events->count() < 5) {
+            $events = $events->concat(
+                (clone $campusEvents)->where('event_starts_at', '<', now())
+                    ->orderByDesc('is_featured')->orderByDesc('event_starts_at')->limit(5 - $events->count())->get()
+            );
+        }
 
         $members = $chapter->users()
             ->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0)
@@ -676,9 +694,20 @@ class HomeController extends Controller
             ->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 1)
             ->latest()->limit(6)->get();
 
+        $campusPosts = BlogPost::published()
+            ->where('type', '!=', 'event')
+            ->where(function ($query) use ($chapter) {
+                $query->where(fn ($scope) => $scope->where('scope_type', 'chapter')->where('scope_id', $chapter->id))
+                    ->orWhere(fn ($author) => $author->whereHasMorph('author', [Stakeholder::class], fn ($stakeholder) => $stakeholder->where('chapter_id', $chapter->id)));
+            })
+            ->latest('published_at')
+            ->latest('id')
+            ->limit(4)
+            ->get();
+
         $related = collect();
         if ($chapter->zone_id || $chapter->field_id) {
-            $related = Chapter::with(['field', 'zone'])
+            $related = Chapter::actualCampus()->with(['field', 'zone'])
                 ->withCount(['users as members_count' => function ($query) {
                     $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
                 }])
@@ -692,7 +721,7 @@ class HomeController extends Controller
                 ->get();
         }
 
-        return view('frontend.site.directory.campus', compact('chapter', 'events', 'members', 'alumni', 'related'));
+        return view('frontend.site.directory.campus', compact('chapter', 'events', 'members', 'alumni', 'campusPosts', 'related'));
     }
 
 
@@ -824,7 +853,7 @@ class HomeController extends Controller
     }
 
     public function newAlumni(){
-        $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+        $chapters = Chapter::actualCampus()->orderBy('name')->get(); //sort in alphabetical order
 		$portfolios = StakeholderDesignation::where('type', 'chapter_executive')
 			->orderBy('order')
 			->orderBy('name')
@@ -836,7 +865,7 @@ class HomeController extends Controller
 
     public function newDonation()
     {
-        $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+        $chapters = Chapter::actualCampus()->orderBy('name')->get(); //sort in alphabetical order
         $portfolios = getCommunityPortfolios();
         $sessions = range(date('Y'), date('1982'));
 
@@ -941,7 +970,7 @@ class HomeController extends Controller
     }
 
     public function uploadMultiple(){
-        $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+        $chapters = Chapter::actualCampus()->orderBy('name')->get(); //sort in alphabetical order
         $portfolios = getCommunityPortfolios();
         $sessions = range(date('Y'), date('1982'));
 
@@ -951,7 +980,7 @@ class HomeController extends Controller
     public function processUploadMultiple(Request $request)
     {
         dd($request->all());
-        $chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+        $chapters = Chapter::actualCampus()->orderBy('name')->get(); //sort in alphabetical order
         $portfolios = getCommunityPortfolios();
         $sessions = range(date('Y'), date('1982'));
 

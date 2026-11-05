@@ -43,7 +43,7 @@ class AccountController extends Controller
 
 			$fields = Field::all();
 			$zones = Zone::all();
-			$chapters = Chapter::get();
+			$chapters = Chapter::actualCampus()->get();
 
 			return view('admin.index', compact('users', 'alumnis', 'chapters', 'fields', 'zones'));
 		}else{
@@ -63,7 +63,7 @@ class AccountController extends Controller
 		$user = auth()->user();
 		abort_if($user->isAdmin(), 404);
 
-		$chapters = Chapter::orderBy('name')->get();
+		$chapters = Chapter::actualCampus()->orderBy('name')->get();
 		$portfolios = getCommunityPortfolios();
 	$sessions = range((int) date('Y'), 1982);
 		$president = $user->campus?->chapterPresident;

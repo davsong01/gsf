@@ -14,5 +14,6 @@
     'symbol' => '◷',
     'artCaption' => 'A fresh start is ready',
     'accent' => '#a97827',
+    'showReset' => true,
 ])
 @endsection

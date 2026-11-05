@@ -18,9 +18,12 @@ use App\Services\FileUploadService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use App\Models\StakeholderDesignation;
+use App\Modules\Blog\Models\BlogPost;
 use App\Traits\UserDatatableFeaturesTrait;
 use App\Http\Controllers\Concerns\LogsStakeholderAccessDenials;
+use Illuminate\Validation\Rule;
 
 class StakeholderAccountController extends Controller
 {
@@ -65,8 +68,31 @@ class StakeholderAccountController extends Controller
         $reports = collect([]);
         $appraisalAccess = app(AppraisalService::class)->dashboardAccess($user);
         $appraisalSummary = app(AppraisalService::class)->summary($user);
+        $dashboardPosts = collect();
+        $dashboardEvents = collect();
+        $canManagePosts = $user->hasPermission('blog.view') || $user->hasPermission('blog.create') || $user->hasPermission('blog.manage-own');
+
+        if ($canManagePosts) {
+            $authoredPosts = BlogPost::query()
+                ->where('author_type', $user::class)
+                ->where('author_id', $user->id);
+
+            $dashboardPosts = (clone $authoredPosts)
+                ->where('type', '!=', 'event')
+                ->latest('updated_at')
+                ->limit(3)
+                ->get();
+
+            $dashboardEvents = (clone $authoredPosts)
+                ->where('type', 'event')
+                ->orderByRaw('CASE WHEN event_starts_at >= ? THEN 0 ELSE 1 END', [now()])
+                ->orderByRaw('CASE WHEN event_starts_at >= ? THEN event_starts_at END ASC', [now()])
+                ->orderByRaw('CASE WHEN event_starts_at < ? THEN event_starts_at END DESC', [now()])
+                ->limit(3)
+                ->get();
+        }
         
-        return view('stakeholder.dashboard', compact('reports', 'chapter', 'user', 'appraisalAccess', 'appraisalSummary'));
+        return view('stakeholder.dashboard', compact('reports', 'chapter', 'user', 'appraisalAccess', 'appraisalSummary', 'dashboardPosts', 'dashboardEvents', 'canManagePosts'));
     }
 
     public function profile()
@@ -236,6 +262,7 @@ class StakeholderAccountController extends Controller
             return back()->with('error', 'Invalid route');
         }
 
+        $chapter->load('meetings');
         return view('stakeholder.chapters.edit', compact('chapter'));
     }
 
@@ -248,6 +275,21 @@ class StakeholderAccountController extends Controller
      */
     public function chapterUpdate(Request $request, Chapter $chapter)
     {
+        if ($chapter->id != auth()->guard('stakeholder')->user()->chapter_id) {
+            $this->logStakeholderAccessDenied($request, 'chapter update denied: stakeholder attempted to update another chapter', [
+                'target_chapter_id' => $chapter->id,
+            ]);
+
+            return back()->with('error', 'Invalid route');
+        }
+
+        if ($request->has('slug')) {
+            $request->merge(['slug' => Str::lower(trim((string) $request->input('slug')))]);
+        }
+        $request->validate([
+            'slug' => ['sometimes', 'required', 'alpha_dash', 'max:255', Rule::unique('chapters', 'slug')->ignore($chapter->id)],
+        ]);
+
         if($request->has('chapter_banner')){
             $request['banner'] = $this->uploadImage($request->chapter_banner, 'main/images/chapters');
         }

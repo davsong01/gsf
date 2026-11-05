@@ -15,6 +15,27 @@ use Illuminate\Support\Str;
 
 class BlogPublicController extends Controller
 {
+    public function events(Request $request)
+    {
+        $campusId = $request->integer('campus_id') ?: null;
+        if ($campusId) {
+            abort_unless(Chapter::actualCampus()->whereKey($campusId)->exists(), 404);
+        }
+
+        $query = ($campusId ? $this->publicCampusQuery($campusId) : BlogPost::published())
+            ->where('type', 'event')
+            ->whereNotNull('event_starts_at');
+        $events = $query
+            ->orderByRaw('CASE WHEN event_starts_at >= ? THEN 0 ELSE 1 END', [now()])
+            ->orderByDesc('is_featured')
+            ->orderByRaw('CASE WHEN event_starts_at >= ? THEN event_starts_at END ASC', [now()])
+            ->orderByRaw('CASE WHEN event_starts_at < ? THEN event_starts_at END DESC', [now()])
+            ->paginate(12)->withQueryString();
+        $campus = $campusId ? Chapter::find($campusId) : null;
+
+        return view('modules.blog.public.events', compact('events', 'campus'));
+    }
+
     public function media(Request $request)
     {
         $relative = (string) $request->query('path', '');
@@ -50,9 +71,20 @@ class BlogPublicController extends Controller
     {
         $scope = $request->string('scope', 'national')->toString();
         $scopeId = $request->integer('scope_id') ?: null;
+        $campusId = $request->integer('campus_id') ?: null;
+        if ($campusId) {
+            abort_unless(Chapter::actualCampus()->whereKey($campusId)->exists(), 404);
+            $scope = 'chapter';
+            $scopeId = $campusId;
+        }
         $categorySlug = $request->string('category')->toString();
         $searchTerm = trim($request->string('search')->toString());
-        $query = BlogPost::published()->forNetwork($scope, $scopeId)->with(['categories', 'author'])->latest('published_at');
+        $query = ($campusId ? $this->publicCampusQuery($campusId) : $this->publicNetworkQuery($scope, $scopeId))
+            ->where('type', '!=', 'event')
+            ->with(['categories', 'author'])
+            ->orderByDesc('is_featured')
+            ->latest('published_at')
+            ->latest('id');
         if ($categorySlug !== '') {
             $query->whereHas('categories', fn ($builder) => $builder->where('slug', $categorySlug));
         }
@@ -72,7 +104,8 @@ class BlogPublicController extends Controller
         if ($featuredPost) {
             $listingPosts = $listingPosts->reject(fn ($post) => $post->id === $featuredPost->id)->values();
         }
-        $mostReadQuery = BlogPost::published()->forNetwork($scope, $scopeId)
+        $mostReadQuery = ($campusId ? $this->publicCampusQuery($campusId) : $this->publicNetworkQuery($scope, $scopeId))
+            ->where('type', '!=', 'event')
             ->where('view_count', '>', 0)
             ->with('categories')
             ->orderByDesc('view_count')
@@ -83,6 +116,24 @@ class BlogPublicController extends Controller
         $mostRead = $mostReadQuery->limit(5)->get();
         $categories = BlogCategory::withCount(['posts' => fn ($query) => $query->published()])->orderBy('name')->get();
         return view('modules.blog.public.index', compact('posts', 'categories', 'scope', 'scopeId', 'categorySlug', 'searchTerm', 'featuredPost', 'listingPosts', 'mostRead'));
+    }
+
+    private function publicNetworkQuery(string $scope, ?int $scopeId)
+    {
+        $query = BlogPost::published();
+        if ($scope === 'national' && !$scopeId) {
+            return $query->where(fn ($scopes) => $scopes->where('scope_type', 'national')->orWhere('scope_type', 'chapter'));
+        }
+
+        return $query->forNetwork($scope, $scopeId);
+    }
+
+    private function publicCampusQuery(int $campusId)
+    {
+        return BlogPost::published()->where(function ($query) use ($campusId) {
+            $query->where(fn ($scope) => $scope->where('scope_type', 'chapter')->where('scope_id', $campusId))
+                ->orWhere(fn ($author) => $author->whereHasMorph('author', [Stakeholder::class], fn ($stakeholder) => $stakeholder->where('chapter_id', $campusId)));
+        });
     }
 
     public function network(string $scopeType, int $scopeId, Request $request)
@@ -99,20 +150,38 @@ class BlogPublicController extends Controller
             ->withCount(['comments as approved_comments_count' => fn ($query) => $query->where('status', 'approved')])
             ->where('slug', $slug)
             ->firstOrFail();
+        if ($post->type === 'event' && request()->routeIs('blog.show')) {
+            return redirect()->route('events.public.show', $post->slug, 301);
+        }
+        abort_if($post->type !== 'event' && request()->routeIs('events.public.show'), 404);
         if ($post->author instanceof Stakeholder) {
             $post->author->loadMissing('chapter');
         }
         $relatedPosts = $post->suggestedRelated();
         $approvedComments = $post->comments()->where('status', 'approved')->with('chapter')->latest()->limit(50)->get();
-        $adjacentPosts = fn () => BlogPost::published()->forNetwork($post->scope_type, $post->scope_id);
-        $previousPost = $adjacentPosts()
-            ->where(fn ($query) => $query->where('published_at', '<', $post->published_at)
-                ->orWhere(fn ($tie) => $tie->where('published_at', $post->published_at)->where('id', '<', $post->id)))
-            ->orderByDesc('published_at')->orderByDesc('id')->first();
-        $nextPost = $adjacentPosts()
-            ->where(fn ($query) => $query->where('published_at', '>', $post->published_at)
-                ->orWhere(fn ($tie) => $tie->where('published_at', $post->published_at)->where('id', '>', $post->id)))
-            ->orderBy('published_at')->orderBy('id')->first();
+        if ($post->type === 'event' && $post->event_starts_at) {
+            $eventPosts = fn () => BlogPost::published()->where('type', 'event')
+                ->where('scope_type', $post->scope_type)->where('scope_id', $post->scope_id)
+                ->whereNotNull('event_starts_at');
+            $pastCutoff = $post->event_starts_at->isPast() ? $post->event_starts_at : now();
+            $upcomingCutoff = $post->event_starts_at->isFuture() ? $post->event_starts_at : now();
+            $previousPost = $eventPosts()->where('event_starts_at', '<', $pastCutoff)
+                ->orderByDesc('event_starts_at')->first();
+            $nextPost = $eventPosts()->where('event_starts_at', '>', $upcomingCutoff)
+                ->orderBy('event_starts_at')->first();
+        } elseif ($post->type === 'event') {
+            $previousPost = $nextPost = null;
+        } else {
+            $adjacentPosts = fn () => BlogPost::published()->where('type', $post->type)->forNetwork($post->scope_type, $post->scope_id);
+            $previousPost = $adjacentPosts()
+                ->where(fn ($query) => $query->where('published_at', '<', $post->published_at)
+                    ->orWhere(fn ($tie) => $tie->where('published_at', $post->published_at)->where('id', '<', $post->id)))
+                ->orderByDesc('published_at')->orderByDesc('id')->first();
+            $nextPost = $adjacentPosts()
+                ->where(fn ($query) => $query->where('published_at', '>', $post->published_at)
+                    ->orWhere(fn ($tie) => $tie->where('published_at', $post->published_at)->where('id', '>', $post->id)))
+                ->orderBy('published_at')->orderBy('id')->first();
+        }
         $viewer = auth('stakeholder')->user() ?: auth()->user();
         $countsAsView = !BlogPermissions::isWorkspaceUser($viewer);
         if ($countsAsView) {
@@ -121,9 +190,9 @@ class BlogPublicController extends Controller
         $challenge = $this->newCommentChallenge($post->id);
         $mathToken = $challenge['token'];
         $mathQuestion = $challenge['question'];
-        $campuses = $post->allow_comments ? Chapter::orderBy('name')->get(['id', 'name']) : collect();
+        $campuses = $post->allow_comments ? Chapter::actualCampus()->orderBy('name')->get(['id', 'name']) : collect();
 
-        return view('modules.blog.public.show', compact('post', 'mathToken', 'mathQuestion', 'campuses', 'countsAsView', 'relatedPosts', 'approvedComments', 'previousPost', 'nextPost'));
+        return view($post->type === 'event' ? 'modules.blog.public.event-show' : 'modules.blog.public.show', compact('post', 'mathToken', 'mathQuestion', 'campuses', 'countsAsView', 'relatedPosts', 'approvedComments', 'previousPost', 'nextPost'));
     }
 
     public function comment(Request $request, BlogPost $post)
@@ -196,7 +265,7 @@ class BlogPublicController extends Controller
 
     public function rss()
     {
-        $posts = BlogPost::published()->latest('published_at')->limit(30)->get();
+        $posts = BlogPost::published()->where('type', '!=', 'event')->latest('published_at')->limit(30)->get();
         return response()->view('modules.blog.public.rss', compact('posts'))->header('Content-Type', 'application/rss+xml; charset=UTF-8');
     }
 

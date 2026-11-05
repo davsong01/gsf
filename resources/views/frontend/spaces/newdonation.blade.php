@@ -61,7 +61,7 @@
                           <label for="campus">Alma Mater (Campus - Optional)</label>
                           <select name="campus" id="campus" class="form-control select2" aria-label="Campus" >
                             <option value="" selected>Select...</option>
-                            @foreach(\App\Models\Chapter::where('id','<>',86)->orderBy('name')->get() as $chapter)
+                            @foreach(\App\Models\Chapter::actualCampus()->orderBy('name')->get() as $chapter)
                               <option value="{{$chapter->id}}" {{ old('campus') == $chapter->id ? 'selected' : '' }}>{{ $chapter->name }}</option>
                             @endforeach
                           </select>

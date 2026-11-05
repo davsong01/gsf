@@ -944,7 +944,7 @@ class AwardService{
         return [
             'awards' => $paginatedAwards,
 
-            'chapters' => Chapter::query()
+            'chapters' => Chapter::actualCampus()
                 ->whereIn('id', $chapterIds)
                 ->orderBy('name')
                 ->get(),

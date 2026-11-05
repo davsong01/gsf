@@ -12,7 +12,8 @@
             <ul>
                 <li><a href="{{ route('about.foundational-concept') }}">About GSF</a></li>
                 <li><a href="{{ route('conferences.index') }}">GSF Conferences</a></li>
-                <li><a href="{{ route('home.index') }}#news-events">News &amp; events</a></li>
+                <li><a href="{{ route('blog.index') }}">News</a></li>
+                <li><a href="{{ route('events.public.index') }}">Programs &amp; Events</a></li>
                 <li><a href="{{ route('about.contact') }}">Contact Us</a></li>
                 <li><a href="{{ route('site.privacy') }}">Privacy</a></li>
                 <li><a href="{{ route('site.terms') }}">Terms &amp; Conditions</a></li>

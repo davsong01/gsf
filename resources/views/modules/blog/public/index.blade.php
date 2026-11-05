@@ -43,7 +43,7 @@
             @php($featuredImageUrl = \App\Modules\Blog\BlogMedia::url($featuredPost->featured_image))
             <section class="newsroom-lead {{ $featuredImageUrl ? '' : 'newsroom-lead--text' }}" aria-label="Featured story">
                 @if($featuredImageUrl)
-                    <a class="newsroom-lead__image" href="{{ route('blog.show', $featuredPost->slug) }}"><img src="{{ $featuredImageUrl }}" alt=""></a>
+                    <a class="newsroom-lead__image" href="{{ route('blog.show', $featuredPost->slug) }}"><img src="{{ $featuredImageUrl }}" alt=""><span class="newsroom-image-badge"><span aria-hidden="true">★</span> Featured</span></a>
                 @endif
                 <div class="newsroom-lead__copy">
                     <div class="newsroom-label"><span></span> Featured story</div>
@@ -67,7 +67,7 @@
                     @forelse($listingPosts as $post)
                         @php($imageUrl = \App\Modules\Blog\BlogMedia::url($post->featured_image))
                         <article class="newsroom-card {{ $imageUrl ? '' : 'newsroom-card--text' }}">
-                            @if($imageUrl)<a class="newsroom-card__image" href="{{ route('blog.show', $post->slug) }}"><img src="{{ $imageUrl }}" alt="" loading="lazy"></a>@endif
+                            @if($imageUrl)<a class="newsroom-card__image" href="{{ route('blog.show', $post->slug) }}"><img src="{{ $imageUrl }}" alt="" loading="lazy">@if($post->is_featured)<span class="newsroom-image-badge"><span aria-hidden="true">★</span> Featured</span>@endif</a>@endif
                             <div class="newsroom-card__content">
                                 <div class="newsroom-meta"><span>{{ $post->categories->pluck('name')->join(', ') ?: 'GSF News' }}</span><span>{{ optional($post->published_at)->format('d M Y') }}</span></div>
                                 <h3><a href="{{ route('blog.show', $post->slug) }}">{{ $post->title }}</a></h3>

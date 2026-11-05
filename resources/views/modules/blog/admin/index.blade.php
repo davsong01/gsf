@@ -1,14 +1,15 @@
 @extends($isStakeholder ? 'layouts.stakeholderdashboard' : 'layouts.dashboard')
-@section('title', 'Posts')
-@section('active')<li class="breadcrumb-item">Posts</li>@endsection
+@section('title', !empty($eventsWorkspace) ? 'Programs & Events' : 'Posts')
+@section('active')<li class="breadcrumb-item">{{ !empty($eventsWorkspace) ? 'Programs & Events' : 'Posts' }}</li>@endsection
 @section('content')
 @php($prefix = $isStakeholder ? 'stakeholders' : 'admin')
+@php($postRoute = $prefix.(!empty($eventsWorkspace) ? '.events.posts' : '.blog.posts'))
 <div class="content-body blog-posts-admin">
     <header class="bpa-hero">
-        <div><span class="bpa-kicker">GSF News · Editorial</span><h1>Posts</h1><p>{{ $isStakeholder ? 'Write and manage your stories for the fellowship.' : 'Manage stories from campuses, zones, fields and the national team.' }}</p></div>
+        <div><span class="bpa-kicker">{{ !empty($eventsWorkspace) ? 'GSF Programs & Events' : 'GSF News · Editorial' }}</span><h1>{{ !empty($eventsWorkspace) ? 'Programs & Events' : 'Posts' }}</h1><p>{{ !empty($eventsWorkspace) ? 'Create and manage fellowship gatherings, programs and guest ministers.' : ($isStakeholder ? 'Write and manage your stories for the fellowship.' : 'Manage stories from campuses, zones, fields and the national team.') }}</p></div>
         <div class="bpa-hero-actions">
-            <a href="{{ route('blog.index') }}" target="_blank" rel="noopener noreferrer"><i class="fa fa-external-link" aria-hidden="true"></i> View news</a>
-            @if($canCreate)<a class="bpa-create" href="{{ route($prefix.'.blog.posts.create') }}"><i class="fa fa-plus" aria-hidden="true"></i> Create post</a>@endif
+            <a href="{{ !empty($eventsWorkspace) ? route('events.public.index') : route('blog.index') }}" target="_blank" rel="noopener noreferrer"><i class="fa fa-external-link" aria-hidden="true"></i> {{ !empty($eventsWorkspace) ? 'View events' : 'View news' }}</a>
+            @if($canCreate)<a class="bpa-create" href="{{ route($postRoute.'.create') }}"><i class="fa fa-plus" aria-hidden="true"></i> {{ !empty($eventsWorkspace) ? 'Create event' : 'Create post' }}</a>@endif
         </div>
     </header>
 
@@ -21,7 +22,7 @@
             ['key' => 'scheduled', 'label' => 'Scheduled', 'icon' => 'fa-calendar', 'hint' => 'Ready to publish', 'tone' => 'violet'],
             ['key' => 'published', 'label' => 'Published', 'icon' => 'fa-check-circle-o', 'hint' => 'Live on GSF News', 'tone' => 'green'],
         ] as $card)
-            <a class="bpa-stat bpa-stat--{{ $card['tone'] }} {{ request('status', '') === ($card['key'] === 'all' ? '' : $card['key']) ? 'is-active' : '' }}" href="{{ route($prefix.'.blog.posts.index', array_merge(request()->except('status', 'page'), $card['key'] === 'all' ? [] : ['status' => $card['key']])) }}">
+            <a class="bpa-stat bpa-stat--{{ $card['tone'] }} {{ request('status', '') === ($card['key'] === 'all' ? '' : $card['key']) ? 'is-active' : '' }}" href="{{ route($postRoute.'.index', array_merge(request()->except('status', 'page'), $card['key'] === 'all' ? [] : ['status' => $card['key']])) }}">
                 <span class="bpa-stat__top"><span>{{ $card['label'] }}</span><i class="fa {{ $card['icon'] }}" aria-hidden="true"></i></span>
                 <strong>{{ number_format($statusSummary[$card['key']]) }}</strong><small>{{ $card['hint'] }}</small>
             </a>
@@ -32,19 +33,19 @@
         <div class="bpa-panel__head">
             <div><span class="bpa-kicker">Story workspace</span><h2 id="bpa-list-title">{{ request('mine') ? 'My posts' : (request('status') ? ucfirst(request('status')).' posts' : 'All posts') }}</h2><p>{{ number_format($posts->total()) }} {{ \Illuminate\Support\Str::plural('story', $posts->total()) }} match the current filters.</p></div>
             <nav class="bpa-tabs" aria-label="Filter posts">
-                <a class="{{ !request('status') && !request('mine') ? 'is-active' : '' }}" href="{{ route($prefix.'.blog.posts.index', request()->except('status', 'mine', 'page')) }}">All</a>
-                @unless($isStakeholder)<a class="{{ request('mine') ? 'is-active' : '' }}" href="{{ route($prefix.'.blog.posts.index', array_merge(request()->except('mine', 'page'), ['mine' => 1])) }}">Mine</a>@endunless
+                <a class="{{ !request('status') && !request('mine') ? 'is-active' : '' }}" href="{{ route($postRoute.'.index', request()->except('status', 'mine', 'page')) }}">All</a>
+                @unless($isStakeholder)<a class="{{ request('mine') ? 'is-active' : '' }}" href="{{ route($postRoute.'.index', array_merge(request()->except('mine', 'page'), ['mine' => 1])) }}">Mine</a>@endunless
                 @foreach(['draft' => 'Drafts', 'review' => 'In review', 'scheduled' => 'Scheduled', 'published' => 'Published', 'archived' => 'Archived'] as $status => $label)
-                    <a class="{{ request('status') === $status ? 'is-active' : '' }}" href="{{ route($prefix.'.blog.posts.index', array_merge(request()->except('status', 'page'), ['status' => $status])) }}">{{ $label }}</a>
+                    <a class="{{ request('status') === $status ? 'is-active' : '' }}" href="{{ route($postRoute.'.index', array_merge(request()->except('status', 'page'), ['status' => $status])) }}">{{ $label }}</a>
                 @endforeach
             </nav>
         </div>
 
-        <form class="bpa-filters" method="GET" action="{{ route($prefix.'.blog.posts.index') }}">
+        <form class="bpa-filters" method="GET" action="{{ route($postRoute.'.index') }}">
             @if(request('mine'))<input type="hidden" name="mine" value="1">@endif
             <div class="bpa-filters__field bpa-filters__search"><label for="post-search">Search title or author</label><input class="form-control" id="post-search" name="search" value="{{ request('search') }}" placeholder="Search stories…"></div>
             <div class="bpa-filters__field"><label for="post-status">Status</label><select class="form-control" id="post-status" name="status"><option value="">All statuses</option>@foreach(['draft','review','scheduled','published','archived'] as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>@endforeach</select></div>
-            <div class="bpa-filters__field"><label for="post-type">Type</label><select class="form-control" id="post-type" name="type"><option value="">All types</option><option value="article" @selected(request('type') === 'article')>Article</option><option value="video" @selected(request('type') === 'video')>Video</option></select></div>
+            @if(empty($eventsWorkspace))<div class="bpa-filters__field"><label for="post-type">Type</label><select class="form-control" id="post-type" name="type"><option value="">All types</option><option value="article" @selected(request('type') === 'article')>Article</option><option value="video" @selected(request('type') === 'video')>Video</option></select></div>@endif
             @if($canFilterFields)<div class="bpa-filters__field"><label for="post-field">Field</label><select class="form-control" id="post-field" name="field_id"><option value="">All fields</option>@foreach($fields as $field)<option value="{{ $field->id }}" @selected((string) request('field_id') === (string) $field->id)>{{ $field->name }}</option>@endforeach</select></div>@endif
             @if($canFilterZones)<div class="bpa-filters__field"><label for="post-zone">Zone</label><select class="form-control" id="post-zone" name="zone_id"><option value="">All zones</option>@foreach($zones as $zone)<option value="{{ $zone->id }}" @selected((string) request('zone_id') === (string) $zone->id)>{{ $zone->name }}{{ $zone->field ? ' — '.$zone->field->name : '' }}</option>@endforeach</select></div>@endif
             @if($canFilterChapters)<div class="bpa-filters__field"><label for="post-chapter">Chapter</label><select class="form-control" id="post-chapter" name="chapter_id"><option value="">All chapters</option>@foreach($chapters as $chapter)<option value="{{ $chapter->id }}" @selected((string) request('chapter_id') === (string) $chapter->id)>{{ $chapter->name }}{{ $chapter->zone ? ' — '.$chapter->zone->name : '' }}</option>@endforeach</select></div>@endif
@@ -52,7 +53,7 @@
             <div class="bpa-filters__field"><label for="post-tag">Tag</label><select class="form-control" id="post-tag" name="tag"><option value="">All tags</option>@foreach($tags as $tag)<option value="{{ $tag->id }}" @selected((string) request('tag') === (string) $tag->id)>{{ $tag->name }}</option>@endforeach</select></div>
             <div class="bpa-filters__field"><label for="post-date-from">From date</label><input class="form-control" id="post-date-from" type="date" name="date_from" value="{{ request('date_from') }}"></div>
             <div class="bpa-filters__field"><label for="post-date-to">To date</label><input class="form-control" id="post-date-to" type="date" name="date_to" value="{{ request('date_to') }}"></div>
-            <div class="bpa-filters__actions"><button class="btn btn-primary" type="submit"><i class="fa fa-filter" aria-hidden="true"></i> Apply filters</button><a class="btn btn-outline-secondary" href="{{ route($prefix.'.blog.posts.index') }}">Reset</a></div>
+            <div class="bpa-filters__actions"><button class="btn btn-primary" type="submit"><i class="fa fa-filter" aria-hidden="true"></i> Apply filters</button><a class="btn btn-outline-secondary" href="{{ route($postRoute.'.index') }}">Reset</a></div>
         </form>
 
         <div class="bpa-toolbar">
@@ -82,16 +83,16 @@
                     <tr>
                         @if(!$isStakeholder && !empty($bulkActions))<td class="blog-post-select"><input type="checkbox" name="post_ids[]" value="{{ $post->id }}" form="blog-bulk-action-form" data-post-checkbox aria-label="Select {{ $post->title }}"></td>@endif
                         <td class="bpa-number">{{ $posts->firstItem() + $loop->index }}</td>
-                        <td class="bpa-story"><div class="bpa-story__wrap">@if($imageUrl)<a class="bpa-story__image" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer"><img src="{{ $imageUrl }}" alt="" loading="lazy"></a>@endif<div><a class="bpa-story__title" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer">{{ $post->title }}</a><span class="bpa-story__meta">{{ $post->categories->pluck('name')->join(', ') ?: 'Uncategorised' }}@if($post->is_featured)<span class="bpa-featured">★ Featured</span>@endif</span></div></div></td>
-                        <td class="bpa-type"><i class="fa {{ $post->type === 'video' ? 'fa-play-circle-o' : 'fa-file-text-o' }}" aria-hidden="true"></i> {{ ucfirst($post->type) }}</td>
+                        <td class="bpa-story"><div class="bpa-story__wrap">@if($imageUrl)<a class="bpa-story__image" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($postRoute.'.preview', $post) }}" target="_blank" rel="noopener noreferrer"><img src="{{ $imageUrl }}" alt="" loading="lazy"></a>@endif<div><a class="bpa-story__title" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($postRoute.'.preview', $post) }}" target="_blank" rel="noopener noreferrer">{{ $post->title }}</a><span class="bpa-story__meta">{{ $post->categories->pluck('name')->join(', ') ?: 'Uncategorised' }}@if($post->is_featured)<span class="bpa-featured">★ Featured</span>@endif</span></div></div></td>
+                        <td class="bpa-type"><i class="fa {{ $post->type === 'event' ? 'fa-calendar-o' : ($post->type === 'video' ? 'fa-play-circle-o' : 'fa-file-text-o') }}" aria-hidden="true"></i> {{ ucfirst($post->type) }}</td>
                         <td><span class="bpa-status bpa-status--{{ $post->status }}">{{ $post->status === 'review' ? 'In review' : ucfirst($post->status) }}</span></td>
                         <td class="bpa-author">{{ $post->author?->name ?: $post->author?->email ?: '—' }}</td>
                         <td class="bpa-number">{{ number_format($post->view_count) }}</td>
                         <td class="bpa-number">@if(!$isStakeholder && $canManageComments)<a href="{{ route('admin.blog.comments.index', ['post_id' => $post->id]) }}" aria-label="View comments on {{ $post->title }}">{{ number_format($post->comments_count) }}</a>@else{{ number_format($post->comments_count) }}@endif</td>
                         <td class="bpa-date"><span>{{ $post->published_at ? 'Published' : 'Created' }}: {{ $primaryPostDate?->format('d M Y') }}</span><small>{{ $primaryPostDate?->format('g:i a') }}</small><span class="d-block mt-1">Updated: {{ $post->updated_at?->format('d M Y') }}</span><small>{{ $post->updated_at?->format('g:i a') }}</small></td>
                         <td class="bpa-actions"><div class="bpa-actions__group">
-                            <a class="bpa-actions__view" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener noreferrer" aria-label="View {{ $post->title }}"><i class="fa fa-external-link" aria-hidden="true"></i> View</a>
-                            @if($canEditRow)<a class="bpa-actions__edit" href="{{ route($prefix.'.blog.posts.edit', $post) }}" aria-label="Edit {{ $post->title }}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a>@endif
+                            <a class="bpa-actions__view" href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route($postRoute.'.preview', $post) }}" target="_blank" rel="noopener noreferrer" aria-label="View {{ $post->title }}"><i class="fa fa-external-link" aria-hidden="true"></i> View</a>
+                            @if($canEditRow)<a class="bpa-actions__edit" href="{{ route($postRoute.'.edit', $post) }}" aria-label="Edit {{ $post->title }}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a>@endif
                             @if(!$isStakeholder && $canArchive && $post->status !== 'archived')
                                 <form method="POST" action="{{ route('admin.blog.posts.archive', $post) }}" onsubmit="return confirm('Archive this post?')">@csrf<button class="bpa-actions__archive" type="submit" aria-label="Archive {{ $post->title }}"><i class="fa fa-archive" aria-hidden="true"></i> Archive</button></form>
                             @endif

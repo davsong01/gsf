@@ -68,11 +68,10 @@ class ChapterController extends Controller
 
     public function campusUpdate()
     {
-        $chapters = Chapter::with(['field', 'zone'])
+        $chapters = Chapter::actualCampus()->with(['field', 'zone'])
             ->withCount(['users as members_count' => function ($query) {
                 $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
             }])
-            ->where('id', '<>', 86)
             ->orderBy('name')
             ->get();
 
@@ -151,7 +150,7 @@ class ChapterController extends Controller
         }
 
         if(auth()->user()->isAdmin()){
-            $chapters = Chapter::with('users','stakeholders')->orderBy('name')->get();
+            $chapters = Chapter::actualCampus()->with('users','stakeholders')->orderBy('name')->get();
             return view('admin.chapters.index', compact('chapters', 'count'));
         }
 
@@ -162,7 +161,7 @@ class ChapterController extends Controller
         $chapter = null;
         $zones = Zone::all();
         $fields = Field::all();
-        $chapters = Chapter::all();
+        $chapters = Chapter::actualCampus()->get();
         return view('admin.chapters.edit', compact('chapter', 'zones', 'fields','chapters'));
     }
 
@@ -205,6 +204,16 @@ class ChapterController extends Controller
 
     public function edit(Chapter $chapter)
     {
+        $chapter->load(['stakeholder', 'zone.zonalCord', 'zone.field.fieldCord', 'meetings']);
+        $chapter->loadCount([
+            'users as members_count' => function ($query) {
+                $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
+            },
+            'users as alumni_count' => function ($query) {
+                $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 1);
+            },
+        ]);
+
         $zones = Zone::all();
         $fields = Field::all();
         return view('admin.chapters.edit', compact('chapter', 'zones', 'fields'));
@@ -219,8 +228,13 @@ class ChapterController extends Controller
      */
     public function update(Request $request, Chapter $chapter)
     {
+        if ($request->has('slug')) {
+            $request->merge(['slug' => Str::lower(trim((string) $request->input('slug')))]);
+        }
+
         $request->validate([
             'state' => ['sometimes', 'nullable', Rule::in(array_keys(config('gsf_states')))],
+            'slug' => ['sometimes', 'required', 'alpha_dash', 'max:255', Rule::unique('chapters', 'slug')->ignore($chapter->id)],
         ]);
 
         if(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember())){

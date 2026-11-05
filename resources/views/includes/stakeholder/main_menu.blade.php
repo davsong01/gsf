@@ -69,12 +69,6 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item disabled">
-                    <a href="">
-                        <i class="bx bxs-trophy" aria-hidden="true"></i>
-                        <span class="menu-title" data-i18n="User">Archived Applications</span>
-                    </a>
-                </li>
             @endif
 
             @php
@@ -128,6 +122,12 @@
                     <a href="{{ route('stakeholders.blog.posts.index') }}">
                         <i class="fa fa-newspaper-o" aria-hidden="true"></i>
                         <span class="menu-title" data-i18n="User">Posts</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.events') ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.events.posts.index') }}">
+                        <i class="fa fa-calendar-o" aria-hidden="true"></i>
+                        <span class="menu-title">Programs &amp; Events</span>
                     </a>
                 </li>
             @endif

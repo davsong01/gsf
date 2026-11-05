@@ -39,7 +39,7 @@ class AlumniController extends Controller
            if($user->gender == 'Male'){
                $hostels = Hostel::whereType('Male')->whereLevel('Alumni')->get();
            }
-            $chapters = Chapter::all();
+            $chapters = Chapter::actualCampus()->get();
             $foods = Food::all();
             
             return view('admin.alumni.edit', compact('user', 'hostels', 'foods', 'chapters'));

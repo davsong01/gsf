@@ -35,7 +35,7 @@ class EventController extends Controller
      */
     public function create()
     {
-        $chapters = Chapter::all();
+        $chapters = Chapter::actualCampus()->get();
         return view('admin.events.create', compact('chapters'));
     }
 
@@ -140,7 +140,7 @@ class EventController extends Controller
      */
     public function edit(Event $event)
     {
-        $chapters = Chapter::all();
+        $chapters = Chapter::actualCampus()->get();
 
         return view('admin.events.edit', compact('chapters'));
     }

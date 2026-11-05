@@ -84,6 +84,8 @@ if (!function_exists('rootPermissions')) {
                 'children' => [
                     ['id' => 201, 'slug' => 'admin.blog.posts.index', 'name' => 'All Posts'],
                     ['id' => 202, 'slug' => 'admin.blog.posts.create', 'name' => 'New Post'],
+                    ['id' => 207, 'slug' => 'admin.blog.posts.index', 'name' => 'Programs & Events', 'route' => 'admin.events.posts.index'],
+                    ['id' => 208, 'slug' => 'admin.blog.posts.create', 'name' => 'New Event', 'route' => 'admin.events.posts.create'],
                     ['id' => 203, 'slug' => 'admin.blog.categories.index', 'name' => 'Categories'],
                     ['id' => 206, 'slug' => 'blog.tags', 'name' => 'Tags', 'route' => 'admin.blog.tags.index'],
                     ['id' => 204, 'slug' => 'blog.comments', 'name' => 'Comments', 'route' => 'admin.blog.comments.index'],
@@ -1795,7 +1797,7 @@ if (! function_exists('awardFormFields')) {
     {
         $fields = config('award-form');
 
-        $fields['chapter_id']['options'] = Chapter::query()
+        $fields['chapter_id']['options'] = Chapter::actualCampus()
             ->orderBy('name')
             ->get()
             ->map(fn (Chapter $chapter) => [

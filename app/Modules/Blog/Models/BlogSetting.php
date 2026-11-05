@@ -23,4 +23,19 @@ class BlogSetting extends Model
     {
         return filter_var(static::value('comments_require_approval', '1'), FILTER_VALIDATE_BOOLEAN);
     }
+
+    public static function campusPostsRequireReview(): bool
+    {
+        return filter_var(static::value('campus_posts_require_review', '1'), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    public static function campusPostsCanFeature(): bool
+    {
+        return filter_var(static::value('campus_posts_can_feature', '0'), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    public static function campusPostsCanAllowComments(): bool
+    {
+        return filter_var(static::value('campus_posts_can_allow_comments', '1'), FILTER_VALIDATE_BOOLEAN);
+    }
 }

@@ -52,7 +52,9 @@
                 <h1 id="error-title">{{ $title }}</h1>
                 <p class="error-card__message">{{ $message }}</p>
                 <div class="error-actions">
-                    <a class="error-button error-button--primary" href="{{ $resetUrl }}"><span class="error-button__icon" aria-hidden="true">↻</span>Start a fresh session</a>
+                    @if($showReset ?? false)
+                        <a class="error-button error-button--primary" href="{{ $resetUrl }}"><span class="error-button__icon" aria-hidden="true">↻</span>Start a fresh session</a>
+                    @endif
                     <a class="error-button" href="{{ $homeUrl }}"><span class="error-button__icon" aria-hidden="true">⌂</span>{{ $homeLabel ?? 'Go to homepage' }}</a>
                     @if(!empty($showLogin) && \Illuminate\Support\Facades\Route::has('login'))
                         <a class="error-button" href="{{ route('login') }}">Sign in</a>

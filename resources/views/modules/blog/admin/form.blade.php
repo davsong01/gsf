@@ -1,39 +1,39 @@
 @extends(auth('stakeholder')->check() ? 'layouts.stakeholderdashboard' : 'layouts.dashboard')
 @php($post = $post ?? null)
-@php($isStakeholder = auth('stakeholder')->check())
 @php($prefix = $isStakeholder ? 'stakeholders' : 'admin')
-@section('title', $post ? 'Edit Post' : 'Create Post')
-@section('active')<li class="breadcrumb-item">{{ $post ? 'Edit Post' : 'Create Post' }}</li>@endsection
+@php($postRoute = $prefix.(!empty($eventsWorkspace) ? '.events.posts' : '.blog.posts'))
+@section('title', !empty($eventsWorkspace) ? ($post ? 'Edit Event' : 'Create Event') : ($post ? 'Edit Post' : 'Create Post'))
+@section('active')<li class="breadcrumb-item">{{ !empty($eventsWorkspace) ? ($post ? 'Edit Event' : 'Create Event') : ($post ? 'Edit Post' : 'Create Post') }}</li>@endsection
 @section('content')
 <div class="content-body blog-composer">
     <header class="blog-composer__hero">
         <div class="blog-composer__hero-copy">
-            <span class="blog-composer__eyebrow"><span></span> GSF News · Editorial workspace</span>
-            <h1>{{ $post ? 'Edit your story' : 'Create a story' }}</h1>
-            <p>{{ $post ? 'Refine your article, update its media and manage how it appears across GSF News.' : 'Bring your story to life, then choose when and where it appears on GSF News.' }}</p>
+            <span class="blog-composer__eyebrow"><span></span> {{ !empty($eventsWorkspace) ? 'GSF Programs & Events' : 'GSF News · Editorial workspace' }}</span>
+            <h1>{{ !empty($eventsWorkspace) ? ($post ? 'Edit your event' : 'Create an event') : ($post ? 'Edit your story' : 'Create a story') }}</h1>
+            <p>{{ !empty($eventsWorkspace) ? 'Add event details, speakers and an image for your campus or ministry.' : ($post ? 'Refine your article, update its media and manage how it appears across GSF News.' : 'Bring your story to life, then choose when and where it appears on GSF News.') }}</p>
         </div>
         <div class="blog-composer__hero-actions">
-            <a href="{{ route($prefix.'.blog.posts.index') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> All posts</a>
-            @if($post)<a href="{{ route($prefix.'.blog.posts.preview', $post) }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> View saved post</a>@endif
+            <a href="{{ route($postRoute.'.index') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> {{ !empty($eventsWorkspace) ? 'All events' : 'All posts' }}</a>
+            @if($post)<a href="{{ route($postRoute.'.preview', $post) }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> View saved post</a>@endif
         </div>
     </header>
     @include('includes.alerts')
 
-    <form id="blog-post-form" class="blog-composer__form" method="POST" enctype="multipart/form-data" action="{{ $post ? route($prefix.'.blog.posts.update', $post) : route($prefix.'.blog.posts.store') }}">
+    <form id="blog-post-form" class="blog-composer__form" method="POST" enctype="multipart/form-data" action="{{ $post ? route($postRoute.'.update', $post) : route($postRoute.'.store') }}">
         @csrf @if($post) @method('PUT') @endif
         <div class="blog-composer__grid">
             <div class="blog-composer__main">
                 <section class="blog-composer__panel" aria-labelledby="blog-story-heading">
-                    <div class="blog-composer__panel-head"><span class="blog-composer__step">01</span><div><span class="blog-composer__section-label">The essentials</span><h2 id="blog-story-heading">Story details</h2></div></div>
+                    <div class="blog-composer__panel-head"><span class="blog-composer__step">01</span><div><span class="blog-composer__section-label">The essentials</span><h2 id="blog-story-heading">{{ !empty($eventsWorkspace) ? 'Event details' : 'Story details' }}</h2></div></div>
                     <div class="blog-composer__panel-body">
                         <div class="form-group"><label for="blog-title">Headline <span class="blog-composer__required">Required</span></label><input id="blog-title" class="form-control blog-composer__title-input" name="title" required placeholder="Give your story a clear, memorable headline" value="{{ old('title', $post?->title) }}"></div>
-                        <div class="form-group"><label for="blog-slug">Story URL</label><div class="blog-composer__slug-field"><span>/news/</span><input id="blog-slug" class="form-control" name="slug" placeholder="Created from headline if left blank" value="{{ old('slug', $post?->slug) }}"></div><small class="blog-composer__help">Use a short, readable URL. Leave blank to generate it automatically.</small></div>
+                        <div class="form-group"><label for="blog-slug">{{ !empty($eventsWorkspace) ? 'Event URL' : 'Story URL' }}</label><div class="blog-composer__slug-field"><span>{{ !empty($eventsWorkspace) ? '/programs-events/' : '/news/' }}</span><input id="blog-slug" class="form-control" name="slug" placeholder="Created from headline if left blank" value="{{ old('slug', $post?->slug) }}"></div><small class="blog-composer__help">Use a short, readable URL. Leave blank to generate it automatically.</small></div>
                         <div class="form-group mb-0"><label for="blog-excerpt">Summary</label><textarea id="blog-excerpt" class="form-control" name="excerpt" rows="3" placeholder="A short introduction for news cards and social sharing">{{ old('excerpt', $post?->excerpt) }}</textarea><small class="blog-composer__help">If left empty, a summary is taken from the beginning of the story.</small></div>
                     </div>
                 </section>
 
                 <section class="blog-composer__panel blog-composer__writing-panel" aria-labelledby="blog-content-heading">
-                    <div class="blog-composer__panel-head"><span class="blog-composer__step">02</span><div><span class="blog-composer__section-label">Write &amp; enrich</span><h2 id="blog-content-heading">Your article</h2></div></div>
+                    <div class="blog-composer__panel-head"><span class="blog-composer__step">02</span><div><span class="blog-composer__section-label">Write &amp; enrich</span><h2 id="blog-content-heading">{{ !empty($eventsWorkspace) ? 'Event description' : 'Your article' }}</h2></div></div>
                     <div class="blog-composer__panel-body">
                         <div class="blog-composer__media-tools">
                             <div class="blog-composer__media-actions">
@@ -43,47 +43,71 @@
                             <small>Place the cursor in the article before adding media. Images up to 10 MB; MP3 audio up to 200 MB.</small>
                             <span id="blog-image-status" role="status" aria-live="polite"></span><span id="blog-audio-status" role="status" aria-live="polite"></span>
                         </div>
-                        <label class="sr-only" for="blog-body">Article content</label>
+                        <label class="sr-only" for="blog-body">{{ !empty($eventsWorkspace) ? 'Event description' : 'Article content' }}</label>
                         <textarea class="form-control" id="blog-body" name="body" rows="16" required>{{ old('body', str_replace('//storage/', '/storage/', $post?->body ?? '')) }}</textarea>
                         <div class="blog-composer__editor-footer"><span><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Use headings, quotes and images to make longer stories easier to read.</span><span data-blog-word-count>0 words</span></div>
                     </div>
                 </section>
 
-                <section class="blog-composer__panel" aria-labelledby="blog-video-heading">
+                @if(empty($eventsWorkspace))<section class="blog-composer__panel" aria-labelledby="blog-video-heading">
                     <div class="blog-composer__panel-head"><span class="blog-composer__step">03</span><div><span class="blog-composer__section-label">Optional media</span><h2 id="blog-video-heading">Video</h2></div></div>
                     <div class="blog-composer__panel-body"><div class="form-group mb-0"><label for="blog-video-url">Video URL</label><input id="blog-video-url" class="form-control" type="url" name="video_url" placeholder="https://…" value="{{ old('video_url', $post?->video_url) }}"><small class="blog-composer__help">Add a link when publishing a video post.</small></div></div>
-                </section>
+                </section>@endif
             </div>
 
             <aside class="blog-composer__sidebar" aria-label="Post settings">
                 <section class="blog-composer__panel" aria-labelledby="blog-publish-heading">
                     <div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Visibility</span><h2 id="blog-publish-heading">Publishing</h2></div></div>
                     <div class="blog-composer__panel-body">
-                        <div class="form-group"><label for="blog-type">Post type</label><select id="blog-type" class="form-control" name="type"><option value="article" @selected(old('type', $post?->type ?: 'article') === 'article')>Article</option><option value="video" @selected(old('type', $post?->type) === 'video')>Video</option></select></div>
+                        @if(!empty($eventsWorkspace))<input type="hidden" id="blog-type" name="type" value="event">@else<div class="form-group"><label for="blog-type">Post type</label><select id="blog-type" class="form-control" name="type"><option value="article" @selected(old('type', $post?->type ?: 'article') === 'article')>Article</option><option value="video" @selected(old('type', $post?->type) === 'video')>Video</option></select></div>@endif
+                        <div id="blog-event-fields" hidden>
+                            <div class="form-group"><label for="blog-event-starts-at">Event date and time</label><input id="blog-event-starts-at" class="form-control" type="datetime-local" name="event_starts_at" value="{{ old('event_starts_at', $post?->event_starts_at?->format('Y-m-d\\TH:i')) }}">@error('event_starts_at')<small class="text-danger d-block">{{ $message }}</small>@enderror</div>
+                            <div class="form-group"><label for="blog-event-venue">Venue</label><input id="blog-event-venue" class="form-control" name="event_venue" maxlength="255" value="{{ old('event_venue', $post?->event_venue ?? ($isCampusStakeholder && !empty($eventsWorkspace) ? $userCampusAddress : null)) }}" placeholder="Where will this event take place?">@error('event_venue')<small class="text-danger d-block">{{ $message }}</small>@enderror</div>
+                            <div class="form-group mb-0"><label>Speakers &amp; guest ministers</label><small class="blog-composer__help d-block mb-2">Add the people who will speak or minister at this event.</small>
+                                <div id="blog-event-speakers" class="blog-event-speakers">
+                                    @foreach(old('event_speakers', $post?->event_speakers ?? []) as $speakerIndex => $speaker)
+                                        <div class="blog-event-speaker" data-event-speaker>
+                                            <select class="form-control" data-speaker-field="kind" name="event_speakers[{{ $speakerIndex }}][kind]" aria-label="Person type"><option value="speaker" @selected(($speaker['kind'] ?? '') === 'speaker')>Speaker</option><option value="guest_minister" @selected(($speaker['kind'] ?? '') === 'guest_minister')>Guest minister</option></select>
+                                            <input class="form-control" data-speaker-field="name" name="event_speakers[{{ $speakerIndex }}][name]" value="{{ $speaker['name'] ?? '' }}" maxlength="255" placeholder="Full name" aria-label="Full name">
+                                            <input class="form-control" data-speaker-field="ministry" name="event_speakers[{{ $speakerIndex }}][ministry]" value="{{ $speaker['ministry'] ?? '' }}" maxlength="255" placeholder="Ministry or title (optional)" aria-label="Ministry or title">
+                                            <input type="hidden" data-speaker-field="existing_image" name="event_speakers[{{ $speakerIndex }}][existing_image]" value="{{ $speaker['image'] ?? '' }}">
+                                            @if($speakerPhoto = \App\Modules\Blog\BlogMedia::url($speaker['image'] ?? null))<img class="blog-event-speaker__photo" src="{{ $speakerPhoto }}" alt="Photo of {{ $speaker['name'] ?? 'speaker' }}">@endif
+                                            <label class="blog-event-speaker__picture">Picture <span>(optional)</span><input type="file" data-speaker-field="image" name="event_speakers[{{ $speakerIndex }}][image]" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+                                            <button type="button" class="blog-event-speaker__remove" data-remove-speaker aria-label="Remove speaker"><i class="fa fa-times" aria-hidden="true"></i></button>
+                                        </div>
+                                        @error('event_speakers.'.$speakerIndex.'.name')<small class="text-danger d-block">{{ $message }}</small>@enderror
+                                        @error('event_speakers.'.$speakerIndex.'.image')<small class="text-danger d-block">{{ $message }}</small>@enderror
+                                    @endforeach
+                                </div>
+                                <button type="button" class="blog-event-speakers__add" id="blog-add-speaker"><i class="fa fa-plus" aria-hidden="true"></i> Add speaker or guest minister</button>
+                                @error('event_speakers')<small class="text-danger d-block">{{ $message }}</small>@enderror
+                            </div>
+                        </div>
+                        <template id="blog-event-speaker-template"><div class="blog-event-speaker" data-event-speaker><select class="form-control" data-speaker-field="kind" aria-label="Person type"><option value="speaker">Speaker</option><option value="guest_minister">Guest minister</option></select><input class="form-control" data-speaker-field="name" maxlength="255" placeholder="Full name" aria-label="Full name"><input class="form-control" data-speaker-field="ministry" maxlength="255" placeholder="Ministry or title (optional)" aria-label="Ministry or title"><input type="hidden" data-speaker-field="existing_image" value=""><label class="blog-event-speaker__picture">Picture <span>(optional)</span><input type="file" data-speaker-field="image" accept="image/jpeg,image/png,image/webp,image/gif"></label><button type="button" class="blog-event-speaker__remove" data-remove-speaker aria-label="Remove speaker"><i class="fa fa-times" aria-hidden="true"></i></button></div></template>
                         @unless($isStakeholder)<div class="form-group"><label for="blog-status">Status</label><select id="blog-status" class="form-control" name="status">@foreach(['draft','review','scheduled','published','archived'] as $status)<option value="{{ $status }}" @selected(old('status', $post?->status ?: 'draft') === $status)>{{ ucfirst($status) }}</option>@endforeach</select></div>@endunless
-                        <div class="form-group"><label for="blog-published-at">Publication date</label><input id="blog-published-at" class="form-control" type="datetime-local" name="published_at" value="{{ old('published_at', $post?->published_at?->format('Y-m-d\\TH:i')) }}"><small class="blog-composer__help">Choose a future date to schedule a post.</small></div>
-                        @if($canFeaturePosts)<label class="blog-composer__switch"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post?->is_featured ?? false))><span><strong>Feature on GSF News</strong><small>Show in the lead story area.</small></span></label>@endif
-                        <label class="blog-composer__switch"><input type="checkbox" name="allow_comments" value="1" @checked(old('allow_comments', $post?->allow_comments ?? true))><span><strong>Allow comments</strong><small>Let readers respond to this story.</small></span></label>
+                        <div class="form-group"><label for="blog-published-at">{{ !empty($eventsWorkspace) ? 'Program Date' : 'Publication date' }}</label><input id="blog-published-at" class="form-control" type="datetime-local" name="published_at" value="{{ old('published_at', $post?->published_at?->format('Y-m-d\\TH:i')) }}"><small class="blog-composer__help">{{ !empty($eventsWorkspace) ? 'Choose when this program listing should go live. A future date schedules it.' : 'Choose a future date to schedule a post.' }}</small></div>
+                        @if($canFeaturePosts)<label class="blog-composer__switch"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post?->is_featured ?? false))><span><strong>{{ !empty($eventsWorkspace) ? 'Feature this event' : 'Feature on GSF News' }}</strong><small>{{ !empty($eventsWorkspace) ? 'Highlight this program in the public events list.' : 'Show in the lead story area.' }}</small></span></label>@endif
+                        @if(!$isCampusStakeholder || $campusPostsCanAllowComments)<label class="blog-composer__switch"><input type="checkbox" name="allow_comments" value="1" @checked(old('allow_comments', $post?->allow_comments ?? true))><span><strong>Allow comments</strong><small>Let readers respond to this story.</small></span></label>@endif
                     </div>
                 </section>
 
                 @php($featuredImageUrl = $post ? (\App\Modules\Blog\BlogMedia::url($post->featured_image) ?: (filter_var($post->featured_image, FILTER_VALIDATE_URL) && str_starts_with($post->featured_image, 'https://') ? $post->featured_image : null)) : null)
                 <section class="blog-composer__panel" aria-labelledby="blog-featured-heading">
-                    <div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-image" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Visual identity</span><h2 id="blog-featured-heading">Featured image</h2></div></div>
+                    <div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-image" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Visual identity</span><h2 id="blog-featured-heading">{{ !empty($eventsWorkspace) ? 'Program flyer' : 'Featured image' }}</h2></div></div>
                     <div class="blog-composer__panel-body">
-                        <label class="blog-featured-dropzone" for="blog-featured-image" data-featured-dropzone tabindex="0" role="button" aria-describedby="blog-featured-help blog-featured-status">
-                            <img class="blog-featured-dropzone__preview" data-featured-preview src="{{ $featuredImageUrl ?: '' }}" alt="Featured image preview" @if(!$featuredImageUrl) hidden @endif>
+                        <label class="blog-featured-dropzone" for="blog-featured-image" data-featured-dropzone data-upload-name="{{ !empty($eventsWorkspace) ? 'program flyer' : 'image' }}" tabindex="0" role="button" aria-describedby="blog-featured-help blog-featured-status">
+                            <img class="blog-featured-dropzone__preview" data-featured-preview src="{{ $featuredImageUrl ?: '' }}" alt="{{ !empty($eventsWorkspace) ? 'Program flyer preview' : 'Featured image preview' }}" @if(!$featuredImageUrl) hidden @endif>
                             <span class="blog-featured-dropzone__icon"><i class="fa fa-cloud-upload" aria-hidden="true"></i></span>
-                            <span class="blog-featured-dropzone__prompt" data-featured-prompt>{{ $featuredImageUrl ? 'Drop a new image here or click to replace it' : 'Drop an image here or click to choose one' }}</span>
+                            <span class="blog-featured-dropzone__prompt" data-featured-prompt>{{ $featuredImageUrl ? 'Drop a new '.(!empty($eventsWorkspace) ? 'program flyer' : 'image').' here or click to replace it' : (!empty($eventsWorkspace) ? 'Drop your program flyer here or click to choose one' : 'Drop an image here or click to choose one') }}</span>
                         </label>
                         <input id="blog-featured-image" class="blog-featured-dropzone__input" type="file" name="featured_image" accept="image/jpeg,image/png,image/webp,image/gif">
-                        <small id="blog-featured-help" class="blog-composer__help">JPG, PNG, WebP or GIF · up to 5 MB. A wide image works best.</small>
+                        <small id="blog-featured-help" class="blog-composer__help">JPG, PNG, WebP or GIF · up to 5 MB. {{ !empty($eventsWorkspace) ? 'Upload the flyer for this program.' : 'A wide image works best.' }}</small>
                         <small id="blog-featured-status" class="d-block" role="status" aria-live="polite"></small>
                         @error('featured_image')<small class="text-danger d-block">{{ $message }}</small>@enderror
                     </div>
                 </section>
 
-                <section class="blog-composer__panel" aria-labelledby="blog-organize-heading">
+                @if(empty($eventsWorkspace))<section class="blog-composer__panel" aria-labelledby="blog-organize-heading">
                     <div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-tags" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Discovery</span><h2 id="blog-organize-heading">Organize</h2></div></div>
                     <div class="blog-composer__panel-body">
                         @php($selectedCategoryIds = collect(old('category_ids', $post?->categories?->pluck('id')->all() ?? []))->map('strval')->all())
@@ -101,7 +125,7 @@
                             @if($tags->isNotEmpty())<small class="blog-composer__choice-summary" data-choice-summary aria-live="polite"></small><small class="blog-composer__choice-empty" data-choice-empty hidden>No tags match your search.</small>@endif
                         </fieldset>
                     </div>
-                </section>
+                </section>@endif
 
                 @if($post && !empty($canChangeAuthor))
                 @php($currentAuthorKey = $post->author_type && $post->author_id ? $post->author_type.':'.$post->author_id : '')
@@ -111,7 +135,7 @@
                 <section class="blog-composer__panel" aria-labelledby="blog-seo-heading"><div class="blog-composer__panel-head blog-composer__panel-head--compact"><span class="blog-composer__side-icon"><i class="fa fa-search" aria-hidden="true"></i></span><div><span class="blog-composer__section-label">Search appearance</span><h2 id="blog-seo-heading">SEO settings</h2></div></div><div class="blog-composer__panel-body"><div class="form-group"><label for="blog-seo-title">SEO title</label><input id="blog-seo-title" class="form-control" name="seo_title" placeholder="Optional search result title" value="{{ old('seo_title', $post?->seo_title) }}"></div><div class="form-group"><label for="blog-seo-description">SEO description</label><textarea id="blog-seo-description" class="form-control" name="seo_description" rows="3" placeholder="Optional search result summary">{{ old('seo_description', $post?->seo_description) }}</textarea></div><div class="form-group mb-0"><label for="blog-canonical-url">Canonical URL</label><input id="blog-canonical-url" class="form-control" type="url" name="canonical_url" placeholder="https://…" value="{{ old('canonical_url', $post?->canonical_url) }}"></div></div></section>
             </aside>
         </div>
-        <div class="blog-composer__savebar"><span><i class="fa fa-info-circle" aria-hidden="true"></i> {{ $isStakeholder ? 'Your story will be submitted for review.' : 'Choose the status above, then save your changes.' }}</span><div><a href="{{ route($prefix.'.blog.posts.index') }}" class="blog-composer__cancel">Back to posts</a><button class="blog-composer__save" type="submit" name="submit_review" value="1"><i class="fa fa-check" aria-hidden="true"></i> {{ $isStakeholder ? 'Save and submit for review' : ($post ? 'Save changes' : 'Save post') }}</button></div></div>
+        <div class="blog-composer__savebar"><span><i class="fa fa-info-circle" aria-hidden="true"></i> @if($isCampusStakeholder){{ $campusPostsRequireReview ? 'Your campus '.(!empty($eventsWorkspace) ? 'event' : 'story').' will be sent for review.' : 'Your campus '.(!empty($eventsWorkspace) ? 'event' : 'story').' will publish when saved.' }}@elseif($isStakeholder)Your {{ !empty($eventsWorkspace) ? 'event' : 'story' }} will be submitted for review.@else Choose the status above, then save your changes.@endif</span><div><a href="{{ route($postRoute.'.index') }}" class="blog-composer__cancel">Back to {{ !empty($eventsWorkspace) ? 'events' : 'posts' }}</a><button class="blog-composer__save" type="submit" name="submit_review" value="1"><i class="fa fa-check" aria-hidden="true"></i> @if($isCampusStakeholder){{ $campusPostsRequireReview ? 'Save and submit for review' : ($post ? 'Save and publish' : 'Publish '.(!empty($eventsWorkspace) ? 'event' : 'post')) }}@else{{ $isStakeholder ? 'Save and submit for review' : ($post ? 'Save changes' : 'Save '.(!empty($eventsWorkspace) ? 'event' : 'post')) }}@endif</button></div></div>
     </form>
 </div>
 <style>
@@ -179,6 +203,17 @@
 .blog-featured-dropzone__prompt { max-width:230px; color:#31527c; font-size:12px; font-weight:750; line-height:1.5; }
 .blog-featured-dropzone__input { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; }
 .blog-composer__fieldset { min-width:0; margin:0 0 19px; padding:0; border:0; }
+.blog-event-speakers { display:grid; gap:9px; margin-bottom:10px; }
+.blog-event-speaker { display:grid; grid-template-columns:minmax(0,1fr) 32px; gap:7px; align-items:stretch; padding:10px; border:1px solid #dbe4ee; border-radius:9px; background:#f8fafc; }
+.blog-event-speaker .form-control { min-width:0; grid-column:1; }
+.blog-event-speaker__picture { grid-column:1; display:grid; gap:5px; color:#536a84; font-size:11px; font-weight:800; }
+.blog-event-speaker__picture span { color:#8494a8; font-weight:500; }
+.blog-event-speaker__picture input { max-width:100%; font-size:11px; font-weight:500; }
+.blog-event-speaker__photo { grid-column:1; width:64px; height:64px; border-radius:9px; object-fit:cover; }
+.blog-event-speaker__remove,.blog-event-speakers__add { border:1px solid #d7e2ee; border-radius:8px; background:#fff; color:#275f8a; cursor:pointer; }
+.blog-event-speaker__remove { grid-column:2; grid-row:1 / 7; height:100%; }
+.blog-event-speakers__add { padding:8px 11px; font-size:11px; font-weight:800; }
+.blog-event-speakers__add:hover,.blog-event-speaker__remove:hover { background:#eaf4fc; }
 .blog-composer__fieldset:last-child { margin-bottom:0; }
 .blog-composer__fieldset legend { width:auto; margin-bottom:9px; color:#344762; font-size:12px; font-weight:800; }
 .blog-composer__choice-search { display:flex; align-items:center; gap:9px; width:100%; min-height:38px; margin:0 0 10px; padding:0 11px; border:1px solid #d6e0ed; border-radius:8px; color:#8698ab; background:#fff; }
@@ -209,6 +244,38 @@
 <script src="https://cdn.jsdelivr.net/npm/suneditor@2.47.12/dist/suneditor.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    var postType = document.querySelector('#blog-type');
+    var eventFields = document.querySelector('#blog-event-fields');
+    var eventStartsAt = document.querySelector('#blog-event-starts-at');
+    var eventVenue = document.querySelector('#blog-event-venue');
+    var speakerList = document.querySelector('#blog-event-speakers');
+    function reindexSpeakers() {
+        speakerList.querySelectorAll('[data-event-speaker]').forEach(function (row, index) {
+            row.querySelectorAll('[data-speaker-field]').forEach(function (field) {
+                field.name = 'event_speakers[' + index + '][' + field.dataset.speakerField + ']';
+            });
+        });
+    }
+    reindexSpeakers();
+    document.querySelector('#blog-add-speaker').addEventListener('click', function () {
+        speakerList.appendChild(document.querySelector('#blog-event-speaker-template').content.cloneNode(true));
+        reindexSpeakers();
+        speakerList.lastElementChild.querySelector('[data-speaker-field="name"]').focus();
+    });
+    speakerList.addEventListener('click', function (event) {
+        if (!event.target.closest('[data-remove-speaker]')) return;
+        event.target.closest('[data-event-speaker]').remove();
+        reindexSpeakers();
+    });
+    function toggleEventFields() {
+        var isEvent = postType.value === 'event';
+        eventFields.hidden = !isEvent;
+        eventStartsAt.required = isEvent;
+        eventVenue.required = isEvent;
+        speakerList.querySelectorAll('input, select').forEach(function (field) { field.disabled = !isEvent; });
+    }
+    postType.addEventListener('change', toggleEventFields);
+    toggleEventFields();
     document.querySelectorAll('[data-choice-group]').forEach(function (group) {
         var search = group.querySelector('[data-choice-search]');
         if (!search) return;
@@ -243,6 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var featuredPrompt = document.querySelector('[data-featured-prompt]');
     var featuredStatus = document.querySelector('#blog-featured-status');
     var savedImageUrl = featuredPreview.getAttribute('src');
+    var uploadName = dropzone.dataset.uploadName || 'image';
     var previewUrl = null;
 
     function previewFeaturedImage(file) {
@@ -253,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
             previewUrl = null;
             featuredPreview.src = savedImageUrl || '';
             featuredPreview.hidden = !savedImageUrl;
-            featuredPrompt.textContent = savedImageUrl ? 'Drop a new image here or click to replace it' : 'Drop an image here or click to choose one';
+            featuredPrompt.textContent = savedImageUrl ? 'Drop a new ' + uploadName + ' here or click to replace it' : 'Drop your ' + uploadName + ' here or click to choose one';
             featuredStatus.textContent = 'Choose a JPG, PNG, WebP or GIF image under 5 MB.';
             featuredStatus.classList.add('text-danger');
             return;
@@ -262,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function () {
         previewUrl = URL.createObjectURL(file);
         featuredPreview.src = previewUrl;
         featuredPreview.hidden = false;
-        featuredPrompt.textContent = 'Drop another image here or click to change it';
+        featuredPrompt.textContent = 'Drop another ' + uploadName + ' here or click to change it';
         featuredStatus.classList.remove('text-danger');
         featuredStatus.textContent = file.name + ' selected. Save the post to upload it.';
     }

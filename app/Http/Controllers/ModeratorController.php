@@ -69,7 +69,7 @@ class ModeratorController extends Controller
         if(auth()->user()->level == 'Admin'){
 
             $user = User::findorFail($id);
-            $chapters = Chapter::orderBy('name')->get();
+            $chapters = Chapter::actualCampus()->orderBy('name')->get();
             
             return view('admin.moderator.edit', compact('user', 'chapters'));
        }

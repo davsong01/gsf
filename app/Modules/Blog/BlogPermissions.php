@@ -48,7 +48,7 @@ final class BlogPermissions
 
     public static function canFeaturePosts($user): bool
     {
-        return $user instanceof User && in_array(self::FEATURE, $user->permissions ?? [], true);
+        return $user instanceof User && ((int) $user->role === 1 || in_array(self::FEATURE, $user->permissions ?? [], true));
     }
 
     public static function isWorkspaceUser($user): bool

@@ -89,7 +89,7 @@ class StakeholderController extends Controller
         $stakeholder = null;
         $fields = Field::all();
         $zones = Zone::all();
-        $chapters = Chapter::all();
+        $chapters = Chapter::actualCampus()->get();
         $months = getMonths();
         $roles = StakeholderRole::where('status', 'active')->get();
         $portfolios = getCommunityPortfolios();
@@ -102,7 +102,7 @@ class StakeholderController extends Controller
         $stakeholder = $stakeholderpersonnel;
         $fields = Field::all();
         $zones = Zone::all();
-        $chapters = Chapter::all();
+        $chapters = Chapter::actualCampus()->get();
         $months = getMonths();
         $roles = StakeholderRole::where('status', 'active')->get();
         $portfolios = getCommunityPortfolios();

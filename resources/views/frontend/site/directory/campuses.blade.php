@@ -47,6 +47,9 @@
                             <p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-4.35 7-11A7 7 0 1 0 5 10c0 6.65 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>{{ $campus->state ?: 'Nigeria' }} · {{ $campus->zone?->name ?: 'GSF' }}</p>
                             @if(filled($campus->address))<span class="campus-directory-card__address">{{ $campus->address }}</span>@endif
                             <a class="text-link" href="{{ route('campus.single', $campus->slug) }}">Explore campus <span aria-hidden="true">→</span></a>
+                            @if(auth()->check() && auth()->user()->isAdmin())
+                                <a class="text-link campus-admin-edit" href="{{ route('chapters.edit', $campus->id) }}">Edit campus <span aria-hidden="true">↗</span></a>
+                            @endif
                         </div>
                     </article>
                 @endforeach

@@ -1,455 +1,190 @@
 @extends('layouts.stakeholderdashboard')
 
+@section('title', 'Dashboard · GSF Stakeholders')
+@section('extra_styles')
+<link rel="stylesheet" href="{{ asset('assets/css/stakeholder-dashboard-home.css') }}?v=2">
+@endsection
+
 @section('content')
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+@php
+    $isChapter = in_array($user->role_id, chapterStakeholders());
+    $isFinance = finStakeholders($user);
+    $field = $chapter?->field ?? $user->field;
+    $zone = $chapter?->zone ?? $user->zone;
+    $fieldPastor = $field?->fieldCord;
+    $zonePastors = $zone?->zonalCords ?? collect();
+    $workspaceName = $chapter?->name ?? $zone?->name ?? $field?->name ?? 'National Secretariat';
+    $roleName = $user->role?->name ?: 'GSF Stakeholder';
+    $canSubmitReport = $isChapter && $chapter && canAddReport($chapter->id)['eligible'];
+    $canCreatePosts = $user->hasPermission('blog.create');
+    $canOpenAppraisal = app(\App\Services\AppraisalService::class)->hasMenuAccess($user);
+@endphp
 
-<style>
-    .monitor-card {
-        margin-bottom: 20px !important;
-    }
-
-    .content-header {
-        display: none !important;
-    }
-
-    /* Sleeker cards */
-    .card {
-        border-radius: 0.75rem !important; /* smoother edges */
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important; /* subtle shadow */
-    }
-
-    /* Smaller shadow for inner cards like field/zone avatars */
-    .card-body .card {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
-    }
-
-    .border-left-primary {
-        border-left: 4px solid #0028FF;
-    }
-
-    .border-left-success {
-        border-left: 4px solid #28a745;
-    }
-
-    .hover-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .hover-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-    }
-
-    /* Optional: text color overrides for small text */
-    .card small {
-        color: rgba(255, 255, 255, 0.85);
-    }
-
-</style>
-<div class="content-body">
-    @if(in_array($user->role_id, [1, 2, 3, 4, 5]))
-    {{-- CHAPTER HEADER --}}
-        @php
-            $bgStyle = $chapter?->banner
-                ? "background-image: url('" . asset($chapter->banner) . "');"
-                : "background: linear-gradient(135deg, #0d6efd, #0b5ed7);";
-
-            $fieldCord = $chapter->field->fieldCord ?? $user->field->fieldCord ?? null;
-            $zoneCords = $chapter->zone->zonalCords ?? $user->zone->zonalCords ?? null;
-            $field = $chapter->field ?? $user->field ?? null;
-            $zone = $chapter->zone ?? $user->zone ?? null;
-            $heroName = $chapter->name ?? $user->zone->name ?? $user->field->name ?? 'Secretariat';
-
-            if($user->role_id == 5){
-                $dashboardName = 'Chapter Dashboard';
-            }
-
-            if($user->role_id == 4){
-                $dashboardName = 'Zone Dashboard';
-            }
-
-            if($user->role_id == 3){
-                $dashboardName = 'Field Dashboard';
-            }
-
-            if(in_array($user->role_id, [1,2])){
-                $dashboardName = 'Secretariat Dashboard';
-            }
-
-        @endphp
-
-        <div class="card shadow-sm mb-1 border-0"
-            style="{{ $bgStyle }} background-size:cover; background-position:center; position:relative;">
-
-            {{-- Dark Overlay --}}
-            <div style="
-                position:absolute;
-                inset:0;
-                background: rgba(0, 0, 0, 0.71);
-                border-radius: .75rem;
-            "></div>
-
-            <div class="card-body text-center py-4 position-relative text-white">
-                <h2 class="fw-bold mb-1" style="color:white">
-                    {{ $heroName }}
-                </h2>
-
-                <small class="opacity-75">
-                    Welcome back, {{ Auth::guard('stakeholder')->user()->name }}
-                </small> <br>
-
-                <span class="badge bg-light text-dark mt-2">
-                   {{$dashboardName}}
-                </span>
+<main class="sh-dashboard content-body">
+    <section class="sh-hero" aria-labelledby="sh-dashboard-title">
+        <div class="sh-hero__copy">
+            <span class="sh-eyebrow"><span></span> Your GSF workspace</span>
+            <h1 id="sh-dashboard-title">Good to have you here.</h1>
+            <p>Welcome back, <strong>{{ $user->name }}</strong>. Keep your fellowship connected and your work moving forward from one place.</p>
+            <div class="sh-hero__actions">
+                @if($canSubmitReport)
+                    <a class="sh-button sh-button--primary" href="{{ route('stakeholders.reports.create') }}"><i class="fa fa-plus" aria-hidden="true"></i> Submit a report <span aria-hidden="true">↗</span></a>
+                @elseif($isFinance)
+                    <a class="sh-button sh-button--primary" href="{{ route('stakeholders.financial.report') }}"><i class="fa fa-file-text-o" aria-hidden="true"></i> Financial reports <span aria-hidden="true">↗</span></a>
+                @else
+                    <a class="sh-button sh-button--primary" href="{{ route('stakeholders.reports.index') }}"><i class="fa fa-folder-open-o" aria-hidden="true"></i> Open reports <span aria-hidden="true">↗</span></a>
+                @endif
+                <a class="sh-button sh-button--outline" href="{{ route('stakeholders.profile') }}">My profile <span aria-hidden="true">→</span></a>
             </div>
         </div>
-
-        {{-- FIELD & ZONE CARDS --}}
-        <div class="row mb-1">
-            @if($fieldCord)
-            {{-- FIELD CARD --}}
-            <div class="col-12 col-md-6 mb-1">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-
-                            {{-- Avatar --}}
-                            <div class="col-12 col-md-5 text-center mb-1 mb-md-0">
-                                <img
-                                    src="{{ asset(optional($fieldCord)->avatar ?? 'images/avatar.png') }}"
-                                    class="rounded-circle mb-2"
-                                    style="width:100px;height:100px;object-fit:cover;"
-                                >
-                                <h6 class="mb-0 d-block text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                    {{ optional($fieldCord)->name ?? 'N/A' }}
-                                </h6>
-                                <small class="text-muted d-block">Field Pastor</small>
-                            </div>
-
-                            {{-- Info --}}
-                            <div class="col-12 col-md-7 text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                <h6 class="text-primary mb-2">
-                                    <i class="fa fa-map-marker"></i> Field Information
-                                </h6>
-
-                                <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;"><strong>Field:</strong> {{ $field->name ?? '' }}</p>
-                                <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                    <i class="fa fa-envelope text-muted"></i> {{ optional($fieldCord)->email ?? 'N/A' }}
-                                </p>
-                                <p class="mb-1" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                    <i class="fa fa-phone text-muted"></i> {{ optional($fieldCord)->phone ?? 'N/A' }}
-                                </p>
-
-                                @if($fieldCord && $fieldCord->day && $fieldCord->month)
-                                    <span class="badge badge-light-primary d-block mt-1 w-100 text-break"
-                                        style="background-color:#0028FF;color:white !important; word-wrap: break-word; overflow-wrap: anywhere;">
-                                        🎉 <strong>{{ \Carbon\Carbon::create(null, $fieldCord->month, $fieldCord->day)->format('F jS') }}</strong>
-                                    </span>
-                                @endif
-                            </div>
-
-                        </div>
-                    </div>
+        <div class="sh-hero__identity">
+            <span class="sh-hero__identity-label">Your fellowship</span>
+            <strong>{{ $workspaceName }}</strong>
+            <span class="sh-hero__role"><i class="fa fa-circle" aria-hidden="true"></i> {{ $roleName }}</span>
+            @if($zone || $field)
+                <div class="sh-hero__places">
+                    @if($zone)<span><small>Zone</small>{{ $zone->name }}</span>@endif
+                    @if($field)<span><small>Field</small>{{ $field->name }}</span>@endif
                 </div>
-            </div>
-            @endif
-            @if($zoneCords)
-            {{-- ZONE CARD --}}
-            <div class="col-12 col-md-6 mb-1">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h6 class="text-primary mb-2">
-                            <i class="fa fa-globe"></i> Zone Information
-                        </h6>
-
-                        <p class="mb-2" style="word-wrap: break-word; overflow-wrap: anywhere;"><strong>Zone:</strong> {{ $zone->name ?? 'N/A' }}</p>
-                        <div class="row">
-                            @forelse($zoneCords ?? collect() as $cord)
-                                <div class="col-12 mb-1">
-                                    <div class="row align-items-center">
-
-                                        {{-- Avatar --}}
-                                        <div class="col-3 col-md-2 text-center mb-1 mb-md-0">
-                                            <img
-                                                src="{{ asset($cord->avatar ?? 'images/avatar.png') }}"
-                                                class="rounded-circle"
-                                                style="width:50px;height:50px;object-fit:cover;"
-                                            >
-                                        </div>
-
-                                        {{-- Info --}}
-                                        <div class="col-9 col-md-10 text-break" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                            <strong class="d-block text-break">{{ $cord->name }}</strong>
-
-                                            <span class="d-block text-muted small" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                                <i class="fa fa-envelope"></i> {{ $cord->email ?? 'N/A' }}
-                                            </span>
-
-                                            <span class="d-block text-muted small" style="word-wrap: break-word; overflow-wrap: anywhere;">
-                                                <i class="fa fa-phone"></i> {{ $cord->phone ?? 'N/A' }}
-                                            </span>
-
-                                            @if($cord && $cord->day && $cord->month)
-                                                <span class="badge badge-light-primary d-block mt-1 w-100 text-break"
-                                                    style="background-color:#3B50C4;color:white !important; word-wrap: break-word; overflow-wrap: anywhere;">
-                                                    🎉 <strong>{{ \Carbon\Carbon::create(null, $cord->month, $cord->day)->format('F jS') }}</strong>
-                                                </span>
-                                            @endif
-                                        </div>
-
-                                    </div>
-                                    <hr class="my-2">
-                                </div>
-                            @empty
-                                <div class="col-12 text-muted">
-                                    No zonal coordinators assigned
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
-            </div>
             @endif
         </div>
-    @endif
-    @if(in_array($user->role_id, [5]))
-        {{-- SISTER CAMPUSES ROW --}}
-        <div class="row">
+    </section>
 
-            {{-- ZONE SISTER CAMPUSES --}}
-            <div class="col-12">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-
-                        <h5 class="text-primary mb-3">
-                            <i class="fa fa-globe"></i> Sister Campuses in Same Zone
-                        </h5>
-
-                        <div class="row">
-
-                            @php
-                                $zoneCampuses = $chapter->relatedByZone()
-                                    ->where('id', '!=', $chapter->id)
-                                    ->get();
-                            @endphp
-
-                            @forelse($zoneCampuses as $campus)
-                                <div class="col-12 col-md-4 mb-2">
-                                    <div class="card h-100 border-left-primary shadow-sm">
-                                        <div class="card-body">
-
-                                            <h6 class="mb-1 text-break">
-                                                <i class="fa fa-map-marker text-primary"></i>
-                                                <span style="color:#29166f">{{ $campus->name }}</span>
-                                            </h6>
-
-                                            <p class="mb-1 small text-muted text-break">
-                                                {{ $campus->address ?? 'Address not available' }}
-                                            </p>
-
-                                            <p class="mb-0 small">
-                                                <i class="fa fa-phone text-success"></i>
-                                                {{ $campus->phone ?? 'N/A' }}
-                                            </p>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="col-12 text-muted text-center py-3">
-                                    No sister campuses found in this Zone.
-                                </div>
-                            @endforelse
-
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-
-            {{-- FIELD SISTER CAMPUSES --}}
-            <div class="col-12">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-
-                        <h5 class="text-primary mb-3">
-                            <i class="fa fa-map"></i> Sister Campuses in Same Field
-                        </h5>
-
-                        <div class="row">
-
-                            @php
-                                $fieldCampuses = $chapter->relatedByField()
-                                    ->where('id', '!=', $chapter->id)
-                                    ->get();
-                            @endphp
-
-                            @forelse($fieldCampuses as $campus)
-                                <div class="col-12 col-md-4 mb-2">
-                                    <div class="card h-100 border-left-success shadow-sm">
-                                        <div class="card-body">
-
-                                            <h6 class="mb-1 text-break">
-                                                <i class="fa fa-building text-success" style="color:#29166F !important"></i>
-                                                <span style="color:#29166F">{{ $campus->name }}</strong> ({{$campus->zone->name}})
-                                            </h6>
-
-                                            <p class="mb-1 small text-muted text-break">
-                                                {{ $campus->address ?? 'Address not available' }}
-                                            </p>
-
-                                            <p class="mb-0 small">
-                                                <i class="fa fa-phone text-primary"></i>
-                                                {{ $campus->phone ?? 'N/A' }}
-                                            </p>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="col-12 text-muted text-center py-3">
-                                    No sister campuses found in this Field.
-                                </div>
-                            @endforelse
-
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
+    <section class="sh-section" aria-labelledby="sh-actions-title">
+        <div class="sh-section__heading"><div><span class="sh-section__eyebrow">Make progress</span><h2 id="sh-actions-title">Your quick actions</h2></div><p>The things you reach for most, all in one place.</p></div>
+        <div class="sh-action-grid">
+            @if($isFinance)
+                <a class="sh-action sh-action--blue" href="{{ route('stakeholders.financial.report') }}"><span class="sh-action__icon"><i class="fa fa-line-chart" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Financial reports</strong><small>Open your financial reporting workspace</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+            @else
+                <a class="sh-action sh-action--blue" href="{{ route('stakeholders.reports.index') }}"><span class="sh-action__icon"><i class="fa fa-folder-open-o" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>All reports</strong><small>Browse and manage monthly reports</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+                @if($canSubmitReport)
+                    <a class="sh-action sh-action--gold" href="{{ route('stakeholders.reports.create') }}"><span class="sh-action__icon"><i class="fa fa-plus" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Submit a report</strong><small>Start this month’s chapter report</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+                @endif
+            @endif
+            @if($isChapter && $chapter)
+                <a class="sh-action sh-action--teal" href="{{ route('stakeholders.users.index') }}"><span class="sh-action__icon"><i class="fa fa-users" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Chapter members</strong><small>Connect with your student community</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+                <a class="sh-action sh-action--rose" href="{{ route('stakeholders.alumni.index') }}"><span class="sh-action__icon"><i class="fa fa-graduation-cap" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Chapter alumni</strong><small>Stay close to your wider GSF family</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+                <a class="sh-action sh-action--blue" href="{{ route('stakeholders.chapters.edit', $chapter->id) }}"><span class="sh-action__icon"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Chapter details</strong><small>Keep your campus information current</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+            @endif
+            @if($canManagePosts)
+                <a class="sh-action sh-action--gold" href="{{ route('stakeholders.blog.posts.index') }}"><span class="sh-action__icon"><i class="fa fa-newspaper-o" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Posts &amp; stories</strong><small>Share news from your fellowship</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+            @endif
+            @if($canOpenAppraisal && ($appraisalAccess['my_appraisal'] ?? false))
+                <a class="sh-action sh-action--teal" href="{{ route('stakeholders.appraisal.my') }}"><span class="sh-action__icon"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Self appraisal</strong><small>Reflect on your work and growth</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+            @endif
+            @if($canOpenAppraisal && ($appraisalAccess['evaluations'] ?? false))
+                <a class="sh-action sh-action--rose" href="{{ route('stakeholders.appraisal.evaluations') }}"><span class="sh-action__icon"><i class="fa fa-user-plus" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Evaluations</strong><small>Review your assigned officers</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>
+            @endif
         </div>
-    @endif
-    <div class="row g-3 mb-4">
+    </section>
 
-        {{-- All Reports --}}
-        <div class="col-md-3 col-sm-6 mb-2">
-            <a href="{{ route('stakeholders.reports.index') }}" class="text-decoration-none">
-                <div class="card h-100 shadow border-0 text-white bg-primary hover-card">
-                    <div class="card-body d-flex flex-column align-items-center text-center">
-                        <div class="mb-2">
-                            <i class="fa fa-file fa-2x"></i>
-                        </div>
-                        <h6 class="mb-1">All Reports</h6>
-                        <small>View submitted reports</small>
-                    </div>
+    <div class="sh-panel-grid">
+        @unless($isFinance)
+            <section class="sh-panel" aria-labelledby="sh-reviews-title">
+                <div class="sh-panel__heading"><span class="sh-panel__symbol sh-panel__symbol--gold"><i class="fa fa-file-text-o" aria-hidden="true"></i></span><div><span class="sh-section__eyebrow">Reporting journey</span><h2 id="sh-reviews-title">Follow every review</h2></div></div>
+                <p class="sh-panel__intro">Open reports at each stage and see what needs attention.</p>
+                <div class="sh-review-list">
+                    <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'zone_pending']) }}"><span class="sh-review-list__step">01</span><span><strong>Pending zonal review</strong><small>Waiting for your zonal pastor</small></span><span aria-hidden="true">→</span></a>
+                    <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'field_pending']) }}"><span class="sh-review-list__step">02</span><span><strong>Pending field review</strong><small>Waiting for your field pastor</small></span><span aria-hidden="true">→</span></a>
+                    <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'national_pending']) }}"><span class="sh-review-list__step">03</span><span><strong>Pending national review</strong><small>Waiting for the national team</small></span><span aria-hidden="true">→</span></a>
+                    <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'national_approved']) }}"><span class="sh-review-list__step sh-review-list__step--done"><i class="fa fa-check" aria-hidden="true"></i></span><span><strong>Approved reports</strong><small>Completed national approvals</small></span><span aria-hidden="true">→</span></a>
                 </div>
-            </a>
-        </div>
-
-        {{-- Submit Report --}}
-        @if(canAddReport(Auth::guard('stakeholder')->user()->chapter_id)['eligible'])
-        <div class="col-md-3 col-sm-6 mb-2">
-            <a href="{{ route('stakeholders.reports.create') }}" class="text-decoration-none">
-                <div class="card h-100 shadow border-0 text-white bg-success hover-card">
-                    <div class="card-body d-flex flex-column align-items-center text-center">
-                        <div class="mb-2">
-                            <i class="fa fa-plus fa-3x"></i>
-                        </div>
-                        <h6 class="mb-1">Submit Report</h6>
-                        <small>Create a new monthly report</small>
-                    </div>
-                </div>
-            </a>
-        </div>
-        @endif
-
-        {{-- Pending Zonal Reviews --}}
-        <div class="col-md-3 col-sm-6 mb-2">
-            <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
-                <div class="card h-100 shadow border-0 text-white hover-card" style="background-color:#f6c23e;"> {{-- Lighter yellow --}}
-                    <div class="card-body d-flex flex-column align-items-center text-center">
-                        <div class="mb-2">
-                            <i class="fas fa-clock fa-3x"></i>
-                        </div>
-                        <h6 class="mb-1">Pending Zonal Reviews</h6>
-                        <small>Reports awaiting action from zonal Pastor</small>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        {{-- Pending Field Reviews --}}
-        <div class="col-md-3 col-sm-6 mb-2">
-            <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
-                <div class="card h-100 shadow border-0 text-white hover-card" style="background-color:#f4b619;"> {{-- Medium yellow --}}
-                    <div class="card-body d-flex flex-column align-items-center text-center">
-                        <div class="mb-2">
-                            <i class="fa fa-clock fa-3x"></i>
-                        </div>
-                        <h6 class="mb-1">Pending Field Reviews</h6>
-                        <small>Reports awaiting action from field pastor</small>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        {{-- Pending National Reviews --}}
-        <div class="col-md-3 col-sm-6 mb-2">
-            <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'pending']) }}" class="text-decoration-none">
-                <div class="card h-100 shadow border-0 text-white hover-card" style="background-color:#e09c00;"> {{-- Darker yellow/orange --}}
-                    <div class="card-body d-flex flex-column align-items-center text-center">
-                        <div class="mb-2">
-                            <i class="fa fa-clock fa-3x"></i>
-                        </div>
-                        <h6 class="mb-1">Pending National Reviews</h6>
-                        <small>Reports awaiting action from the national</small>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        {{-- Approved Reports --}}
-        <div class="col-md-3 col-sm-6 mb-2">
-            <a href="{{ route('stakeholders.reports.index', ['status_filter' => 'approved']) }}" class="text-decoration-none">
-                <div class="card h-100 shadow border-0 text-white bg-info hover-card">
-                    <div class="card-body d-flex flex-column align-items-center text-center">
-                        <div class="mb-2">
-                            <i class="fa fa-check-circle fa-3x"></i>
-                        </div>
-                        <h6 class="mb-1">Approved Reports</h6>
-                        <small>Completed approvals</small>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        @if(app(\App\Services\AppraisalService::class)->hasMenuAccess($user))
-            {{-- My Appraisal --}}
-            @if($appraisalAccess['my_appraisal'] ?? false)
-                <div class="col-md-3 col-sm-6 mb-2">
-                    <a href="{{ route('stakeholders.appraisal.my') }}" class="text-decoration-none">
-                        <div class="card h-100 shadow border-0 text-white" style="background: linear-gradient(135deg, #12355b, #1f6aa5);">
-                            <div class="card-body d-flex flex-column align-items-center text-center">
-                                <div class="mb-2">
-                                    <i class="fa fa-pen-to-square fa-2x"></i>
-                                </div>
-                                <h6 class="mb-1">Self Appraisal</h6>
-                                <small>Open your self appraisal</small>
+            </section>
+        @endunless
+        <section class="sh-panel" aria-labelledby="sh-leadership-title">
+            <div class="sh-panel__heading"><span class="sh-panel__symbol sh-panel__symbol--blue"><i class="fa fa-heart-o" aria-hidden="true"></i></span><div><span class="sh-section__eyebrow">People to know</span><h2 id="sh-leadership-title">Leadership circle</h2></div></div>
+            <p class="sh-panel__intro">Stay connected with the people supporting your fellowship.</p>
+            @if($fieldPastor || $zonePastors->isNotEmpty())
+                <div class="sh-leaders">
+                    @if($fieldPastor)
+                        <div class="sh-leader">
+                            @if(filled($fieldPastor->avatar))<img src="{{ asset($fieldPastor->avatar) }}" alt="" loading="lazy">@else<span class="sh-leader__initials" aria-hidden="true">{{ avatarInitials($fieldPastor->name) }}</span>@endif
+                            <div>
+                            <span>Field pastor · {{ $field?->name }}</span><strong>{{ $fieldPastor->name }}</strong>
+                            @if($fieldPastor->email)<a href="mailto:{{ $fieldPastor->email }}">{{ $fieldPastor->email }}</a>@endif
+                            @if($fieldPastor->phone)<a href="tel:{{ preg_replace('/[^+\d]/', '', $fieldPastor->phone) }}">{{ $fieldPastor->phone }}</a>@endif
+                            @if($fieldPastor->day && $fieldPastor->month)<small class="sh-leader__birthday">🎉 {{ \Carbon\Carbon::create(null, $fieldPastor->month, $fieldPastor->day)->format('F j') }}</small>@endif
                             </div>
                         </div>
-                    </a>
-                </div>
-            @endif
-
-            {{-- Evaluations --}}
-            @if($appraisalAccess['evaluations'] ?? false)
-                <div class="col-md-3 col-sm-6 mb-2">
-                    <a href="{{ route('stakeholders.appraisal.evaluations') }}" class="text-decoration-none">
-                        <div class="card h-100 shadow border-0 text-white" style="background: linear-gradient(135deg, #2c3e50, #4b79a1);">
-                            <div class="card-body d-flex flex-column align-items-center text-center">
-                                <div class="mb-2">
-                                    <i class="fa fa-users-gear fa-2x"></i>
-                                </div>
-                                <h6 class="mb-1">Evaluations</h6>
-                                <small>Review assigned officers</small>
+                    @endif
+                    @foreach($zonePastors as $pastor)
+                        <div class="sh-leader">
+                            @if(filled($pastor->avatar))<img src="{{ asset($pastor->avatar) }}" alt="" loading="lazy">@else<span class="sh-leader__initials" aria-hidden="true">{{ avatarInitials($pastor->name) }}</span>@endif
+                            <div>
+                            <span>Zonal pastor · {{ $zone?->name }}</span><strong>{{ $pastor->name }}</strong>
+                            @if($pastor->email)<a href="mailto:{{ $pastor->email }}">{{ $pastor->email }}</a>@endif
+                            @if($pastor->phone)<a href="tel:{{ preg_replace('/[^+\d]/', '', $pastor->phone) }}">{{ $pastor->phone }}</a>@endif
+                            @if($pastor->day && $pastor->month)<small class="sh-leader__birthday">🎉 {{ \Carbon\Carbon::create(null, $pastor->month, $pastor->day)->format('F j') }}</small>@endif
                             </div>
                         </div>
-                    </a>
+                    @endforeach
                 </div>
+            @else
+                <div class="sh-empty"><i class="fa fa-users" aria-hidden="true"></i><strong>Leadership contacts will appear here.</strong><span>Your field and zone details will show when they are available.</span></div>
             @endif
-        @endif
+        </section>
     </div>
-</div>
+
+    @if($canManagePosts)
+        <section class="sh-section sh-publishing" aria-labelledby="sh-publishing-title">
+            <div class="sh-section__heading"><div><span class="sh-section__eyebrow">Share your story</span><h2 id="sh-publishing-title">Posts, programs &amp; events</h2></div><p>A home for what your fellowship is sharing and planning.</p></div>
+            <div class="sh-publishing__grid">
+                <article class="sh-publishing__card">
+                    <div class="sh-publishing__head"><span class="sh-publishing__icon"><i class="fa fa-newspaper-o" aria-hidden="true"></i></span><div><h3>Blog posts</h3><p>News, reflections and stories</p></div><a href="{{ route('stakeholders.blog.posts.index') }}">View all <span aria-hidden="true">↗</span></a></div>
+                    <div class="sh-publishing__list">
+                        @forelse($dashboardPosts as $post)
+                            <a href="{{ $post->status === 'published' ? route('blog.show', $post->slug) : route('stakeholders.blog.posts.index') }}"><span><strong>{{ $post->title }}</strong><small>Updated {{ $post->updated_at?->format('d M Y') }}</small></span><em class="sh-publishing__status sh-publishing__status--{{ $post->status }}">{{ ucfirst($post->status) }}</em></a>
+                        @empty
+                            <div class="sh-publishing__empty">Your blog posts will appear here as you create them.</div>
+                        @endforelse
+                    </div>
+                    @if($canCreatePosts)<a class="sh-publishing__footer" href="{{ route('stakeholders.blog.posts.create') }}"><i class="fa fa-plus" aria-hidden="true"></i> Write a post <span aria-hidden="true">→</span></a>@endif
+                </article>
+                <article class="sh-publishing__card">
+                    <div class="sh-publishing__head"><span class="sh-publishing__icon sh-publishing__icon--gold"><i class="fa fa-calendar-o" aria-hidden="true"></i></span><div><h3>Programs &amp; events</h3><p>Gatherings and upcoming moments</p></div><a href="{{ route('stakeholders.events.posts.index') }}">View all <span aria-hidden="true">↗</span></a></div>
+                    <div class="sh-publishing__list">
+                        @forelse($dashboardEvents as $event)
+                            <a href="{{ $event->status === 'published' ? route('events.public.show', $event->slug) : route('stakeholders.events.posts.index') }}"><span><strong>{{ $event->title }}</strong><small>{{ $event->event_starts_at?->format('d M Y · g:i A') ?: 'Date to be confirmed' }}@if($event->event_venue) · {{ $event->event_venue }}@endif</small></span><em class="sh-publishing__status sh-publishing__status--{{ $event->status }}">{{ ucfirst($event->status) }}</em></a>
+                        @empty
+                            <div class="sh-publishing__empty">Your programs and events will appear here as you add them.</div>
+                        @endforelse
+                    </div>
+                    @if($canCreatePosts)<a class="sh-publishing__footer" href="{{ route('stakeholders.events.posts.create') }}"><i class="fa fa-plus" aria-hidden="true"></i> Add an event <span aria-hidden="true">→</span></a>@endif
+                </article>
+            </div>
+        </section>
+    @endif
+
+    @if($isChapter && $chapter)
+        @php
+            $zoneCampuses = $chapter->relatedByZone()->actualCampus()->orderBy('name')->get();
+            $fieldCampuses = $chapter->relatedByField()->actualCampus()->with('zone')->orderBy('name')->get();
+        @endphp
+        <section class="sh-section sh-network" aria-labelledby="sh-network-title">
+            <div class="sh-section__heading"><div><span class="sh-section__eyebrow">Better together</span><h2 id="sh-network-title">Your sister campuses</h2></div><p>Meet the other GSF communities around you.</p></div>
+            <div class="sh-network__grid">
+                <div class="sh-network__group">
+                    <div class="sh-network__heading"><span class="sh-network__icon"><i class="fa fa-map-marker" aria-hidden="true"></i></span><div><h3>In your zone</h3><small>{{ $zone?->name ?: 'Nearby campuses' }}</small></div><span class="sh-network__count">{{ $zoneCampuses->count() }}</span></div>
+                    <div class="sh-network__list">
+                        @forelse($zoneCampuses as $campus)
+                            <a href="{{ route('campus.single', $campus->slug) }}"><strong>{{ $campus->name }}</strong><small>{{ $campus->address ?: 'View campus details' }}</small>@if($campus->phone)<small>{{ $campus->phone }}</small>@endif<span aria-hidden="true">↗</span></a>
+                        @empty
+                            <div class="sh-network__empty">No other campuses are listed in this zone yet.</div>
+                        @endforelse
+                    </div>
+                </div>
+                <div class="sh-network__group">
+                    <div class="sh-network__heading"><span class="sh-network__icon sh-network__icon--teal"><i class="fa fa-map-o" aria-hidden="true"></i></span><div><h3>In your field</h3><small>{{ $field?->name ?: 'Nearby campuses' }}</small></div><span class="sh-network__count">{{ $fieldCampuses->count() }}</span></div>
+                    <div class="sh-network__list">
+                        @forelse($fieldCampuses as $campus)
+                            <a href="{{ route('campus.single', $campus->slug) }}"><strong>{{ $campus->name }}</strong><small>{{ $campus->zone?->name ?: 'Zone not listed' }} · {{ $campus->address ?: 'Address not listed' }}</small>@if($campus->phone)<small>{{ $campus->phone }}</small>@endif<span aria-hidden="true">↗</span></a>
+                        @empty
+                            <div class="sh-network__empty">No other campuses are listed in this field yet.</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+</main>
 @endsection

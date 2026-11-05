@@ -1,14 +1,12 @@
 @php
-    $directoryMemberCount = \App\Models\User::where('status', 'active')->where('role', '<>', 1)->count();
-    $directoryChapterCount = \App\Models\Chapter::where('id', '<>', 86)->count();
-    $directoryChapters = \App\Models\Chapter::query()
-        ->where('id', '<>', 86)
+    $directoryMemberCount = \App\Models\User::whereHas('campus', fn ($query) => $query->actualCampus())->where('status', 'active')->where('role', '<>', 1)->count();
+    $directoryChapterCount = \App\Models\Chapter::actualCampus()->count();
+    $directoryChapters = \App\Models\Chapter::actualCampus()
         ->orderBy('name')
         ->limit(6)
         ->get();
     $campusesByState = \Illuminate\Support\Facades\Schema::hasColumn('chapters', 'state')
-        ? \App\Models\Chapter::query()
-            ->where('id', '<>', 86)
+        ? \App\Models\Chapter::actualCampus()
             ->whereNotNull('state')
             ->selectRaw('state, COUNT(*) as campus_count')
             ->groupBy('state')

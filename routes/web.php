@@ -8,6 +8,7 @@ use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\AwardController;
 use App\Http\Controllers\AwardShortlistStageController;
 use App\Http\Controllers\ChapterController;
+use App\Http\Controllers\ChapterMeetingController;
 use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\ConferenceEditionController;
 use App\Http\Controllers\ConferenceFaqController;
@@ -234,8 +235,8 @@ Route::controller(HomeController::class)->group(function () {
     Route::post('search', 'search')->name('search');
     Route::POST('autocompletecampus', 'autocomplete')->name('campus.autocomplete');
     Route::any('people/singlecampus/{chapter?}', 'singleCampus')->name('campus.single');
-    Route::get('campus-membersx/{id}', 'studentsByChapter')->name('members.campus');
-    Route::get('campus-members/{id}', 'alumniByChapter')->name('alumni.campus');
+    Route::get('campus-membersx/{slug}', 'studentsByChapter')->name('members.campus');
+    Route::get('campus-members/{slug}', 'alumniByChapter')->name('alumni.campus');
 
     Route::post('contactcampus', 'contactCampus')->name('campus.contact');
     // Alumni routes
@@ -586,6 +587,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('officials', OfficialController::class);
 
     Route::resource('chapters', ChapterController::class);
+    Route::post('chapters/{chapter}/meetings', [ChapterMeetingController::class, 'store'])->name('chapters.meetings.store');
+    Route::put('chapters/{chapter}/meetings/{meeting}', [ChapterMeetingController::class, 'update'])->name('chapters.meetings.update');
+    Route::delete('chapters/{chapter}/meetings/{meeting}', [ChapterMeetingController::class, 'destroy'])->name('chapters.meetings.destroy');
     Route::post('/chapters/{chapter}/move-members', [ChapterController::class, 'moveMembers'])
     ->name('chapters.move-members');
     Route::controller(ChapterController::class)->group(function () {
@@ -810,6 +814,9 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
 
             Route::get('chapters/{chapter}/edit', 'chapterEdit')->name('chapters.edit');
             Route::put('chapters/{chapter}', 'chapterUpdate')->name('chapters.update');
+            Route::post('chapters/{chapter}/meetings', [ChapterMeetingController::class, 'store'])->name('chapters.meetings.store');
+            Route::put('chapters/{chapter}/meetings/{meeting}', [ChapterMeetingController::class, 'update'])->name('chapters.meetings.update');
+            Route::delete('chapters/{chapter}/meetings/{meeting}', [ChapterMeetingController::class, 'destroy'])->name('chapters.meetings.destroy');
         });
 
         // Award Management

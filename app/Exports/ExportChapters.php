@@ -14,7 +14,7 @@ class ExportChapters implements FromCollection, WithHeadings
     */
     public function collection()
     {
-        $chapters =  Chapter::with('zone', 'field')->get();
+        $chapters =  Chapter::actualCampus()->with('zone', 'field')->get();
 
         foreach($chapters as $chapter){
             $chapter->stakeholder_id = $chapter->stakeholder->name ?? 'N/A';

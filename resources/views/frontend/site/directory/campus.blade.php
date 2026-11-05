@@ -15,6 +15,9 @@
         <div class="campus-hero__actions">
             <a class="button button--gold" href="#campus-about">Discover this campus <span aria-hidden="true">↓</span></a>
             <a class="button button--ghost" href="#campus-contact">Get in touch</a>
+            @if(auth()->check() && auth()->user()->isAdmin())
+                <a class="button button--ghost" href="{{ route('chapters.edit', $chapter->id) }}">Edit campus <span aria-hidden="true">↗</span></a>
+            @endif
         </div>
     </div>
 </section>
@@ -23,10 +26,71 @@
     <div class="site-container campus-minisite-stats__grid">
         <div><strong>{{ number_format($chapter->members_count) }}</strong><span>Current members</span></div>
         <div><strong>{{ number_format($chapter->alumni_count) }}</strong><span>Alumni in the directory</span></div>
-        <div><strong>{{ $chapter->field?->name ?: 'GSF' }}</strong><span>Ministry field</span></div>
         <div><strong>{{ $chapter->zone?->name ?: 'Nigeria' }}</strong><span>Zone</span></div>
+        <div><strong>{{ $chapter->field?->name ?: 'GSF' }}</strong><span>Ministry field</span></div>
     </div>
 </section>
+
+@php
+    $zonalPastor = $chapter->zone?->zonalCord;
+    $fieldPastor = $chapter->field?->fieldCord ?? $chapter->zone?->field?->fieldCord;
+@endphp
+@if($zonalPastor || $fieldPastor)
+<section class="campus-pastoral-team" aria-label="Campus pastoral leadership">
+    <div class="site-container campus-pastoral-team__layout">
+        <div class="campus-pastoral-team__heading">
+            <div class="eyebrow"><span></span> Pastoral care</div>
+            <h2>Meet our pastors.</h2>
+        </div>
+        <div class="campus-pastoral-team__grid">
+            @if($zonalPastor)
+                <article class="campus-pastor-card campus-pastor-card--zone">
+                    <div class="campus-pastor-card__portrait">{!! renderAvatar($zonalPastor, 50, 'campus-pastor-card__image') !!}</div>
+                    <div class="campus-pastor-card__copy"><span>Zonal Pastor</span><h3>{{ $zonalPastor->name }}</h3></div>
+                </article>
+            @endif
+            @if($fieldPastor)
+                <article class="campus-pastor-card campus-pastor-card--field">
+                    <div class="campus-pastor-card__portrait">{!! renderAvatar($fieldPastor, 50, 'campus-pastor-card__image') !!}</div>
+                    <div class="campus-pastor-card__copy"><span>Field Pastor</span><h3>{{ $fieldPastor->name }}</h3></div>
+                </article>
+            @endif
+        </div>
+    </div>
+</section>
+@endif
+
+@if(filled($chapter->email) || filled($chapter->phone) || filter_var($chapter->facebook, FILTER_VALIDATE_URL) || filter_var($chapter->twitter, FILTER_VALIDATE_URL))
+<section class="campus-connect-section" aria-labelledby="campus-connect-heading">
+    <div class="site-container campus-connect-panel">
+        <div class="campus-connect-panel__heading">
+            <div class="eyebrow"><span></span> Fellowship contacts</div>
+            <h2 id="campus-connect-heading">Connect with us.</h2>
+        </div>
+        <div class="campus-connect-panel__links">
+            @if(filled($chapter->email))
+                <a href="mailto:{{ $chapter->email }}"><span>Email</span><strong>{{ $chapter->email }}</strong><b aria-hidden="true">↗</b></a>
+            @endif
+            @if(filled($chapter->phone))
+                <a href="tel:{{ preg_replace('/[^+\d]/', '', $chapter->phone) }}"><span>Phone</span><strong>{{ $chapter->phone }}</strong><b aria-hidden="true">↗</b></a>
+            @endif
+            @if(filter_var($chapter->facebook, FILTER_VALIDATE_URL) || filter_var($chapter->twitter, FILTER_VALIDATE_URL))
+                <div class="campus-connect-panel__social">
+                    <span>Social media</span>
+                    <div class="campus-connect-panel__social-icons">
+                        @if(filter_var($chapter->facebook, FILTER_VALIDATE_URL))
+                            <a class="campus-connect-panel__social-icon campus-connect-panel__social-icon--facebook" href="{{ $chapter->facebook }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $chapter->name }} on Facebook" title="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-8.2h2.8l.4-3.2h-3.2v-2c0-.9.3-1.6 1.6-1.6H17V3.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.3H7.5v3.2h2.8V21h3.2Z"/></svg></a>
+                        @endif
+                        @if(filter_var($chapter->twitter, FILTER_VALIDATE_URL))
+                            <a class="campus-connect-panel__social-icon campus-connect-panel__social-icon--x" href="{{ $chapter->twitter }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $chapter->name }} on X" title="X / Twitter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3L12 14.6 5.6 22H2.4l7.3-8.4L1.9 2h6.5l4.5 6.8L18.9 2Zm-1.1 18h1.7L7.4 3.9H5.6L17.8 20Z"/></svg></a>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+</section>
+@endif
 
 <section class="campus-minisite-content" id="campus-about">
     <div class="site-container campus-minisite-layout">
@@ -43,10 +107,13 @@
                     <span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s7-4.35 7-11A7 7 0 1 0 5 10c0 6.65 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg></span>
                     <div><small>Campus location</small><strong>{{ $chapter->address ?: $chapter->name }}</strong></div>
                 </div>
+                @if($chapter->meetings->isNotEmpty())
+                    <div class="campus-meeting-schedule"><h3>When we meet</h3><div class="campus-meeting-schedule__list">@foreach($chapter->meetings as $meeting)<div><strong>{{ $meeting->title ?: 'Fellowship meeting' }}</strong><span>{{ $meeting->day_of_week }} · {{ \Carbon\Carbon::parse($meeting->time)->format('g:i A') }}</span><small>{{ $meeting->venue }}</small></div>@endforeach</div></div>
+                @endif
             </section>
 
             <section class="campus-people-section">
-                <div class="campus-section-heading"><div><div class="eyebrow"><span></span> The Community</div><h2>Current members</h2></div><span>{{ number_format($chapter->members_count) }} listed</span></div>
+                <div class="campus-section-heading"><div><div class="eyebrow"><span></span> The Community</div><h2>Current members</h2></div><div class="campus-section-heading__meta"><span>{{ number_format($chapter->members_count) }} listed</span><a href="{{ route('members.campus', $chapter->slug) }}">View all <span aria-hidden="true">→</span></a></div></div>
                 @if($members->isNotEmpty())
                     <div class="campus-people-list">
                         @foreach($members as $member)
@@ -59,7 +126,7 @@
             </section>
 
             <section class="campus-people-section">
-                <div class="campus-section-heading"><div><div class="eyebrow"><span></span> Connected for Life</div><h2>Our alumni</h2></div><span>{{ number_format($chapter->alumni_count) }} listed</span></div>
+                <div class="campus-section-heading"><div><div class="eyebrow"><span></span> Connected for Life</div><h2>Our alumni</h2></div><div class="campus-section-heading__meta"><span>{{ number_format($chapter->alumni_count) }} listed</span><a href="{{ route('alumni.campus', $chapter->slug) }}">View all <span aria-hidden="true">→</span></a></div></div>
                 @if($alumni->isNotEmpty())
                     <div class="campus-people-list">
                         @foreach($alumni as $graduate)
@@ -71,21 +138,51 @@
                 @endif
             </section>
 
-            <section class="campus-events-section">
-                <div class="campus-section-heading"><div><div class="eyebrow"><span></span> Gather With Us</div><h2>Upcoming events</h2></div></div>
-                @forelse($events as $event)
-                    <article class="campus-event-row"><div class="campus-event-date"><strong>{{ \Carbon\Carbon::parse($event->date)->format('d') }}</strong><span>{{ \Carbon\Carbon::parse($event->date)->format('M') }}</span></div><div><small>{{ $event->venue ?: 'Campus Fellowship' }}</small><h3>{{ $event->title }}</h3><p>{{ \Carbon\Carbon::parse($event->date)->format('l, j F Y') }}@if(filled($event->time)) · {{ \Carbon\Carbon::parse($event->time)->format('g:i A') }}@endif</p></div></article>
-                @empty
-                    <div class="empty-state empty-state--compact"><strong>No upcoming events are listed.</strong><p>Reach out to the campus fellowship for current meeting details.</p></div>
-                @endforelse
-            </section>
+            @if($events->isNotEmpty())
+                <section class="campus-events-section">
+                    <div class="campus-section-heading"><div><div class="eyebrow"><span></span> Gather With Us</div><h2>Programs &amp; events</h2></div><div class="campus-section-heading__meta"><a href="{{ route('events.public.index', ['campus_id' => $chapter->id]) }}">View all <span aria-hidden="true">→</span></a></div></div>
+                    @foreach($events as $event)
+                        <article class="campus-event-row">
+                            <div class="campus-event-date"><strong>{{ $event->event_starts_at->format('d') }}</strong><span>{{ $event->event_starts_at->format('M') }}</span></div>
+                            <div><small>{{ $event->is_featured ? 'Featured · ' : '' }}{{ $event->event_starts_at->isPast() ? 'Past event' : 'Upcoming event' }} · {{ $event->event_venue ?: 'Campus Fellowship' }}</small><h3><a href="{{ route('events.public.show', $event->slug) }}">{{ $event->title }}</a></h3><p>{{ $event->event_starts_at->format('l, j F Y · g:i A') }}</p></div>
+                            @if($eventImage = \App\Modules\Blog\BlogMedia::url($event->featured_image))<a class="campus-event-row__image" href="{{ route('events.public.show', $event->slug) }}" aria-label="View {{ $event->title }}"><img src="{{ $eventImage }}" alt="" loading="lazy"></a>@endif
+                        </article>
+                    @endforeach
+                </section>
+            @endif
         </div>
 
-        <aside class="campus-minisite-aside" id="campus-contact">
-            <div class="campus-contact-card">
+        <aside class="campus-minisite-aside">
+            @if($campusPosts->isNotEmpty())
+            <div class="campus-news-panel">
+                <div class="campus-news-panel__heading">
+                    <div><div class="eyebrow"><span></span> Campus news</div><h2>Latest stories.</h2></div>
+                    <a href="{{ route('blog.index', ['campus_id' => $chapter->id]) }}">View all <span aria-hidden="true">→</span></a>
+                </div>
+                <div class="campus-news-list">
+                    @foreach($campusPosts as $campusPost)
+                        @php($campusPostImage = \App\Modules\Blog\BlogMedia::url($campusPost->featured_image))
+                        <a class="campus-news-item" href="{{ route('blog.show', $campusPost->slug) }}">
+                            @if($campusPostImage)
+                                <img src="{{ $campusPostImage }}" alt="" loading="lazy">
+                            @else
+                                <span class="campus-news-item__icon" aria-hidden="true">G</span>
+                            @endif
+                            <span class="campus-news-item__copy">
+                                <small>{{ $campusPost->published_at?->format('d M Y') }}</small>
+                                <strong>{{ $campusPost->title }}</strong>
+                                <span>{{ \Illuminate\Support\Str::limit(strip_tags($campusPost->excerpt ?: $campusPost->body), 82) }}</span>
+                            </span>
+                            <b aria-hidden="true">↗</b>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+            <div class="campus-contact-card" id="campus-contact">
                 <div class="eyebrow eyebrow--light"><span></span> Connect Locally</div>
-                <h2>Say hello to this fellowship.</h2>
-                <p>Ask a question or request more information about the campus community.</p>
+                <h2>Say hello.</h2>
+                <p>Ask a question or request more information about us.</p>
                 @if(session('message'))<div class="campus-contact-feedback" role="status">{{ session('message') }}</div>@endif
                 @if($errors->any())<div class="campus-contact-feedback campus-contact-feedback--error" role="alert">{{ $errors->first() }}</div>@endif
                 <form action="{{ route('campus.contact') }}" method="POST">
@@ -97,8 +194,6 @@
                     <label for="campus-contact-message">Message</label><textarea id="campus-contact-message" name="message" rows="4" required>{{ old('message') }}</textarea>
                     <button type="submit">Send message <span aria-hidden="true">→</span></button>
                 </form>
-                @if(filled($chapter->email))<a class="campus-contact-card__direct" href="mailto:{{ $chapter->email }}">{{ $chapter->email }}</a>@endif
-                @if(filled($chapter->phone))<a class="campus-contact-card__direct" href="tel:{{ $chapter->phone }}">{{ $chapter->phone }}</a>@endif
             </div>
         </aside>
     </div>

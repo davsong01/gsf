@@ -68,7 +68,7 @@ class ReportService
         /** =====================
          * BASE MODELS
          * ===================== */
-        $chaptersQuery = Chapter::query();
+        $chaptersQuery = Chapter::actualCampus();
         $zonesQuery = Zone::query();
         $fieldsQuery = Field::query();
 
@@ -81,7 +81,7 @@ class ReportService
          * ===================== */
         if ($isAdmin || finStakeholders($user)) {
             // Admin → full access
-            $chapterIds = Chapter::pluck('id');
+            $chapterIds = Chapter::actualCampus()->pluck('id');
             $zoneIds    = Zone::pluck('id');
             $fieldIds   = Field::pluck('id');
         } else {
@@ -92,7 +92,7 @@ class ReportService
             }elseif (in_array($role, zoneStakeholders())) {
                 $zoneIds = collect([$user->zone_id]);
 
-                $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
+                $chapterIds = Chapter::actualCampus()->where('zone_id', $user->zone_id)->pluck('id');
 
                 $fieldIds = Field::whereHas('zones', fn ($q) =>
                     $q->where('id', $user->zone_id)
@@ -102,9 +102,9 @@ class ReportService
 
                 $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
 
-                $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
+                $chapterIds = Chapter::actualCampus()->whereIn('zone_id', $zoneIds)->pluck('id');
             }elseif (in_array($role, secretariatStakeholders())) {
-                $chapterIds = Chapter::pluck('id');
+                $chapterIds = Chapter::actualCampus()->pluck('id');
                 $zoneIds    = Zone::pluck('id');
                 $fieldIds   = Field::pluck('id');
             }
@@ -254,7 +254,7 @@ class ReportService
          * ROLE-BASED SCOPING
          * ===================== */
         if ($isAdmin || finStakeholders($user)) {
-            $chapterIds = Chapter::pluck('id');
+            $chapterIds = Chapter::actualCampus()->pluck('id');
             $zoneIds    = Zone::pluck('id');
             $fieldIds   = Field::pluck('id');
         } else {
@@ -264,14 +264,14 @@ class ReportService
                 $fieldIds   = collect([$user->field_id]);
             } elseif (in_array($role, zoneStakeholders())) {
                 $zoneIds = collect([$user->zone_id]);
-                $chapterIds = Chapter::where('zone_id', $user->zone_id)->pluck('id');
+                $chapterIds = Chapter::actualCampus()->where('zone_id', $user->zone_id)->pluck('id');
                 $fieldIds = Field::whereHas('zones', fn($q) => $q->where('id', $user->zone_id))->pluck('id');
             } elseif (in_array($role, fieldStakeholders())) {
                 $fieldIds = collect([$user->field_id]);
                 $zoneIds = Zone::where('field_id', $user->field_id)->pluck('id');
-                $chapterIds = Chapter::whereIn('zone_id', $zoneIds)->pluck('id');
+                $chapterIds = Chapter::actualCampus()->whereIn('zone_id', $zoneIds)->pluck('id');
             } elseif (in_array($role, secretariatStakeholders())) {
-                $chapterIds = Chapter::pluck('id');
+                $chapterIds = Chapter::actualCampus()->pluck('id');
                 $zoneIds    = Zone::pluck('id');
                 $fieldIds   = Field::pluck('id');
             }

@@ -21,7 +21,7 @@ class UserEmailsController extends Controller
 
     public function create()
     {
-        $chapters = Chapter::all();
+        $chapters = Chapter::actualCampus()->get();
         return view('admin.emails.create', compact('chapters'));
     }
 

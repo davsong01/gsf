@@ -206,8 +206,8 @@ class AdminReportsController extends Controller
             'questions' => StakeholderReportQuestion::isActive()
                 ->orderBy('order')
                 ->get(['id', 'label', 'section_id', 'sub_section_id']),
-            'chapters' => Chapter::orderBy('name')->get(),
-            'legends' => Chapter::orderBy('name')->get(),
+            'chapters' => Chapter::actualCampus()->orderBy('name')->get(),
+            'legends' => Chapter::actualCampus()->orderBy('name')->get(),
             'isAdmin' => $isAdmin,
             'user' => $user,
         ];

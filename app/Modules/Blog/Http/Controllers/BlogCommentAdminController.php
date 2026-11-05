@@ -58,7 +58,7 @@ class BlogCommentAdminController extends Controller
 
         return view('modules.blog.admin.edit-comment', [
             'comment' => $comment->load(['post:id,title,slug', 'chapter:id,name']),
-            'campuses' => Chapter::orderBy('name')->get(['id', 'name']),
+            'campuses' => Chapter::actualCampus()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

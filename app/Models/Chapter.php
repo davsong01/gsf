@@ -12,14 +12,58 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Zone;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Chapter extends Model
 {
     protected $guarded = [];
 
+    public function scopeActualCampus(Builder $query): Builder
+    {
+        return $query->whereRaw('LOWER(TRIM(chapters.name)) <> ?', ['other']);
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Chapter $chapter) {
+            if (filled($chapter->slug)) {
+                return;
+            }
+
+            $name = preg_replace('/[^\pL\pN\s]/u', '', (string) $chapter->name) ?? (string) $chapter->name;
+            $baseSlug = Str::lower(collect(preg_split('/\s+/u', trim($name), -1, PREG_SPLIT_NO_EMPTY))
+                ->map(fn ($word) => Str::substr($word, 0, 1))
+                ->implode(''));
+            $baseSlug = $baseSlug ?: 'chapter';
+            $slug = $baseSlug;
+            $suffix = 2;
+            while (static::where('slug', $slug)->exists()) {
+                $slug = $baseSlug.'-'.$suffix++;
+            }
+
+            $chapter->slug = $slug;
+        });
+    }
+
+    public function getSlugAttribute($value): string
+    {
+        return Str::lower((string) $value);
+    }
+
+    public function setSlugAttribute($value): void
+    {
+        $this->attributes['slug'] = Str::lower(trim((string) $value));
+    }
+
     public function users(){
         return $this->hasMany(User::class, 'chapter_id');
+    }
+
+    public function meetings()
+    {
+        return $this->hasMany(ChapterMeeting::class)->orderByRaw("CASE day_of_week WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3 WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 ELSE 7 END")->orderBy('time');
     }
 
     public function members()

@@ -18,9 +18,11 @@ return new class extends Migration
 
         DB::table('chapters')->select('id', 'name')->orderBy('id')->chunkById(500, function ($chapters) use (&$usedSlugs) {
             foreach ($chapters as $chapter) {
-                $baseSlug = Str::lower(collect(preg_split('/\s+/u', trim((string) $chapter->name), -1, PREG_SPLIT_NO_EMPTY))
+                $name = preg_replace('/[^\pL\pN\s]/u', '', (string) $chapter->name) ?? (string) $chapter->name;
+                $baseSlug = Str::lower(collect(preg_split('/\s+/u', trim($name), -1, PREG_SPLIT_NO_EMPTY))
                     ->map(fn ($word) => Str::substr($word, 0, 1))
                     ->implode(''));
+                $baseSlug = $baseSlug ?: 'chapter';
                 $slug = $baseSlug;
                 $suffix = 2;
                 while (isset($usedSlugs[$slug])) {

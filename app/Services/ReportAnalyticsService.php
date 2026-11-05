@@ -52,7 +52,7 @@ class ReportAnalyticsService
             ? collect((array) $request->input('zones'))->map(fn ($id) => (int) $id)->intersect($availableZoneIds)->values()
             : $availableZoneIds;
 
-        $chapters = Chapter::query()
+        $chapters = Chapter::actualCampus()
             ->whereIn('id', $chapterIds)
             ->when($request->filled('fields'), fn ($query) => $query->whereIn('field_id', $fieldFilter))
             ->when($request->filled('zones'), fn ($query) => $query->whereIn('zone_id', $zoneFilter))
@@ -140,7 +140,7 @@ class ReportAnalyticsService
             ? collect((array) $filters['zones'])->map(fn ($id) => (int) $id)->intersect($allowedZoneIds)->values()
             : $allowedZoneIds;
 
-        $chapters = Chapter::query()
+        $chapters = Chapter::actualCampus()
             ->whereIn('id', $allowedChapterIds)
             ->when(! empty($filters['fields']), fn ($query) => $query->whereIn('field_id', $selectedFieldIds))
             ->when(! empty($filters['zones']), fn ($query) => $query->whereIn('zone_id', $selectedZoneIds))

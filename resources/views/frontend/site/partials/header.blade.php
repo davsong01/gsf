@@ -75,7 +75,13 @@
                     </ul>
                 </li>
                 <li><a class="{{ ($activeSection ?? '') === 'conferences' ? 'is-active' : '' }}" href="{{ route('conferences.index') }}">Conferences</a></li>
-                <li><a href="{{ route('blog.index') }}">News &amp; Events</a></li>
+                <li class="nav-dropdown">
+                    <button class="{{ in_array($activeSection ?? '', ['news', 'events']) ? 'is-active' : '' }}" type="button" aria-expanded="false" data-dropdown-toggle>News &amp; Events <span aria-hidden="true">⌄</span></button>
+                    <ul class="nav-dropdown__menu">
+                        <li><a href="{{ route('blog.index') }}">News</a></li>
+                        <li><a href="{{ route('events.public.index') }}">Programs and Events</a></li>
+                    </ul>
+                </li>
                 <li class="primary-nav__portal"><a href="{{ $portalUrl }}">{{ $portalLabel }} @if(!$portalIsAuthenticated)<span aria-hidden="true">↗</span>@endif</a></li>
             </ul>
         </nav>

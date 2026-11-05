@@ -44,7 +44,7 @@
                 <h2>{{ $isAlumni ? 'Browse GSF alumni' : 'Browse current members' }}</h2>
                 <p>Search by name{{ $campusContext ? '' : ' or campus' }} to find the person you’re looking for.</p>
             </div>
-            <form class="directory-search directory-search--people {{ $campusContext ? 'directory-search--campus' : '' }}" method="GET" action="{{ $campusContext ? ($isAlumni ? route('alumni.campus', $campusContext->id) : route('members.campus', $campusContext->id)) : ($isAlumni ? route('people.alumni') : route('people.students')) }}">
+            <form class="directory-search directory-search--people {{ $campusContext ? 'directory-search--campus' : '' }}" method="GET" action="{{ $campusContext ? ($isAlumni ? route('alumni.campus', $campusContext->slug) : route('members.campus', $campusContext->slug)) : ($isAlumni ? route('people.alumni') : route('people.students')) }}">
                 <label class="sr-only" for="person-search">Search by name</label>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg>
                 <input id="person-search" type="search" name="name" value="{{ $searchName }}" placeholder="Name">
@@ -53,7 +53,7 @@
                 <input id="person-campus" type="search" name="school" value="{{ $searchSchool }}" placeholder="Campus">
                 @endunless
                 <button type="submit">Find people</button>
-                @if($searchName !== '' || $searchSchool !== '')<a href="{{ $campusContext ? ($isAlumni ? route('alumni.campus', $campusContext->id) : route('members.campus', $campusContext->id)) : ($isAlumni ? route('people.alumni') : route('people.students')) }}">Clear</a>@endif
+                @if($searchName !== '' || $searchSchool !== '')<a href="{{ $campusContext ? ($isAlumni ? route('alumni.campus', $campusContext->slug) : route('members.campus', $campusContext->slug)) : ($isAlumni ? route('people.alumni') : route('people.students')) }}">Clear</a>@endif
             </form>
         </div>
 

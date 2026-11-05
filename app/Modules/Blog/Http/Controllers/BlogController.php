@@ -11,6 +11,7 @@ use App\Modules\Blog\BlogPermissions;
 use App\Modules\Blog\BlogMedia;
 use App\Modules\Blog\Models\BlogCategory;
 use App\Modules\Blog\Models\BlogPost;
+use App\Modules\Blog\Models\BlogSetting;
 use App\Modules\Blog\Models\BlogTag;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -22,6 +23,7 @@ class BlogController extends Controller
 {
     public function index(Request $request)
     {
+        $eventsWorkspace = $this->eventWorkspace();
         $user = $this->user();
         $this->authorize($user, BlogPermissions::VIEW);
         $isStakeholder = $user instanceof Stakeholder;
@@ -40,7 +42,15 @@ class BlogController extends Controller
         $canFilterZones = !$isStakeholder || $isFieldPastor;
         $canFilterChapters = !$isStakeholder || $isFieldPastor || $isZonalPastor;
 
-        $query = BlogPost::with(['categories', 'author'])->withCount('comments')->latest('updated_at');
+        $query = BlogPost::with(['categories', 'author'])->withCount('comments')
+            ->where('type', $eventsWorkspace ? '=' : '!=', 'event');
+        if ($eventsWorkspace) {
+            $query->orderByRaw('CASE WHEN event_starts_at >= ? THEN 0 ELSE 1 END', [now()])
+                ->orderByRaw('CASE WHEN event_starts_at >= ? THEN event_starts_at END ASC', [now()])
+                ->orderByRaw('CASE WHEN event_starts_at < ? THEN event_starts_at END DESC', [now()]);
+        } else {
+            $query->latest('updated_at');
+        }
         if ($isStakeholder) $query->where('author_type', $user::class)->where('author_id', $user->id);
 
         $filters = $request->validate([
@@ -62,21 +72,35 @@ class BlogController extends Controller
         }
         if ($canFilterFields && !empty($filters['field_id'])) {
             $fieldId = (int) $filters['field_id'];
-            $query->where(function ($scopes) use ($fieldId) {
+            $zoneIds = Zone::where('field_id', $fieldId)->select('id');
+            $chapterIds = Chapter::actualCampus()
+                ->where(function ($chapters) use ($fieldId, $zoneIds) {
+                    $chapters->where('field_id', $fieldId)
+                        ->orWhereIn('zone_id', $zoneIds);
+                })
+                ->select('id');
+            $query->where(function ($scopes) use ($fieldId, $chapterIds) {
                 $scopes->where(fn ($scope) => $scope->where('scope_type', 'field')->where('scope_id', $fieldId))
                     ->orWhere(fn ($scope) => $scope->where('scope_type', 'zone')->whereIn('scope_id', Zone::where('field_id', $fieldId)->select('id')))
-                    ->orWhere(fn ($scope) => $scope->where('scope_type', 'chapter')->whereIn('scope_id', Chapter::where('field_id', $fieldId)->select('id')));
+                    ->orWhere(fn ($scope) => $scope->where('scope_type', 'chapter')->whereIn('scope_id', $chapterIds))
+                    ->orWhere(fn ($scope) => $scope->whereHasMorph('author', [Stakeholder::class], fn ($author) => $author->whereIn('chapter_id', $chapterIds)));
             });
         }
         if ($canFilterZones && !empty($filters['zone_id'])) {
             $zoneId = (int) $filters['zone_id'];
-            $query->where(function ($scopes) use ($zoneId) {
+            $chapterIds = Chapter::actualCampus()->where('zone_id', $zoneId)->select('id');
+            $query->where(function ($scopes) use ($zoneId, $chapterIds) {
                 $scopes->where(fn ($scope) => $scope->where('scope_type', 'zone')->where('scope_id', $zoneId))
-                    ->orWhere(fn ($scope) => $scope->where('scope_type', 'chapter')->whereIn('scope_id', Chapter::where('zone_id', $zoneId)->select('id')));
+                    ->orWhere(fn ($scope) => $scope->where('scope_type', 'chapter')->whereIn('scope_id', $chapterIds))
+                    ->orWhere(fn ($scope) => $scope->whereHasMorph('author', [Stakeholder::class], fn ($author) => $author->whereIn('chapter_id', $chapterIds)));
             });
         }
         if ($canFilterChapters && !empty($filters['chapter_id'])) {
-            $query->where('scope_type', 'chapter')->where('scope_id', (int) $filters['chapter_id']);
+            $chapterId = (int) $filters['chapter_id'];
+            $query->where(function ($scopes) use ($chapterId) {
+                $scopes->where(fn ($scope) => $scope->where('scope_type', 'chapter')->where('scope_id', $chapterId))
+                    ->orWhere(fn ($scope) => $scope->whereHasMorph('author', [Stakeholder::class], fn ($author) => $author->where('chapter_id', $chapterId)));
+            });
         }
         if (!empty($filters['status'])) $query->where('status', $filters['status']);
         if (!empty($filters['type'])) $query->where('type', $filters['type']);
@@ -95,7 +119,7 @@ class BlogController extends Controller
             });
         }
 
-        $summaryQuery = BlogPost::query();
+        $summaryQuery = BlogPost::query()->where('type', $eventsWorkspace ? '=' : '!=', 'event');
         if ($isStakeholder) {
             $summaryQuery->where('author_type', $user::class)->where('author_id', $user->id);
         }
@@ -104,7 +128,7 @@ class BlogController extends Controller
 
         $fields = $canFilterFields ? Field::orderBy('name')->get() : collect();
         $zonesQuery = Zone::with('field')->orderBy('name');
-        $chaptersQuery = Chapter::with(['field', 'zone'])->orderBy('name');
+        $chaptersQuery = Chapter::actualCampus()->with(['field', 'zone'])->orderBy('name');
         if ($isStakeholder && $isFieldPastor) {
             $user->field_id ? $zonesQuery->where('field_id', $user->field_id) : $zonesQuery->whereRaw('1 = 0');
             $user->field_id ? $chaptersQuery->where('field_id', $user->field_id) : $chaptersQuery->whereRaw('1 = 0');
@@ -112,8 +136,9 @@ class BlogController extends Controller
             $user->zone_id ? $chaptersQuery->where('zone_id', $user->zone_id) : $chaptersQuery->whereRaw('1 = 0');
         }
 
-        return view('modules.blog.admin.index', [
+        return view($eventsWorkspace ? 'modules.blog.admin.events' : 'modules.blog.admin.index', [
             'posts' => $query->paginate(20)->withQueryString(),
+            'eventsWorkspace' => $eventsWorkspace,
             'isStakeholder' => $isStakeholder,
             'canFilterFields' => $canFilterFields,
             'canFilterZones' => $canFilterZones,
@@ -135,7 +160,7 @@ class BlogController extends Controller
             'zones' => $canFilterZones ? $zonesQuery->get() : collect(),
             'chapters' => $canFilterChapters ? $chaptersQuery->get() : collect(),
             'canManageComments' => BlogPermissions::allows($user, BlogPermissions::COMMENTS),
-            'bulkActions' => $isStakeholder ? [] : collect([
+            'bulkActions' => ($isStakeholder || $eventsWorkspace) ? [] : collect([
                 'delete' => 'Delete',
                 'change-category' => 'Change category',
                 'archive' => 'Archive',
@@ -221,11 +246,12 @@ class BlogController extends Controller
         $user = $this->user();
         $this->authorize($user, BlogPermissions::CREATE);
 
-        return view('modules.blog.admin.form', array_merge($this->formData($user), ['post' => null]));
+        return view('modules.blog.admin.form', array_merge($this->formData($user), ['post' => null, 'eventsWorkspace' => $this->eventWorkspace()]));
     }
 
     public function store(Request $request)
     {
+        if ($this->eventWorkspace()) $request->merge(['type' => 'event']);
         $user = $this->user();
         $this->authorize($user, BlogPermissions::CREATE);
         $data = $this->validated($request, $user);
@@ -234,22 +260,30 @@ class BlogController extends Controller
         unset($data['category_ids'], $data['tag_ids']);
         $data['author_type'] = $user::class;
         $data['author_id'] = $user->id;
-        $data['status'] = $this->isStakeholder($user) ? ($request->boolean('submit_review') ? 'review' : 'draft') : ($data['status'] ?? 'draft');
+        if ($this->isCampusStakeholder($user)) {
+            $data['status'] = BlogSetting::campusPostsRequireReview()
+                ? ($request->boolean('submit_review') ? 'review' : 'draft')
+                : $this->campusPublicationStatus($data['published_at'] ?? null);
+        } else {
+            $data['status'] = $this->isStakeholder($user) ? ($request->boolean('submit_review') ? 'review' : 'draft') : ($data['status'] ?? 'draft');
+        }
         $data['published_at'] = $this->publicationDate($data);
 
         $post = BlogPost::create($data);
-        $this->syncTaxonomy($post, $categoryIds, $tagIds);
+        if (!$this->eventWorkspace()) $this->syncTaxonomy($post, $categoryIds, $tagIds);
 
         return redirect()->route($this->routePrefix($user).'.posts.edit', $post)->with('message', 'Post saved successfully.');
     }
 
     public function edit(BlogPost $post)
     {
+        abort_unless(($post->type === 'event') === $this->eventWorkspace(), 404);
         $user = $this->user();
         $this->authorizePost($user, $post, BlogPermissions::EDIT);
 
         return view('modules.blog.admin.form', array_merge($this->formData($user), [
             'post' => $post->load(['author', 'categories']),
+            'eventsWorkspace' => $this->eventWorkspace(),
             'authors' => $user instanceof User && BlogPermissions::allows($user, BlogPermissions::EDIT)
                 ? $this->eligibleAuthors()
                 : collect(),
@@ -259,6 +293,7 @@ class BlogController extends Controller
 
     public function preview(BlogPost $post)
     {
+        abort_unless(($post->type === 'event') === $this->eventWorkspace(), 404);
         $user = $this->user();
         $this->authorizePost($user, $post, BlogPermissions::EDIT);
         $post->load(['categories', 'tags', 'author', 'related'])
@@ -269,11 +304,13 @@ class BlogController extends Controller
 
         $relatedPosts = $post->suggestedRelated();
 
-        return view('modules.blog.public.show', ['post' => $post, 'relatedPosts' => $relatedPosts, 'isPreview' => true]);
+        return view($post->type === 'event' ? 'modules.blog.public.event-show' : 'modules.blog.public.show', ['post' => $post, 'relatedPosts' => $relatedPosts, 'isPreview' => true]);
     }
 
     public function update(Request $request, BlogPost $post)
     {
+        abort_unless(($post->type === 'event') === $this->eventWorkspace(), 404);
+        if ($this->eventWorkspace()) $request->merge(['type' => 'event']);
         $user = $this->user();
         $this->authorizePost($user, $post, BlogPermissions::EDIT);
         $data = $this->validated($request, $user, $post);
@@ -292,10 +329,16 @@ class BlogController extends Controller
                 $data['legacy_author_name'] = null;
             }
         }
-        if ($this->isStakeholder($user)) $data['status'] = $request->boolean('submit_review') ? 'review' : ($post->status === 'published' ? 'published' : 'draft');
+        if ($this->isCampusStakeholder($user)) {
+            $data['status'] = BlogSetting::campusPostsRequireReview()
+                ? ($request->boolean('submit_review') ? 'review' : ($post->status === 'published' ? 'published' : 'draft'))
+                : $this->campusPublicationStatus($data['published_at'] ?? null);
+        } elseif ($this->isStakeholder($user)) {
+            $data['status'] = $request->boolean('submit_review') ? 'review' : ($post->status === 'published' ? 'published' : 'draft');
+        }
         $data['published_at'] = $this->publicationDate($data, $post);
         $post->update($data);
-        $this->syncTaxonomy($post, $categoryIds, $tagIds);
+        if (!$this->eventWorkspace()) $this->syncTaxonomy($post, $categoryIds, $tagIds);
 
         return back()->with('message', 'Post updated successfully.');
     }
@@ -372,12 +415,20 @@ class BlogController extends Controller
 
     protected function formData($user): array
     {
+        $isCampusStakeholder = $this->isCampusStakeholder($user);
+
         return [
-            'canFeaturePosts' => BlogPermissions::canFeaturePosts($user),
+            'isStakeholder' => $this->isStakeholder($user),
+            'canFeaturePosts' => BlogPermissions::canFeaturePosts($user)
+                || ($isCampusStakeholder && BlogSetting::campusPostsCanFeature()),
+            'isCampusStakeholder' => $isCampusStakeholder,
+            'userCampusAddress' => $isCampusStakeholder ? $user->chapter?->address : null,
+            'campusPostsRequireReview' => BlogSetting::campusPostsRequireReview(),
+            'campusPostsCanAllowComments' => BlogSetting::campusPostsCanAllowComments(),
             'categories' => BlogCategory::orderBy('name')->get(),
             'fields' => Field::orderBy('name')->get(),
             'zones' => Zone::with('field')->orderBy('name')->get(),
-            'chapters' => Chapter::with(['field', 'zone'])->orderBy('name')->get(),
+            'chapters' => Chapter::actualCampus()->with(['field', 'zone'])->orderBy('name')->get(),
             'tags' => BlogTag::orderBy('name')->get(),
         ];
     }
@@ -411,7 +462,7 @@ class BlogController extends Controller
     protected function validated(Request $request, $user, ?BlogPost $post = null): array
     {
         $data = $request->validate([
-            'type' => ['required', 'in:article,video'],
+            'type' => ['required', Rule::in($this->eventWorkspace() ? ['event'] : ['article', 'video'])],
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:blog_posts,slug,'.($post?->id ?? 'NULL')],
             'excerpt' => ['nullable', 'string', 'max:1000'],
@@ -421,6 +472,14 @@ class BlogController extends Controller
             'category_ids.*' => ['integer', 'distinct', 'exists:blog_categories,id'],
             'status' => ['nullable', 'in:draft,review,scheduled,published,archived'],
             'published_at' => ['nullable', 'date'],
+            'event_starts_at' => ['required_if:type,event', 'nullable', 'date'],
+            'event_venue' => ['required_if:type,event', 'nullable', 'string', 'max:255'],
+            'event_speakers' => ['exclude_unless:type,event', 'nullable', 'array', 'max:30'],
+            'event_speakers.*.kind' => ['exclude_unless:type,event', 'required', 'in:speaker,guest_minister'],
+            'event_speakers.*.name' => ['exclude_unless:type,event', 'required', 'string', 'max:255'],
+            'event_speakers.*.ministry' => ['exclude_unless:type,event', 'nullable', 'string', 'max:255'],
+            'event_speakers.*.image' => ['exclude_unless:type,event', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
+            'event_speakers.*.existing_image' => ['exclude_unless:type,event', 'nullable', 'string', 'max:500'],
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:320'],
             'canonical_url' => ['nullable', 'url', 'max:2048'],
@@ -434,8 +493,28 @@ class BlogController extends Controller
         $data['slug'] = Str::slug($data['slug'] ?: $data['title']);
         $data['scope_type'] = $post?->scope_type ?? $this->defaultScopeType($user);
         $data['scope_id'] = $post?->scope_id ?? $this->scopeId($user, $data['scope_type'], null);
-        $data['allow_comments'] = $request->boolean('allow_comments');
-        if (BlogPermissions::canFeaturePosts($user)) {
+        if ($data['type'] !== 'event') {
+            $data['event_starts_at'] = null;
+            $data['event_venue'] = null;
+            $data['event_speakers'] = null;
+        } else {
+            $previousSpeakerImages = collect($post?->event_speakers ?? [])->pluck('image')->filter()->all();
+            $data['event_speakers'] = collect($data['event_speakers'] ?? [])->values()->map(function (array $speaker, int $index) use ($request, $previousSpeakerImages) {
+                $existingImage = $speaker['existing_image'] ?? null;
+                unset($speaker['existing_image']);
+                $imageKey = "event_speakers.{$index}.image";
+                $speaker['image'] = $request->hasFile($imageKey)
+                    ? BlogMedia::upload($request->file($imageKey), 'event_speakers')
+                    : (in_array($existingImage, $previousSpeakerImages, true) ? $existingImage : null);
+
+                return $speaker;
+            })->all();
+        }
+        $data['allow_comments'] = $this->isCampusStakeholder($user) && ! BlogSetting::campusPostsCanAllowComments()
+            ? false
+            : $request->boolean('allow_comments');
+        if (BlogPermissions::canFeaturePosts($user)
+            || ($this->isCampusStakeholder($user) && BlogSetting::campusPostsCanFeature())) {
             $data['is_featured'] = $request->boolean('is_featured');
         } else {
             unset($data['is_featured']);
@@ -458,6 +537,13 @@ class BlogController extends Controller
         return $data['published_at'] ?? $post?->published_at;
     }
 
+    protected function campusPublicationStatus($publishedAt): string
+    {
+        return filled($publishedAt) && \Illuminate\Support\Carbon::parse($publishedAt)->isFuture()
+            ? 'scheduled'
+            : 'published';
+    }
+
     protected function scopeId($user, string $scopeType, ?int $scopeId): ?int
     {
         if (!$this->isStakeholder($user)) return $scopeType === 'national' ? null : $scopeId;
@@ -478,9 +564,18 @@ class BlogController extends Controller
         return 'national';
     }
 
-    protected function user() { return auth('stakeholder')->user() ?: auth()->user(); }
+    protected function user()
+    {
+        if (request()->routeIs('stakeholders.blog.*', 'stakeholders.events.*')) {
+            return auth('stakeholder')->user() ?: auth()->user();
+        }
+
+        return auth()->user() ?: auth('stakeholder')->user();
+    }
     protected function isStakeholder($user): bool { return $user instanceof Stakeholder; }
-    protected function routePrefix($user): string { return $this->isStakeholder($user) ? 'stakeholders.blog' : 'admin.blog'; }
+    protected function isCampusStakeholder($user): bool { return $user instanceof Stakeholder && filled($user->chapter_id); }
+    protected function routePrefix($user): string { return ($this->isStakeholder($user) ? 'stakeholders' : 'admin').($this->eventWorkspace() ? '.events' : '.blog'); }
+    protected function eventWorkspace(): bool { return request()->routeIs('admin.events.*', 'stakeholders.events.*'); }
 
     protected function authorize($user, string $permission): void
     {

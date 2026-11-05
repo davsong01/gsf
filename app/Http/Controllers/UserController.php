@@ -75,7 +75,7 @@ class UserController extends Controller
 	{
 		if (auth()->user()->isAdmin()) {
 			$pending = TempMember::with('campus')->orderBy('created_at','DESC')->get();
-			$chapters = Chapter::where('id', '!=', 86)->get();
+			$chapters = Chapter::actualCampus()->get();
 			$portfolios = getCommunityPortfolios();
 
 			$counter = 1;
@@ -106,7 +106,7 @@ class UserController extends Controller
 
 	public function edit(User $user)
 	{
-		$chapters = Chapter::all();
+		$chapters = Chapter::actualCampus()->get();
 		$portfolios = getCommunityPortfolios();
         $campusDesignations = StakeholderDesignation::select('id','name')->where('type', 'chapter_executive')->orderBy('order')->get();
 		$sessions = range(date('1982'), date('Y'));
@@ -124,10 +124,10 @@ class UserController extends Controller
 
 	public function create(Request $request)
 	{
-		$chapters = Chapter::orderBy('name')->get(); //sort in alphabetical order
+		$chapters = Chapter::actualCampus()->orderBy('name')->get(); //sort in alphabetical order
 		$hostels = Hostel::orderBy('name')->get();
 		$foods = Food::all();
-		$chapters = Chapter::all();
+		$chapters = Chapter::actualCampus()->get();
 		$portfolios = getCommunityPortfolios();
         $campusDesignations = StakeholderDesignation::select('id','name')->where('type', 'chapter_executive')->orderBy('order')->get();
 
@@ -320,7 +320,7 @@ class UserController extends Controller
 
 	public function usersImportIndex()
 	{
-		$chapters = Chapter::all();
+		$chapters = Chapter::actualCampus()->get();
 		$roles = getCommunityPortfolios();
 		return view('admin.users.import', compact('chapters', 'roles'));
 	}
@@ -354,7 +354,7 @@ class UserController extends Controller
 			return abort(404);
 		}
 
-		$chapters = Chapter::all();
+		$chapters = Chapter::actualCampus()->get();
 		$portfolios = getCommunityPortfolios();
 		$sessions = range(date('1982'), date('Y'));
 		$president = $user->campus?->chapterPresident;
