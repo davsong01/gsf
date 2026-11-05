@@ -29,6 +29,10 @@
 .blog-article-body figure { max-width: 100%; margin: 1.5em auto; }
 .blog-article-body iframe { max-width: 100%; }
 .blog-article-body table { display: block; max-width: 100%; overflow-x: auto; }
+html[data-theme="dark"] .blog-article-body.sun-editor-editable { color:#d5deec !important; background-color:transparent !important; }
+html[data-theme="dark"] .blog-article-body.sun-editor-editable :where(p,div,span,h1,h2,h3,h4,h5,h6,li,blockquote) { color:inherit; background-color:transparent; }
+html[data-theme="dark"] .blog-article-body.sun-editor-editable a { color:#79c9f1; }
+html[data-theme="dark"] .blog-article-body.sun-editor-editable blockquote { color:#d5deec; }
 .blog-post-event-details { display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; margin:0 0 18px; padding:18px 20px; border:1px solid #dbe5ef; border-radius:14px; background:#f4f8fc; color:#23446b; }
 .blog-post-event-details strong { color:#0f5790; text-transform:uppercase; font-size:12px; letter-spacing:.08em; }
 .blog-post-event-details span { font-size:14px; font-weight:700; }
