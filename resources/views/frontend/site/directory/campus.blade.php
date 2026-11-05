@@ -112,6 +112,41 @@
                 @endif
             </section>
 
+            @php($activeCampusNeeds = $chapter->needs->where('is_active', true))
+            @if($activeCampusNeeds->isNotEmpty() || (filled($chapter->fellowship_bank_name) && filled($chapter->fellowship_account_name) && filled($chapter->fellowship_account_number)))
+                <section class="campus-needs-section" aria-labelledby="campus-needs-heading">
+                    <div class="campus-section-heading"><div><div class="eyebrow"><span></span> Support the fellowship</div><h2 id="campus-needs-heading">Campus needs.</h2></div></div>
+                    @if($activeCampusNeeds->isNotEmpty())
+                        <div class="campus-needs-list">
+                            @foreach($activeCampusNeeds as $need)
+                                <article class="campus-need-card"><h3>{{ $need->title }}</h3><p>{{ $need->description }}</p>@if($need->amount !== null)<strong>Estimated cost: ₦{{ number_format((float) $need->amount, 2) }}</strong>@endif</article>
+                            @endforeach
+                        </div>
+                    @endif
+                    @if(filled($chapter->fellowship_bank_name) && filled($chapter->fellowship_account_name) && filled($chapter->fellowship_account_number))
+                        <div class="campus-needs-account"><h3>Fellowship account details</h3><dl><div><dt>Bank</dt><dd>{{ $chapter->fellowship_bank_name }}</dd></div><div><dt>Account name</dt><dd>{{ $chapter->fellowship_account_name }}</dd></div><div><dt>Account number</dt><dd>{{ $chapter->fellowship_account_number }}</dd></div></dl></div>
+                    @endif
+                </section>
+            @endif
+
+            @if($chapter->galleryPhotos->isNotEmpty())
+                <section class="campus-gallery-section" aria-labelledby="campus-gallery-heading">
+                    <div class="campus-section-heading">
+                        <div><div class="eyebrow"><span></span> Fellowship moments</div><h2 id="campus-gallery-heading">Life on this campus.</h2></div>
+                        <div class="campus-section-heading__meta"><span>{{ $chapter->galleryPhotos->count() }} {{ \Illuminate\Support\Str::plural('photo', $chapter->galleryPhotos->count()) }}</span></div>
+                    </div>
+                    <div class="campus-gallery-grid">
+                        @foreach($chapter->galleryPhotos as $photo)
+                            <a class="campus-gallery-card" href="{{ versionedAsset($photo->image_path) }}" target="_blank" rel="noopener" aria-label="Open {{ $photo->caption ?: 'fellowship photo' }}">
+                                <img src="{{ versionedAsset($photo->image_path) }}" alt="{{ $photo->caption ?: $chapter->name.' fellowship photo' }}" loading="lazy">
+                                @if(filled($photo->caption))<span>{{ $photo->caption }}</span>@endif
+                                <b aria-hidden="true">↗</b>
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
             <section class="campus-people-section">
                 <div class="campus-section-heading"><div><div class="eyebrow"><span></span> The Community</div><h2>Current members</h2></div><div class="campus-section-heading__meta"><span>{{ number_format($chapter->members_count) }} listed</span><a href="{{ route('members.campus', $chapter->slug) }}">View all <span aria-hidden="true">→</span></a></div></div>
                 @if($members->isNotEmpty())

@@ -54,6 +54,9 @@
                 @else
                     <a class="sh-button sh-button--primary" href="{{ route('stakeholders.reports.index') }}"><i class="fa fa-folder-open-o" aria-hidden="true"></i> Open reports <span aria-hidden="true">↗</span></a>
                 @endif
+                @if($isChapter && $chapter)
+                    <a class="sh-button sh-button--outline" href="{{ route('campus.single', $chapter->slug) }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> Campus view <span aria-hidden="true">↗</span></a>
+                @endif
                 <a class="sh-button sh-button--outline" href="{{ route('stakeholders.profile') }}">My profile <span aria-hidden="true">→</span></a>
             </div>
         </div>
@@ -71,7 +74,7 @@
     </section>
 
     <section class="sh-section" aria-labelledby="sh-actions-title">
-        <div class="sh-section__heading"><div><span class="sh-section__eyebrow">Make progress</span><h2 id="sh-actions-title">Your quick actions</h2></div><p>The things you reach for most, all in one place.</p></div>
+        <div class="sh-section__heading"><div><span class="sh-section__eyebrow">Make progress</span><h2 id="sh-actions-title">Quick actions</h2></div><p>The things you reach for most, all in one place.</p></div>
         <div class="sh-action-grid">
             @if($isFinance)
                 <a class="sh-action sh-action--blue" href="{{ route('stakeholders.financial.report') }}"><span class="sh-action__icon"><i class="fa fa-line-chart" aria-hidden="true"></i></span><span class="sh-action__copy"><strong>Financial reports</strong><small>Open your financial reporting workspace</small></span><span class="sh-action__arrow" aria-hidden="true">↗</span></a>

@@ -8,7 +8,9 @@ use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\AwardController;
 use App\Http\Controllers\AwardShortlistStageController;
 use App\Http\Controllers\ChapterController;
+use App\Http\Controllers\ChapterGalleryController;
 use App\Http\Controllers\ChapterMeetingController;
+use App\Http\Controllers\ChapterNeedController;
 use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\ConferenceEditionController;
 use App\Http\Controllers\ConferenceFaqController;
@@ -747,6 +749,20 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
         });
 
         Route::resource('reports', StakeholderReportsController::class);
+
+        Route::controller(ChapterGalleryController::class)->prefix('campus-gallery')->name('gallery.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{photo}', 'update')->name('update');
+            Route::delete('/{photo}', 'destroy')->name('destroy');
+        });
+
+        Route::controller(ChapterNeedController::class)->prefix('campus-needs')->name('needs.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{need}', 'update')->name('update');
+            Route::delete('/{need}', 'destroy')->name('destroy');
+        });
 
 
         Route::controller(AwardController::class)->group(function () {

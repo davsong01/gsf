@@ -89,6 +89,20 @@
                                             <input type="text" class="form-control" id="twitter" name="twitter" value="{{ old('twitter', $chapter->twitter ?? '') }}" placeholder="Enter Twitter link">
                                         </fieldset>
 
+                                        <div class="col-12 mt-1 mb-1"><hr><h4>Fellowship account details</h4><p class="text-muted">These details appear on the campus needs section to help supporters contribute.</p></div>
+                                        <fieldset class="form-group col-md-4">
+                                            <label for="fellowship_bank_name">Bank name</label>
+                                            <input type="text" class="form-control" id="fellowship_bank_name" name="fellowship_bank_name" value="{{ old('fellowship_bank_name', $chapter->fellowship_bank_name ?? '') }}" maxlength="120">
+                                        </fieldset>
+                                        <fieldset class="form-group col-md-4">
+                                            <label for="fellowship_account_name">Account name</label>
+                                            <input type="text" class="form-control" id="fellowship_account_name" name="fellowship_account_name" value="{{ old('fellowship_account_name', $chapter->fellowship_account_name ?? '') }}" maxlength="160">
+                                        </fieldset>
+                                        <fieldset class="form-group col-md-4">
+                                            <label for="fellowship_account_number">Account number</label>
+                                            <input type="text" inputmode="numeric" class="form-control" id="fellowship_account_number" name="fellowship_account_number" value="{{ old('fellowship_account_number', $chapter->fellowship_account_number ?? '') }}" maxlength="40">
+                                        </fieldset>
+
                                         {{-- About --}}
                                         <fieldset class="form-group col-12">
                                             <label for="about">About</label><small class="form-text text-muted d-block mb-1">Write a brief biography of the chapter, including fellowship service periods if useful.</small>

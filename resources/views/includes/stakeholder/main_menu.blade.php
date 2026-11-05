@@ -115,6 +115,20 @@
                         <span class="menu-title" data-i18n="User">Chapter Details</span>
                     </a>
                 </li>
+                <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.gallery') ? 'active' : '' }}">
+                    <a href="{{ route('stakeholders.gallery.index') }}">
+                        <i class="fa fa-picture-o" aria-hidden="true"></i>
+                        <span class="menu-title">Campus Gallery</span>
+                    </a>
+                </li>
+                @if($user->role?->slug === 'chapter-representative')
+                    <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.needs') ? 'active' : '' }}">
+                        <a href="{{ route('stakeholders.needs.index') }}">
+                            <i class="fa fa-hand-holding-heart" aria-hidden="true"></i>
+                            <span class="menu-title">Campus Needs</span>
+                        </a>
+                    </li>
+                @endif
             @endif
 
             @if($user->hasPermission('blog.view') || $user->hasPermission('blog.create') || $user->hasPermission('blog.manage-own'))

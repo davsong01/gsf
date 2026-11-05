@@ -1,277 +1,80 @@
 @extends('layouts.stakeholderdashboard')
 
-@php
-    $isEdit = isset($user);
-@endphp
-
-@section('title', $isEdit ? 'Update Member' : 'Create Member')
-
-@section('item')
-<li class="breadcrumb-item">
-    <a href="{{ route('stakeholders.dashboard') }}">Dashboard</a>
-</li>
-@endsection
-
-@section('active')
-<li class="breadcrumb-item">{{ $isEdit ? 'Update Member' : 'Create Member' }}</li>
+@php($isEdit = isset($user))
+@php($isAlumniFlow = request()->routeIs('stakeholders.alumni.create'))
+@section('title', $isEdit ? 'Edit Member' : ($isAlumniFlow ? 'Add Alumnus' : 'Add Member'))
+@section('item')<li class="breadcrumb-item"><a href="{{ route($isAlumniFlow ? 'stakeholders.alumni.index' : 'stakeholders.users.index') }}">{{ $isAlumniFlow ? 'Chapter Alumni' : 'Chapter Members' }}</a></li>@endsection
+@section('active')<li class="breadcrumb-item">{{ $isEdit ? 'Edit Member' : ($isAlumniFlow ? 'Add Alumnus' : 'Add Member') }}</li>@endsection
+@section('extra_styles')
+<link rel="stylesheet" href="{{ versionedAsset('assets/css/stakeholder-members.css') }}">
 @endsection
 
 @section('content')
-<div class="content-body">
-<section id="basic-input">
-<div class="row">
-<div class="col-md-12">
+<div class="content-body members-workspace">
+    <header class="members-hero members-hero--form">
+        <div class="members-hero__copy">
+            <span class="members-eyebrow"><i class="fa fa-user-plus" aria-hidden="true"></i> Campus directory</span>
+            <h1>{{ $isEdit ? 'Edit member profile' : ($isAlumniFlow ? 'Add an alumnus' : 'Add a member') }}</h1>
+            <p>{{ $isEdit ? 'Keep this member’s contact, study and fellowship details up to date.' : 'Create a profile for a student or alumnus in your campus fellowship.' }}</p>
+        </div>
+        <div class="members-hero__actions"><a class="members-button members-button--light" href="{{ route($isAlumniFlow ? 'stakeholders.alumni.index' : 'stakeholders.users.index') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back to {{ $isAlumniFlow ? 'alumni' : 'members' }}</a></div>
+    </header>
 
-<div class="card shadow-sm border-0 rounded">
+    @if($errors->any())
+        <div class="members-alert" role="alert"><strong>Please check the form.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+    @endif
 
-    <div class="card-header bg-light">
-        <h4 class="card-title">
-            {{ $isEdit ? 'Update: '.$user->name : 'Create New Member' }}
-            @if($isEdit)
-                @if($user->is_graduated == 0)
-                    <span class="btn btn-primary btn-sm">Student</span>
-                @else
-                    <span class="btn btn-danger btn-sm">Alumni</span>
-                @endif
-                <span class="btn btn-dark btn-sm">{{ $user->rolename }}</span>
-            @endif
-        </h4>
+    @if($isEdit)
+    <section class="members-profile" aria-label="Current member overview">
+        <img src="{{ asset($user->passport ?: 'frontend/passports/avatar.jpg') }}" alt="" class="members-profile__photo">
+        <div class="members-profile__copy"><span class="members-section-label">Member profile</span><h2>{{ $user->name }}</h2><p>{{ $user->campus?->name ?: 'Campus not assigned' }} · {{ $user->is_graduated ? 'Alumni' : 'Student' }}</p><div class="members-profile__meta"><span><i class="fa fa-id-card-o" aria-hidden="true"></i> {{ $user->family_id ?: 'No login ID' }}</span><span><i class="fa fa-circle" aria-hidden="true"></i> {{ ucfirst($user->status ?: 'Inactive') }}</span></div></div>
+        @if(filled($user->slug))<a class="members-button members-button--outline" href="{{ route('user.single', $user->slug) }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> Public profile</a>@endif
+    </section>
+    @endif
 
-        {{-- @include('includes.alerts') --}}
-    </div>
+    <form class="members-editor" action="{{ $isEdit ? route('stakeholders.users.update', $user->id) : route('stakeholders.users.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @if($isEdit)@method('PATCH')@endif
 
-    <div class="card-body">
-
-        <form action="{{ $isEdit ? route('stakeholders.users.update',$user->id) : route('stakeholders.users.store') }}"
-              method="POST" enctype="multipart/form-data">
-
-            @csrf
-            @if($isEdit)
-                @method('PATCH')
-            @endif
-
-            {{-- User Overview (Edit only) --}}
-            {{-- Overview only in edit --}}
-            @if($isEdit)
-            <div class="row mb-3">
-                <div class="col-md-3 text-center">
-                    <img src="{{ asset($user->passport ?? 'frontend/passports/avatar.jpg') }}"
-                        class="rounded-circle img-fluid mb-2" style="width:150px;height:150px;object-fit:cover;">
-                </div>
-                <div class="col-md-9">
-                    <label>Overview</label><br>
-                    <strong>Login ID:</strong> {{ $user->family_id }} <br>
-                    <strong>Campus:</strong> GSF, {{ $user->campus->name ?? '' }} <br>
-
-                    @if($user->campus->chapterPresident)
-                        <strong>President:</strong> {{ $user->campus->chapterPresident->name }} <br>
-                        <strong>President's Phone:</strong> {{ $user->campus->chapterPresident->phone }} <br>
-                    @endif
-
-                    <a href="{{ route('user.single', $user->slug) }}" target="_blank" class="btn btn-dark mt-1">View Profile</a>
-                </div>
+        <section class="members-form-panel" aria-labelledby="member-identity-heading">
+            <div class="members-form-panel__head"><span class="members-form-panel__icon"><i class="fa fa-address-card-o" aria-hidden="true"></i></span><div><span class="members-section-label">01 · The essentials</span><h2 id="member-identity-heading">Personal &amp; contact details</h2><p>How we identify and reach this member.</p></div></div>
+            <div class="members-form-grid">
+                <div class="members-field"><label for="name">Full name <b>*</b></label><input id="name" type="text" name="name" class="form-control" value="{{ old('name', $user->name ?? '') }}" placeholder="First name and surname" required></div>
+                <div class="members-field"><label for="email">Email address <b>*</b></label><input id="email" type="email" name="email" class="form-control" value="{{ old('email', $user->email ?? '') }}" placeholder="name@example.com" required></div>
+                <div class="members-field"><label for="phone">Phone number <b>*</b></label><input id="phone" type="tel" name="phone" class="form-control" value="{{ old('phone', $user->phone ?? '') }}" placeholder="0800 000 0000" required></div>
+                <div class="members-field"><label for="gender">Gender <b>*</b></label><select id="gender" name="gender" class="form-control" required><option value="">Select gender</option><option value="Male" @selected(old('gender', $user->gender ?? '') === 'Male')>Male</option><option value="Female" @selected(old('gender', $user->gender ?? '') === 'Female')>Female</option></select></div>
+                <div class="members-field"><label for="dob">Date of birth</label><input id="dob" type="date" name="dob" class="form-control" value="{{ old('dob', $user->dob ?? '') }}"></div>
+                <div class="members-field"><label for="passport">{{ $isEdit ? 'Change profile photo' : 'Profile photo' }}</label><input id="passport" type="file" name="passport" class="form-control" accept="image/*"><small>Choose an image to help others recognize this member.</small></div>
             </div>
-            @endif
+        </section>
 
-            <div class="row">
-                {{-- Each input in its own col-md-6 --}}
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" class="form-control" id="name" name="name"
-                                value="{{ old('name', $user->name ?? '') }}" placeholder="Enter name">
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" class="form-control" id="email" name="email"
-                                value="{{ old('email', $user->email ?? '') }}" required>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="phone">Phone</label>
-                        <input type="tel" class="form-control" id="phone" name="phone"
-                                value="{{ old('phone', $user->phone ?? '') }}" required>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="gender">Gender</label>
-                        <select class="form-control" name="gender" id="gender" required>
-                            <option value="Male" {{ old('gender', $user->gender ?? '')=='Male'?'selected':'' }}>Male</option>
-                            <option value="Female" {{ old('gender', $user->gender ?? '')=='Female'?'selected':'' }}>Female</option>
-                        </select>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="is_graduated">Undergraduate Status</label>
-                        <select class="form-control" name="is_graduated" id="is_graduated" required>
-                            <option value="">--Select Status--</option>
-                            <option value="0" {{ old('is_graduated', $user->is_graduated ?? '')=='0'?'selected':'' }}>Student</option>
-                            <option value="1" {{ old('is_graduated', $user->is_graduated ?? '')=='1'?'selected':'' }}>Alumni</option>
-                        </select>
-                    </fieldset>
-                </div>
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="status">Portal Status</label>
-                        <select class="form-control" name="status" id="status" required>
-                            <option value="">--Select Status--</option>
-                            <option value="active" {{ old('status', $user->status ?? '')=='active'?'selected':'' }}>Active</option>
-                            <option value="inactive" {{ old('status', $user->status ?? '')=='inactive'?'selected':'' }}>Inactive</option>
-                        </select>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="open_to_work">Open to work?</label>
-                        <select class="form-control" name="open_to_work" id="open_to_work" required>
-                            <option value="1" {{ old('open_to_work', $user->open_to_work ?? '')==1?'selected':'' }}>Yes</option>
-                            <option value="0" {{ old('open_to_work', $user->open_to_work ?? '')==0?'selected':'' }}>No</option>
-                        </select>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="dob">Date of Birth</label>
-                        <input type="date" class="form-control" name="dob"
-                                value="{{ old('dob', $user->dob ?? '') }}">
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group @error('passport') is-invalid @enderror">
-                        <label for="passport">Change Passport</label>
-                        <input type="file" accept="image/*" class="form-control" name="passport" id="passport">
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="password">Password</label>
-                        <small class="text-muted"><i style="color:red">Leave blank to use phone number as password</i></small>
-                        <input type="text" class="form-control" name="password"
-                                value="{{ old('password') }}" placeholder="Enter password">
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="designation_id">Campus Designation</label>
-                        <select class="form-control" name="designation_id" id="designation_id">
-                            <option value="">--Select Designation--</option>
-                            @foreach($campusDesignations as $designation)
-                                <option value="{{ $designation->id }}" {{ old('designation_id',$user->designation_id ?? '')==$designation->id?'selected':'' }}>{{ $designation->name }}</option>
-                            @endforeach
-                        </select>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="portfolio_session">Portfolio session</label>
-                        <select class="form-control" name="portfolio_session" id="portfolio_session">
-                            @foreach($sessions as $session=>$value)
-                                <option value="{{ $value . '/' . ($value + 1) }}" {{ old('portfolio_session',$user->portfolio_session ?? '') == $value . '/' . ($value + 1) ? 'selected' : '' }}>{{ $value . '/' . ($value + 1) }}</option>
-                            @endforeach
-                        </select>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="program">Program</label>
-                        <select class="form-control" name="program" required>
-                            @foreach(['PHD','PGD','MSC','BSC','HND','OND','NCE'] as $prog)
-                                <option value="{{ $prog }}" {{ old('program',$user->program ?? '')==$prog?'selected':'' }}>{{ $prog }}</option>
-                            @endforeach
-                        </select>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="course">Course of study</label>
-                        <select class="form-control" name="course" id="course">
-                            <option value="">Select...</option>
-                            @foreach(coursesOfStudy() as $course)
-                                <option value="{{$course}}" {{ old('course',$user->course ?? '')==$course?'selected':'' }}>{{$course}}</option>
-                            @endforeach
-                        </select>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="course_duration">Course Duration (Years)</label>
-                        <input type="number" id="course_duration" name="course_duration" class="form-control" value="{{ old('course_duration',$user->course_duration ?? '') }}" required>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="matric_year">Year of Matriculation</label>
-                        <select class="form-control" name="matric_year" id="matric_year">
-                            @foreach($sessions as $session=>$value)
-                                <option value="{{ $value . '/' . ($value + 1) }}" {{ old('matric_year',$user->matric_year ?? '')==$value . '/' . ($value + 1)?'selected':'' }}>{{ $value . '/' . ($value + 1) }}</option>
-                            @endforeach
-                        </select>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="graduation_year">Year of Graduation</label>
-                        <select class="form-control" name="graduation_year" id="graduation_year">
-                            <option value="">Select...</option>
-                            @foreach($sessions as $session=>$value)
-                                <option value="{{ $value . '/' . ($value + 1) }}" {{ old('graduation_year',$user->graduation_year ?? '')==$value . '/' . ($value + 1)?'selected':'' }}>{{ $value . '/' . ($value + 1) }}</option>
-                            @endforeach
-                        </select>
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="facebook">Facebook Profile</label>
-                        <input type="url" id="facebook" name="facebook" class="form-control" value="{{ old('facebook',$user->facebook ?? '') }}">
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="form-group">
-                        <label for="twitter">Twitter Profile</label>
-                        <input type="url" id="twitter" name="twitter" class="form-control" value="{{ old('twitter',$user->twitter ?? '') }}">
-                    </fieldset>
-                </div>
+        <section class="members-form-panel" aria-labelledby="member-study-heading">
+            <div class="members-form-panel__head"><span class="members-form-panel__icon members-form-panel__icon--gold"><i class="fa fa-graduation-cap" aria-hidden="true"></i></span><div><span class="members-section-label">02 · Campus journey</span><h2 id="member-study-heading">Studies &amp; fellowship</h2><p>Record academic status and any campus responsibility.</p></div></div>
+            <div class="members-form-grid">
+                <div class="members-field"><label for="is_graduated">Member category <b>*</b></label><select id="is_graduated" name="is_graduated" class="form-control" required><option value="">Select category</option><option value="0" @selected((string)old('is_graduated', $user->is_graduated ?? ($isAlumniFlow ? '1' : '')) === '0')>Current student</option><option value="1" @selected((string)old('is_graduated', $user->is_graduated ?? ($isAlumniFlow ? '1' : '')) === '1')>Alumnus</option></select></div>
+                <div class="members-field"><label for="designation_id">Campus designation</label><select id="designation_id" name="designation_id" class="form-control"><option value="">No designation</option>@foreach($campusDesignations as $designation)<option value="{{ $designation->id }}" @selected(old('designation_id', $user->designation_id ?? '') == $designation->id)>{{ $designation->name }}</option>@endforeach</select></div>
+                <div class="members-field"><label for="portfolio_session">Portfolio session</label><select id="portfolio_session" name="portfolio_session" class="form-control"><option value="">Select session</option>@foreach($sessions as $value)<option value="{{ $value.'/'.($value + 1) }}" @selected(old('portfolio_session', $user->portfolio_session ?? '') === $value.'/'.($value + 1))>{{ $value.'/'.($value + 1) }}</option>@endforeach</select></div>
+                <div class="members-field"><label for="program">Program <b>*</b></label><select id="program" name="program" class="form-control" required>@foreach(['PHD','PGD','MSC','BSC','HND','OND','NCE'] as $program)<option value="{{ $program }}" @selected(old('program', $user->program ?? '') === $program)>{{ $program }}</option>@endforeach</select></div>
+                <div class="members-field"><label for="course">Course of study</label><select id="course" name="course" class="form-control"><option value="">Select course</option>@foreach(coursesOfStudy() as $course)<option value="{{ $course }}" @selected(old('course', $user->course ?? '') === $course)>{{ $course }}</option>@endforeach</select></div>
+                <div class="members-field"><label for="course_duration">Course duration (years) <b>*</b></label><input id="course_duration" type="number" min="1" name="course_duration" class="form-control" value="{{ old('course_duration', $user->course_duration ?? '') }}" placeholder="e.g. 4" required></div>
+                <div class="members-field"><label for="matric_year">Matriculation session</label><select id="matric_year" name="matric_year" class="form-control"><option value="">Select session</option>@foreach($sessions as $value)<option value="{{ $value.'/'.($value + 1) }}" @selected(old('matric_year', $user->matric_year ?? '') === $value.'/'.($value + 1))>{{ $value.'/'.($value + 1) }}</option>@endforeach</select></div>
+                <div class="members-field"><label for="graduation_year">Graduation session</label><select id="graduation_year" name="graduation_year" class="form-control"><option value="">Select session</option>@foreach($sessions as $value)<option value="{{ $value.'/'.($value + 1) }}" @selected(old('graduation_year', $user->graduation_year ?? '') === $value.'/'.($value + 1))>{{ $value.'/'.($value + 1) }}</option>@endforeach</select></div>
             </div>
+        </section>
 
-            {{-- Skills textarea on a new row --}}
-            <div class="row">
-                <div class="col-md-12">
-                    <fieldset class="form-group">
-                        <label for="skills">Skills</label>
-                        <textarea class="form-control" name="skills" id="skills" rows="4">{{ old('skills',$user->skills ?? '') }}</textarea>
-                    </fieldset>
-                </div>
+        <section class="members-form-panel" aria-labelledby="member-presence-heading">
+            <div class="members-form-panel__head"><span class="members-form-panel__icon members-form-panel__icon--teal"><i class="fa fa-heart-o" aria-hidden="true"></i></span><div><span class="members-section-label">03 · Profile &amp; access</span><h2 id="member-presence-heading">Directory presence</h2><p>Set portal access and add the details that make this profile useful.</p></div></div>
+            <div class="members-form-grid">
+                <div class="members-field"><label for="status">Portal status <b>*</b></label><select id="status" name="status" class="form-control" required><option value="">Select status</option><option value="active" @selected(old('status', $user->status ?? '') === 'active')>Active</option><option value="inactive" @selected(old('status', $user->status ?? '') === 'inactive')>Inactive</option></select></div>
+                <div class="members-field"><label for="open_to_work">Open to work? <b>*</b></label><select id="open_to_work" name="open_to_work" class="form-control" required><option value="1" @selected((string)old('open_to_work', $user->open_to_work ?? '') === '1')>Yes</option><option value="0" @selected((string)old('open_to_work', $user->open_to_work ?? '') === '0')>No</option></select></div>
+                <div class="members-field"><label for="password">{{ $isEdit ? 'New password' : 'Password' }}</label><input id="password" type="password" name="password" class="form-control" autocomplete="new-password" placeholder="Leave blank to use phone number"><small>{{ $isEdit ? 'Leave blank to keep the current password.' : 'If blank, the phone number becomes the initial password.' }}</small></div>
+                <div class="members-field"><label for="facebook">Facebook profile</label><input id="facebook" type="url" name="facebook" class="form-control" value="{{ old('facebook', $user->facebook ?? '') }}" placeholder="https://facebook.com/..."></div>
+                <div class="members-field"><label for="twitter">X / Twitter profile</label><input id="twitter" type="url" name="twitter" class="form-control" value="{{ old('twitter', $user->twitter ?? '') }}" placeholder="https://x.com/..."></div>
+                <div class="members-field members-field--wide"><label for="skills">Skills</label><textarea id="skills" name="skills" class="form-control" rows="4" placeholder="Share relevant skills or interests">{{ old('skills', $user->skills ?? '') }}</textarea></div>
             </div>
+        </section>
 
-            <div class="row mt-3">
-                <div class="col-md-12">
-                    <button type="submit" class="btn btn-primary w-100">{{ $isEdit ? 'Update' : 'Create' }}</button>
-                </div>
-            </div>
-
-        </form>
-    </div>
+        <div class="members-savebar"><span><i class="fa fa-info-circle" aria-hidden="true"></i> Fields marked * are required.</span><div><a class="members-button members-button--outline" href="{{ route($isAlumniFlow ? 'stakeholders.alumni.index' : 'stakeholders.users.index') }}">Cancel</a><button class="members-button members-button--submit" type="submit"><i class="fa fa-check" aria-hidden="true"></i> {{ $isEdit ? 'Save changes' : ($isAlumniFlow ? 'Create alumnus' : 'Create member') }}</button></div></div>
+    </form>
 </div>
 @endsection

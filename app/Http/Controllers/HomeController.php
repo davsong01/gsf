@@ -634,7 +634,7 @@ class HomeController extends Controller
     public function singleCampus($chapterId = null)
     {
         $identifier = $chapterId ?? request()->chapter ?? request()->chapter_id;
-        $chapterQuery = Chapter::with(['field.fieldCord', 'zone.zonalCord', 'zone.field.fieldCord', 'meetings'])
+        $chapterQuery = Chapter::with(['field.fieldCord', 'zone.zonalCord', 'zone.field.fieldCord', 'meetings', 'galleryPhotos', 'needs' => fn ($query) => $query->where('is_active', true)])
             ->withCount([
                 'users as members_count' => function ($query) {
                     $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);

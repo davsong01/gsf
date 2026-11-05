@@ -137,6 +137,8 @@ class StakeholderAccountController extends Controller
     public function memberIndex(Request $request)
     {
         $chapter = auth()->guard('stakeholder')->user()?->chapter;
+        $memberCount = $chapter?->users()->where('role', '<>', 1)->where('is_graduated', 0)->count() ?? 0;
+        $activeCount = $chapter?->users()->where('role', '<>', 1)->where('is_graduated', 0)->where('status', 'active')->count() ?? 0;
 
         return view('stakeholder.users.index', [
             'routes' => [
@@ -147,12 +149,17 @@ class StakeholderAccountController extends Controller
             ],
             'isAdmin' => false,
             'chapter'   => $chapter,
+            'isAlumni' => false,
+            'memberCount' => $memberCount,
+            'activeCount' => $activeCount,
         ]);
     }
 
     public function alumniIndex(Request $request)
     {
         $chapter = auth()->guard('stakeholder')->user()?->chapter;
+        $memberCount = $chapter?->users()->where('role', '<>', 1)->where('is_graduated', 1)->count() ?? 0;
+        $activeCount = $chapter?->users()->where('role', '<>', 1)->where('is_graduated', 1)->where('status', 'active')->count() ?? 0;
 
         return view('stakeholder.users.index', [
             'routes' => [
@@ -163,6 +170,9 @@ class StakeholderAccountController extends Controller
             ],
             'isAdmin' => false,
             'chapter'   => $chapter,
+            'isAlumni' => true,
+            'memberCount' => $memberCount,
+            'activeCount' => $activeCount,
         ]);
     }
 
@@ -290,6 +300,9 @@ class StakeholderAccountController extends Controller
         }
         $request->validate([
             'slug' => ['sometimes', 'required', 'alpha_dash', 'max:255', Rule::unique('chapters', 'slug')->ignore($chapter->id)],
+            'fellowship_bank_name' => ['nullable', 'string', 'max:120'],
+            'fellowship_account_name' => ['nullable', 'string', 'max:160'],
+            'fellowship_account_number' => ['nullable', 'string', 'max:40'],
         ]);
 
         if($request->has('chapter_banner')){
@@ -346,7 +359,8 @@ class StakeholderAccountController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('stakeholders.users.index')->with('message', 'User added successfully.');
+        return redirect()->route($request->input('is_graduated') == 1 ? 'stakeholders.alumni.index' : 'stakeholders.users.index')
+            ->with('message', 'User added successfully.');
     }
 
     /**
