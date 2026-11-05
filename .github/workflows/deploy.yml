@@ -43,6 +43,7 @@ jobs:
 
             # php artisan db:seed --class="Database\Seeders\AwardBeneficiaries2025Seeder" --force
             php artisan db:seed --class="Database\Seeders\BackfillChapterDescriptionsSeeder" --force
+            php artisan db:seed --class="Database\Seeders\BackfillNecStakeholderAvatarsSeeder" --force
 
             mkdir -p ../site
             cp -R public/site/. ../site/
