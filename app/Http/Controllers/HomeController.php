@@ -21,11 +21,11 @@ use App\Models\TempMember;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Modules\Blog\Models\BlogPost;
+use App\Services\EmailService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -177,16 +177,19 @@ class HomeController extends Controller
             return back()->withInput()->with('contact_error', 'Your enquiry was saved, but the contact address is unavailable right now.');
         }
 
-        try {
-            $body = "Name: {$data['name']}\nEmail: {$data['email']}\nSubject: {$data['subject']}\n\n{$data['message']}";
-            Mail::raw($body, function ($mail) use ($data, $recipient) {
-                $mail->to($recipient)
-                    ->replyTo($data['email'], $data['name'])
-                    ->subject('GSF website: '.$data['subject']);
-            });
-        } catch (\Throwable $exception) {
-            Log::error('Public contact form delivery failed.', ['exception' => $exception]);
+        $emailResult = EmailService::logEmail([
+            'type' => 'generic',
+            'priority' => 1,
+            'recipient' => $recipient,
+            'reply_to' => [$data['email'], $data['name']],
+            'subject' => 'GSF website: '.$data['subject'],
+            'content' => '<p><strong>Name:</strong> '.e($data['name']).'<br>'
+                .'<strong>Email:</strong> '.e($data['email']).'<br>'
+                .'<strong>Subject:</strong> '.e($data['subject']).'</p>'
+                .'<p>'.nl2br(e($data['message'])).'</p>',
+        ]);
 
+        if (!($emailResult['status'] ?? false)) {
             return back()->withInput()->with('contact_error', 'Your message could not be sent. Please try the email address shown on this page.');
         }
 

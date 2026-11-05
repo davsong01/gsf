@@ -259,7 +259,11 @@ class EmailService {
                 $data['recipient'] = 'davsong16@gmail.com';
             }
             
-            Mail::to($data['recipient'])->send(new NotificationEmail($data));
+            $message = Mail::to($data['recipient']);
+            if (!empty($data['reply_to'][0])) {
+                $message->replyTo($data['reply_to'][0], $data['reply_to'][1] ?? null);
+            }
+            $message->send(new NotificationEmail($data));
 
             return [
                 'status' => true,
