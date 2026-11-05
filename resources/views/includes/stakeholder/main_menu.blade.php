@@ -124,8 +124,14 @@
                 @if($user->role?->slug === 'chapter-representative')
                     <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.needs') ? 'active' : '' }}">
                         <a href="{{ route('stakeholders.needs.index') }}">
-                            <i class="fa fa-hand-holding-heart" aria-hidden="true"></i>
+                            <i class="fa fa-heart" aria-hidden="true"></i>
                             <span class="menu-title">Campus Needs</span>
+                        </a>
+                    </li>
+                    <li class="nav-item {{ Str::startsWith($currentRoute, 'stakeholders.enquiries') ? 'active' : '' }}">
+                        <a href="{{ route('stakeholders.enquiries.index') }}">
+                            <i class="fa fa-envelope-o" aria-hidden="true"></i>
+                            <span class="menu-title">Enquiries</span>
                         </a>
                     </li>
                 @endif

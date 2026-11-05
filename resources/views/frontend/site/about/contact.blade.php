@@ -39,16 +39,16 @@
             <p>Tell us how we can help, and include the details we need to respond.</p>
             @if(session('contact_success'))<div class="site-contact-card__feedback" role="status">{{ session('contact_success') }}</div>@endif
             @if(session('contact_error'))<div class="site-contact-card__feedback site-contact-card__feedback--error" role="alert">{{ session('contact_error') }}</div>@endif
-            @if($errors->any())<div class="site-contact-card__feedback site-contact-card__feedback--error" role="alert">Please check the highlighted fields below.</div>@endif
+            @if($errors->any())<div class="site-contact-card__feedback site-contact-card__feedback--error" role="alert"><strong>Please check these fields:</strong><ul>@foreach(['name' => 'Your name', 'email' => 'Email address', 'subject' => 'Subject', 'message' => 'Message'] as $field => $label)@if($errors->has($field))<li>{{ $label }}: {{ $errors->first($field) }}</li>@endif @endforeach</ul></div>@endif
             <form action="{{ route('about.contact.submit') }}" method="POST">
                 @csrf
                 <div class="site-contact-card__row">
-                    <div><label for="contact-name">Your name</label><input id="contact-name" name="name" value="{{ old('name') }}" maxlength="120" autocomplete="name" required>@error('name')<small class="site-contact-card__error">{{ $message }}</small>@enderror</div>
-                    <div><label for="contact-email">Email address</label><input id="contact-email" name="email" type="email" value="{{ old('email') }}" maxlength="255" autocomplete="email" required>@error('email')<small class="site-contact-card__error">{{ $message }}</small>@enderror</div>
+                    <div><label for="contact-name">Your name</label><input id="contact-name" name="name" value="{{ old('name') }}" maxlength="120" autocomplete="name" required @class(['is-invalid' => $errors->has('name')]) @if($errors->has('name'))aria-invalid="true" aria-describedby="contact-name-error"@endif>@error('name')<small id="contact-name-error" class="site-contact-card__error">{{ $message }}</small>@enderror</div>
+                    <div><label for="contact-email">Email address</label><input id="contact-email" name="email" type="email" value="{{ old('email') }}" maxlength="255" autocomplete="email" required @class(['is-invalid' => $errors->has('email')]) @if($errors->has('email'))aria-invalid="true" aria-describedby="contact-email-error"@endif>@error('email')<small id="contact-email-error" class="site-contact-card__error">{{ $message }}</small>@enderror</div>
                 </div>
-                <label for="contact-subject">Subject</label><input id="contact-subject" name="subject" value="{{ old('subject') }}" maxlength="160" placeholder="How can we help?" required>@error('subject')<small class="site-contact-card__error">{{ $message }}</small>@enderror
-                <label for="contact-message">Message</label><textarea id="contact-message" name="message" rows="6" maxlength="5000" required>{{ old('message') }}</textarea>@error('message')<small class="site-contact-card__error">{{ $message }}</small>@enderror
-                <div class="site-contact-card__honeypot" aria-hidden="true"><label for="contact-website">Website</label><input id="contact-website" name="website" tabindex="-1" autocomplete="off"></div>
+                <label for="contact-subject">Subject</label><input id="contact-subject" name="subject" value="{{ old('subject') }}" maxlength="160" placeholder="How can we help?" required @class(['is-invalid' => $errors->has('subject')]) @if($errors->has('subject'))aria-invalid="true" aria-describedby="contact-subject-error"@endif>@error('subject')<small id="contact-subject-error" class="site-contact-card__error">{{ $message }}</small>@enderror
+                <label for="contact-message">Message</label><textarea id="contact-message" name="message" rows="6" maxlength="5000" required @class(['is-invalid' => $errors->has('message')]) @if($errors->has('message'))aria-invalid="true" aria-describedby="contact-message-error"@endif>{{ old('message') }}</textarea>@error('message')<small id="contact-message-error" class="site-contact-card__error">{{ $message }}</small>@enderror
+                <div class="site-contact-card__honeypot" aria-hidden="true"><label for="contact-company-website">Company website</label><input id="contact-company-website" name="company_website" tabindex="-1" autocomplete="new-password"></div>
                 <button class="button button--blue" type="submit">Send message <span aria-hidden="true">→</span></button>
                 <p class="site-contact-card__privacy">Your details are used to respond to this message. <a href="{{ route('site.privacy') }}">Read our privacy policy.</a></p>
             </form>
@@ -56,3 +56,12 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+    @if($errors->any())
+        <script>
+            document.querySelector('.site-contact-card__feedback--error')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.querySelector('.site-contact-card [aria-invalid="true"]')?.focus({ preventScroll: true });
+        </script>
+    @endif
+@endpush

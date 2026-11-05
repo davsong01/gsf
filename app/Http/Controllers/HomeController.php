@@ -10,6 +10,7 @@ use App\Models\ConferencePlan;
 use App\Models\ConferenceSchedule;
 use App\Models\ConferenceSpeaker;
 use App\Models\Event;
+use App\Models\EmailContact;
 use App\Models\Field;
 use App\Models\GeneralSetting;
 use App\Models\Nec;
@@ -145,19 +146,35 @@ class HomeController extends Controller
 
     public function submitContact(Request $request)
     {
+        // Ignore likely spam submissions without attaching a validation error to
+        // a honeypot field that real visitors cannot see or correct.
+        if ($request->filled('website') || $request->filled('company_website')) {
+            return back()
+                ->withInput($request->except(['website', 'company_website']))
+                ->with('contact_error', 'We could not process this message. Please try again.');
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email:rfc', 'max:255'],
             'subject' => ['required', 'string', 'max:160'],
             'message' => ['required', 'string', 'max:5000'],
-            'website' => ['nullable', 'max:0'],
         ]);
 
         $siteSettings = GeneralSetting::first();
         $recipient = $siteSettings?->site_contact_email ?: $siteSettings?->official_email;
 
+        EmailContact::create([
+            'user_id' => null,
+            'type' => 'website',
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => null,
+            'message' => 'Subject: '.$data['subject']."\n\n".$data['message'],
+        ]);
+
         if (blank($recipient)) {
-            return back()->withInput()->with('contact_error', 'The contact address is unavailable right now. Please try again later.');
+            return back()->withInput()->with('contact_error', 'Your enquiry was saved, but the contact address is unavailable right now.');
         }
 
         try {
@@ -725,37 +742,48 @@ class HomeController extends Controller
     }
 
 
-    public function contactCampus(Request $request){
-        $this->validate($request, [
-            'email' => 'required',
-            'phone' => 'required',
-            'name' => 'required',
-            'message' => 'required'
+    public function contactCampus(Request $request)
+    {
+        $data = $request->validate([
+            'chapter_id' => ['required', 'integer', 'exists:chapters,id'],
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email:rfc', 'max:255'],
+            'phone' => ['required', 'string', 'max:40'],
+            'message' => ['required', 'string', 'max:5000'],
         ]);
 
-        $chapter = Chapter::findorfail($request->chapter_id);
+        $chapter = Chapter::actualCampus()->findOrFail($data['chapter_id']);
 
-        if($chapter && !is_null($chapter->email)){
-            $type = 'contactCampus';
-            $name = 'Publicity Secretary';
-            $subject = 'New fellowship contact form filled';
-            $content = "Someone has filled the contact form on your fellowship's webpage, view details below '<br>'
-            <p>
-            <strong>Name: </strong>" . $name . "<br>
-            <strong>Email: </strong>" . $request->email . "<br>
-            <strong>Phone: </strong>" . $request->phone . "<br>
-            <strong>Message: </strong>" . $request->message . "<br>
-            </p>";
+        EmailContact::create([
+            'user_id' => null,
+            'chapter_id' => $chapter->id,
+            'type' => 'campus',
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
+            'message' => $data['message'],
+        ]);
 
-            try {
-                //code...
-                $mailresponse = $this->sendEmail($chapter->email, $type, $subject, $name, $content, 1);
-            } catch (\Throwable $th) {
-                //throw $th;
-            }
+        if (filled($chapter->email)) {
+            $subject = 'New enquiry for '.$chapter->name;
+            $content = "A visitor submitted the campus contact form.<br><br>"
+                .'<strong>Name:</strong> '.e($data['name']).'<br>'
+                .'<strong>Email:</strong> '.e($data['email']).'<br>'
+                .'<strong>Phone:</strong> '.e($data['phone']).'<br>'
+                .'<strong>Message:</strong><br>'.nl2br(e($data['message']));
 
+            $this->logEmail([
+                'type' => 'campus_contact_enquiry',
+                'recipient' => $chapter->email,
+                'subject' => $subject,
+                'content' => $content,
+                'priority' => 1,
+            ]);
         }
-        return back()->with('message', 'Message sent successfully!');
+
+        return back()->with('message', filled($chapter->email)
+            ? 'Your message has been sent to the campus fellowship.'
+            : 'Your message has been received by the campus fellowship.');
     }
     public function studentSearch(Request $request) {
         $this->validate($request, ['name' => 'required|min:4']);

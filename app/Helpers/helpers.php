@@ -353,6 +353,12 @@ if (!function_exists('rootPermissions')) {
                 'name' => 'General Settings',
                 'icon' => 'fa fa-cog'
             ],
+            [
+                'id' => 27,
+                'slug' => 'enquiries.index',
+                'name' => 'Enquiries',
+                'icon' => 'fa fa-envelope-o',
+            ],
         ];
 
         $menuOrderMap = [
@@ -398,7 +404,8 @@ if (!function_exists('rootPermissions')) {
             'chapters.index' => 14,
             'useremails.index' => 15,
             'criticalEmail.index' => 16,
-            'general-settings.edit' => 17,
+            'enquiries.index' => 17,
+            'general-settings.edit' => 18,
         ];
 
         $decorateMenu = function (array $menu) use (&$decorateMenu, $menuOrderMap): array {

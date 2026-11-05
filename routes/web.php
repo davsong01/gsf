@@ -25,6 +25,7 @@ use App\Http\Controllers\CronController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\DynamicImageGeneratorController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\EmailContactController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\FoodController;
@@ -299,6 +300,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('stakeholderpersonnel', StakeholderController::class);
     Route::post('stakeholderpersonnel/bulk-action', [StakeholderController::class, 'bulkAction'])->name('stakeholderpersonnel.bulk-action');
     Route::post('stakeholderpersonnel/{stakeholderpersonnel}/resend-credentials', [StakeholderController::class, 'resendCredentials'])->name('stakeholderpersonnel.resend-credentials');
+    Route::get('enquiries', [EmailContactController::class, 'index'])->name('enquiries.index');
     Route::resource('stakeholdersetting', StakeholderSettingController::class);
     Route::controller(AdminStakeholderAppraisalController::class)->prefix('stakeholder-appraisals')->name('stakeholderappraisals.')->group(function () {
         Route::get('/', 'index')->name('index');
@@ -756,6 +758,8 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::put('/{photo}', 'update')->name('update');
             Route::delete('/{photo}', 'destroy')->name('destroy');
         });
+
+        Route::get('campus-enquiries', [EmailContactController::class, 'campusIndex'])->name('enquiries.index');
 
         Route::controller(ChapterNeedController::class)->prefix('campus-needs')->name('needs.')->group(function () {
             Route::get('/', 'index')->name('index');
