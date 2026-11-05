@@ -42,12 +42,12 @@ jobs:
             # php artisan db:seed --class="Database\Seeders\WebsiteConsolidationAnnouncementSeeder" --force
 
             # php artisan db:seed --class="Database\Seeders\AwardBeneficiaries2025Seeder" --force
-            php artisan db:seed --class="Database\Seeders\BackfillChapterDescriptionsSeeder" --force
-            php artisan db:seed --class="Database\Seeders\BackfillNecStakeholderAvatarsSeeder" --force
+            # php artisan db:seed --class="Database\Seeders\BackfillChapterDescriptionsSeeder" --force
 
             mkdir -p ../site
             cp -R public/site/. ../site/
 
+            php artisan db:seed --class="Database\Seeders\BackfillNecStakeholderAvatarsSeeder" --force
             php artisan optimize:clear
 
             echo "Deployment to Server completed!"
