@@ -23,7 +23,7 @@
     <div class="inner-hero__pattern" aria-hidden="true"></div>
     <div class="site-container inner-hero__grid">
         <div class="inner-hero__copy">
-            <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ route('home.index') }}">Home</a><span>·</span><a href="{{ route('directory.index') }}">Directory</a><span>·</span>@if($campusContext)<a href="{{ route('campus.single', $campusContext->id) }}">{{ $campusContext->name }}</a><span>·</span>@endif<span>{{ $isAlumni ? 'Alumni' : 'Members' }}</span></nav>
+            <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ route('home.index') }}">Home</a><span>·</span><a href="{{ route('directory.index') }}">Directory</a><span>·</span>@if($campusContext)<a href="{{ route('campus.single', $campusContext->slug) }}">{{ $campusContext->name }}</a><span>·</span>@endif<span>{{ $isAlumni ? 'Alumni' : 'Members' }}</span></nav>
             <div class="eyebrow eyebrow--light"><span></span> {{ $pageEyebrow }}</div>
             <h1>{{ $isAlumni ? 'Stay connected to the' : 'Find your people in the' }} <em>{{ $isAlumni ? 'GSF family.' : 'GSF community.' }}</em></h1>
             <p>{{ $pageIntro }}</p>
@@ -74,7 +74,7 @@
                             <small>{{ $designation ?: ($role ?: ($isAlumni ? 'GSF Alumni' : 'GSF Member')) }}</small>
                             <h3>@if($profileHref)<a href="{{ $profileHref }}">{{ $person->name }}</a>@else{{ $person->name }}@endif</h3>
                             @if($person->campus && $person->campus->id !== 86)
-                                <p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg><a href="{{ route('campus.single', $person->campus->id) }}">{{ $person->campus->name }}</a></p>
+                                <p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg><a href="{{ route('campus.single', $person->campus->slug) }}">{{ $person->campus->name }}</a></p>
                             @endif
                             @if($isAlumni && $person->matric_year && $person->graduation_year)
                                 <span class="directory-person-card__years">{{ $person->matric_year }}–{{ $person->graduation_year }}</span>

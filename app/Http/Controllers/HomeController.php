@@ -516,7 +516,7 @@ class HomeController extends Controller
             $output = '<ul class="dropdown-menu" style="display:block; position:relative;width: 100%;">';
             foreach ($data as $row) {
                 $output .= "
-                <a href='singlecampus/" . $row->id. "' class='ml-2'  style='color:black;font-weight: bold;display: block;padding: 0 10px 0 10px;'><li>" . $row->name . "</li></a>";
+                <a href='singlecampus/" . $row->slug. "' class='ml-2'  style='color:black;font-weight: bold;display: block;padding: 0 10px 0 10px;'><li>" . $row->name . "</li></a>";
             }
             $output .= '</ul>';
             echo $output;
@@ -535,7 +535,7 @@ class HomeController extends Controller
             $output = '<ul class="dropdown-menu" style="display:block; position:relative">';
             foreach ($data as $row) {
                 $output .= "
-            <li><a href='singlecampus/" . $row->id. "' class='ml-2'  style='color:black;font-weight: bold;'>" . $row->name . "</a></li>";
+            <li><a href='singlecampus/" . $row->slug. "' class='ml-2'  style='color:black;font-weight: bold;'>" . $row->name . "</a></li>";
             }
             $output .= '</ul>';
             echo $output;
@@ -554,7 +554,7 @@ class HomeController extends Controller
             $output = '<ul class="dropdown-menu" style="display:block; position:relative">';
             foreach ($data as $row) {
                 $output .= "
-            <li><a href='singlecampus/" . $row->id . "' class='ml-2'  style='color:black;font-weight: bold;'>" . $row->name . "</a></li>";
+            <li><a href='singlecampus/" . $row->slug . "' class='ml-2'  style='color:black;font-weight: bold;'>" . $row->name . "</a></li>";
             }
             $output .= '</ul>';
             echo $output;
@@ -628,9 +628,8 @@ class HomeController extends Controller
     // }
     public function singleCampus($chapterId = null)
     {
-        $id = $chapterId ?? request()->chapter ?? request()->chapter_id;
-
-        $chapter = Chapter::with(['field', 'zone'])
+        $identifier = $chapterId ?? request()->chapter ?? request()->chapter_id;
+        $chapterQuery = Chapter::with(['field', 'zone'])
             ->withCount([
                 'users as members_count' => function ($query) {
                     $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 0);
@@ -638,8 +637,16 @@ class HomeController extends Controller
                 'users as alumni_count' => function ($query) {
                     $query->where('status', 'active')->where('role', '<>', 1)->where('is_graduated', 1);
                 },
-            ])
-            ->findOrFail($id);
+            ]);
+
+        if (is_numeric($identifier)) {
+            $chapter = $chapterQuery->findOrFail($identifier);
+            if ($chapterId !== null && request()->isMethod('get') && !request()->has('token')) {
+                return redirect()->route('campus.single', $chapter->slug, 301);
+            }
+        } else {
+            $chapter = $chapterQuery->where('slug', $identifier)->firstOrFail();
+        }
 
         $token = false;
         $realToken = '';

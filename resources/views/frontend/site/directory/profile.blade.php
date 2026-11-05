@@ -45,7 +45,7 @@
         <nav class="breadcrumbs" aria-label="Breadcrumb">
             <a href="{{ route('home.index') }}">Home</a><span>·</span>
             <a href="{{ route('directory.index') }}">Directory</a><span>·</span>
-            @if($campus)<a href="{{ route('campus.single', $campus->id) }}">{{ $campus->name }}</a><span>·</span>@endif
+            @if($campus)<a href="{{ route('campus.single', $campus->slug) }}">{{ $campus->name }}</a><span>·</span>@endif
             <span>{{ $memberStatus }}</span>
         </nav>
         <div class="profile-hero__card">
@@ -55,7 +55,7 @@
                 <h1>{{ $alumni->name }}</h1>
                 @if($position && $position !== 'Unknown Role')<p class="profile-hero__designation">{{ $position }}</p>@endif
                 @if($campus)
-                    <a class="profile-hero__campus" href="{{ route('campus.single', $campus->id) }}">
+                    <a class="profile-hero__campus" href="{{ route('campus.single', $campus->slug) }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
                         {{ $campus->name }}
                     </a>
@@ -80,7 +80,7 @@
                 <p class="profile-about__intro">{{ $alumni->skills ? $alumni->skills : 'Part of the GOFAMINT Students’ Fellowship community, growing in faith, leadership and service.' }}</p>
                 <div class="profile-facts">
                     @if($campus)
-                        <div><span>Campus fellowship</span><strong><a href="{{ route('campus.single', $campus->id) }}">{{ $campus->name }}</a></strong></div>
+                        <div><span>Campus fellowship</span><strong><a href="{{ route('campus.single', $campus->slug) }}">{{ $campus->name }}</a></strong></div>
                     @endif
                     @if($alumni->course)<div><span>Course of study</span><strong>{{ $alumni->course }}</strong></div>@endif
                     @if($studyPeriod)<div><span>Study years</span><strong>{{ $studyPeriod }}</strong></div>@elseif(!$alumni->is_graduated && $alumni->matric_year)<div><span>Joined campus</span><strong>{{ $alumni->matric_year }}</strong></div>@endif
@@ -130,7 +130,7 @@
     <div class="site-container">
         <div class="profile-peers__heading">
             <div><div class="eyebrow"><span></span> Shared campus</div><h2>Fellowship friends</h2><p>Other GSF members connected with {{ $campus?->name ?: 'this campus' }}.</p></div>
-            @if($campus)<a href="{{ route('campus.single', $campus->id) }}">Explore campus <span aria-hidden="true">→</span></a>@endif
+            @if($campus)<a href="{{ route('campus.single', $campus->slug) }}">Explore campus <span aria-hidden="true">→</span></a>@endif
         </div>
         <div class="profile-peers__grid">
             @foreach($related as $friend)

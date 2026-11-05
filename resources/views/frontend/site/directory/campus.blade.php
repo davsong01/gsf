@@ -110,7 +110,7 @@
         <div class="directory-entry-heading"><div><div class="eyebrow"><span></span> Nearby in the Network</div><h2>Related campus fellowships.</h2></div><a class="text-link" href="{{ route('people.campuses') }}">Explore all campuses <span aria-hidden="true">→</span></a></div>
         <div class="campus-related-grid">
             @foreach($related as $relatedCampus)
-                <a href="{{ route('campus.single', $relatedCampus->id) }}"><span>{{ $relatedCampus->field?->name ?: 'GSF Campus' }}</span><strong>{{ $relatedCampus->name }}</strong><small>{{ $relatedCampus->zone?->name ?: 'Nigeria' }} · {{ number_format($relatedCampus->members_count) }} members</small><b aria-hidden="true">↗</b></a>
+                <a href="{{ route('campus.single', $relatedCampus->slug) }}"><span>{{ $relatedCampus->field?->name ?: 'GSF Campus' }}</span><strong>{{ $relatedCampus->name }}</strong><small>{{ $relatedCampus->zone?->name ?: 'Nigeria' }} · {{ number_format($relatedCampus->members_count) }} members</small><b aria-hidden="true">↗</b></a>
             @endforeach
         </div>
     </div>

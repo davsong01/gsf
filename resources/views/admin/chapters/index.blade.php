@@ -56,7 +56,7 @@
                                                         <span class="badge bg-soft-danger text-danger tracking-tight" style="font-size: 0.68rem; padding: 2px 5px;">
                                                             Token: {{ $chapter->token }}
                                                         </span>
-                                                        <a target="_blank" href="{{ route('campus.single', $chapter->id) }}" class="text-primary text-decoration-none">
+                                                        <a target="_blank" href="{{ route('campus.single', $chapter->slug) }}" class="text-primary text-decoration-none">
                                                             <i class="bx bx-link-external font-xs"></i> Portal View
                                                         </a>
                                                     </div>

@@ -1,8 +1,8 @@
 <div class="col-12 col-md-6 col-lg-4">
-    <div class="card border-light mb-4 animate-up-5"><a href="{{ route('campus.single', $chapter->id) }}"
+    <div class="card border-light mb-4 animate-up-5"><a href="{{ route('campus.single', $chapter->slug) }}"
         class="position-relative"><img style="height: 240px;" src="{{ asset($chapter->banner ?? 'gsfcom/images/image-office.jpg') }}"
         class="card-img-top rounded-xl p-2" alt="{{ $chapter->banner }}"></a>
-    <div class="card-body" style="height: 300px;"><a href="{{ route('campus.single', $chapter->id) }}">
+    <div class="card-body" style="height: 300px;"><a href="{{ route('campus.single', $chapter->slug) }}">
         <h4 class="h5">{{$chapter->name}}</h4>
         </a>
         <div class="d-flex my-2">
