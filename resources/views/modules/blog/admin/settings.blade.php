@@ -49,7 +49,7 @@
                         <div class="form-group col-12 col-md-6">
                             <label for="facebook_page_access_token">Page access token</label>
                             <input class="form-control" type="password" id="facebook_page_access_token" name="facebook_page_access_token" autocomplete="new-password" placeholder="{{ $facebookCredentialsConfigured ? 'Saved securely; enter a new token to replace it' : 'Paste the Page access token' }}">
-                            <small class="form-text text-muted">{{ $facebookCredentialsConfigured ? 'A Page token is saved securely. Leave blank to keep it.' : 'Use a Page access token with pages_manage_posts. Page discovery typically also needs pages_show_list and pages_read_engagement.' }}</small>
+                            <small class="form-text text-muted">{{ $facebookCredentialsConfigured ? 'A Page token is saved securely. Leave blank to keep it. If publishing reports a permission error, replace it with a current Page token.' : 'Use a Page access token with pages_manage_posts and pages_read_engagement. Page discovery typically also needs pages_show_list. The retired publish_actions permission is not supported.' }}</small>
                         </div>
                     </div>
                     <p><span class="badge badge-{{ $facebookCredentialsConfigured ? 'success' : 'secondary' }}">{{ $facebookCredentialsConfigured ? 'Facebook credentials configured' : 'Facebook credentials not configured' }}</span></p>

@@ -57,7 +57,7 @@ class BlogController extends Controller
         $filters = $request->validate([
             'search' => 'nullable|string|max:120',
             'status' => 'nullable|in:draft,review,scheduled,published,archived',
-            'facebook_status' => 'nullable|in:not_requested,pending_review,waiting_for_publication,pending,published,failed,rejected',
+            'facebook_status' => 'nullable|in:not_requested,pending_review,waiting_for_publication,pending,publishing,published,failed,rejected',
             'mine' => 'nullable|boolean',
             'field_id' => 'nullable|integer|exists:fields,id',
             'zone_id' => 'nullable|integer|exists:zones,id',
@@ -165,10 +165,12 @@ class BlogController extends Controller
             'canManageComments' => BlogPermissions::allows($user, BlogPermissions::COMMENTS),
             'bulkActions' => $isStakeholder ? [] : collect($eventsWorkspace ? [
                 'delete' => 'Delete',
+                'delete-facebook' => 'Delete from Facebook',
                 'archive' => 'Archive',
                 'review' => 'Move to review',
             ] : [
                 'delete' => 'Delete',
+                'delete-facebook' => 'Delete from Facebook',
                 'change-category' => 'Change category',
                 'archive' => 'Archive',
                 'review' => 'Move to review',
@@ -178,6 +180,7 @@ class BlogController extends Controller
                         || BlogPermissions::allows($user, BlogPermissions::EDIT),
                     'archive' => BlogPermissions::allows($user, BlogPermissions::ARCHIVE),
                     'review' => BlogPermissions::allows($user, BlogPermissions::REVIEW),
+                    'delete-facebook' => BlogPermissions::allows($user, BlogPermissions::PUBLISH),
                     default => false,
                 };
             })->all(),
@@ -189,7 +192,7 @@ class BlogController extends Controller
         $user = $this->user();
         $eventsWorkspace = $this->eventWorkspace();
         $validated = $request->validate([
-            'action' => ['required', Rule::in($eventsWorkspace ? ['delete', 'archive', 'review'] : ['delete', 'archive', 'review', 'change-category'])],
+            'action' => ['required', Rule::in($eventsWorkspace ? ['delete', 'delete-facebook', 'archive', 'review'] : ['delete', 'delete-facebook', 'archive', 'review', 'change-category'])],
             'post_ids' => 'required|array|min:1|max:100',
             'post_ids.*' => 'required|integer|distinct',
             'category_ids' => ['exclude_unless:action,change-category', 'required_if:action,change-category', 'array', 'min:1'],
@@ -211,6 +214,7 @@ class BlogController extends Controller
                     : BlogPermissions::allows($user, BlogPermissions::EDIT),
                 'archive' => BlogPermissions::allows($user, BlogPermissions::ARCHIVE),
                 'review' => BlogPermissions::allows($user, BlogPermissions::REVIEW),
+                'delete-facebook' => BlogPermissions::allows($user, BlogPermissions::PUBLISH),
             };
 
             if (!$allowed) {
@@ -220,6 +224,29 @@ class BlogController extends Controller
 
             if ($validated['action'] === 'delete') {
                 $deletablePostIds[] = $post->id;
+                $updated++;
+                continue;
+            }
+
+            if ($validated['action'] === 'delete-facebook') {
+                if ($post->facebook_status !== 'published' || ! filled($post->facebook_post_id)) {
+                    $skipped++;
+                    continue;
+                }
+
+                $result = app(FacebookPagePublisher::class)->deletePost($post);
+                if (! $result['success']) {
+                    $skipped++;
+                    continue;
+                }
+
+                $post->forceFill([
+                    'facebook_publish_requested' => false,
+                    'facebook_status' => 'not_requested',
+                    'facebook_post_id' => null,
+                    'facebook_published_at' => null,
+                    'facebook_error' => null,
+                ])->save();
                 $updated++;
                 continue;
             }
@@ -240,9 +267,11 @@ class BlogController extends Controller
             BlogPost::whereIn('id', $deletablePostIds)->forceDelete();
         }
 
-        $actionLabel = $validated['action'] === 'change-category'
-            ? 'Category change'
-            : ucfirst($validated['action']);
+        $actionLabel = match ($validated['action']) {
+            'change-category' => 'Category change',
+            'delete-facebook' => 'Facebook deletion',
+            default => ucfirst($validated['action']),
+        };
         $message = "{$actionLabel} applied to {$updated} post(s).";
         if ($skipped > 0) {
             $message .= " {$skipped} post(s) were skipped because they were missing or you do not have permission.";
@@ -282,7 +311,7 @@ class BlogController extends Controller
 
         $post = BlogPost::create($data);
         if (!$this->eventWorkspace()) $this->syncTaxonomy($post, $categoryIds, $tagIds);
-        $this->publishToFacebookWhenReady($post);
+        $this->publishToFacebookWhenReady($post, ! $this->isStakeholder($user));
 
         return redirect()->route($this->routePrefix($user).'.posts.edit', $post)->with('message', 'Post saved successfully.');
     }
@@ -352,7 +381,7 @@ class BlogController extends Controller
         $data = array_merge($data, $this->facebookPublishingFields($request, $user, $data, $post));
         $post->update($data);
         if (!$this->eventWorkspace()) $this->syncTaxonomy($post, $categoryIds, $tagIds);
-        $this->publishToFacebookWhenReady($post);
+        $this->publishToFacebookWhenReady($post, ! $this->isStakeholder($user));
 
         return back()->with('message', 'Post updated successfully.');
     }
@@ -371,14 +400,15 @@ class BlogController extends Controller
         $post->update(['status' => $publishedAt->isFuture() ? 'scheduled' : 'published', 'published_at' => $publishedAt]);
         if ($post->facebook_status === 'waiting_for_publication' && $post->status === 'published') {
             $post->update(['facebook_status' => 'pending']);
-            $this->publishToFacebookWhenReady($post);
+            $this->publishToFacebookWhenReady($post, ! $this->isStakeholder($this->user()));
         }
         return back()->with('message', 'Post publication status updated.');
     }
 
     public function facebookReview(Request $request, BlogPost $post)
     {
-        $this->authorize($this->user(), BlogPermissions::PUBLISH);
+        $user = $this->user();
+        $this->authorize($user, BlogPermissions::PUBLISH);
         $decision = $request->validate(['decision' => ['required', Rule::in(['approve', 'reject', 'retry'])]])['decision'];
 
         if ($decision === 'reject') {
@@ -388,20 +418,42 @@ class BlogController extends Controller
             return back()->with('message', 'Facebook publication request rejected. Website publication was not changed.');
         }
 
-        abort_unless(
-            $decision === 'approve'
-                ? $post->facebook_status === 'pending_review'
-                : $post->facebook_status === 'failed',
-            422
-        );
-
-        $post->update(['facebook_status' => 'pending', 'facebook_error' => null]);
-        $published = app(FacebookPagePublisher::class)->publish($post);
+        $expectedStatus = $decision === 'approve' ? 'pending_review' : 'failed';
+        $claimed = BlogPost::query()
+            ->whereKey($post->getKey())
+            ->where('facebook_status', $expectedStatus)
+            ->update(['facebook_status' => 'pending', 'facebook_error' => null]);
+        abort_unless($claimed === 1, 409, 'This Facebook request has already been handled.');
+        $post->refresh();
+        // Both approval and retry are initiated by the current reviewer. Keep
+        // their permission override tied to that reviewer, not the post author.
+        $published = app(FacebookPagePublisher::class)->publish($post, ! $this->isStakeholder($user));
 
         return back()->with(
             $published ? 'message' : 'error',
             $published ? 'Published to the GSF National Facebook Page.' : 'Facebook publication failed. Check the Facebook status and credentials in Blog Settings.'
         );
+    }
+
+    public function facebookDelete(BlogPost $post)
+    {
+        $this->authorize($this->user(), BlogPermissions::PUBLISH);
+        abort_unless($post->facebook_status === 'published' && filled($post->facebook_post_id), 422);
+
+        $result = app(FacebookPagePublisher::class)->deletePost($post);
+        if (! $result['success']) {
+            return back()->with('error', $result['message']);
+        }
+
+        $post->forceFill([
+            'facebook_publish_requested' => false,
+            'facebook_status' => 'not_requested',
+            'facebook_post_id' => null,
+            'facebook_published_at' => null,
+            'facebook_error' => null,
+        ])->save();
+
+        return back()->with('message', 'Facebook post deleted. The website post remains published.');
     }
 
     public function archive(BlogPost $post)
@@ -548,6 +600,9 @@ class BlogController extends Controller
             'is_featured' => ['nullable', 'boolean'],
             'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
         ]);
+        // This is a form control only; Facebook state is persisted through
+        // facebookPublishingFields() using the model's facebook_* columns.
+        unset($data['publish_on_facebook']);
 
         $data['slug'] = Str::slug($data['slug'] ?: $data['title']);
         $data['scope_type'] = $post?->scope_type ?? $this->defaultScopeType($user);
@@ -603,15 +658,25 @@ class BlogController extends Controller
             ? BlogSetting::campusEventsCanPublishToFacebook()
             : BlogSetting::campusPostsCanPublishToFacebook();
         $campusStakeholder = $this->isCampusStakeholder($user);
-        $nationalAdminPost = ! $this->isStakeholder($user) && ($data['scope_type'] ?? $post?->scope_type ?? 'national') === 'national';
-        $requested = $enabled && ($campusStakeholder
-            ? $request->boolean('publish_on_facebook')
-            : $nationalAdminPost);
+        $admin = ! $this->isStakeholder($user);
+        // Campus users follow the Facebook controls configured by an admin.
+        // National admins choose per post and can do so regardless of those
+        // campus settings.
+        $requested = $campusStakeholder
+            ? ($enabled && $request->boolean('publish_on_facebook'))
+            : ($admin && $request->boolean('publish_on_facebook'));
 
         if ($post?->facebook_status === 'published') {
             return [
                 'facebook_publish_requested' => true,
                 'facebook_status' => 'published',
+            ];
+        }
+
+        if ($post && in_array($post->facebook_status, ['pending', 'publishing'], true)) {
+            return [
+                'facebook_publish_requested' => true,
+                'facebook_status' => $post->facebook_status,
             ];
         }
 
@@ -641,10 +706,10 @@ class BlogController extends Controller
         ];
     }
 
-    protected function publishToFacebookWhenReady(BlogPost $post): void
+    protected function publishToFacebookWhenReady(BlogPost $post, bool $allowSettingsOverride = false): void
     {
         if ($post->facebook_publish_requested && $post->facebook_status === 'pending') {
-            app(FacebookPagePublisher::class)->publish($post);
+            app(FacebookPagePublisher::class)->publish($post, $allowSettingsOverride);
         }
     }
 

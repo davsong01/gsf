@@ -77,7 +77,7 @@
                     </select>
                 </div>
                 @unless($isStakeholder)
-                    <div class="bpa-filters__field"><label for="facebook-status-filter">Facebook status</label><select class="form-control" id="facebook-status-filter" name="facebook_status"><option value="">All Facebook statuses</option>@foreach(['pending_review' => 'Pending review', 'waiting_for_publication' => 'Waiting for website publication', 'pending' => 'Ready to publish', 'published' => 'Published', 'failed' => 'Failed', 'rejected' => 'Rejected'] as $facebookStatus => $label)<option value="{{ $facebookStatus }}" @selected(request('facebook_status') === $facebookStatus)>{{ $label }}</option>@endforeach</select></div>
+                    <div class="bpa-filters__field"><label for="facebook-status-filter">Facebook status</label><select class="form-control" id="facebook-status-filter" name="facebook_status"><option value="">All Facebook statuses</option>@foreach(['pending_review' => 'Pending review', 'waiting_for_publication' => 'Waiting for website publication', 'pending' => 'Ready to publish', 'publishing' => 'Publishing now', 'published' => 'Published', 'failed' => 'Failed', 'rejected' => 'Rejected'] as $facebookStatus => $label)<option value="{{ $facebookStatus }}" @selected(request('facebook_status') === $facebookStatus)>{{ $label }}</option>@endforeach</select></div>
                 @endunless
                 @if (empty($eventsWorkspace))
                     <div class="bpa-filters__field"><label for="post-type">Type</label><select class="form-control"
@@ -222,7 +222,12 @@
                                                 <br>
                                                 <i class="fa {{ $post->type === 'event' ? 'fa-calendar-o' : ($post->type === 'video' ? 'fa-play-circle-o' : 'fa-file-text-o') }}"
                                                     aria-hidden="true"></i> {{ ucfirst($post->type) }}
-                                                @if($post->facebook_publish_requested)<br><small class="text-primary">Facebook: {{ str($post->facebook_status)->replace('_', ' ')->title() }}</small>@endif
+                                                @if($post->facebook_publish_requested)<br><span class="text-primary" style="display:inline-flex;align-items:center;gap:6px;">
+                                                    <small>Facebook: {{ str($post->facebook_status)->replace('_', ' ')->title() }}</small>
+                                                    @if(!$isStakeholder && \App\Modules\Blog\BlogPermissions::allows($viewer, \App\Modules\Blog\BlogPermissions::PUBLISH) && $post->facebook_status === 'published' && filled($post->facebook_post_id))
+                                                        <form method="POST" action="{{ route('admin.blog.posts.facebook-delete', $post) }}" onsubmit="return confirm('Delete this post from Facebook? The website post will remain published.')">@csrf @method('DELETE')<button class="btn btn-link text-danger p-0" style="line-height:1;vertical-align:middle" type="submit" title="Delete from Facebook" aria-label="Delete {{ $post->title }} from Facebook"><i class="fa fa-trash" aria-hidden="true"></i></button></form>
+                                                    @endif
+                                                </span>@endif
                                             </span>
                                         </div>
                                     </div>
@@ -1249,8 +1254,10 @@
                     }
 
                     const message = bulkAction?.value === 'delete' ?
-                        `Delete ${selected.length} selected post(s)?` :
-                        `Apply ${bulkAction?.selectedOptions[0]?.textContent?.trim() || 'this action'} to ${selected.length} selected post(s)?`;
+                        `Delete ${selected.length} selected post(s) from the website?` :
+                        bulkAction?.value === 'delete-facebook' ?
+                            `Delete the Facebook posts for the ${selected.length} selected item(s)? Website posts will remain published.` :
+                            `Apply ${bulkAction?.selectedOptions[0]?.textContent?.trim() || 'this action'} to ${selected.length} selected post(s)?`;
                     if (!window.confirm(message)) event.preventDefault();
                 });
 

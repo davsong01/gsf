@@ -19,6 +19,25 @@ class BlogMedia
 
     public static function url(?string $path): ?string
     {
+        $publicPath = self::publicRelativePath($path);
+        if (!$publicPath || !self::existingAbsolutePath($publicPath)) {
+            return null;
+        }
+
+        return Str::startsWith($publicPath, 'uploads/blog/')
+            ? route('blog.media', ['path' => $publicPath])
+            : asset($publicPath);
+    }
+
+    public static function localFilePath(?string $path): ?string
+    {
+        $publicPath = self::publicRelativePath($path);
+
+        return $publicPath ? self::existingAbsolutePath($publicPath) : null;
+    }
+
+    private static function publicRelativePath(?string $path): ?string
+    {
         if (!$path) {
             return null;
         }
@@ -39,15 +58,7 @@ class BlogMedia
             return null;
         }
 
-        $publicPath = Str::startsWith($path, ['uploads/', 'storage/']) ? $path : 'storage/'.$path;
-
-        if (!self::existingAbsolutePath($publicPath)) {
-            return null;
-        }
-
-        return Str::startsWith($publicPath, 'uploads/blog/')
-            ? route('blog.media', ['path' => $publicPath])
-            : asset($publicPath);
+        return Str::startsWith($path, ['uploads/', 'storage/']) ? $path : 'storage/'.$path;
     }
 
     public static function absolutePath(string $relativePath): string

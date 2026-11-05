@@ -52,6 +52,7 @@ Route::middleware(['auth', 'SwitchUser'])->prefix('admin/blog')->name('admin.blo
     Route::post('posts/{post}/review', [BlogController::class, 'review'])->name('posts.review');
     Route::post('posts/{post}/publish', [BlogController::class, 'publish'])->name('posts.publish');
     Route::post('posts/{post}/facebook-review', [BlogController::class, 'facebookReview'])->name('posts.facebook-review');
+    Route::delete('posts/{post}/facebook', [BlogController::class, 'facebookDelete'])->name('posts.facebook-delete');
     Route::post('posts/{post}/archive', [BlogController::class, 'archive'])->name('posts.archive');
     Route::get('categories', [BlogCategoryController::class, 'index'])->name('categories.index');
     Route::post('categories', [BlogCategoryController::class, 'store'])->name('categories.store');
