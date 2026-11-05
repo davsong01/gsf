@@ -94,3 +94,22 @@
         </nav>
     </div>
 </header>
+
+<nav class="site-mobile-nav" aria-label="Mobile navigation">
+    <a class="{{ ($activeSection ?? '') === 'home' ? 'is-active' : '' }}" href="{{ route('home.index') }}" @if(($activeSection ?? '') === 'home') aria-current="page" @endif>
+        <span class="site-mobile-nav__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>
+        <span>Home</span>
+    </a>
+    <a class="{{ ($activeSection ?? '') === 'directory' ? 'is-active' : '' }}" href="{{ route('directory.index') }}" @if(($activeSection ?? '') === 'directory') aria-current="page" @endif>
+        <span class="site-mobile-nav__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 20c.4-4 2.2-6 5.5-6s5.1 2 5.5 6M14 15c.8-.7 1.8-1 3-1 2.8 0 4.3 1.7 4.5 5"/></svg></span>
+        <span>Directory</span>
+    </a>
+    <a class="{{ ($activeSection ?? '') === 'news' ? 'is-active' : '' }}" href="{{ route('blog.index') }}" @if(($activeSection ?? '') === 'news') aria-current="page" @endif>
+        <span class="site-mobile-nav__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h13v16H4zM17 8h3v11a1 1 0 0 1-1 1h-2M7 8h7M7 12h7M7 16h4"/></svg></span>
+        <span>News</span>
+    </a>
+    <a class="{{ request()->routeIs('login', 'account') ? 'is-active' : '' }}" href="{{ $portalUrl }}" @if(request()->routeIs('login', 'account')) aria-current="page" @endif>
+        <span class="site-mobile-nav__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c.5-5 3.1-7.5 8-7.5S19.5 16 20 21"/></svg></span>
+        <span>{{ $portalIsAuthenticated ? 'Account' : 'Login' }}</span>
+    </a>
+</nav>

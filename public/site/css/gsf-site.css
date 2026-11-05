@@ -2136,6 +2136,7 @@ button { color: inherit; }
 .theme-toggle__text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
 html[data-theme="dark"] .theme-toggle__moon { display: none; }
 html[data-theme="dark"] .theme-toggle__sun { display: block; }
+.site-mobile-nav { display: none; }
 
 html[data-theme="dark"] {
     color-scheme: dark;
@@ -2273,4 +2274,75 @@ html[data-theme="dark"] .registration-ticker__close:hover { color:var(--ink); ba
     .theme-toggle:hover, .theme-toggle:focus-visible { color: var(--forest-700); background: transparent; transform: none; }
     .theme-toggle__text { position: static; width: auto; height: auto; margin-left: 10px; overflow: visible; clip: auto; color: inherit; font-size: 15px; font-weight: 700; }
     html[data-theme="dark"] .primary-nav { background: rgba(8,20,38,.99); box-shadow: 0 24px 50px rgba(0,0,0,.35); }
+}
+
+@media (max-width: 767.98px) {
+    :root { --site-mobile-nav-height: calc(5.6rem + env(safe-area-inset-bottom)); }
+    body { padding-bottom: var(--site-mobile-nav-height); }
+    .site-mobile-nav {
+        position: fixed;
+        right: .75rem;
+        bottom: calc(.65rem + env(safe-area-inset-bottom));
+        left: .75rem;
+        z-index: 180;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: .15rem;
+        width: auto;
+        max-width: 560px;
+        min-height: 4.45rem;
+        margin: 0 auto;
+        padding: .42rem;
+        border: 1px solid rgba(17,29,62,.12);
+        border-radius: 1.35rem;
+        background: linear-gradient(145deg,rgba(255,255,255,.98),rgba(241,245,251,.98));
+        box-shadow: 0 18px 45px rgba(7,20,47,.19),0 4px 14px rgba(7,20,47,.1),inset 0 1px 0 #fff;
+        -webkit-backdrop-filter: blur(22px) saturate(1.25);
+        backdrop-filter: blur(22px) saturate(1.25);
+    }
+    .site-mobile-nav a {
+        position: relative;
+        display: flex;
+        min-width: 0;
+        min-height: 3.55rem;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .24rem;
+        padding: .22rem .08rem;
+        border-radius: 1rem;
+        color: #6e788b;
+        font-size: .58rem;
+        font-weight: 750;
+        line-height: 1.1;
+        text-align: center;
+        text-decoration: none;
+        transition: color .18s ease,background-color .18s ease,transform .18s ease;
+    }
+    .site-mobile-nav__icon {
+        display: inline-flex;
+        width: 2.1rem;
+        height: 2rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: .76rem;
+        color: #56657a;
+        background: rgba(17,29,62,.055);
+        transition: color .18s ease,background .18s ease,box-shadow .18s ease,transform .18s ease;
+    }
+    .site-mobile-nav svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+    .site-mobile-nav a.is-active,
+    .site-mobile-nav a:hover,
+    .site-mobile-nav a:focus-visible { color: #172b4d; background: rgba(18,63,122,.07); outline: none; }
+    .site-mobile-nav a.is-active .site-mobile-nav__icon,
+    .site-mobile-nav a:hover .site-mobile-nav__icon,
+    .site-mobile-nav a:focus-visible .site-mobile-nav__icon { color: #fff; background: linear-gradient(145deg,var(--forest-700),var(--forest-800)); box-shadow: 0 8px 20px rgba(18,63,122,.28),inset 0 1px 0 rgba(255,255,255,.2); transform: translateY(-1px); }
+    .site-mobile-nav a:active { transform: scale(.96); }
+    .site-mobile-nav a > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    html[data-theme="dark"] .site-mobile-nav { border-color: rgba(255,255,255,.12); background: linear-gradient(145deg,rgba(19,35,59,.98),rgba(8,20,38,.98)); box-shadow: 0 18px 50px rgba(0,0,0,.5),0 4px 14px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06); }
+    html[data-theme="dark"] .site-mobile-nav a { color: #929fb2; }
+    html[data-theme="dark"] .site-mobile-nav__icon { color: #c1ccdc; background: rgba(255,255,255,.055); }
+    html[data-theme="dark"] .site-mobile-nav a.is-active,
+    html[data-theme="dark"] .site-mobile-nav a:hover,
+    html[data-theme="dark"] .site-mobile-nav a:focus-visible { color: #f1f6ff; background: rgba(105,193,230,.08); }
 }

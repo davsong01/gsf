@@ -14,3 +14,4 @@ html[data-theme="dark"] .gsf-privacy-notice__copy p { color: #aab7ca; }
 html[data-theme="dark"] .gsf-privacy-notice__copy a { color: #69c1e6; }
 html[data-theme="dark"] .gsf-privacy-notice > button { background: #2e79ad; }
 @media (max-width: 600px) { .gsf-privacy-notice { right: 12px; bottom: 12px; left: 12px; align-items: stretch; flex-direction: column; gap: 14px; padding: 17px; } .gsf-privacy-notice > button { width: 100%; } }
+@media (max-width: 767.98px) { .gsf-privacy-notice { bottom: calc(var(--site-mobile-nav-height, 5.6rem) + .45rem); } }
