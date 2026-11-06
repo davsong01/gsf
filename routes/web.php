@@ -38,6 +38,7 @@ use App\Http\Controllers\ModeratorController;
 use App\Http\Controllers\NecController;
 use App\Http\Controllers\OfficialController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RecordBookUploadController;
 use App\Http\Controllers\PaymentProviderController;
 use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\PostController;
@@ -401,6 +402,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::get('nec-delete/{id}', [NecController::class, 'delete'])->name('nec.delete');
     Route::resource('users', UserController::class);
+
+    Route::get('users-extraction', [RecordBookUploadController::class, 'index'])->name('users.extraction.index');
+    Route::delete('users-extraction/{upload}', [RecordBookUploadController::class, 'destroy'])->name('users.extraction.destroy');
 
     Route::get('export-users', [UserController::class, 'exportUsers'])->name('users.export');
 
@@ -810,6 +814,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('users/create', 'memberCreate')->name('users.create');
             Route::get('users/record-book', 'recordBookUpload')->name('users.record-book');
             Route::post('users/record-book', 'storeRecordBookImages')->name('users.record-book.store');
+            Route::delete('users/record-book/{upload}', 'deleteRecordBookImage')->name('users.record-book.destroy');
             Route::get('users/{user}/edit', 'memberEdit')->name('users.edit');
             Route::patch('users/{user}', 'memberUpdate')->name('users.update');
 

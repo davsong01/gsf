@@ -44,6 +44,7 @@ class UserService
 
     public function createUser(array $data): User
     {
+        $data['source'] = $data['source'] ?? 'manual_upload';
         $user = User::create($data);
         $this->createFamilyId($user);
         return $user;
@@ -255,7 +256,8 @@ class UserService
         $canSwitch    = $requestData['canSwitch'] ?? false;
         $isStakeholder= $requestData['isStakeholder'] ?? false;
         $filters = $requestData['filters'] ?? [];
-        $isAdmin = $requestData['isAdmin'] ?? false;
+        // Source is internal admin metadata; never trust the browser-supplied flag.
+        $isAdmin = isAdmin()['status'];
 
         $baseQuery = User::query()->where('role', '<>', 1);
 
@@ -299,7 +301,7 @@ class UserService
             $avatar = renderAvatar($user, 40);
             $campus = $user->campus?->name ?? '';
 
-            $data[] = [
+            $row = [
                 'S/N' => $count++,
                 'email' => $user->email,
                 'family_id' => $user->family_id . '<br>' .
@@ -323,6 +325,17 @@ class UserService
                             . '</em>',
                 'actions' => $this->generateActionButtons($user, $canDelete, $canEdit, $canSwitch, $isStakeholder),
             ];
+
+            if ($isAdmin) {
+                $sourceLabels = [
+                    'registration' => 'Registration',
+                    'manual_upload' => 'Manual upload',
+                    'record_book_upload' => 'Record book upload',
+                ];
+                $row['source'] = $sourceLabels[$user->source ?? 'registration'] ?? ucfirst(str_replace('_', ' ', $user->source ?? 'registration'));
+            }
+
+            $data[] = $row;
         }
 
         return [

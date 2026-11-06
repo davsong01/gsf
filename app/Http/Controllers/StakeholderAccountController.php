@@ -20,6 +20,7 @@ use App\Services\FileUploadService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\StakeholderDesignation;
 use App\Modules\Blog\Models\BlogPost;
@@ -206,10 +207,29 @@ class StakeholderAccountController extends Controller
                 'name' => $upload->original_name,
                 'size' => $upload->file_size,
                 'uploaded_at' => $upload->created_at->format('M j, Y g:i A'),
+                'preview_url' => route('protected.download', ['file' => $upload->image_path]),
+                'delete_url' => route('stakeholders.users.record-book.destroy', $upload),
             ];
         }
 
         return response()->json(['message' => count($saved).' image(s) uploaded successfully.', 'uploads' => $saved]);
+    }
+
+    public function deleteRecordBookImage(CampusRecordBookUpload $upload)
+    {
+        $stakeholder = auth()->guard('stakeholder')->user();
+        abort_unless($stakeholder && $stakeholder->chapter_id, 403);
+        abort_unless((bool) (GeneralSetting::query()->value('enable_campus_record_book_upload') ?? true), 404);
+        abort_unless($upload->chapter_id === $stakeholder->chapter_id && $upload->stakeholder_id === $stakeholder->id, 404);
+        abort_unless($upload->status !== 'extracted', 403, 'Extracted images cannot be deleted.');
+
+        $path = base64_decode($upload->image_path, true);
+        if ($path && !str_contains($path, '..')) {
+            Storage::disk('protected_uploads')->delete($path);
+        }
+        $upload->delete();
+
+        return response()->json(['message' => 'Uploaded image deleted.']);
     }
 
     public function alumniIndex(Request $request)

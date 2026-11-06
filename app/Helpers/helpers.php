@@ -267,7 +267,20 @@ if (!function_exists('rootPermissions')) {
                 'id' => 15,
                 'slug' => 'users.index',
                 'name' => 'Users',
-                'icon' => 'fa fa-user'
+                'icon' => 'fa fa-user',
+                'children' => [
+                    [
+                        'id' => 150,
+                        'slug' => 'users.index',
+                        'name' => 'Community Users',
+                    ],
+                    [
+                        'id' => 151,
+                        'slug' => 'users.index',
+                        'name' => 'Users Extraction',
+                        'route' => 'users.extraction.index',
+                    ],
+                ],
             ],
             [
                 'id' => 16,

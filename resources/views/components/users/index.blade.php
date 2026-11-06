@@ -26,6 +26,7 @@
                                             <th>Graduation Status</th>
                                             <th>Chapter Designation</th>
                                             <th>Role</th>
+                                            @if($isAdmin)<th>Source</th>@endif
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -63,6 +64,7 @@ $(document).ready(function () {
             { data: "is_graduated" },
             { data: "designation" },
             { data: "role" },
+            @if($isAdmin){ data: "source" },@endif
             { data: "actions" }
         ]
     });

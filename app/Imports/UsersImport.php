@@ -84,6 +84,7 @@ class UsersImport extends Controller implements ToModel, WithHeadingRow
 			'facebook' => trim($row['facebook']),
 			'twitter'	=> trim($row['twitter']),
 			'password' => Hash::make(trim($row['phone'])),
+			'source' => 'manual_upload',
 		];
 
 		$user = User::create($upload);
