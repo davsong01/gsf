@@ -14,6 +14,8 @@ class CampusRecordBookUpload extends Model
 
     protected $casts = [
         'completed_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'extracted_at' => 'datetime',
         'extracted_data' => 'array',
     ];
 
@@ -30,5 +32,10 @@ class CampusRecordBookUpload extends Model
     public function duplicateOf()
     {
         return $this->belongsTo(self::class, 'duplicate_of_upload_id');
+    }
+
+    public function extractedRecords()
+    {
+        return $this->hasMany(CampusRecordBookExtractedRecord::class, 'upload_id');
     }
 }

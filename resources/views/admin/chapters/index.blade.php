@@ -4,31 +4,25 @@
 <li class="breadcrumb-item">Chapters</li>
 @endsection
 @section('content')
-<div class="content-body custom-modern-view">
-    <section id="basic-datatable">
-        <div class="row">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-                    
-                    <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
-                        <div>
-                            <h4 class="card-title text-dark fw-bold mb-1">All Chapters</h4>
-                            <p class="text-muted font-xs mb-0">Manage institutional chapters, track compliance indexes, tokens, and regional statistics.</p>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('chapters.export') }}" class="btn btn-light border font-sm rounded-2 px-3 py-2 d-flex align-items-center gap-1 shadow-none">
-                                <i class="bx bx-download text-secondary"></i> Export
-                            </a>
-                            <a href="{{ route('chapters.create') }}" class="btn btn-primary font-sm rounded-2 px-3 py-2 d-flex align-items-center gap-1 shadow-none">
-                                <i class="bx bx-plus"></i> Add New Chapter
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="card-content">
-                        <div class="card-body p-2">
-                            <div class="table-responsive">
-                                <table class="table zero-configuration table table-align-middle mb-0 custom-modern-table">
+<div class="content-body chapter-index">
+    @include('includes.alerts')
+    <header class="chapter-index__hero">
+        <div><span class="chapter-index__eyebrow"><i class="fa fa-map-marker" aria-hidden="true"></i> GSF network</span><h1>Chapters</h1><p>Manage campus fellowships, chapter leadership, reporting progress and membership.</p></div>
+        <div class="chapter-index__hero-actions">
+            <a href="{{ route('chapters.export') }}" class="chapter-index__button chapter-index__button--light"><i class="fa fa-download" aria-hidden="true"></i> Export</a>
+            <a href="{{ route('chapters.create') }}" class="chapter-index__button chapter-index__button--primary"><i class="fa fa-plus" aria-hidden="true"></i> Add chapter</a>
+        </div>
+    </header>
+    <div class="chapter-index__metrics" aria-label="Chapter overview">
+        <div class="chapter-index__metric"><span class="chapter-index__metric-icon"><i class="fa fa-university" aria-hidden="true"></i></span><span><small>Campus fellowships</small><strong>{{ number_format($chapters->count()) }}</strong></span></div>
+        <div class="chapter-index__metric"><span class="chapter-index__metric-icon chapter-index__metric-icon--green"><i class="fa fa-user-circle" aria-hidden="true"></i></span><span><small>With a chapter representative</small><strong>{{ number_format($chapters->filter(fn ($chapter) => $chapter->stakeholder)->count()) }}</strong></span></div>
+    </div>
+    <section class="chapter-index__panel" id="basic-datatable">
+        <div class="chapter-index__panel-head"><div><h2>All chapters</h2><p>Search, review reporting compliance, or manage a chapter.</p></div><label class="chapter-index__search"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only">Search chapters</span><input id="chapter-index-search" type="search" placeholder="Find a chapter…" autocomplete="off"></label></div>
+        <div class="card-content">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                                <table id="chapters-table" class="table zero-configuration table-align-middle mb-0 chapter-index__table">
                                     <thead>
                                         <tr>
                                             <th class="ps-4" style="width: 60px;">S/N</th>
@@ -209,90 +203,70 @@
                         </div>
                     </div>
 
-                </div>
-            </div>
-        </div>
     </section>
 </div>
 
 <style>
-    .custom-modern-view {
-        background-color: #f8fafc;
-    }
-    .custom-modern-table {
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-    .custom-modern-table thead th {
-        background-color: #fdfdfd;
-        color: #64748b;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        padding-top: 14px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid #edf2f7;
-    }
-    .custom-modern-table tbody tr {
-        transition: background-color 0.15s ease;
-    }
-    .custom-modern-table tbody tr:hover {
-        background-color: #f8fafc !important;
-    }
-    .custom-modern-table tbody td {
-        padding-top: 12px;
-        padding-bottom: 12px;
-        vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
-    }
-    .table-align-middle td, .table-align-middle th {
-        vertical-align: middle !important;
-    }
-    
-    /* Global Typography Resizing */
-    .font-base { font-size: 0.925rem !important; }
-    .font-sm { font-size: 0.825rem !important; }
-    .font-xs { font-size: 0.74rem !important; }
-    .tracking-tight { letter-spacing: -0.01em; }
-    .hover-underline:hover { text-decoration: underline !important; }
-
-    /* Custom Modern Badges */
-    .badge-status {
-        font-size: 0.65rem !important;
-        font-weight: 700;
-        padding: 3px 6px;
-        border-radius: 4px;
-    }
-    .badge-counter {
-        font-size: 0.7rem !important;
-        font-weight: 500;
-        padding: 4px 8px;
-        border-radius: 6px;
-        background-color: #ffffff !important;
-        border-color: #e2e8f0 !important;
-    }
-    .bg-soft-success { background-color: #def7ec !important; }
-    .bg-soft-danger { background-color: #fde8e8 !important; }
-    .bg-soft-warning { background-color: #fef08a !important; }
-
-    /* Action Buttons Icon Engine Overrides */
-    .btn-action-icon {
-        width: 28px;
-        height: 28px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        border: 1px solid transparent;
-        background: transparent;
-        transition: all 0.15s ease;
-    }
-    .btn-action-icon:hover {
-        background-color: #f1f5f9;
-        border-color: #e2e8f0;
-        transform: translateY(-1px);
-    }
+    .chapter-index { max-width:1600px; margin:0 auto; color:#183251; }
+    .chapter-index__hero { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:18px; padding:26px 30px; border:1px solid #e4ebf2; border-radius:18px; background:linear-gradient(120deg,#fff 0%,#f7fbfe 100%); box-shadow:0 10px 28px rgba(26,52,80,.045); }
+    .chapter-index__eyebrow { display:flex; align-items:center; gap:8px; margin-bottom:8px; color:#21809a; font-size:10px; font-weight:850; letter-spacing:.14em; text-transform:uppercase; }
+    .chapter-index__hero h1 { margin:0 0 6px; color:#183251; font-family:Georgia,serif; font-size:29px; font-weight:650; }
+    .chapter-index__hero p,.chapter-index__panel-head p { margin:0; color:#8090a3; font-size:12px; }
+    .chapter-index__hero-actions { display:flex; flex-wrap:wrap; gap:9px; }
+    .chapter-index__button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:40px; padding:0 15px; border:1px solid #e1e8ef; border-radius:9px; font-size:12px; font-weight:750; text-decoration:none!important; white-space:nowrap; }
+    .chapter-index__button--light { color:#49647d; background:#fff; }
+    .chapter-index__button--light:hover { color:#244b69; background:#f7fafc; }
+    .chapter-index__button--primary { border-color:#1e6695; color:#fff; background:#1e6695; }
+    .chapter-index__button--primary:hover { color:#fff; background:#175779; }
+    .chapter-index__metrics { display:grid; grid-template-columns:repeat(2,minmax(220px,1fr)); gap:14px; margin-bottom:18px; }
+    .chapter-index__metric { display:flex; align-items:center; gap:13px; min-height:82px; padding:15px 18px; border:1px solid #e5ebf2; border-radius:14px; background:#fff; box-shadow:0 6px 18px rgba(26,52,80,.035); }
+    .chapter-index__metric-icon { display:grid; width:42px; height:42px; place-items:center; border-radius:12px; color:#236b98; background:#eaf4fa; font-size:16px; }
+    .chapter-index__metric-icon--green { color:#287866; background:#eaf6f1; }
+    .chapter-index__metric small,.chapter-index__metric strong { display:block; }
+    .chapter-index__metric small { margin-bottom:3px; color:#7b8ca0; font-size:11px; }
+    .chapter-index__metric strong { color:#203d5b; font-size:20px; line-height:1.1; }
+    .chapter-index__panel { overflow:hidden; border:1px solid #e5ebf2; border-radius:16px; background:#fff; box-shadow:0 10px 28px rgba(26,52,80,.05); }
+    .chapter-index__panel-head { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:20px 23px; border-bottom:1px solid #edf1f5; }
+    .chapter-index__panel-head h2 { margin:0 0 4px; color:#203b58; font-size:16px; font-weight:800; }
+    .chapter-index__search { display:flex; align-items:center; gap:9px; width:min(100%,300px); height:40px; padding:0 12px; border:1px solid #dfe7ef; border-radius:9px; color:#8594a5; background:#fff; }
+    .chapter-index__search:focus-within { border-color:#81b4d0; box-shadow:0 0 0 3px rgba(50,130,175,.1); }
+    .chapter-index__search input { width:100%; border:0; outline:0; color:#28435e; background:transparent; font-size:12px; }
+    .chapter-index__search input::placeholder { color:#9aa7b5; }
+    .chapter-index__table { min-width:1050px; margin:0; border-collapse:separate; border-spacing:0; }
+    .chapter-index__table thead th { padding:13px 14px; border-bottom:1px solid #edf1f5; color:#718096; background:#fbfcfd; font-size:10px; font-weight:850; letter-spacing:.07em; text-transform:uppercase; white-space:nowrap; }
+    .chapter-index__table tbody td { padding:14px; border-bottom:1px solid #f0f3f6; color:#596b80; font-size:12px; vertical-align:middle!important; }
+    .chapter-index__table tbody tr { transition:background .15s; }
+    .chapter-index__table tbody tr:hover { background:#f8fafc; }
+    .chapter-index__table tbody tr:last-child td { border-bottom:0; }
+    .chapter-index__table .font-base { color:#203b58!important; font-size:13px!important; }
+    .chapter-index__table .font-sm { font-size:12px!important; }
+    .chapter-index__table .font-xs { font-size:10px!important; }
+    .chapter-index__table .badge-status { padding:4px 7px; border-radius:6px; font-size:10px!important; font-weight:800; }
+    .chapter-index__table .badge-counter { padding:5px 7px; border:1px solid #e4ebf1!important; border-radius:7px; background:#fff!important; font-size:10px!important; }
+    .chapter-index__table .bg-soft-success { background:#def7ec!important; }
+    .chapter-index__table .bg-soft-danger { background:#fde8e8!important; }
+    .chapter-index__table .bg-soft-warning { background:#fef3c7!important; }
+    .btn-action-icon { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; border:1px solid transparent; border-radius:8px; background:transparent; transition:all .15s ease; }
+    .btn-action-icon:hover { transform:translateY(-1px); border-color:#e2eaf0; background:#f1f6f9; }
+    .chapter-index .dataTables_wrapper { padding:0 18px 14px; }
+    .chapter-index .dataTables_filter { display:none; }
+    .chapter-index .dataTables_info,.chapter-index .dataTables_length { color:#8290a0; font-size:11px; }
+    .chapter-index .dataTables_length select { margin:0 4px; border:1px solid #e1e8ef; border-radius:6px; color:#405a73; }
+    .chapter-index .dataTables_paginate .paginate_button { border-radius:7px!important; font-size:11px; }
+    .chapter-index .dataTables_paginate .paginate_button.current { border-color:#dceaf3!important; color:#1c638f!important; background:#edf6fb!important; }
+    @media(max-width:760px) { .chapter-index__hero { align-items:flex-start; flex-direction:column; padding:22px; } .chapter-index__hero-actions { width:100%; } .chapter-index__hero-actions .chapter-index__button { flex:1; } .chapter-index__metrics { grid-template-columns:1fr; gap:9px; } .chapter-index__panel-head { align-items:flex-start; flex-direction:column; padding:18px; } .chapter-index__search { width:100%; } .chapter-index .dataTables_wrapper { padding:0 12px 12px; } }
 </style>
+@section('extra_scripts')
+<script>
+$(function () {
+    var bindChapterSearch = function () {
+        var table = $(this).DataTable();
+        $('#chapter-index-search').on('input', function () { table.search(this.value).draw(); });
+    };
+    var $table = $('#chapters-table');
+    if ($.fn.DataTable.isDataTable($table)) bindChapterSearch.call($table);
+    else $table.one('init.dt', bindChapterSearch);
+});
+</script>
+@endsection
 @endsection

@@ -160,7 +160,7 @@
                                         <div class="form-group">
                                             <label for="record_book_openai_api_key"><strong>OpenAI API Key</strong></label>
                                             <input class="form-control @error('record_book_openai_api_key') is-invalid @enderror" id="record_book_openai_api_key" name="record_book_openai_api_key" type="password" autocomplete="new-password" placeholder="{{ filled($settings->record_book_openai_api_key) ? 'Key configured — leave blank to keep it' : 'Enter OpenAI API key' }}">
-                                            <small class="form-text text-muted">Used by the future ImageExtractorService for document image extraction. The key is encrypted in storage and never shown after saving.</small>
+                                            <small class="form-text text-muted">Used by the campus record book image extraction service. The key is encrypted in storage and never shown after saving.</small>
                                             @error('record_book_openai_api_key')<div class="text-danger mt-50">{{ $message }}</div>@enderror
                                             @if(filled($settings->record_book_openai_api_key))
                                                 <label class="d-flex align-items-center mt-1" for="remove_record_book_openai_api_key"><input class="mr-1" id="remove_record_book_openai_api_key" name="remove_record_book_openai_api_key" type="checkbox" value="1"><span>Remove saved API key</span></label>

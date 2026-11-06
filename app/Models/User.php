@@ -101,6 +101,11 @@ class User extends Authenticatable implements MustVerifyEmail
 		return $this->hasOne(Stakeholder::class, 'email', 'email');
 	}
 
+    public function recordBookExtraction()
+    {
+        return $this->hasOne(CampusRecordBookExtractedRecord::class, 'user_id');
+    }
+
     public function designation(){
 		return $this->belongsTo(StakeholderDesignation::class, 'designation_id');
 	}

@@ -8,6 +8,7 @@ use App\Models\Field;
 use App\Models\Zone;
 use App\Services\ImageExtractorService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 
 class RecordBookUploadController extends Controller
@@ -20,14 +21,16 @@ class RecordBookUploadController extends Controller
             'chapter_id' => ['nullable', 'integer', 'exists:chapters,id'],
             'zone_id' => ['nullable', 'integer', 'exists:zones,id'],
             'field_id' => ['nullable', 'integer', 'exists:fields,id'],
-            'status' => ['nullable', 'in:pending,processing,extracted,rejected,duplicate'],
+            'status' => ['nullable', 'in:pending,approved,processing,extracted,completed,rejected,duplicate'],
             'record_type' => ['nullable', 'in:member,alumni'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
             'search' => ['nullable', 'string', 'max:150'],
         ]);
 
-        $query = CampusRecordBookUpload::with(['chapter.zone.field', 'stakeholder'])->latest();
+        $query = CampusRecordBookUpload::with(['chapter.zone.field', 'stakeholder'])
+            ->withCount(['extractedRecords as linked_user_records_count' => fn ($q) => $q->whereNotNull('user_id')])
+            ->latest();
         if (!empty($filters['chapter_id'])) $query->where('chapter_id', $filters['chapter_id']);
         if (!empty($filters['zone_id'])) $query->whereHas('chapter', fn ($q) => $q->where('zone_id', $filters['zone_id']));
         if (!empty($filters['field_id'])) $query->whereHas('chapter', fn ($q) => $q->where('field_id', $filters['field_id']));
@@ -39,6 +42,7 @@ class RecordBookUploadController extends Controller
             $term = trim($filters['search']);
             $query->where(function ($q) use ($term) {
                 $q->where('original_name', 'like', "%{$term}%")
+                    ->orWhereHas('extractedRecords', fn ($records) => $records->where('data->name', 'like', "%{$term}%"))
                     ->orWhereHas('chapter', fn ($campus) => $campus->where('name', 'like', "%{$term}%"))
                     ->orWhereHas('stakeholder', fn ($person) => $person->where('name', 'like', "%{$term}%"));
             });
@@ -52,7 +56,9 @@ class RecordBookUploadController extends Controller
             'filters' => $filters,
             'totalUploads' => CampusRecordBookUpload::count(),
             'pendingCount' => CampusRecordBookUpload::where('status', 'pending')->count(),
+            'approvedCount' => CampusRecordBookUpload::where('status', 'approved')->count(),
             'extractedCount' => CampusRecordBookUpload::where('status', 'extracted')->count(),
+            'completedCount' => CampusRecordBookUpload::where('status', 'completed')->count(),
             'duplicateCount' => CampusRecordBookUpload::where('status', 'duplicate')->count(),
         ]);
     }
@@ -60,6 +66,8 @@ class RecordBookUploadController extends Controller
     public function destroy(CampusRecordBookUpload $upload)
     {
         abort_unless(isAdmin()['status'], 403);
+        abort_if($upload->status === 'processing', 409, 'Images currently processing cannot be deleted.');
+        abort_if($upload->extractedRecords()->whereNotNull('user_id')->exists(), 409, 'This page has approved users linked to it and cannot be deleted.');
 
         $path = base64_decode($upload->image_path, true);
         if ($path && !str_contains($path, '..')) {
@@ -75,43 +83,57 @@ class RecordBookUploadController extends Controller
         abort_unless(isAdmin()['status'], 403);
 
         $validated = $request->validate([
-            'action' => ['required', 'in:extract,reject,delete'],
+            'action' => ['required', 'in:approve,approve_extract,reject,delete'],
             'ids' => ['required', 'array', 'min:1', 'max:100'],
             'ids.*' => ['required', 'integer', 'distinct', 'exists:campus_record_book_uploads,id'],
         ]);
 
         $uploads = CampusRecordBookUpload::whereIn('id', $validated['ids'])->get();
 
+        if ($validated['action'] === 'approve_extract' && $uploads->count() > 10) {
+            return back()->withErrors(['ids' => 'Approve and extract up to 10 images at a time.']);
+        }
+
         if ($validated['action'] === 'delete') {
+            $deleted = 0;
             foreach ($uploads as $upload) {
+                if ($upload->status === 'processing') continue;
+                if ($upload->extractedRecords()->whereNotNull('user_id')->exists()) continue;
                 $path = base64_decode($upload->image_path, true);
                 if ($path && !str_contains($path, '..')) {
                     Storage::disk('protected_uploads')->delete($path);
                 }
                 $upload->delete();
+                $deleted++;
             }
 
-            return back()->with('message', count($uploads).' record book page(s) deleted.');
+            return back()->with('message', $deleted.' record book page(s) deleted; approved batches with linked users were kept.');
         }
 
-        if ($validated['action'] === 'extract' && count($uploads) > 10) {
-            return back()->withErrors(['ids' => 'Extract up to 10 images at a time.']);
-        }
-
-        if ($validated['action'] === 'extract') {
+        if (in_array($validated['action'], ['approve', 'approve_extract'], true)) {
             $extracted = 0;
-            $cached = 0;
+            $approved = 0;
             $failures = [];
             foreach ($uploads as $upload) {
+                if (in_array($upload->status, ['completed', 'extracted', 'processing'], true)) continue;
+                $upload->status = 'approved';
+                $upload->approved_at = $upload->approved_at ?? now();
+                $upload->extraction_error = null;
+                $upload->save();
+                $approved++;
+                if ($validated['action'] === 'approve') continue;
+
                 try {
                     $result = app(ImageExtractorService::class)->extract($upload);
-                    $result['cached'] ? $cached++ : $extracted++;
+                    $extracted += count($result['records']);
                 } catch (\Throwable $exception) {
                     $failures[] = $upload->original_name.': '.$exception->getMessage();
                 }
             }
 
-            $message = $extracted.' page(s) extracted; '.$cached.' reused cached results; '.count($failures).' failed.';
+            $message = $validated['action'] === 'approve'
+                ? $approved.' image(s) approved and queued for extraction.'
+                : $approved.' image(s) approved for immediate extraction; '.$extracted.' record(s) extracted; '.count($failures).' failed.';
             if ($failures) {
                 return back()->with('error', $message.' '.$failures[0]);
             }
@@ -119,15 +141,17 @@ class RecordBookUploadController extends Controller
             return back()->with('message', $message);
         }
 
+        $rejected = 0;
         foreach ($uploads as $upload) {
-            if ($validated['action'] === 'reject') {
+            if ($validated['action'] === 'reject' && in_array($upload->status, ['pending', 'approved', 'duplicate', 'rejected'], true)) {
                 $upload->status = 'rejected';
                 $upload->extraction_error = null;
                 $upload->save();
+                $rejected++;
             }
         }
 
-        return back()->with('message', count($uploads).' record book page(s) rejected.');
+        return back()->with('message', $rejected.' record book page(s) rejected. Extracted and completed pages were kept unchanged.');
     }
 
     public function extract(CampusRecordBookUpload $upload)
@@ -135,6 +159,12 @@ class RecordBookUploadController extends Controller
         abort_unless(isAdmin()['status'], 403);
 
         try {
+            abort_unless(!in_array($upload->status, ['processing', 'extracted', 'completed'], true), 409, 'This image is already processing or has already been extracted.');
+            if (!in_array($upload->status, ['extracted', 'completed'], true)) {
+                $upload->status = 'approved';
+                $upload->approved_at = $upload->approved_at ?? now();
+                $upload->save();
+            }
             $result = app(ImageExtractorService::class)->extract($upload);
             $message = $result['cached']
                 ? 'Previously extracted records reused for this identical image.'
@@ -146,20 +176,25 @@ class RecordBookUploadController extends Controller
         }
     }
 
-    public function updateStatus(Request $request, CampusRecordBookUpload $upload)
+    public function approve(CampusRecordBookUpload $upload)
     {
         abort_unless(isAdmin()['status'], 403);
-
-        $validated = $request->validate([
-            'status' => ['required', 'in:pending,rejected,duplicate'],
-        ]);
-
-        $upload->status = $validated['status'];
-        if ($validated['status'] !== 'extracted') {
-            $upload->extraction_error = null;
-        }
+        abort_unless(!in_array($upload->status, ['extracted', 'completed', 'processing'], true), 409);
+        $upload->status = 'approved';
+        $upload->approved_at = $upload->approved_at ?? now();
+        $upload->extraction_error = null;
         $upload->save();
 
-        return back()->with('message', 'Record book page status updated.');
+        return back()->with('message', 'Image approved and added to the extraction queue.');
     }
+
+    public function processApproved()
+    {
+        abort_unless(isAdmin()['status'], 403);
+        $exitCode = Artisan::call('record-books:process-approved', ['--limit' => 10]);
+        $output = trim(Artisan::output());
+
+        return back()->with($exitCode === 0 ? 'message' : 'error', $output ?: 'Approved image processing queue started.');
+    }
+
 }

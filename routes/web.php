@@ -39,6 +39,8 @@ use App\Http\Controllers\NecController;
 use App\Http\Controllers\OfficialController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RecordBookUploadController;
+use App\Http\Controllers\RecordBookExtractedRecordController;
+use App\Http\Controllers\RecordBookCronController;
 use App\Http\Controllers\PaymentProviderController;
 use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\PostController;
@@ -166,6 +168,7 @@ Route::get('/clear', function () {
 });
 
 Route::get('cron/birthday-notification', [CronController::class, 'cron']);
+Route::get('cron/process-approved-record-book-images/{token}', [RecordBookCronController::class, 'processApproved'])->name('cron.record-book.process-approved');
 Route::get('create-nec', [CronController::class, 'createNecDummyCredentials']);
 Route::get('cron/birthday-reminder/{days}', [CronController::class, 'birthdayReminderForNec']);
 Route::get('cron/critical-messages-sender/{pick?}', [CronController::class, 'emailCron']);
@@ -406,8 +409,16 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::get('users-extraction', [RecordBookUploadController::class, 'index'])->name('users.extraction.index');
     Route::post('users-extraction/bulk-action', [RecordBookUploadController::class, 'bulkAction'])->name('users.extraction.bulk-action');
     Route::post('users-extraction/{upload}/extract', [RecordBookUploadController::class, 'extract'])->name('users.extraction.extract');
-    Route::patch('users-extraction/{upload}/status', [RecordBookUploadController::class, 'updateStatus'])->name('users.extraction.status');
+    Route::post('users-extraction/{upload}/approve', [RecordBookUploadController::class, 'approve'])->name('users.extraction.approve');
+    Route::post('users-extraction/process-approved', [RecordBookUploadController::class, 'processApproved'])->name('users.extraction.process-approved');
     Route::delete('users-extraction/{upload}', [RecordBookUploadController::class, 'destroy'])->name('users.extraction.destroy');
+    Route::get('users-extraction/{upload}/records', [RecordBookExtractedRecordController::class, 'index'])->name('users.extraction.records.index');
+    Route::post('users-extraction/{upload}/records', [RecordBookExtractedRecordController::class, 'store'])->name('users.extraction.records.store');
+    Route::post('users-extraction/{upload}/records/bulk', [RecordBookExtractedRecordController::class, 'bulk'])->name('users.extraction.records.bulk');
+    Route::post('users-extraction/{upload}/records/bulk-update', [RecordBookExtractedRecordController::class, 'bulkUpdate'])->name('users.extraction.records.bulk-update');
+    Route::put('users-extraction/{upload}/records/{record}', [RecordBookExtractedRecordController::class, 'update'])->name('users.extraction.records.update');
+    Route::post('users-extraction/{upload}/records/{record}/approve', [RecordBookExtractedRecordController::class, 'approve'])->name('users.extraction.records.approve');
+    Route::delete('users-extraction/{upload}/records/{record}', [RecordBookExtractedRecordController::class, 'destroy'])->name('users.extraction.records.destroy');
 
     Route::get('export-users', [UserController::class, 'exportUsers'])->name('users.export');
 
@@ -820,6 +831,13 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('users/record-book', 'recordBookUpload')->name('users.record-book');
             Route::post('users/record-book', 'storeRecordBookImages')->name('users.record-book.store');
             Route::delete('users/record-book/{upload}', 'deleteRecordBookImage')->name('users.record-book.destroy');
+            Route::get('users/record-book/{upload}/records', [RecordBookExtractedRecordController::class, 'index'])->name('users.record-book.records.index');
+            Route::post('users/record-book/{upload}/records', [RecordBookExtractedRecordController::class, 'store'])->name('users.record-book.records.store');
+            Route::post('users/record-book/{upload}/records/bulk', [RecordBookExtractedRecordController::class, 'bulk'])->name('users.record-book.records.bulk');
+            Route::post('users/record-book/{upload}/records/bulk-update', [RecordBookExtractedRecordController::class, 'bulkUpdate'])->name('users.record-book.records.bulk-update');
+            Route::put('users/record-book/{upload}/records/{record}', [RecordBookExtractedRecordController::class, 'update'])->name('users.record-book.records.update');
+            Route::post('users/record-book/{upload}/records/{record}/approve', [RecordBookExtractedRecordController::class, 'approve'])->name('users.record-book.records.approve');
+            Route::delete('users/record-book/{upload}/records/{record}', [RecordBookExtractedRecordController::class, 'destroy'])->name('users.record-book.records.destroy');
             Route::get('alumni/record-book', 'recordBookUpload')->name('alumni.record-book');
             Route::get('users/{user}/edit', 'memberEdit')->name('users.edit');
             Route::patch('users/{user}', 'memberUpdate')->name('users.update');

@@ -236,7 +236,7 @@ class StakeholderAccountController extends Controller
         abort_unless($stakeholder && $stakeholder->chapter_id, 403);
         abort_unless((bool) (GeneralSetting::query()->value('enable_campus_record_book_upload') ?? true), 404);
         abort_unless($upload->chapter_id === $stakeholder->chapter_id && $upload->stakeholder_id === $stakeholder->id, 404);
-        abort_unless($upload->status !== 'extracted', 403, 'Extracted images cannot be deleted.');
+        abort_unless(in_array($upload->status, ['pending', 'rejected', 'duplicate'], true), 403, 'Approved or extracted images cannot be deleted.');
 
         $path = base64_decode($upload->image_path, true);
         if ($path && !str_contains($path, '..')) {

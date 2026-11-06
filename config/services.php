@@ -2,6 +2,8 @@
 
 return [
 
+    'record_book_cron_token' => env('RECORD_BOOK_CRON_TOKEN'),
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

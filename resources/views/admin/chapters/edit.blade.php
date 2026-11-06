@@ -329,7 +329,13 @@
                                     </div>
                                 </div>
 
-                                @include('includes.chapter_meetings', ['meetingRoutePrefix' => 'chapters.meetings'])
+                                @if($chapter)
+                                    @include('includes.chapter_meetings', ['meetingRoutePrefix' => 'chapters.meetings'])
+                                @else
+                                    <section class="chapter-meetings chapter-meetings--create-note">
+                                        <div class="chapter-meetings__heading"><div><h3>Meeting details</h3><p>Set up regular meeting times after creating this chapter.</p></div></div>
+                                    </section>
+                                @endif
 
                                 <div class="chapter-form__footer">
                                     <a href="{{ route('chapters.index') }}" class="btn btn-outline-secondary">Cancel</a>

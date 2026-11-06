@@ -17,16 +17,17 @@
         <div class="extraction-hero__copy">
             <span class="extraction-kicker"><i class="fa fa-book" aria-hidden="true"></i> Campus directory · record books</span>
             <h1>Users extraction</h1>
-            <p>Review record book pages from campus teams, track each page, and record completed member extractions.</p>
+            <p>Approve campus record book pages, extract them on schedule, then review and add each record to the campus directory.</p>
         </div>
-        <a class="extraction-hero__link" href="{{ route('users.index') }}"><i class="fa fa-users" aria-hidden="true"></i> Community users</a>
+        <div class="extraction-hero__actions"><form method="POST" action="{{ route('users.extraction.process-approved') }}">@csrf<button class="extraction-hero__link" type="submit"><i class="fa fa-play-circle" aria-hidden="true"></i> Process approved queue</button></form><a class="extraction-hero__link" href="{{ route('users.index') }}"><i class="fa fa-users" aria-hidden="true"></i> Community users</a></div>
     </header>
 
     <section class="extraction-stats" aria-label="Record book page summary">
         <article class="extraction-stat"><span>All pages</span><strong>{{ number_format($totalUploads) }}</strong><i class="fa fa-files-o" aria-hidden="true"></i></article>
-        <article class="extraction-stat extraction-stat--pending"><span>Pending</span><strong>{{ number_format($pendingCount) }}</strong><i class="fa fa-clock-o" aria-hidden="true"></i></article>
-        <article class="extraction-stat extraction-stat--complete"><span>Extracted</span><strong>{{ number_format($extractedCount) }}</strong><i class="fa fa-check-circle-o" aria-hidden="true"></i></article>
-        <article class="extraction-stat extraction-stat--duplicate"><span>Duplicates</span><strong>{{ number_format($duplicateCount) }}</strong><i class="fa fa-clone" aria-hidden="true"></i></article>
+        <article class="extraction-stat extraction-stat--pending"><span>Awaiting approval</span><strong>{{ number_format($pendingCount) }}</strong><i class="fa fa-clock-o" aria-hidden="true"></i></article>
+        <article class="extraction-stat extraction-stat--approved"><span>Approved queue</span><strong>{{ number_format($approvedCount) }}</strong><i class="fa fa-hourglass-half" aria-hidden="true"></i></article>
+        <article class="extraction-stat extraction-stat--complete"><span>Ready for review</span><strong>{{ number_format($extractedCount) }}</strong><i class="fa fa-check-circle-o" aria-hidden="true"></i></article>
+        <article class="extraction-stat extraction-stat--duplicate"><span>Completed</span><strong>{{ number_format($completedCount) }}</strong><i class="fa fa-check" aria-hidden="true"></i></article>
     </section>
 
     <section class="extraction-filter-panel" aria-labelledby="extraction-filter-heading">
@@ -37,8 +38,8 @@
                 <div class="extraction-field"><label for="extraction-chapter">Chapter</label><select class="form-control" id="extraction-chapter" name="chapter_id"><option value="">All chapters</option>@foreach($chapters as $chapter)<option value="{{ $chapter->id }}" @selected(($filters['chapter_id'] ?? '') == $chapter->id)>{{ $chapter->name }}</option>@endforeach</select></div>
                 <div class="extraction-field"><label for="extraction-zone">Zone</label><select class="form-control" id="extraction-zone" name="zone_id"><option value="">All zones</option>@foreach($zones as $zone)<option value="{{ $zone->id }}" @selected(($filters['zone_id'] ?? '') == $zone->id)>{{ $zone->name }}</option>@endforeach</select></div>
                 <div class="extraction-field"><label for="extraction-field">Field</label><select class="form-control" id="extraction-field" name="field_id"><option value="">All fields</option>@foreach($fields as $field)<option value="{{ $field->id }}" @selected(($filters['field_id'] ?? '') == $field->id)>{{ $field->name }}</option>@endforeach</select></div>
-                <div class="extraction-field"><label for="extraction-type">User type</label><select class="form-control" id="extraction-type" name="record_type"><option value="">All types</option><option value="member" @selected(($filters['record_type'] ?? '') === 'member')>Student</option><option value="alumni" @selected(($filters['record_type'] ?? '') === 'alumni')>Alumni</option></select></div>
-                <div class="extraction-field"><label for="extraction-status">Status</label><select class="form-control" id="extraction-status" name="status"><option value="">All statuses</option>@foreach(['pending', 'processing', 'extracted', 'rejected', 'duplicate'] as $status)<option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ ucfirst($status) }}</option>@endforeach</select></div>
+                <div class="extraction-field"><label for="extraction-type">User type</label><select class="form-control" id="extraction-type" name="record_type"><option value="">All types</option><option value="member" @selected(($filters['record_type'] ?? '') === 'member')>Member</option><option value="alumni" @selected(($filters['record_type'] ?? '') === 'alumni')>Alumni</option></select></div>
+                <div class="extraction-field"><label for="extraction-status">Status</label><select class="form-control" id="extraction-status" name="status"><option value="">All statuses</option>@foreach(['pending', 'approved', 'processing', 'extracted', 'completed', 'rejected', 'duplicate'] as $status)<option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ ucfirst($status) }}</option>@endforeach</select></div>
                 <div class="extraction-field"><label for="extraction-from">Uploaded from</label><input class="form-control" id="extraction-from" type="date" name="from" value="{{ $filters['from'] ?? '' }}"></div>
                 <div class="extraction-field"><label for="extraction-to">Uploaded to</label><input class="form-control" id="extraction-to" type="date" name="to" value="{{ $filters['to'] ?? '' }}"></div>
             </div>
@@ -58,7 +59,8 @@
                 <label class="sr-only" for="extraction-bulk-action">Bulk action</label>
                 <select class="form-control" id="extraction-bulk-action" name="action" required>
                     <option value="">Choose bulk action</option>
-                    <option value="extract">Extract selected</option>
+                    <option value="approve">Approve selected</option>
+                    <option value="approve_extract">Approve and extract selected</option>
                     <option value="reject">Reject selected</option>
                     <option value="delete">Delete selected</option>
                 </select>
@@ -76,12 +78,13 @@
                             <td class="extraction-serial">{{ ($uploads->firstItem() ?? 1) + $loop->index }}</td>
                             <td class="extraction-page-cell"><button class="extraction-preview" type="button" data-toggle="modal" data-target="#extraction-preview-{{ $upload->id }}"><img class="extraction-thumb" src="{{ $imageUrl }}" alt=""><span><i class="fa fa-eye" aria-hidden="true"></i> Preview</span></button></td>
                             <td class="extraction-location"><strong>{{ $upload->chapter?->name ?? 'Chapter unavailable' }}</strong><small>{{ $upload->chapter?->zone?->name ?? 'No zone' }} · {{ $upload->chapter?->field?->name ?? $upload->chapter?->zone?->field?->name ?? 'No field' }}</small></td>
-                            <td><span class="extraction-type">{{ $upload->record_type === 'alumni' ? 'Alumni' : 'Student' }}</span></td>
+                            <td><span class="extraction-type">{{ $upload->record_type === 'alumni' ? 'Alumni' : 'Member' }}</span></td>
                             <td>
                                 <span class="extraction-status extraction-status--{{ $upload->status }}">{{ ucfirst($upload->status) }}</span>
                                 @if($upload->duplicate_of_upload_id)<small class="extraction-duplicate-note">Same as #{{ $upload->duplicate_of_upload_id }}</small>@endif
                                 @if($upload->extraction_error)<small class="extraction-error" title="{{ $upload->extraction_error }}">{{ \Illuminate\Support\Str::limit($upload->extraction_error, 110) }}</small>@endif
-                                @if($upload->status === 'extracted')
+                                @if($upload->extraction_response && !in_array($upload->status, ['extracted', 'completed'], true))<details class="extraction-record-preview"><summary>View response</summary><pre class="extraction-response-inline">{{ $upload->extraction_response }}</pre></details>@endif
+                                @if(in_array($upload->status, ['extracted', 'completed'], true))
                                     <details class="extraction-record-preview"><summary>View extracted records</summary>
                                         @if(!empty($upload->extracted_data['page_notes']))<p class="extraction-page-notes">{{ $upload->extracted_data['page_notes'] }}</p>@endif
                                         <ol>
@@ -91,23 +94,19 @@
                                     </ol></details>
                                 @endif
                             </td>
-                            <td class="extraction-records">{{ $upload->status === 'extracted' ? number_format($upload->extracted_records_count ?? 0) : '—' }}</td>
+                            <td class="extraction-records">{{ in_array($upload->status, ['extracted', 'completed'], true) ? number_format($upload->extracted_records_count ?? 0) : '—' }}@if(in_array($upload->status, ['extracted', 'completed'], true))<a class="extraction-view-records" href="{{ route('users.extraction.records.index', $upload) }}">Review batch</a>@endif</td>
                             <td class="extraction-date">{{ $upload->created_at?->format('d M Y') }}<small>{{ $upload->created_at?->format('g:i A') }}</small></td>
                             <td class="extraction-date">{{ $upload->completed_at?->format('d M Y') ?? '—' }}@if($upload->completed_at)<small>{{ $upload->completed_at->format('g:i A') }}</small>@endif</td>
                             <td class="extraction-actions">
-                                @if($upload->status !== 'extracted')
-                                    <form class="extraction-extract-form" method="POST" action="{{ route('users.extraction.extract', $upload) }}" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').textContent = 'Extracting…';">@csrf<button class="extraction-button extraction-button--extract" type="submit" @disabled($upload->status === 'processing')>{{ $upload->status === 'processing' ? 'Processing…' : 'Extract page' }}</button></form>
+                                @if(in_array($upload->status, ['pending', 'duplicate', 'rejected'], true))
+                                    <form class="extraction-extract-form" method="POST" action="{{ route('users.extraction.approve', $upload) }}">@csrf<button class="extraction-button extraction-button--approve" type="submit">Approve</button></form>
+                                    <form class="extraction-extract-form" method="POST" action="{{ route('users.extraction.extract', $upload) }}" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').textContent = 'Extracting…';">@csrf<button class="extraction-button extraction-button--extract" type="submit">Approve &amp; extract</button></form>
+                                @elseif($upload->status === 'approved')
+                                    <form class="extraction-extract-form" method="POST" action="{{ route('users.extraction.extract', $upload) }}" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').textContent = 'Extracting…';">@csrf<button class="extraction-button extraction-button--extract" type="submit">Extract now</button></form>
+                                @elseif($upload->status === 'processing')
+                                    <span class="extraction-processing-note">Processing…</span>
                                 @endif
-                                <form class="extraction-status-form" method="POST" action="{{ route('users.extraction.status', $upload) }}">@csrf @method('PATCH')
-                                    <label class="sr-only" for="status-{{ $upload->id }}">Update extraction status</label>
-                                    <select id="status-{{ $upload->id }}" class="form-control extraction-status-select" name="status">
-                                        <option value="pending" @selected($upload->status === 'pending')>Set pending</option>
-                                        <option value="rejected" @selected($upload->status === 'rejected')>Set rejected</option>
-                                        <option value="duplicate" @selected($upload->status === 'duplicate')>Set duplicate</option>
-                                    </select>
-                                    <button class="extraction-button extraction-button--save" type="submit">Save status</button>
-                                </form>
-                                <form class="extraction-delete-form" method="POST" action="{{ route('users.extraction.destroy', $upload) }}" onsubmit="return confirm('Delete this uploaded image?')">@csrf @method('DELETE')<button class="extraction-delete" type="submit" aria-label="Delete uploaded image" title="Delete page"><i class="fa fa-trash" aria-hidden="true"></i></button></form>
+                                @if(($upload->linked_user_records_count ?? 0) === 0)<form class="extraction-delete-form" method="POST" action="{{ route('users.extraction.destroy', $upload) }}" onsubmit="return confirm('Delete this uploaded image?')">@csrf @method('DELETE')<button class="extraction-delete" type="submit" aria-label="Delete uploaded image" title="Delete page"><i class="fa fa-trash" aria-hidden="true"></i></button></form>@else<small class="extraction-user-linked">Has linked users</small>@endif
                             </td>
                         </tr>
                     @empty
