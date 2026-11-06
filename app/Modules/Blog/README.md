@@ -41,3 +41,13 @@ Admin web users can use the workspace through the existing admin role. Stakehold
 - Scoped newsroom: `/news/network/{scopeType}/{scopeId}`
 - Admin workspace: `/admin/blog/posts`
 - Stakeholder workspace: `/stakeholders/blog/posts`
+
+## Scheduled publishing
+
+Set a long random `BLOG_SCHEDULE_TOKEN` in the application environment, then call
+`GET /cron/blog/process-scheduled-posts?token=YOUR_TOKEN` from an external cron
+service once per minute. The endpoint publishes due scheduled blog posts and
+events. Facebook requests publish at that time only when requested and eligible;
+requests awaiting Facebook review stay queued for an admin. The endpoint processes
+up to 100 due items per call, so it can be called again while `remaining_due` is
+greater than zero.

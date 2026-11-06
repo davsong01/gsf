@@ -3,9 +3,9 @@
         <div class="site-footer__brand">
             <a class="brand brand--footer" href="{{ route('home.index') }}">
                 <img src="{{ $siteLogoUrl }}" alt="">
-                <span class="brand__copy"><strong>GOFAMINT Students’ Fellowship</strong><small>Growing faith. Forming leaders. Serving communities.</small></span>
+                <span class="brand__copy"><strong>GOFAMINT Students’ Fellowship</strong><small>Raising Godly Gems.</small></span>
             </a>
-            <p>The Student ministry of The Gospel Faith Mission (GOFAMINT) serving and growing students across the country.</p>
+            <p>The Student Ministry of The Gospel Faith Mission International (GOFAMINT) is dedicated to nurturing and empowering students nationwide—helping them deepen their faith, discover their purpose, build lifelong relationships, and equip themselves to impact the world.</p>
         </div>
         <div>
             <h2>Explore</h2>

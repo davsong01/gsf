@@ -32,7 +32,7 @@ class FacebookPagePublisher
         }
         $post->refresh();
 
-        $publishingEnabled = $allowSettingsOverride || $post->author_type === User::class
+        $publishingEnabled = $allowSettingsOverride || $post->facebook_settings_override || $post->author_type === User::class
             || ($post->type === 'event'
                 ? BlogSetting::campusEventsCanPublishToFacebook()
                 : BlogSetting::campusPostsCanPublishToFacebook());

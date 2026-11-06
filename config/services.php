@@ -32,6 +32,7 @@ return [
     ],
 
     'stakeholder_master_password' => env('STAKEHOLDER_MASTER_PASSWORD'),
+    'blog_schedule_token' => env('BLOG_SCHEDULE_TOKEN'),
 
     'facebook' => [
         'graph_version' => env('FACEBOOK_GRAPH_VERSION', 'v26.0'),

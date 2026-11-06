@@ -242,6 +242,7 @@ class BlogController extends Controller
 
                 $post->forceFill([
                     'facebook_publish_requested' => false,
+                    'facebook_settings_override' => false,
                     'facebook_status' => 'not_requested',
                     'facebook_post_id' => null,
                     'facebook_published_at' => null,
@@ -422,11 +423,19 @@ class BlogController extends Controller
         $claimed = BlogPost::query()
             ->whereKey($post->getKey())
             ->where('facebook_status', $expectedStatus)
-            ->update(['facebook_status' => 'pending', 'facebook_error' => null]);
+            ->update([
+                'facebook_status' => $post->status === 'published' ? 'pending' : 'waiting_for_publication',
+                'facebook_settings_override' => ! $this->isStakeholder($user),
+                'facebook_error' => null,
+            ]);
         abort_unless($claimed === 1, 409, 'This Facebook request has already been handled.');
         $post->refresh();
         // Both approval and retry are initiated by the current reviewer. Keep
         // their permission override tied to that reviewer, not the post author.
+        if ($post->facebook_status === 'waiting_for_publication') {
+            return back()->with('message', 'Facebook request approved. It will publish when the website post goes live.');
+        }
+
         $published = app(FacebookPagePublisher::class)->publish($post, ! $this->isStakeholder($user));
 
         return back()->with(
@@ -447,6 +456,7 @@ class BlogController extends Controller
 
         $post->forceFill([
             'facebook_publish_requested' => false,
+            'facebook_settings_override' => false,
             'facebook_status' => 'not_requested',
             'facebook_post_id' => null,
             'facebook_published_at' => null,
@@ -669,6 +679,7 @@ class BlogController extends Controller
         if ($post?->facebook_status === 'published') {
             return [
                 'facebook_publish_requested' => true,
+                'facebook_settings_override' => (bool) $post->facebook_settings_override,
                 'facebook_status' => 'published',
             ];
         }
@@ -676,6 +687,7 @@ class BlogController extends Controller
         if ($post && in_array($post->facebook_status, ['pending', 'publishing'], true)) {
             return [
                 'facebook_publish_requested' => true,
+                'facebook_settings_override' => (bool) $post->facebook_settings_override,
                 'facebook_status' => $post->facebook_status,
             ];
         }
@@ -683,6 +695,7 @@ class BlogController extends Controller
         if (! $requested) {
             return [
                 'facebook_publish_requested' => false,
+                'facebook_settings_override' => false,
                 'facebook_status' => 'not_requested',
                 'facebook_error' => null,
             ];
@@ -692,7 +705,9 @@ class BlogController extends Controller
             $requiresReview = $isEvent
                 ? BlogSetting::campusEventsFacebookRequireReview()
                 : BlogSetting::campusPostsFacebookRequireReview();
-            $status = $requiresReview ? 'pending_review' : 'pending';
+            $status = $requiresReview
+                ? 'pending_review'
+                : ((($data['status'] ?? $post?->status) === 'scheduled') ? 'waiting_for_publication' : 'pending');
         } else {
             $status = ($data['status'] ?? $post?->status) === 'published'
                 ? 'pending'
@@ -701,6 +716,7 @@ class BlogController extends Controller
 
         return [
             'facebook_publish_requested' => true,
+            'facebook_settings_override' => $admin,
             'facebook_status' => $status,
             'facebook_error' => null,
         ];

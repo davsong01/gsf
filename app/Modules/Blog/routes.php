@@ -5,6 +5,7 @@ use App\Modules\Blog\Http\Controllers\BlogCommentAdminController;
 use App\Modules\Blog\Http\Controllers\BlogController;
 use App\Modules\Blog\Http\Controllers\BlogPublicController;
 use App\Modules\Blog\Http\Controllers\BlogSettingsController;
+use App\Modules\Blog\Http\Controllers\BlogScheduleController;
 use App\Modules\Blog\Http\Controllers\BlogTagController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,8 @@ Route::prefix('news')->name('blog.')->group(function () {
 
 Route::get('programs-events', [BlogPublicController::class, 'events'])->name('events.public.index');
 Route::get('programs-events/{slug}', [BlogPublicController::class, 'show'])->name('events.public.show');
+Route::get('cron/blog/process-scheduled-posts', [BlogScheduleController::class, 'processScheduledPosts'])
+    ->name('blog.cron.process-scheduled-posts');
 
 Route::middleware(['auth', 'SwitchUser'])->prefix('admin')->name('admin.')->group(function () {
     Route::post('programs-events/bulk-action', [BlogController::class, 'bulkAction'])->name('events.posts.bulk-action');

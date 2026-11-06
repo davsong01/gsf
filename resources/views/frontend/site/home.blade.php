@@ -32,8 +32,8 @@
             <div class="site-container hero__grid">
                 <div class="hero__content">
                     <div class="eyebrow eyebrow--light"><span></span> Faith · Leadership · Service</div>
-                    <h1>Forming students for <em>Christ-like influence.</em></h1>
-                    <p class="hero__lead">A national fellowship community where students grow in faith, discover purpose, build enduring relationships and become equipped to serve their world.</p>
+                    <h1>Raising <em>Godly Gems.</em></h1>
+                    <p class="hero__lead">The Student Ministry of The Gospel Faith Mission International (GOFAMINT) is dedicated to nurturing and empowering students nationwide—helping them deepen their faith, discover their purpose, build lifelong relationships, and equip themselves to impact the world.</p>
                     <div class="hero__actions">
                         <a class="button button--gold" href="{{ route('about.our-story') }}">Discover GSF <span aria-hidden="true">→</span></a>
                         <a class="button button--ghost" href="{{ route('people.campuses') }}">Find a campus</a>
