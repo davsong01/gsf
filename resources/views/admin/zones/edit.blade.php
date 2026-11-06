@@ -1,6 +1,11 @@
 @extends('layouts.dashboard')
 
-@php($isEdit = isset($zone))
+@php
+    $isEdit = isset($zone);
+    $selectedStakeholders = collect(old('stakeholder_id', $isEdit ? $zone->zonalCords->pluck('id')->all() : []))
+        ->map(fn ($id) => (int) $id)
+        ->all();
+@endphp
 
 @section('title', $isEdit ? 'Edit Zone' : 'Create Zone')
 @section('item')
@@ -74,9 +79,6 @@
                 <form action="{{ $isEdit ? route('zones.update', $zone->id) : route('zones.store') }}" method="POST">
                     @csrf
                     @if($isEdit) @method('PATCH') @endif
-                    @php
-                        $selectedStakeholders = collect(old('stakeholder_id', $isEdit ? $zone->zonalCords->pluck('id')->all() : []))->map(fn($id) => (int) $id)->all();
-                    @endphp
                     <div class="location-form__body"><div class="row">
                         <fieldset class="form-group col-md-6"><label for="name">Zone name</label><input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $zone->name ?? '') }}" placeholder="Enter zone name" required>@error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror</fieldset>
                         <fieldset class="form-group col-md-6"><label for="field_id">Parent field</label><select class="form-control @error('field_id') is-invalid @enderror" name="field_id" id="field_id" required><option value="">Select a field</option>@foreach($fields as $field)<option value="{{ $field->id }}" {{ (int) old('field_id', $zone->field_id ?? null) === (int) $field->id ? 'selected' : '' }}>{{ $field->name }}</option>@endforeach</select>@error('field_id')<div class="invalid-feedback">{{ $message }}</div>@enderror</fieldset>

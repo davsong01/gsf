@@ -9,3 +9,29 @@ NOTE:
 ------
 PLACE HERE YOUR OWN SCSS CODES AND IF NEEDED, OVERRIDE THE STYLES FROM THE OTHER STYLESHEETS.
 WE WILL RELEASE FUTURE UPDATES SO IN ORDER TO NOT OVERWRITE YOUR STYLES IT'S BETTER LIKE THIS.  */
+
+/* Warm gold active state for the dashboard navigation. */
+.main-menu.menu-light .navigation > li.active:not(.sidebar-group-active) > a,
+.main-menu.menu-light .navigation > li ul .active {
+    color: #805b17 !important;
+    background: #fff3d9 !important;
+    border-radius: .45rem;
+}
+.main-menu.menu-light .navigation > li.active:not(.sidebar-group-active) > a i,
+.main-menu.menu-light .navigation > li ul .active > a,
+.main-menu.menu-light .navigation > li ul .active > a i {
+    color: #92651d !important;
+}
+.main-menu.menu-light .navigation > li.nav-item.open > a,
+.main-menu.menu-light .navigation > li.nav-item.sidebar-group-active > a {
+    color: #805b17;
+}
+.main-menu.menu-light .navigation > li.nav-item.open > a i,
+.main-menu.menu-light .navigation > li.nav-item.sidebar-group-active > a i {
+    color: #92651d !important;
+}
+body.vertical-layout.vertical-menu-modern.menu-collapsed .main-menu:not(.expanded) .navigation li.active a,
+body.vertical-layout.vertical-menu-modern.menu-collapsed .main-menu:not(.expanded) .navigation li.menu-collapsed-open {
+    color: #805b17 !important;
+    background: #fff3d9 !important;
+}
