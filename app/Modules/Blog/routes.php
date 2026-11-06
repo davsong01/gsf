@@ -18,6 +18,7 @@ Route::prefix('news')->name('blog.')->group(function () {
     Route::get('/{slug}', [BlogPublicController::class, 'show'])->name('show');
     Route::post('/{post}/comments', [BlogPublicController::class, 'comment'])->name('comments.store');
 });
+Route::get('/sitemap.xml', [BlogPublicController::class, 'siteSitemap'])->name('sitemap');
 
 Route::get('programs-events', [BlogPublicController::class, 'events'])->name('events.public.index');
 Route::get('programs-events/{slug}', [BlogPublicController::class, 'show'])->name('events.public.show');

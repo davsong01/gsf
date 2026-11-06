@@ -274,4 +274,21 @@ class BlogPublicController extends Controller
         $posts = BlogPost::published()->latest('updated_at')->get();
         return response()->view('modules.blog.public.sitemap', compact('posts'))->header('Content-Type', 'application/xml; charset=UTF-8');
     }
+
+    public function siteSitemap()
+    {
+        $posts = BlogPost::published()->latest('updated_at')->get();
+        $conferences = \App\Models\ConferenceEdition::query()->whereNotNull('slug')->get(['slug', 'updated_at']);
+        $pages = [
+            route('home.index'), route('about.foundational-concept'), route('about.our-story'),
+            route('about.mission-strategies'), route('about.contact'), route('leaders.fathers'),
+            route('directory.index'), route('people.campuses'), route('people.alumni'),
+            route('people.nec'), route('people.students'), route('people.programs'),
+            route('conferences.index'), route('public.awards.etf'), route('public.awards.go'),
+            route('site.privacy'), route('site.terms'), route('blog.index'), route('events.public.index'),
+        ];
+
+        return response()->view('modules.blog.public.site-sitemap', compact('posts', 'conferences', 'pages'))
+            ->header('Content-Type', 'application/xml; charset=UTF-8');
+    }
 }
