@@ -332,6 +332,9 @@ class UserService
                             . '<br><em>'
                             . (($user->rolename !== 'Admin' && $user->rolename !== 'Member') ? $user->portfolio_session : '')
                             . '</em>',
+                'created_at' => $user->created_at
+                    ? $user->created_at->format('d M Y') . '<br><small>' . $user->created_at->format('g:i A') . '</small>'
+                    : '—',
                 'actions' => $this->generateActionButtons($user, $canDelete, $canEdit, $canSwitch, $isStakeholder),
             ];
 

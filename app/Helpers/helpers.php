@@ -280,6 +280,16 @@ if (!function_exists('rootPermissions')) {
                         'name' => 'Users Extraction',
                         'route' => 'users.extraction.index',
                     ],
+                    [
+                        'id' => 17,
+                        'slug' => 'listing-pending',
+                        'name' => 'Pending Listing',
+                    ],
+                    [
+                        'id' => 18,
+                        'slug' => 'users.trashed',
+                        'name' => 'Trashed Users',
+                    ],
                 ],
             ],
             [
@@ -305,24 +315,6 @@ if (!function_exists('rootPermissions')) {
                         'name' => 'Error Log Files',
                     ],
                 ],
-            ],
-            [
-                'id' => 17,
-                'slug' => 'listing-pending',
-                'name' => 'Pending Listing',
-                'icon' => 'fa fa-user'
-            ],
-            [
-                'id' => 18,
-                'slug' => 'users.trashed',
-                'name' => 'Trashed Users',
-                'icon' => 'fa fa-trash-o'
-            ],
-            [
-                'id' => 19,
-                'slug' => 'events.index',
-                'name' => 'Events',
-                'icon' => 'fa fa-calendar'
             ],
             [
                 'id' => 20,
@@ -410,7 +402,6 @@ if (!function_exists('rootPermissions')) {
             'error-files.index' => 2,
             'listing-pending' => 8,
             'users.trashed' => 9,
-            'events.index' => 10,
             'donations.all' => 11,
             'fields.index' => 12,
             'zones.index' => 13,

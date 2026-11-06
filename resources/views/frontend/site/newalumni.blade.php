@@ -23,6 +23,8 @@
     .join-form-card__heading h2 { margin: 10px 0 0; font-size: 26px; letter-spacing: -.03em; }
     .join-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 18px; }
     .join-field { display: grid; gap: 8px; }
+    .join-field > small { color: var(--ink-soft); font-size: 12px; }
+    .join-field > .join-security-error { color: #a3322e; }
     .join-field--full { grid-column: 1 / -1; }
     .join-field label { color: var(--ink); font-size: 10px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
     .join-field input, .join-field select { width: 100%; min-height: 48px; padding: 0 14px; border: 1px solid #d8deea; border-radius: 7px; color: var(--ink); background: #fbfcfe; font: inherit; font-size: 14px; }
@@ -96,6 +98,7 @@
                     <div class="join-field"><label for="matriculation_year">Year of matriculation</label><select class="join-search-select" id="matriculation_year" name="matriculation_year" data-placeholder="Select year"><option value="">Select year</option>@foreach($sessions as $value)<option value="{{ $value . '/' . ($value + 1) }}" @selected(old('matriculation_year') == $value . '/' . ($value + 1))>{{ $value . '/' . ($value + 1) }}</option>@endforeach</select></div>
                     <div class="join-field"><label for="graduation_year">Year of graduation</label><select class="join-search-select" id="graduation_year" name="graduation_year" data-placeholder="Select year"><option value="">Select year</option>@foreach($sessions as $value)<option value="{{ $value . '/' . ($value + 1) }}" @selected(old('graduation_year') == $value . '/' . ($value + 1))>{{ $value . '/' . ($value + 1) }}</option>@endforeach</select></div>
                     <div class="join-field join-field--full"><label for="office">Office or role <span style="font-weight:500;text-transform:none;letter-spacing:0">(optional)</span></label><input id="office" name="office" type="text" value="{{ old('office') }}" placeholder="e.g. Publicity Secretary"></div>
+                    <div class="join-field join-field--full"><label for="security_answer">Security question: What is {{ $securityQuestion }}?</label><input id="security_answer" name="security_answer" type="number" inputmode="numeric" autocomplete="off" value="{{ old('security_answer') }}" required aria-describedby="security-answer-help"><small id="security-answer-help">Answer this question to confirm your submission.</small>@error('security_answer')<small class="join-security-error">{{ $message }}</small>@enderror</div>
                 </div>
                 <button class="button button--gold" type="submit">Submit my details <span aria-hidden="true">→</span></button>
             </form>

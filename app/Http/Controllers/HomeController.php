@@ -895,8 +895,12 @@ class HomeController extends Controller
 			->orderBy('name')
 			->get();
 		$sessions = range(date('Y'), date('1982'));
+		$firstNumber = random_int(2, 9);
+		$secondNumber = random_int(1, 8);
+		session(['newalumni_security_answer' => (string) ($firstNumber + $secondNumber)]);
+		$securityQuestion = $firstNumber . ' + ' . $secondNumber;
 
-		return view('frontend.site.newalumni', compact('chapters', 'portfolios', 'sessions'));
+		return view('frontend.site.newalumni', compact('chapters', 'portfolios', 'sessions', 'securityQuestion'));
 	}
 
     public function newDonation()
@@ -909,12 +913,24 @@ class HomeController extends Controller
     }
 
 	public function saveNewAlumni(Request $request){
-        $new = NewListing::create($request->all());
+        $request->validate([
+            'security_answer' => ['required', 'integer'],
+        ]);
+
+        $expectedAnswer = (string) session('newalumni_security_answer', '');
+        $providedAnswer = trim((string) $request->input('security_answer'));
+        if ($expectedAnswer === '' || !hash_equals($expectedAnswer, $providedAnswer)) {
+            return back()->withErrors(['security_answer' => 'The answer is incorrect. Please try again.'])->withInput();
+        }
+
+        session()->forget('newalumni_security_answer');
+        $submission = $request->except(['_token', 'security_answer']);
+        $new = NewListing::create($submission);
         $setting = GeneralSetting::first();
 
         $data['type'] = 'new_listing';
         $data['chapter'] = Chapter::find($request->campus)->name;
-        $data['request'] = $request->all();
+        $data['request'] = $submission;
 
         $email = [
             'subject' => 'New Listing',

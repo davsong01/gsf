@@ -36,8 +36,8 @@
                 <fieldset class="form-group">
                     <label for="gender">Gender</label>
                     <select disabled class="form-control" name="gender" id="gender" required>
-                        <option value="Male" {{ $user->gender == 'Male' ? 'selected' : ''}}>Male</option>
-                        <option value="Female" {{ $user->gender == 'Female' ? 'selected' : ''}}>Female</option>
+                        <option value="Male" {{ ($user->gender ?? $user->sex ?? null) == 'Male' ? 'selected' : ''}}>Male</option>
+                        <option value="Female" {{ ($user->gender ?? $user->sex ?? null) == 'Female' ? 'selected' : ''}}>Female</option>
                     </select>
                 </fieldset>
             </div>

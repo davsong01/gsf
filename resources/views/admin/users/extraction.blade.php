@@ -33,7 +33,7 @@
         <div class="extraction-panel-heading"><div><span class="extraction-section-label">Find a record book page</span><h2 id="extraction-filter-heading">Filters</h2><p>Combine location, type, status, and upload date filters.</p></div></div>
         <form class="extraction-filters" method="GET" action="{{ route('users.extraction.index') }}">
             <div class="extraction-filter-grid">
-                <div class="extraction-field extraction-field--search"><label for="extraction-search">Search</label><input class="form-control" id="extraction-search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="File name, campus or stakeholder"></div>
+                <div class="extraction-field extraction-field--search"><label for="extraction-search">Search</label><input class="form-control" id="extraction-search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Campus or stakeholder"></div>
                 <div class="extraction-field"><label for="extraction-chapter">Chapter</label><select class="form-control" id="extraction-chapter" name="chapter_id"><option value="">All chapters</option>@foreach($chapters as $chapter)<option value="{{ $chapter->id }}" @selected(($filters['chapter_id'] ?? '') == $chapter->id)>{{ $chapter->name }}</option>@endforeach</select></div>
                 <div class="extraction-field"><label for="extraction-zone">Zone</label><select class="form-control" id="extraction-zone" name="zone_id"><option value="">All zones</option>@foreach($zones as $zone)<option value="{{ $zone->id }}" @selected(($filters['zone_id'] ?? '') == $zone->id)>{{ $zone->name }}</option>@endforeach</select></div>
                 <div class="extraction-field"><label for="extraction-field">Field</label><select class="form-control" id="extraction-field" name="field_id"><option value="">All fields</option>@foreach($fields as $field)<option value="{{ $field->id }}" @selected(($filters['field_id'] ?? '') == $field->id)>{{ $field->name }}</option>@endforeach</select></div>
@@ -72,9 +72,9 @@
                     @forelse($uploads as $upload)
                         @php($imageUrl = route('admin.protected.download', ['file' => $upload->image_path]))
                         <tr>
-                            <td class="extraction-check"><input type="checkbox" name="ids[]" value="{{ $upload->id }}" form="extraction-bulk-form" data-extraction-checkbox aria-label="Select {{ $upload->original_name }}"></td>
+                            <td class="extraction-check"><input type="checkbox" name="ids[]" value="{{ $upload->id }}" form="extraction-bulk-form" data-extraction-checkbox aria-label="Select uploaded page {{ $upload->id }}"></td>
                             <td class="extraction-serial">{{ ($uploads->firstItem() ?? 1) + $loop->index }}</td>
-                            <td class="extraction-page-cell"><a class="extraction-preview" href="{{ $imageUrl }}" target="_blank" rel="noopener"><img class="extraction-thumb" src="{{ $imageUrl }}" alt="Preview {{ $upload->original_name }}"><span><i class="fa fa-external-link" aria-hidden="true"></i> Preview</span></a><strong class="extraction-filename" title="{{ $upload->original_name }}">{{ $upload->original_name }}</strong></td>
+                            <td class="extraction-page-cell"><button class="extraction-preview" type="button" data-toggle="modal" data-target="#extraction-preview-{{ $upload->id }}"><img class="extraction-thumb" src="{{ $imageUrl }}" alt=""><span><i class="fa fa-eye" aria-hidden="true"></i> Preview</span></button></td>
                             <td class="extraction-location"><strong>{{ $upload->chapter?->name ?? 'Chapter unavailable' }}</strong><small>{{ $upload->chapter?->zone?->name ?? 'No zone' }} · {{ $upload->chapter?->field?->name ?? $upload->chapter?->zone?->field?->name ?? 'No field' }}</small></td>
                             <td><span class="extraction-type">{{ $upload->record_type === 'alumni' ? 'Alumni' : 'Student' }}</span></td>
                             <td>
@@ -116,6 +116,19 @@
                 </tbody>
             </table>
         </div>
+        @foreach($uploads as $upload)
+            <div class="modal fade extraction-preview-modal" id="extraction-preview-{{ $upload->id }}" tabindex="-1" role="dialog" aria-label="Record book page preview" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 class="modal-title">Record book page</h2>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <div class="modal-body"><img src="{{ route('admin.protected.download', ['file' => $upload->image_path]) }}" alt="Record book page" loading="lazy"></div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
         @if($uploads->hasPages())<div class="extraction-pagination">{{ $uploads->links() }}</div>@endif
     </section>
 </div>
@@ -129,6 +142,10 @@ const extractionCheckboxes = Array.from(document.querySelectorAll('[data-extract
 const extractionBulkAction = document.getElementById('extraction-bulk-action');
 const extractionApplyButton = extractionBulkForm.querySelector('button[type="submit"]');
 const extractionSelectionLabel = document.querySelector('[data-extraction-selection]');
+
+$(document).on('show.bs.modal', '.extraction-preview-modal', function () {
+    $(this).appendTo(document.body);
+});
 
 function refreshExtractionSelection() {
     const selectedCount = extractionCheckboxes.filter(function (checkbox) { return checkbox.checked; }).length;

@@ -273,7 +273,7 @@ The GSF system recognizes multiple member categories:
 
 **Attributes**:
 - Name, Contact Information
-- Gender (formerly "sex", renamed in migration)
+- Gender
 - Birth date (month, day, year)
 - Chapter affiliation
 - Educational status (is_graduated flag)

@@ -89,7 +89,7 @@
                                     @else
                                         <span class="pending-avatar-fallback">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($applicantName, 0, 1)) }}</span>
                                     @endif
-                                    <span><strong>{{ $applicantName }}</strong><small>{{ $user->campus?->name ?? 'Chapter unavailable' }}</small><small>{{ $user->gender ?: 'Gender not provided' }}</small></span>
+                                    <span><strong>{{ $applicantName }}</strong><small>{{ $user->campus?->name ?? 'Chapter unavailable' }}</small><small>{{ $user->gender ?? $user->sex ?? 'Gender not provided' }}</small></span>
                                 </div>
                             </td>
                             <td class="pending-contact"><a href="mailto:{{ $user->email }}">{{ $user->email ?: 'No email provided' }}</a><a href="tel:{{ $user->phone }}">{{ $user->phone ?: 'No phone provided' }}</a></td>
@@ -128,7 +128,7 @@
                         <div class="pending-detail-grid">
                             <div><span>Email</span><strong>{{ $user->email ?: 'Not provided' }}</strong></div>
                             <div><span>Phone</span><strong>{{ $user->phone ?: 'Not provided' }}</strong></div>
-                            <div><span>Gender</span><strong>{{ $user->gender ?: 'Not provided' }}</strong></div>
+                            <div><span>Gender</span><strong>{{ $user->gender ?? $user->sex ?? 'Not provided' }}</strong></div>
                             <div><span>Chapter</span><strong>{{ $user->campus?->name ?? 'Chapter unavailable' }}</strong></div>
                             <div><span>Program</span><strong>{{ $user->program ?: 'Not provided' }}</strong></div>
                             <div><span>Course</span><strong>{{ $user->course ?: 'Not provided' }}</strong></div>

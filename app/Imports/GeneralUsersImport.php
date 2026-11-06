@@ -49,7 +49,7 @@ class GeneralUsersImport extends Controller implements ToModel, WithHeadingRow
 		// 		'name.required' => "One or more rows do not have a name, please check the name field and try again",
 		// 		'email.required' => 'One or more rows do not have an email, please check the email field and try again',
 		// 		'phone.required' => "One or more rows do not have a phone number, please check the phone field and try again",
-		// 		'gender.required' => 'One or more row does not have gender defined, try Male/Female, please check the sex field and try again',
+		// 		'gender.required' => 'One or more row does not have gender defined, try Male/Female, please check the gender field and try again',
 		// 		'course.required' => 'One or more rows do not have a course of study, please check the course field and try again',
 		// 	]
 		// )->validate();

@@ -11,6 +11,7 @@ use App\Exports\UserExport;
 use Illuminate\Support\Str;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Services\UserService;
 use App\Models\ConferenceEdition;
 use App\Http\Controllers\Controller;
@@ -112,6 +113,47 @@ class UserController extends Controller
 		}
 
 
+	}
+
+	public function bulkTrashedAction(Request $request)
+	{
+		abort_unless(auth()->user()->isAdmin() || (auth()->user()->isSubAdmin() && auth()->user()->isMember()), 403);
+
+		$data = $request->validate([
+			'action' => ['required', 'in:restore,delete'],
+			'user_ids' => ['required', 'array', 'min:1'],
+			'user_ids.*' => ['required', 'integer', 'distinct'],
+		]);
+
+		$query = User::onlyTrashed()->whereIn('id', $data['user_ids'])->where('role', '<>', 1);
+		if (auth()->user()->isSubAdmin() && auth()->user()->isMember()) {
+			$query->where('chapter_id', auth()->user()->chapter_id)->where('id', '<>', auth()->id());
+		} else {
+			$query->whereHas('campus');
+		}
+
+		$users = $query->get();
+		abort_if($users->count() !== count($data['user_ids']), 403, 'One or more selected users are unavailable. Refresh the page and try again.');
+
+		DB::transaction(function () use ($users, $data) {
+			foreach ($users as $user) {
+				if ($data['action'] === 'restore') {
+					$user->restore();
+					continue;
+				}
+
+				if ($user->passport) {
+					$this->deleteImage($user->passport);
+				}
+				$user->forceDelete();
+			}
+		});
+
+		$message = $data['action'] === 'restore'
+			? count($users).' user(s) restored.'
+			: count($users).' user(s) permanently deleted.';
+
+		return back()->with('message', $message);
 	}
 
 
@@ -426,7 +468,49 @@ class UserController extends Controller
 	}
 
 	public function approvePendingUser(TempMember $user){
+		$existingUser = filled($user->email)
+			? User::whereRaw('LOWER(email) = ?', [Str::lower(trim($user->email))])->first()
+			: null;
+
+		if ($existingUser) {
+			$gender = $user->gender ?? $user->sex ?? null;
+			$profileDetails = array_filter([
+				'name' => $user->name,
+				'email' => trim((string) $user->email),
+				'phone' => $user->phone,
+				'gender' => $gender,
+				'passport' => $user->passport,
+				'chapter_id' => $user->chapter,
+				'program' => $user->program,
+				'course' => $user->course,
+				'matric_year' => $user->matriculation_year,
+				'graduation_year' => $user->graduation_year,
+				'open_to_work' => $user->open_to_work,
+				'slug' => Str::slug($user->name),
+			], static fn ($value) => $value !== null && $value !== '');
+
+			try {
+				DB::transaction(function () use ($existingUser, $profileDetails, $user) {
+					$existingUser->fill($profileDetails)->save();
+					$deleted = DB::table($user->getTable())
+						->where($user->getKeyName(), $user->getKey())
+						->delete();
+
+					if ($deleted !== 1) {
+						throw new \RuntimeException('The pending listing could not be removed.');
+					}
+				});
+			} catch (\Exception $e) {
+				return back()->with('error', $e->getMessage());
+			}
+
+			return redirect(route('listing-pending'))->with('message', 'User details were updated.');
+		}
+
 		$data = $user->toArray();
+		// Keep compatibility with pending rows created before the gender column rename.
+		$data['gender'] = $data['gender'] ?? $data['sex'] ?? null;
+		unset($data['sex']);
 		// dd(Carbon::parse($user->date_of_birth));
 		$data['password'] = Hash::make($user->phone);
 		$data['passport'] = $user->passport;
@@ -444,7 +528,9 @@ class UserController extends Controller
 
 		try {
 			$new_user = User::create($data);
-			$data['family_id'] = $this->createFamilyId($new_user);
+			$new_user->family_id = 'GSFP-' . str_pad($new_user->id, 5, '0', STR_PAD_LEFT);
+			$new_user->save();
+			$data['family_id'] = $new_user->family_id;
 
 			$data['type'] = 'approve_listing';
 				//send email to participant

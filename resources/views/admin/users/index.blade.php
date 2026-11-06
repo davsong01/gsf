@@ -43,7 +43,7 @@
         </div>
         <div class="members-table-wrap">
             <table class="members-table" id="users" style="width:100%">
-                <thead><tr><th>S/N</th><th>Login ID</th><th>Photo</th><th>Member details</th><th>Standing</th><th>Designation</th><th>Role</th>@if($isAdmin)<th>Source</th>@endif<th>Actions</th></tr></thead>
+                <thead><tr><th>S/N</th><th>Login ID</th><th>Photo</th><th>Member details</th><th>Standing</th><th>Designation</th><th>Role</th>@if($isAdmin)<th>Source</th>@endif<th>Date created</th><th>Actions</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -86,6 +86,7 @@ $(function () {
             { data: 'designation' },
             { data: 'role' },
             @if($isAdmin){ data: 'source' },@endif
+            { data: 'created_at' },
             { data: 'actions' }
         ]
     });

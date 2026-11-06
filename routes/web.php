@@ -425,6 +425,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
         Route::get('reject-pending/{user}', 'rejectPendingUser' )->name('user.single.reject');
         Route::get('delete-pending/{user}', 'deletePendingUser' )->name('user.single.delete');
         Route::get('trashedusers', 'trashedUsers')->name('users.trashed');
+        Route::post('trashedusers/bulk-action', 'bulkTrashedAction')->name('users.trashed.bulk-action');
         Route::get('deleteusers/{id}', 'delete')->name('users.delete');
         Route::get('restoreuser/{id}', 'restore')->name('users.restore');
         Route:: patch('users/profile/{user}', 'saveProfile')->name('users.profile.save');
