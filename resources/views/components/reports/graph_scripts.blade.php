@@ -86,6 +86,10 @@ document.addEventListener('DOMContentLoaded', function () {
         $.post("{{ route($route, $type) }}", data, function (res) {
             fullGraphData = res;
             renderChart();
+        }).fail(function () {
+            const summary = document.getElementById('complianceChartSummary');
+            if (summary) summary.textContent = 'The chart could not be loaded. Try applying the filters again.';
+        }).always(function () {
             $('#graph-loader').addClass('d-none');
         });
     }
@@ -94,8 +98,14 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!fullGraphData || !ctx) return;
 
         const { labels, datasets, status_levels } = fullGraphData;
-        const colors = ['#9ca3af', '#f59e0b', '#60a5fa', '#ef4444', '#34d399', '#dc2626', '#10b981', '#b91c1c', '#047857'];
-        const chapterCount = Number(fullGraphData.chapter_count) || datasets.length;
+        const colors = ['#8fa0b0', '#e6b85b', '#5b91ae', '#d37b69', '#51a793', '#b35b59', '#357b72', '#96474f', '#254e68'];
+        const chapterCount = fullGraphData.chapter_count == null ? datasets.length : Number(fullGraphData.chapter_count);
+        const metricChapter = document.getElementById('analyticsChapterCount');
+        const metricMonths = document.getElementById('analyticsMonthCount');
+        const metricLatest = document.getElementById('analyticsLatestMonth');
+        if (metricChapter) metricChapter.textContent = chapterCount.toLocaleString();
+        if (metricMonths) metricMonths.textContent = labels.length.toLocaleString();
+        if (metricLatest) metricLatest.textContent = labels.length ? labels[labels.length - 1] : '—';
         const statusCodes = Object.keys(status_levels).map(Number).sort((a, b) => a - b);
         const statusDatasets = statusCodes.map((code, index) => ({
             label: status_levels[code],
@@ -124,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: true, position: 'bottom' },
+                    legend: { display: true, position: 'bottom', labels: { usePointStyle: true, padding: 18, color: '#50667c' } },
                     tooltip: {
                         callbacks: {
                             label: function (context) {

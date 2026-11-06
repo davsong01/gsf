@@ -53,7 +53,7 @@
             <div class="col-md-6 col-sm-12">
                 <fieldset class="form-group">
                     <label for="chapter">Chapter</label>
-                    <input disabled type="chapter" id="chapter" name="chapter" class="form-control" value="{{ $user->campus->name }}" disabled>
+                    <input disabled type="text" id="chapter" name="chapter" class="form-control" value="{{ $user->campus?->name ?? 'Chapter unavailable' }}" disabled>
                 </fieldset>
             </div>
             <div class="col-md-6 col-sm-12">

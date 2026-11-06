@@ -1,0 +1,56 @@
+.enquiries-workspace { max-width: 1500px; margin: 0 auto; padding: 4px 0 48px; color: #25384e; }
+.enquiries-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:18px; padding:clamp(25px,4vw,40px); border-radius:21px; color:#fff; background:radial-gradient(circle at 90% 0,rgba(255,255,255,.13),transparent 30%),linear-gradient(120deg,#17375f 0%,#1d596c 72%,#8a6335 150%); box-shadow:0 18px 42px rgba(22,48,77,.14); }
+.enquiries-eyebrow { display:inline-flex; align-items:center; gap:8px; margin-bottom:9px; color:#f2d18b; font-size:10px; font-weight:850; letter-spacing:.14em; text-transform:uppercase; }
+.enquiries-hero h1 { margin:0 0 8px; color:#fff; font-family:Georgia,serif; font-size:clamp(30px,3.5vw,42px); font-weight:600; letter-spacing:-.03em; }
+.enquiries-hero p { max-width:680px; margin:0; color:#d8e5ed; font-size:13px; line-height:1.65; }
+.enquiries-count { flex:0 0 auto; padding:13px 16px; border:1px solid rgba(255,255,255,.23); border-radius:12px; background:rgba(255,255,255,.1); text-align:center; }
+.enquiries-count strong { display:block; color:#fff; font-size:22px; line-height:1.1; }
+.enquiries-count span { color:#d8e5ed; font-size:10px; font-weight:750; letter-spacing:.08em; text-transform:uppercase; }
+.enquiries-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:17px; }
+.enquiries-metric { position:relative; min-height:94px; padding:16px 18px; border:1px solid #e5e9e9; border-radius:14px; background:#fff; box-shadow:0 8px 24px rgba(26,51,78,.045); }
+.enquiries-metric span { display:block; margin-bottom:5px; color:#7b8794; font-size:10px; font-weight:850; letter-spacing:.08em; text-transform:uppercase; }
+.enquiries-metric strong { color:#203c57; font-size:23px; font-weight:850; }
+.enquiries-metric i { position:absolute; top:18px; right:18px; color:#b59662; font-size:18px; }
+.enquiries-metric--campus i { color:#428278; }
+.enquiries-filter, .enquiries-panel { overflow:hidden; margin-bottom:17px; border:1px solid #e3e9ed; border-radius:16px; background:#fff; box-shadow:0 9px 26px rgba(26,51,78,.05); }
+.enquiries-filter__head, .enquiries-panel__head { display:flex; align-items:center; justify-content:space-between; gap:15px; padding:18px 21px; border-bottom:1px solid #ecf0f2; }
+.enquiries-filter__head h2, .enquiries-panel__head h2 { margin:0 0 3px; color:#203a55; font-family:Georgia,serif; font-size:19px; font-weight:600; }
+.enquiries-filter__head p, .enquiries-panel__head p { margin:0; color:#8290a0; font-size:11px; }
+.enquiries-filter__body { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:13px; padding:19px 21px; }
+.enquiries-field { min-width:0; }
+.enquiries-field--search { grid-column:span 2; }
+.enquiries-field label { display:block; margin-bottom:6px; color:#3c5268; font-size:10px; font-weight:850; }
+.enquiries-field .form-control, .enquiries-field .form-select { width:100%; height:40px; padding:8px 10px; border:1px solid #dce4e9; border-radius:8px; color:#334b63; background:#fff; box-shadow:none; font-size:11px; }
+.enquiries-field .form-control:focus, .enquiries-field .form-select:focus { border-color:#b88a3c; box-shadow:0 0 0 3px rgba(217,179,95,.14); }
+.enquiries-filter__actions { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:13px 21px; border-top:1px solid #ecf0f2; background:#fbfcfc; }
+.enquiries-filter__actions small { color:#8793a0; font-size:10px; }
+.enquiries-filter__buttons { display:flex; gap:8px; }
+.enquiries-filter__buttons .btn { min-height:36px; padding:8px 13px; border-radius:8px; font-size:10px; font-weight:800; }
+.enquiries-filter__buttons .btn-primary { border-color:#f2d18b; color:#4c3617; background:#f2d18b; }
+.enquiries-panel { margin-bottom:0; }
+.enquiries-search { min-width:min(100%,270px); }
+.enquiries-table-wrap { overflow:auto; }
+.enquiries-table { width:100%; min-width:1040px; margin:0; border-collapse:separate; border-spacing:0; }
+.enquiries-table th { position:sticky; top:0; z-index:1; padding:12px 13px; border-bottom:1px solid #e5eaed; color:#718196; background:#f6f8f9; font-size:9px; font-weight:850; letter-spacing:.08em; text-align:left; text-transform:uppercase; white-space:nowrap; }
+.enquiries-table td { padding:14px 13px; border-bottom:1px solid #edf0f2; color:#4e5e71; font-size:11px; line-height:1.5; vertical-align:top; }
+.enquiries-table tbody tr:hover td { background:#fffaf1; }
+.enquiries-table__date { min-width:140px; color:#718196!important; white-space:nowrap; }
+.enquiries-person { min-width:180px; }
+.enquiries-person strong { display:block; color:#243b56; font-size:12px; }
+.enquiries-person a { color:#397887; }
+.enquiries-place { min-width:170px; }
+.enquiries-message { min-width:300px; max-width:440px; }
+.enquiries-message p { margin:0; white-space:pre-line; overflow-wrap:anywhere; }
+.enquiries-message details { margin-top:7px; color:#377575; font-size:10px; font-weight:750; }
+.enquiries-message summary { cursor:pointer; }
+.enquiries-message details p { margin-top:7px; color:#52657a; font-weight:400; }
+.enquiries-status { display:inline-flex; padding:5px 8px; border-radius:20px; color:#765723; background:#fff1d3; font-size:9px; font-weight:850; white-space:nowrap; }
+.enquiries-status--campus { color:#286a61; background:#e8f5ef; }
+.enquiries-empty { padding:44px 20px!important; color:#7c8998!important; text-align:center; }
+.enquiries-empty i { display:block; margin-bottom:9px; color:#c0a676; font-size:23px; }
+.enquiries-pagination { padding:15px 20px; }
+.enquiries-pagination nav { display:flex; justify-content:flex-end; }
+.enquiries-pagination .pagination { margin:0; }
+@media(max-width:1050px) { .enquiries-filter__body { grid-template-columns:repeat(3,minmax(0,1fr)); } .enquiries-field--search { grid-column:span 3; } }
+@media(max-width:700px) { .enquiries-hero { align-items:flex-start; flex-direction:column; } .enquiries-count { display:flex; align-items:center; gap:8px; } .enquiries-count strong { font-size:17px; } .enquiries-metrics { grid-template-columns:1fr; gap:8px; } .enquiries-filter__body { grid-template-columns:repeat(2,minmax(0,1fr)); padding:16px; } .enquiries-field--search { grid-column:span 2; } .enquiries-filter__head,.enquiries-panel__head { align-items:flex-start; flex-direction:column; padding:16px; } .enquiries-filter__actions { align-items:flex-start; flex-direction:column; padding:13px 16px; } }
+@media(max-width:430px) { .enquiries-filter__body { grid-template-columns:1fr; } .enquiries-field--search { grid-column:auto; } .enquiries-filter__buttons { width:100%; } .enquiries-filter__buttons .btn { flex:1; } }

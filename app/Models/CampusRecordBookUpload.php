@@ -8,11 +8,14 @@ class CampusRecordBookUpload extends Model
 {
     protected $fillable = [
         'chapter_id', 'stakeholder_id', 'image_path', 'original_name', 'mime_type', 'file_size', 'sha256',
-        'status', 'extracted_records_count', 'completed_at',
+        'status', 'extracted_records_count', 'completed_at', 'duplicate_of_upload_id',
         'record_type',
     ];
 
-    protected $casts = ['completed_at' => 'datetime'];
+    protected $casts = [
+        'completed_at' => 'datetime',
+        'extracted_data' => 'array',
+    ];
 
     public function chapter()
     {
@@ -22,5 +25,10 @@ class CampusRecordBookUpload extends Model
     public function stakeholder()
     {
         return $this->belongsTo(Stakeholder::class);
+    }
+
+    public function duplicateOf()
+    {
+        return $this->belongsTo(self::class, 'duplicate_of_upload_id');
     }
 }

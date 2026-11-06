@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\EmailContact;
+use App\Models\Chapter;
+use App\Models\Field;
+use App\Models\Zone;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -15,10 +18,25 @@ class EmailContactController extends Controller
      */
     public function index(Request $request): View
     {
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:200'],
+            'chapter_id' => ['nullable', 'integer'],
+            'field_id' => ['nullable', 'integer'],
+            'zone_id' => ['nullable', 'integer'],
+            'status' => ['nullable', 'in:website,campus'],
+            'from_date' => ['nullable', 'date'],
+            'to_date' => ['nullable', 'date', 'after_or_equal:from_date'],
+        ]);
         $search = trim((string) $request->query('search', ''));
-        $enquiries = EmailContact::query()
+        $query = EmailContact::query()
             ->with('chapter')
             ->whereIn('type', ['website', 'campus'])
+            ->when($request->filled('status'), fn ($query) => $query->where('type', $request->status))
+            ->when($request->filled('chapter_id'), fn ($query) => $query->where('chapter_id', $request->chapter_id))
+            ->when($request->filled('field_id'), fn ($query) => $query->whereHas('chapter', fn ($chapter) => $chapter->where('field_id', $request->field_id)))
+            ->when($request->filled('zone_id'), fn ($query) => $query->whereHas('chapter', fn ($chapter) => $chapter->where('zone_id', $request->zone_id)))
+            ->when($request->filled('from_date'), fn ($query) => $query->whereDate('created_at', '>=', $request->from_date))
+            ->when($request->filled('to_date'), fn ($query) => $query->whereDate('created_at', '<=', $request->to_date))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($matches) use ($search) {
                     $matches->where('name', 'like', '%'.$search.'%')
@@ -26,12 +44,20 @@ class EmailContactController extends Controller
                         ->orWhere('message', 'like', '%'.$search.'%')
                         ->orWhereHas('chapter', fn ($chapter) => $chapter->where('name', 'like', '%'.$search.'%'));
                 });
-            })
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            });
 
-        return view('admin.enquiries.index', compact('enquiries', 'search'));
+        $totalEnquiries = (clone $query)->count();
+        $websiteCount = (clone $query)->where('type', 'website')->count();
+        $campusCount = (clone $query)->where('type', 'campus')->count();
+        $enquiries = $query->latest()->paginate(20)->withQueryString();
+        $chapters = Chapter::actualCampus()->orderBy('name')->get(['id', 'name']);
+        $fields = Field::orderBy('name')->get(['id', 'name']);
+        $zones = Zone::orderBy('name')->get(['id', 'name']);
+
+        return view('admin.enquiries.index', compact(
+            'enquiries', 'search', 'chapters', 'fields', 'zones', 'filters',
+            'totalEnquiries', 'websiteCount', 'campusCount'
+        ));
     }
 
     public function campusIndex(): View

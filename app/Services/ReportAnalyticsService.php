@@ -686,6 +686,10 @@ class ReportAnalyticsService
                     'order' => $answer['question_order'] ?? PHP_INT_MAX,
                 ];
 
+                if (strcasecmp(trim($questionLabel), 'Income Records') === 0) {
+                    $chapterRows[$period][$chapterKey]['_income_records'] = $answer['value'] ?? [];
+                }
+
                 $chapterRows[$period][$chapterKey][$questionId][] = $answer['value'] ?? '-';
             }
         }

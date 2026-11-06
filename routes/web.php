@@ -404,6 +404,9 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('users', UserController::class);
 
     Route::get('users-extraction', [RecordBookUploadController::class, 'index'])->name('users.extraction.index');
+    Route::post('users-extraction/bulk-action', [RecordBookUploadController::class, 'bulkAction'])->name('users.extraction.bulk-action');
+    Route::post('users-extraction/{upload}/extract', [RecordBookUploadController::class, 'extract'])->name('users.extraction.extract');
+    Route::patch('users-extraction/{upload}/status', [RecordBookUploadController::class, 'updateStatus'])->name('users.extraction.status');
     Route::delete('users-extraction/{upload}', [RecordBookUploadController::class, 'destroy'])->name('users.extraction.destroy');
 
     Route::get('export-users', [UserController::class, 'exportUsers'])->name('users.export');
@@ -416,6 +419,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::controller(UserController::class)->group(function () {
         Route::post('allusers', 'allUsers' )->name('users.all');
         Route::post('allpending', 'allPendingUsers' )->name('users.pending');
+        Route::post('listing-pending/bulk-action', 'bulkPendingAction')->name('users.pending.bulk-action');
         Route::get('approve-pending/{user}', 'approvePendingUser' )->name('user.single.approve');
         Route::get('approve-pending/{user}', 'approvePendingUser' )->name('user.single.approve');
         Route::get('reject-pending/{user}', 'rejectPendingUser' )->name('user.single.reject');
@@ -815,6 +819,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::get('users/record-book', 'recordBookUpload')->name('users.record-book');
             Route::post('users/record-book', 'storeRecordBookImages')->name('users.record-book.store');
             Route::delete('users/record-book/{upload}', 'deleteRecordBookImage')->name('users.record-book.destroy');
+            Route::get('alumni/record-book', 'recordBookUpload')->name('alumni.record-book');
             Route::get('users/{user}/edit', 'memberEdit')->name('users.edit');
             Route::patch('users/{user}', 'memberUpdate')->name('users.update');
 

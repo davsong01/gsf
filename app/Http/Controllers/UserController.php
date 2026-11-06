@@ -33,6 +33,14 @@ class UserController extends Controller
     public function index()
     {
         $this->userService->authorizeUserAction(auth()->user());
+        $currentUser = auth()->user();
+        $memberQuery = User::query()->where('role', '<>', 1);
+        if ($currentUser->isSubAdmin() && $currentUser->isMember()) {
+            $memberQuery->where('chapter_id', $currentUser->chapter_id);
+        }
+        $chapters = $currentUser->isAdmin()
+            ? Chapter::actualCampus()->orderBy('name')->get(['id', 'name'])
+            : Chapter::actualCampus()->whereKey($currentUser->chapter_id)->get(['id', 'name']);
 
         return view('admin.users.index', [
             'routes' => [
@@ -42,6 +50,10 @@ class UserController extends Controller
                 'all'    => route('users.all'),
             ],
             'isAdmin' => auth()->user()->isAdmin(),
+            'studentCount' => (clone $memberQuery)->where('is_graduated', 0)->count(),
+            'alumniCount' => (clone $memberQuery)->where('is_graduated', 1)->count(),
+            'memberCount' => (clone $memberQuery)->count(),
+            'chapters' => $chapters,
         ]);
     }
 
@@ -52,12 +64,11 @@ class UserController extends Controller
         $canEdit = $user->isAdmin() || ($user->isSubAdmin() && $user->isMember());
         $canDelete = $user->isAdmin() || ($user->isSubAdmin() && $user->isMember());
 
-        if($user->isAdmin()){
+        $request['scope_chapter_id'] = ($user->isSubAdmin() && $user->isMember())
+            ? $user->chapter_id
+            : null;
+        if (!$user->isAdmin()) {
             $request['chapter_id'] = null;
-        }
-
-        if(($user->isSubAdmin() && $user->isMember())){
-            $request['chapter_id'] = $user->chapter_id;
         }
 
         $request['canDelete'] = $canDelete;
@@ -485,6 +496,41 @@ class UserController extends Controller
 	public function deletePendingUser(TempMember $user){
 		$user->delete();
 		return back()->with('message', 'Delete Successful');
+	}
+
+	public function bulkPendingAction(Request $request)
+	{
+		abort_unless(auth()->user()?->isAdmin(), 404);
+
+		$data = $request->validate([
+			'action' => ['required', 'in:approve,reject,delete'],
+			'selected_ids' => ['required', 'array', 'min:1'],
+			'selected_ids.*' => ['integer', 'distinct', 'exists:temp_members,id'],
+		]);
+
+		$items = TempMember::whereIn('id', $data['selected_ids'])->get();
+		$processed = 0;
+		foreach ($items as $item) {
+			switch ($data['action']) {
+				case 'approve':
+					$this->approvePendingUser($item);
+					break;
+				case 'reject':
+					$this->rejectPendingUser($item);
+					break;
+				case 'delete':
+					$this->deletePendingUser($item);
+					break;
+			}
+			$processed++;
+		}
+
+		$messages = [
+			'approve' => 'approved',
+			'reject' => 'rejected',
+			'delete' => 'deleted',
+		];
+		return redirect()->route('listing-pending')->with('message', $processed . ' application(s) ' . $messages[$data['action']] . '.');
 	}
 
 }

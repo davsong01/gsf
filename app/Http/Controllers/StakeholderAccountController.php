@@ -160,16 +160,20 @@ class StakeholderAccountController extends Controller
         ]);
     }
 
-    public function recordBookUpload()
+    public function recordBookUpload(Request $request)
     {
         $stakeholder = auth()->guard('stakeholder')->user();
         abort_unless($stakeholder && $stakeholder->chapter_id, 403);
         abort_unless((bool) (GeneralSetting::query()->value('enable_campus_record_book_upload') ?? true), 404);
 
+        $recordType = $request->query('type') === 'alumni' ? 'alumni' : 'member';
         $uploads = CampusRecordBookUpload::where('chapter_id', $stakeholder->chapter_id)
+            ->where('record_type', $recordType)
             ->latest()->limit(100)->get();
 
-        return view('stakeholder.users.record-book', compact('uploads'));
+        $memberIndexUrl = $recordType === 'alumni' ? route('stakeholders.alumni.index') : route('stakeholders.users.index');
+
+        return view('stakeholder.users.record-book', compact('uploads', 'recordType', 'memberIndexUrl'));
     }
 
     public function storeRecordBookImages(Request $request)
@@ -181,10 +185,14 @@ class StakeholderAccountController extends Controller
         $validated = $request->validate([
             'images' => ['required', 'array', 'min:1', 'max:20'],
             'images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'types' => ['required', 'array', 'size:'.count($request->file('images', []))],
+            'types.*' => ['required', 'in:member,alumni'],
         ]);
 
         $saved = [];
-        foreach ($validated['images'] as $image) {
+        foreach ($validated['images'] as $index => $image) {
+            $sha256 = hash_file('sha256', $image->getRealPath());
+            $originalUpload = CampusRecordBookUpload::where('sha256', $sha256)->oldest()->first();
             $path = app(FileUploadService::class)->secureUpload(
                 $image,
                 'campus-record-books',
@@ -199,13 +207,20 @@ class StakeholderAccountController extends Controller
                 'original_name' => $image->getClientOriginalName(),
                 'mime_type' => $image->getMimeType(),
                 'file_size' => $image->getSize(),
-                'sha256' => hash_file('sha256', $image->getRealPath()),
+                'sha256' => $sha256,
+                'record_type' => $validated['types'][$index],
+                'status' => $originalUpload ? 'duplicate' : 'pending',
+                'duplicate_of_upload_id' => $originalUpload
+                    ? ($originalUpload->duplicate_of_upload_id ?: $originalUpload->id)
+                    : null,
             ]);
 
             $saved[] = [
                 'id' => $upload->id,
                 'name' => $upload->original_name,
                 'size' => $upload->file_size,
+                'record_type' => $upload->record_type,
+                'status' => $upload->status,
                 'uploaded_at' => $upload->created_at->format('M j, Y g:i A'),
                 'preview_url' => route('protected.download', ['file' => $upload->image_path]),
                 'delete_url' => route('stakeholders.users.record-book.destroy', $upload),
@@ -242,6 +257,7 @@ class StakeholderAccountController extends Controller
             'routes' => [
                 'create' => route('stakeholders.alumni.create'),
                 'import' => route('stakeholders.alumni.index'),
+                'recordBook' => route('stakeholders.alumni.record-book', ['type' => 'alumni']),
                 'export' => route('stakeholders.export'),
                 'all'    => route('stakeholders.alumni.all'),
             ],
@@ -250,6 +266,7 @@ class StakeholderAccountController extends Controller
             'isAlumni' => true,
             'memberCount' => $memberCount,
             'activeCount' => $activeCount,
+            'canUploadRecordBook' => GeneralSetting::query()->value('enable_campus_record_book_upload') ?? true,
         ]);
     }
 

@@ -155,6 +155,28 @@
                                     @error('enable_campus_record_book_upload')<div class="text-danger mt-50">{{ $message }}</div>@enderror
                                 </div>
 
+                                <div class="row">
+                                    <div class="col-12 col-lg-6">
+                                        <div class="form-group">
+                                            <label for="record_book_openai_api_key"><strong>OpenAI API Key</strong></label>
+                                            <input class="form-control @error('record_book_openai_api_key') is-invalid @enderror" id="record_book_openai_api_key" name="record_book_openai_api_key" type="password" autocomplete="new-password" placeholder="{{ filled($settings->record_book_openai_api_key) ? 'Key configured — leave blank to keep it' : 'Enter OpenAI API key' }}">
+                                            <small class="form-text text-muted">Used by the future ImageExtractorService for document image extraction. The key is encrypted in storage and never shown after saving.</small>
+                                            @error('record_book_openai_api_key')<div class="text-danger mt-50">{{ $message }}</div>@enderror
+                                            @if(filled($settings->record_book_openai_api_key))
+                                                <label class="d-flex align-items-center mt-1" for="remove_record_book_openai_api_key"><input class="mr-1" id="remove_record_book_openai_api_key" name="remove_record_book_openai_api_key" type="checkbox" value="1"><span>Remove saved API key</span></label>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-6">
+                                        <div class="form-group">
+                                            <label for="record_book_openai_model"><strong>Vision Model</strong></label>
+                                            <input class="form-control @error('record_book_openai_model') is-invalid @enderror" id="record_book_openai_model" name="record_book_openai_model" type="text" value="{{ old('record_book_openai_model', $settings->record_book_openai_model ?: 'gpt-4.1-mini') }}" maxlength="100">
+                                            <small class="form-text text-muted">OpenAI vision-capable model used for record book images. Default: gpt-4.1-mini.</small>
+                                            @error('record_book_openai_model')<div class="text-danger mt-50">{{ $message }}</div>@enderror
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <hr>
                                 <h5 class="mb-1">Public Contact</h5>
                                 <div class="form-group">

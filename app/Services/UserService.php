@@ -251,6 +251,8 @@ class UserService
         $search = $requestData['search']['value'] ?? null;
 
         $chapterId    = $requestData['chapter_id'] ?? null;
+        $scopeChapterId = $requestData['scope_chapter_id'] ?? null;
+        $userType = $requestData['user_type'] ?? null;
         $canEdit      = $requestData['canEdit'] ?? false;
         $canDelete    = $requestData['canDelete'] ?? false;
         $canSwitch    = $requestData['canSwitch'] ?? false;
@@ -265,12 +267,19 @@ class UserService
             $baseQuery->where($filters);
         }
 
-        if ($chapterId) {
-            $baseQuery->where('chapter_id', $chapterId);
+        if ($scopeChapterId) {
+            $baseQuery->where('chapter_id', $scopeChapterId);
         }
 
         // recordsTotal (no search)
         $recordsTotal = (clone $baseQuery)->count();
+
+        if ($chapterId) {
+            $baseQuery->where('chapter_id', $chapterId);
+        }
+        if (in_array((string) $userType, ['0', '1'], true)) {
+            $baseQuery->where('is_graduated', (int) $userType);
+        }
 
         // Apply search
         if (!empty($search)) {
@@ -285,7 +294,7 @@ class UserService
         $recordsFiltered = (clone $baseQuery)->count();
 
         // Data query
-        $query = $baseQuery->orderByDesc('created_at');
+        $query = $baseQuery->with(['campus', 'designation'])->orderByDesc('created_at');
 
         // Apply pagination ONLY if not "All"
         if ($limit != -1) {
@@ -304,7 +313,7 @@ class UserService
             $row = [
                 'S/N' => $count++,
                 'email' => $user->email,
-                'family_id' => $user->family_id . '<br>' .
+                'family_id' => e($user->family_id ?: '—') . '<br>' .
                ($user->status == 'active'
                    ? '<span class="badge bg-success">Active</span>'
                    : '<span class="badge bg-danger">Inactive</span>') .
@@ -312,10 +321,10 @@ class UserService
                    ? '<br><span>Last Login: ' . ($user->last_login ?? 'N/A') . '</span>'
                    : ''),
 
-                'details' => "<strong>{$user->name}</strong><br>
-                            <i class='fa fa-envelope'></i> {$user->email}<br>
-                            <i class='fa fa-phone'></i> {$user->phone}<br>
-                            <i class='fa fa-university'></i> GSF, {$campus}",
+                'details' => '<strong>'.e($user->name).'</strong><br>
+                            <i class="fa fa-envelope"></i> '.e($user->email ?: '—').'<br>
+                            <i class="fa fa-phone"></i> '.e($user->phone ?: '—').'<br>
+                            <i class="fa fa-university"></i> GSF, '.e($campus ?: 'Chapter unavailable'),
                 'avatar' => $avatar,
                 'is_graduated' => $user->is_graduated == 0 ? 'Student' : 'Alumni',
                 'designation' => $user?->designation?->name ?? 'N/A',
@@ -349,19 +358,37 @@ class UserService
 
     protected function generateActionButtons(User $user, bool $canDelete, bool $canEdit, bool $canSwitch, ?bool $isStakeholder = false): string
     {
-        $buttons = '<div class="btn-group" role="group" aria-label="User Actions">';
+        $buttons = '<div class="members-actions" role="group" aria-label="Member actions">';
+
+        if (!$isStakeholder && filled($user->slug)) {
+            $buttons .= sprintf(
+                '<a href="%s" class="btn btn-sm members-action members-action--view" target="_blank" rel="noopener"><i class="fa fa-eye" aria-hidden="true"></i><span>View</span></a>',
+                e(route('user.single', $user->slug))
+            );
+        }
 
         if ($canEdit) {
-            $buttons .= sprintf('<a href="%s" class="btn btn-sm btn-primary">Edit</a>', route($isStakeholder ? 'stakeholders.users.edit' : 'users.edit', $user->id));
+            $buttons .= sprintf(
+                '<a href="%s" class="btn btn-sm members-action members-action--edit"><i class="fa fa-pencil" aria-hidden="true"></i><span>Edit</span></a>',
+                e(route($isStakeholder ? 'stakeholders.users.edit' : 'users.edit', $user->id))
+            );
         }
 
         if ($canDelete) {
-            $buttons .= sprintf('<a href="%s" class="btn btn-sm btn-danger" onclick="return confirm(\'Delete this user?\');">Delete</a>', route($isStakeholder ? 'stakeholders.users.destroy' : 'users.destroy', $user->id));
+            $deleteRoute = route($isStakeholder ? 'stakeholders.users.destroy' : 'users.destroy', $user->id);
+            $buttons .= sprintf(
+                '<form method="POST" action="%s" onsubmit="return confirm(\'Delete this member? This action cannot be undone.\')"><input type="hidden" name="_token" value="%s"><input type="hidden" name="_method" value="DELETE"><button type="submit" class="btn btn-sm members-action members-action--delete"><i class="fa fa-trash" aria-hidden="true"></i><span>Delete</span></button></form>',
+                e($deleteRoute),
+                e(csrf_token())
+            );
         }
 
 
         if ($canSwitch && !$isStakeholder) {
-            $buttons .= sprintf('<a href="%s" class="btn btn-sm btn-warning" onclick="return confirm(\'Switch to this user?\');">Switch</a>', route('switchuser', $user->id));
+            $buttons .= sprintf(
+                '<a href="%s" class="btn btn-sm members-action members-action--switch" onclick="return confirm(\'Switch to this member account?\')"><i class="fa fa-exchange" aria-hidden="true"></i><span>Switch</span></a>',
+                e(route('switchuser', $user->id))
+            );
         }
 
         $buttons .= '</div>';

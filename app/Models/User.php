@@ -30,6 +30,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
 	protected $guarded = [];
 
+    protected $hidden = ['source'];
+
     protected $casts = [
         'permissions' => 'array'
     ];

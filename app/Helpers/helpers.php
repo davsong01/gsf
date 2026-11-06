@@ -276,7 +276,7 @@ if (!function_exists('rootPermissions')) {
                     ],
                     [
                         'id' => 151,
-                        'slug' => 'users.index',
+                        'slug' => 'users.extraction.index',
                         'name' => 'Users Extraction',
                         'route' => 'users.extraction.index',
                     ],

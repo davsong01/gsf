@@ -34,6 +34,9 @@ class SettingController extends Controller
             'gsf_family_song_audio' => ['nullable', 'file', 'mimes:mp3,wav,ogg,m4a,aac', 'max:51200'],
             'site_contact_email' => ['nullable', 'email:rfc', 'max:255'],
             'enable_campus_record_book_upload' => ['required', 'boolean'],
+            'record_book_openai_api_key' => ['nullable', 'string', 'max:1024'],
+            'record_book_openai_model' => ['required', 'string', 'max:100'],
+            'remove_record_book_openai_api_key' => ['nullable', 'boolean'],
         ]);
 
         $settings = GeneralSetting::firstOrFail();
@@ -72,6 +75,12 @@ class SettingController extends Controller
         $settings->gsf_family_song_lyrics = $request->input('gsf_family_song_lyrics');
         $settings->site_contact_email = $request->input('site_contact_email');
         $settings->enable_campus_record_book_upload = $request->boolean('enable_campus_record_book_upload');
+        $settings->record_book_openai_model = $request->input('record_book_openai_model', 'gpt-4.1-mini');
+        if ($request->boolean('remove_record_book_openai_api_key')) {
+            $settings->record_book_openai_api_key = null;
+        } elseif ($request->filled('record_book_openai_api_key')) {
+            $settings->record_book_openai_api_key = $request->input('record_book_openai_api_key');
+        }
 
         if ($request->hasFile('gsf_family_song_audio')) {
             $replacedFiles[] = $settings->gsf_family_song_audio_path;
