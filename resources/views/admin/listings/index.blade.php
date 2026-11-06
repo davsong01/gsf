@@ -29,11 +29,24 @@
                 <h2 id="pending-table-heading">Member applications</h2>
                 <p>Search names, contact details, or chapter to find a submission.</p>
             </div>
+        </div>
+        <div class="pending-filters">
             <label class="pending-search" for="pending-search">
                 <i class="fa fa-search" aria-hidden="true"></i>
-                <span class="sr-only">Search pending listings</span>
-                <input id="pending-search" type="search" placeholder="Search applications" autocomplete="off">
+                <span class="sr-only">Search by applicant name, email, or phone</span>
+                <input id="pending-search" type="search" placeholder="Search name, email, or phone" autocomplete="off">
             </label>
+            <label class="pending-chapter-filter" for="pending-chapter-filter">
+                <span>Chapter</span>
+                <select id="pending-chapter-filter">
+                    <option value="">All chapters</option>
+                    @foreach($chapters as $chapter)
+                        <option value="{{ $chapter->id }}">{{ $chapter->name }}</option>
+                    @endforeach
+                    <option value="unavailable">Chapter unavailable</option>
+                </select>
+            </label>
+            <button type="button" class="pending-filter-reset" id="pending-filter-reset">Reset filters</button>
         </div>
 
         <div class="pending-table-wrap">
@@ -54,7 +67,7 @@
                 </div>
             <table class="pending-table" id="pending-listings" style="width:100%">
                 <thead>
-                    <tr><th class="pending-check-column"><input type="checkbox" id="pending-page-select" aria-label="Select visible applications"></th><th>S/N</th><th>Applicant</th><th>Contact</th><th>Chapter</th><th>Submitted</th><th>Actions</th></tr>
+                    <tr><th class="pending-check-column"><input type="checkbox" id="pending-page-select" aria-label="Select visible applications"></th><th>S/N</th><th>Applicant</th><th>Contact</th><th>Submitted</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                     @foreach($pending as $user)
@@ -65,7 +78,7 @@
                             }
                             $avatarPath = $user->passport ? (\Illuminate\Support\Str::startsWith($user->passport, ['http://', 'https://']) ? $user->passport : asset($user->passport)) : null;
                         @endphp
-                        <tr>
+                        <tr data-chapter-id="{{ $user->chapter ?: 'unavailable' }}" data-applicant-name="{{ $applicantName }}" data-applicant-email="{{ $user->email }}" data-applicant-phone="{{ $user->phone }}">
                             <td class="pending-check-column"><input type="checkbox" class="pending-row-check" name="selected_ids[]" value="{{ $user->id }}" aria-label="Select {{ $applicantName }}"></td>
                             <td class="pending-index">{{ $loop->iteration }}</td>
                             <td>
@@ -76,11 +89,10 @@
                                     @else
                                         <span class="pending-avatar-fallback">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($applicantName, 0, 1)) }}</span>
                                     @endif
-                                    <span><strong>{{ $applicantName }}</strong><small>{{ $user->gender ?: 'Gender not provided' }}</small></span>
+                                    <span><strong>{{ $applicantName }}</strong><small>{{ $user->campus?->name ?? 'Chapter unavailable' }}</small><small>{{ $user->gender ?: 'Gender not provided' }}</small></span>
                                 </div>
                             </td>
                             <td class="pending-contact"><a href="mailto:{{ $user->email }}">{{ $user->email ?: 'No email provided' }}</a><a href="tel:{{ $user->phone }}">{{ $user->phone ?: 'No phone provided' }}</a></td>
-                            <td><span class="pending-chapter">{{ $user->campus?->name ?? 'Chapter unavailable' }}</span></td>
                             <td class="pending-date">{{ $user->created_at?->format('d M Y') ?? '—' }}<small>{{ $user->created_at?->format('g:i A') }}</small></td>
                             <td>
                                 <div class="pending-actions">
@@ -153,7 +165,7 @@ $(function () {
         pageLength: 25,
         lengthMenu: [[25, 50, 100, -1], [25, 50, 100, 'All']],
         dom: "t<'pending-table-footer'lip>",
-        columnDefs: [{ targets: [0, 1, 6], orderable: false, searchable: false }],
+        columnDefs: [{ targets: [0, 1, 5], orderable: false, searchable: false }],
         language: {
             emptyTable: 'There are no applications waiting for review.',
             zeroRecords: 'No applications match your search.',
@@ -161,10 +173,25 @@ $(function () {
         }
     });
     var delay;
+    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        if (settings.nTable.id !== 'pending-listings') return true;
+        var row = $(table.row(dataIndex).node());
+        var query = $.trim($('#pending-search').val()).toLowerCase();
+        var chapterId = $('#pending-chapter-filter').val();
+        var searchable = [row.data('applicant-name'), row.data('applicant-email'), row.data('applicant-phone')].join(' ').toLowerCase();
+        var matchesSearch = !query || searchable.indexOf(query) !== -1;
+        var matchesChapter = !chapterId || String(row.data('chapter-id')) === chapterId;
+        return matchesSearch && matchesChapter;
+    });
     $('#pending-search').on('input', function () {
-        var query = this.value;
         clearTimeout(delay);
-        delay = setTimeout(function () { table.search(query).draw(); }, 200);
+        delay = setTimeout(function () { table.draw(); }, 200);
+    });
+    $('#pending-chapter-filter').on('change', function () { table.draw(); });
+    $('#pending-filter-reset').on('click', function () {
+        $('#pending-search').val('');
+        $('#pending-chapter-filter').val('');
+        table.draw();
     });
     function updatePendingSelection() {
         var selected = $('.pending-row-check:checked').length;

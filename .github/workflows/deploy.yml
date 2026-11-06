@@ -47,6 +47,12 @@ jobs:
             mkdir -p ../site
             cp -R public/site/. ../site/
 
+            mkdir -p ../assets
+            cp -R public/assets/. ../assets/
+
+            mkdir -p ../app-assets
+            cp -R public/app-assets/. ../app-assets/
+
             php artisan db:seed --class="Database\Seeders\BackfillNecStakeholderAvatarsSeeder" --force
             php artisan optimize:clear
 
