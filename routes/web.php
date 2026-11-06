@@ -808,6 +808,8 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::post('all', 'allMemberUsers' )->name('all');
             Route::post('users', 'memberStore')->name('users.store');
             Route::get('users/create', 'memberCreate')->name('users.create');
+            Route::get('users/record-book', 'recordBookUpload')->name('users.record-book');
+            Route::post('users/record-book', 'storeRecordBookImages')->name('users.record-book.store');
             Route::get('users/{user}/edit', 'memberEdit')->name('users.edit');
             Route::patch('users/{user}', 'memberUpdate')->name('users.update');
 

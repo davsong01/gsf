@@ -144,6 +144,18 @@
                                 </div>
 
                                 <hr>
+                                <h5 class="mb-1">Campus Record Book Upload</h5>
+                                <p class="text-muted">Control whether chapter stakeholders can access the Record Book upload page.</p>
+                                <div class="form-group">
+                                    <input type="hidden" name="enable_campus_record_book_upload" value="0">
+                                    <label class="d-flex align-items-start" for="enable_campus_record_book_upload">
+                                        <input class="mr-1 mt-25" id="enable_campus_record_book_upload" name="enable_campus_record_book_upload" type="checkbox" value="1" @checked((bool) old('enable_campus_record_book_upload', $settings->enable_campus_record_book_upload ?? true))>
+                                        <span><strong>Enable Campus Record Book Upload</strong><small class="form-text text-muted">Enabled by default. When turned off, the Upload Record Book button and page are hidden from stakeholders.</small></span>
+                                    </label>
+                                    @error('enable_campus_record_book_upload')<div class="text-danger mt-50">{{ $message }}</div>@enderror
+                                </div>
+
+                                <hr>
                                 <h5 class="mb-1">Public Contact</h5>
                                 <div class="form-group">
                                     <label for="site_contact_email"><strong>Contact Us Email</strong></label>

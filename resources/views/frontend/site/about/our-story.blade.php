@@ -55,7 +55,7 @@
 <section class="story-purpose">
     <div class="site-container">
         <header class="story-section-heading">
-            <div><div class="eyebrow"><span></span> Our Purpose</div><h2>Forming the whole student.</h2></div>
+            <div><div class="eyebrow"><span></span> Our Mission</div><h2>Forming the whole student.</h2></div>
             <p>From the beginning, the Fellowship set out to care for students’ spiritual lives, open paths to academic success and build relationships shaped by biblical values.</p>
         </header>
         <div class="story-purpose__grid">
@@ -102,6 +102,7 @@
             <li><span>10</span><strong>Pastor Tunde Sebanjo</strong></li>
             <li><span>11</span><strong>Pastor Taiwo Salau</strong></li>
             <li><span>12</span><strong>Pastor Kayode Adegbesan</strong></li>
+            <li><span>12</span><strong>Pastor Dr. Olayemi Olanegan</strong></li>
         </ol>
     </div>
 </section>

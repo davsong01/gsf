@@ -7,12 +7,14 @@ use App\Models\User;
 use App\Models\Zone;
 use App\Models\Field;
 use App\Models\Chapter;
+use App\Models\GeneralSetting;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Excel;
 use App\Services\UserService;
 use App\Services\ExcelService;
 use App\Models\StakeholderReport;
+use App\Models\CampusRecordBookUpload;
 use App\Services\AppraisalService;
 use App\Services\FileUploadService;
 use App\Http\Controllers\Controller;
@@ -144,6 +146,7 @@ class StakeholderAccountController extends Controller
             'routes' => [
                 'create' => route('stakeholders.users.create'),
                 'import' => route('stakeholders.import.index'),
+                'recordBook' => route('stakeholders.users.record-book'),
                 'export' => route('stakeholders.export'),
                 'all'    => route('stakeholders.all'),
             ],
@@ -152,7 +155,61 @@ class StakeholderAccountController extends Controller
             'isAlumni' => false,
             'memberCount' => $memberCount,
             'activeCount' => $activeCount,
+            'canUploadRecordBook' => GeneralSetting::query()->value('enable_campus_record_book_upload') ?? true,
         ]);
+    }
+
+    public function recordBookUpload()
+    {
+        $stakeholder = auth()->guard('stakeholder')->user();
+        abort_unless($stakeholder && $stakeholder->chapter_id, 403);
+        abort_unless((bool) (GeneralSetting::query()->value('enable_campus_record_book_upload') ?? true), 404);
+
+        $uploads = CampusRecordBookUpload::where('chapter_id', $stakeholder->chapter_id)
+            ->latest()->limit(100)->get();
+
+        return view('stakeholder.users.record-book', compact('uploads'));
+    }
+
+    public function storeRecordBookImages(Request $request)
+    {
+        $stakeholder = auth()->guard('stakeholder')->user();
+        abort_unless($stakeholder && $stakeholder->chapter_id, 403);
+        abort_unless((bool) (GeneralSetting::query()->value('enable_campus_record_book_upload') ?? true), 404);
+
+        $validated = $request->validate([
+            'images' => ['required', 'array', 'min:1', 'max:20'],
+            'images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+        ]);
+
+        $saved = [];
+        foreach ($validated['images'] as $image) {
+            $path = app(FileUploadService::class)->secureUpload(
+                $image,
+                'campus-record-books',
+                null,
+                Str::uuid().'.'.$image->extension()
+            );
+
+            $upload = CampusRecordBookUpload::create([
+                'chapter_id' => $stakeholder->chapter_id,
+                'stakeholder_id' => $stakeholder->id,
+                'image_path' => $path,
+                'original_name' => $image->getClientOriginalName(),
+                'mime_type' => $image->getMimeType(),
+                'file_size' => $image->getSize(),
+                'sha256' => hash_file('sha256', $image->getRealPath()),
+            ]);
+
+            $saved[] = [
+                'id' => $upload->id,
+                'name' => $upload->original_name,
+                'size' => $upload->file_size,
+                'uploaded_at' => $upload->created_at->format('M j, Y g:i A'),
+            ];
+        }
+
+        return response()->json(['message' => count($saved).' image(s) uploaded successfully.', 'uploads' => $saved]);
     }
 
     public function alumniIndex(Request $request)

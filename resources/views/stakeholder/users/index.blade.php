@@ -15,7 +15,12 @@
             <p>{{ $isAlumni ? 'Stay connected with graduates who remain part of your fellowship family.' : 'Keep your campus directory current and your student community connected.' }}</p>
         </div>
         <div class="members-hero__actions">
-            @unless($isAlumni)<a class="members-button members-button--light" href="{{ $routes['import'] }}"><i class="fa fa-upload" aria-hidden="true"></i> Import members</a>@endunless
+            @unless($isAlumni)
+                @if($canUploadRecordBook ?? false)
+                    <a class="members-button members-button--light" href="{{ $routes['recordBook'] }}" title="Upload your record book, also known as the Book of Life, and we will scan it and extract the records." data-toggle="tooltip" data-placement="bottom" aria-label="Upload your record book, also known as the Book of Life, and we will scan it and extract the records."><i class="fa fa-book" aria-hidden="true"></i> Upload Record Book</a>
+                @endif
+                <a class="members-button members-button--light" href="{{ $routes['import'] }}"><i class="fa fa-upload" aria-hidden="true"></i> Import members</a>
+            @endunless
             <a class="members-button members-button--gold" href="{{ $routes['create'] }}"><i class="fa fa-plus" aria-hidden="true"></i> Add {{ $isAlumni ? 'alumnus' : 'member' }}</a>
         </div>
     </header>

@@ -33,6 +33,7 @@ class SettingController extends Controller
             'gsf_family_song_lyrics' => ['nullable', 'string', 'max:30000'],
             'gsf_family_song_audio' => ['nullable', 'file', 'mimes:mp3,wav,ogg,m4a,aac', 'max:51200'],
             'site_contact_email' => ['nullable', 'email:rfc', 'max:255'],
+            'enable_campus_record_book_upload' => ['required', 'boolean'],
         ]);
 
         $settings = GeneralSetting::firstOrFail();
@@ -70,6 +71,7 @@ class SettingController extends Controller
 
         $settings->gsf_family_song_lyrics = $request->input('gsf_family_song_lyrics');
         $settings->site_contact_email = $request->input('site_contact_email');
+        $settings->enable_campus_record_book_upload = $request->boolean('enable_campus_record_book_upload');
 
         if ($request->hasFile('gsf_family_song_audio')) {
             $replacedFiles[] = $settings->gsf_family_song_audio_path;
