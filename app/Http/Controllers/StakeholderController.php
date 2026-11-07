@@ -45,6 +45,14 @@ class StakeholderController extends Controller
                 $query->where('role_id', request('role_id'));
             }
 
+            if (request()->filled('zone_id')) {
+                $query->where('zone_id', request('zone_id'));
+            }
+
+            if (request()->filled('field_id')) {
+                $query->where('field_id', request('field_id'));
+            }
+
             if (request()->filled('status')) {
                 $query->where('status', request('status'));
             }
@@ -63,6 +71,8 @@ class StakeholderController extends Controller
             }
 
             $roles = StakeholderRole::where('status', 'active')->orderBy('name')->get();
+            $zones = Zone::orderBy('name')->get();
+            $fields = Field::orderBy('name')->get();
             $stakeholders = $query->paginate(100)->withQueryString();
             $count = ($stakeholders->currentPage() - 1) * $stakeholders->perPage();
             $stats = [
@@ -72,7 +82,7 @@ class StakeholderController extends Controller
                 'appraisal_evaluation' => Stakeholder::where('access_appraisal_evaluation', true)->count(),
             ];
 
-			return view('admin.stakeholders.index', compact('stakeholders', 'count', 'roles', 'stats'));
+			return view('admin.stakeholders.index', compact('stakeholders', 'count', 'roles', 'zones', 'fields', 'stats'));
 
 		}else{
             return abort(404);

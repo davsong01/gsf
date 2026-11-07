@@ -321,6 +321,24 @@
                                     </select>
                                 </div>
                                 <div class="col-lg-2 col-md-6">
+                                    <label for="zone_id">Zone</label>
+                                    <select class="form-select" id="zone_id" name="zone_id">
+                                        <option value="">All zones</option>
+                                        @foreach($zones as $zone)
+                                            <option value="{{ $zone->id }}" @selected(request('zone_id') == $zone->id)>{{ $zone->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-6">
+                                    <label for="field_id">Field</label>
+                                    <select class="form-select" id="field_id" name="field_id">
+                                        <option value="">All fields</option>
+                                        @foreach($fields as $field)
+                                            <option value="{{ $field->id }}" @selected(request('field_id') == $field->id)>{{ $field->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-6">
                                     <label for="status">Status</label>
                                     <select class="form-select" id="status" name="status">
                                         <option value="">All statuses</option>
