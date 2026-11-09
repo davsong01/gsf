@@ -372,9 +372,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('stakeholderpersonnel.bulk-action') }}" id="stakeholder-bulk-form">
-            @csrf
-            <div class="row stakeholder-section">
+        <div class="row stakeholder-section">
                 <div class="col-12">
                 <div class="card stakeholder-dashboard-card">
                         <div class="card-body">
@@ -385,17 +383,21 @@
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="d-flex stakeholder-bulk-bar align-items-center justify-content-lg-end flex-nowrap">
-                                        <select name="bulk_action" class="form-select form-select-sm">
+                                        <form method="POST" action="{{ route('stakeholderpersonnel.bulk-action') }}" id="stakeholder-bulk-form">
+                                            @csrf
+                                            <select name="bulk_action" class="form-select form-select-sm">
                                             <option value="">Choose action</option>
                                             <option value="allow_appraisal_access">Allow Appraisal Access</option>
                                             <option value="remove_appraisal_access">Remove Appraisal Access</option>
                                             <option value="resend_credentials">Resend Credentials</option>
+                                            <option value="delete">Delete (soft delete)</option>
                                         </select>
                                         <button type="submit" class="btn btn-success btn-sm rounded-pill"
                                                 style="min-width: 6rem;"
-                                                onclick="if (this.form.bulk_action.value === 'resend_credentials') return confirm('Reset passwords and resend credentials to all selected stakeholders?');">
+                                                onclick="if (this.form.bulk_action.value === 'resend_credentials') return confirm('Reset passwords and resend credentials to all selected stakeholders?'); if (this.form.bulk_action.value === 'delete') return confirm('Soft-delete all selected stakeholders? They can be restored later.');">
                                             Apply
                                         </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -420,7 +422,7 @@
                                         @forelse($stakeholders as $stakeholder)
                                             <tr>
                                                 <td>
-                                                    <input type="checkbox" name="selected_ids[]" value="{{ $stakeholder->id }}" class="form-check-input stakeholder-row-check">
+                                                    <input type="checkbox" name="selected_ids[]" value="{{ $stakeholder->id }}" form="stakeholder-bulk-form" class="form-check-input stakeholder-row-check">
                                                 </td>
                                                 <td>{{ $count + $loop->iteration }}</td>
                                                 <td>
@@ -514,11 +516,13 @@
                                                            href="{{ route('switchuser', ['id' => $stakeholder->id, 'type' => 'stakeholder']) }}">
                                                             <i class="fa fa-unlock me-1"></i> Switch
                                                         </a>
-                                                        <a class="btn btn-outline-danger btn-sm stakeholder-action-btn"
-                                                           onclick="return confirm('Are you really sure?');"
-                                                           href="{{ route('stakeholderpersonnel.delete', $stakeholder->id) }}">
-                                                            <i class="fa fa-trash me-1"></i> Delete
-                                                        </a>
+                                                        <form method="POST" action="{{ route('stakeholderpersonnel.destroy', $stakeholder->id) }}" onsubmit="return confirm('Permanently delete this stakeholder? This cannot be undone.');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-outline-danger btn-sm stakeholder-action-btn">
+                                                                <i class="fa fa-trash me-1"></i> Delete
+                                                            </button>
+                                                        </form>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -543,7 +547,6 @@
                     </div>
                 </div>
             </div>
-        </form>
     </section>
 </div>
 

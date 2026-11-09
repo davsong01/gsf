@@ -4,6 +4,7 @@ use App\Errors\Controllers\ErrorLogFileController;
 use App\Errors\Controllers\SystemLogController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AdminReportsController;
+use App\Http\Controllers\AdminStakeholderAppraisalController;
 use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\AwardController;
 use App\Http\Controllers\AwardShortlistStageController;
@@ -24,8 +25,8 @@ use App\Http\Controllers\CriticalEmailController;
 use App\Http\Controllers\CronController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\DynamicImageGeneratorController;
-use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmailContactController;
+use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\FoodController;
@@ -38,16 +39,14 @@ use App\Http\Controllers\ModeratorController;
 use App\Http\Controllers\NecController;
 use App\Http\Controllers\OfficialController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\RecordBookUploadController;
-use App\Http\Controllers\RecordBookExtractedRecordController;
-use App\Http\Controllers\RecordBookCronController;
 use App\Http\Controllers\PaymentProviderController;
 use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\RecordBookCronController;
+use App\Http\Controllers\RecordBookExtractedRecordController;
+use App\Http\Controllers\RecordBookUploadController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\StaffManagementController;
 use App\Http\Controllers\StakeholderAccountController;
-use App\Http\Controllers\AdminStakeholderAppraisalController;
 use App\Http\Controllers\StakeholderAppraisalController;
 use App\Http\Controllers\StakeholderController;
 use App\Http\Controllers\StakeholderDesignationController;
@@ -64,20 +63,15 @@ use App\Http\Controllers\SwitchUserController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserEmailsController;
-use App\Http\Controllers\UtilityToolsController;
 use App\Http\Controllers\ZoneController;
 use App\Models\Chapter;
 use App\Models\CriticalEmail;
 use App\Models\Stakeholder;
-use App\Services\DynamicImageGenerator;
 use App\Services\EmailService;
 use App\Services\FileUploadService;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
 
 Route::get('/session/reset', function (Request $request) {
     $isStakeholder = $request->string('scope')->toString() === 'stakeholder';
@@ -92,7 +86,6 @@ Route::get('/session/reset', function (Request $request) {
         ->with('message', 'Your old session was cleared. Please sign in again.');
 })->name('session.reset');
 
-
 // Route::get('migrate-award-entries', [CronController::class, 'migrateAwardEntries'])->name('verify.registration.show');
 
 Route::get('/queue', function () {
@@ -102,7 +95,6 @@ Route::get('/queue', function () {
 
 Route::get('verify-registration', [HomeController::class, 'showVerifyConferenceRegistration'])->name('verify.registration.show');
 Route::post('process-verify-registration', [HomeController::class, 'verifyConferenceRegistration'])->name('registration.search');
-
 
 // Route::get('/fix-stakeholder', function () {
 //     $stakeholders = Stakeholder::with('chapter')
@@ -130,7 +122,7 @@ Route::post('process-verify-registration', [HomeController::class, 'verifyConfer
 
 Route::post('google-form-webhook', [AwardController::class, 'webhook']);
 // routes/api.php
-Route::get('form-chapters', function() {
+Route::get('form-chapters', function () {
     $chapters = Chapter::where('name', '!=', 'Other')->select('id', 'name')->orderBy('name')->get();
 
     return response()->json($chapters);
@@ -149,7 +141,7 @@ Route::controller(ConferenceUtilityToolsController::class)->group(function () {
 
 // Campus Tracker routes
 Route::controller(ChapterController::class)->group(function () {
-    Route::get('campus-tracker', 'campusUpdate')->name('campus.tracker'); //http://127.0.0.1:8000/campus-view?chapter=1&token=387130
+    Route::get('campus-tracker', 'campusUpdate')->name('campus.tracker'); // http://127.0.0.1:8000/campus-view?chapter=1&token=387130
     Route::get('/campus-view', 'campusView')->name('campus.view');
     Route::post('/campus/{id}', 'campusSave')->name('campus.save');
 });
@@ -157,14 +149,14 @@ Route::controller(ChapterController::class)->group(function () {
 Route::post('ajax-create-temp-details', [ConferenceManagementController::class, 'ajaxPayment']);
 Route::get('ajax/zones-by-fields', [ZoneController::class, 'getZonesByFields']);
 
-Auth::routes(['verify' => false, 'register' => false] );
+Auth::routes(['verify' => false, 'register' => false]);
 
 Route::get('/clear', function () {
     Artisan::call('cache:clear');
     Artisan::call('view:clear');
     Artisan::call('config:clear');
     Artisan::call('route:clear');
-    echo "<p>Fully optimized.*</p>";
+    echo '<p>Fully optimized.*</p>';
 });
 
 Route::get('cron/birthday-notification', [CronController::class, 'cron']);
@@ -187,10 +179,10 @@ Route::get('/preview-email/{id}', function ($id) {
 
     $data = [
         'settings' => $email->settings,
-        'type'     => $email->type,
+        'type' => $email->type,
         'recipient' => $email->recipient,
-        'content'  => $email->content,
-        'subject'  => $email->subject,
+        'content' => $email->content,
+        'subject' => $email->subject,
         'attachments' => $email->attachments,
     ];
 
@@ -234,7 +226,7 @@ Route::controller(HomeController::class)->group(function () {
         ->whereIn('document', ['constitution', 'code-of-conduct'])
         ->name('site.documents.show');
     Route::get('/directory', [HomeController::class, 'directory'])->name('directory.index');
-    //Campus auto complete
+    // Campus auto complete
     Route::get('/autocomplete-search', 'campusAutocomplete')->name('campus.suggestions');
     Route::get('/alumni-autocomplete-search', 'alumniAutoComplete')->name('alumni.suggestions');
     Route::get('/member-autocomplete-search', 'memberAutoComplete')->name('member.suggestions');
@@ -260,7 +252,7 @@ Route::controller(HomeController::class)->group(function () {
     Route::POST('student/search', 'studentSearch')->name('student.search');
     // Route::POST('student/contact', 'alumniContact')->name('student.contact');
 
-    //Events
+    // Events
     Route::get('/people/programs', 'programs')->name('people.programs');
     // Homepage search
     Route::get('general-search', 'generalSearch')->name('general.search');
@@ -282,7 +274,7 @@ Route::controller(HomeController::class)->group(function () {
 Route::post('newdonation', [DonationController::class, 'redirectToGateway'])->name('newdonation.save');
 
 // Registration links
-Route::get( '/registration', [ConferenceController::class, 'index'])->name('index');
+Route::get('/registration', [ConferenceController::class, 'index'])->name('index');
 Route::get('/nec/registration/portal/pay', [ConferenceController::class, 'necRegistration'])->name('nec.registration');
 
 Route::post('checkout', [PaymentController::class, 'checkout'])->name('checkout');
@@ -297,8 +289,7 @@ Route::any('/payment/webhook', [PaymentController::class, 'dumpWebhook']);
 Route::get('/payment/analyze-webhook', [PaymentController::class, 'analyze']);
 Route::get('/payment/donation-callback', [DonationController::class, 'handleDonationGatewayCallback']);
 
-
-Route::middleware(['auth', 'SwitchUser'])->group(function(){
+Route::middleware(['auth', 'SwitchUser'])->group(function () {
     Route::get('/account', [AccountController::class, 'index'])->name('account');
     Route::get('/home', [AccountController::class, 'index'])->name('home');
     Route::get('/profile', [AccountController::class, 'profile'])->name('member.profile');
@@ -328,7 +319,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('designation', StakeholderDesignationController::class);
 
-    Route::get('stakeholderpersonnel/delete/{id}', [StakeholderController::class, 'destroy'])->name('stakeholderpersonnel.delete');
     Route::resource('email', EmailController::class);
     Route::resource('paymentproviders', PaymentProviderController::class);
     Route::resource('stakeholderroles', StakeholderRoleController::class);
@@ -366,7 +356,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
         Route::resource('shortlist', AwardShortlistStageController::class);
 
-
     });
 
     Route::post('adjust-award-status/{award}', [AwardController::class, 'adjustAwardStatus'])->name('awards.adjust.status');
@@ -399,7 +388,6 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::patch('general-settings', [SettingController::class, 'updateGeneralSettings'])
         ->name('general-settings.update');
 
-
     Route::get('archived-nec', [NecController::class, 'archivedNec'])->name('archive.nec.index');
     Route::post('process-archive-nec', [NecController::class, 'archiveNec'])->name('nec.archive');
 
@@ -428,18 +416,18 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     // Route::get('deleteusers/{id}', 'delete')->name('users.delete');
 
     Route::controller(UserController::class)->group(function () {
-        Route::post('allusers', 'allUsers' )->name('users.all');
-        Route::post('allpending', 'allPendingUsers' )->name('users.pending');
+        Route::post('allusers', 'allUsers')->name('users.all');
+        Route::post('allpending', 'allPendingUsers')->name('users.pending');
         Route::post('listing-pending/bulk-action', 'bulkPendingAction')->name('users.pending.bulk-action');
-        Route::get('approve-pending/{user}', 'approvePendingUser' )->name('user.single.approve');
-        Route::get('approve-pending/{user}', 'approvePendingUser' )->name('user.single.approve');
-        Route::get('reject-pending/{user}', 'rejectPendingUser' )->name('user.single.reject');
-        Route::get('delete-pending/{user}', 'deletePendingUser' )->name('user.single.delete');
+        Route::get('approve-pending/{user}', 'approvePendingUser')->name('user.single.approve');
+        Route::get('approve-pending/{user}', 'approvePendingUser')->name('user.single.approve');
+        Route::get('reject-pending/{user}', 'rejectPendingUser')->name('user.single.reject');
+        Route::get('delete-pending/{user}', 'deletePendingUser')->name('user.single.delete');
         Route::get('trashedusers', 'trashedUsers')->name('users.trashed');
         Route::post('trashedusers/bulk-action', 'bulkTrashedAction')->name('users.trashed.bulk-action');
         Route::get('deleteusers/{id}', 'delete')->name('users.delete');
         Route::get('restoreuser/{id}', 'restore')->name('users.restore');
-        Route:: patch('users/profile/{user}', 'saveProfile')->name('users.profile.save');
+        Route::patch('users/profile/{user}', 'saveProfile')->name('users.profile.save');
         Route::get('users/import/index', 'usersImportIndex')->name('users.import.index');
         Route::post('users/import/index', 'import')->name('users.import');
 
@@ -464,7 +452,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
 
     Route::resource('conferenceeditions', ConferenceEditionController::class);
 
-    //Conference management
+    // Conference management
     Route::resource('conferencemanagement', ConferenceManagementController::class);
     // Route::get('tempusers', [TransactionController::class, 'attemptedTransactions'])->name('tempusers.index');
 
@@ -494,11 +482,11 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('criticalEmail', CriticalEmailController::class);
 
     Route::controller(CriticalEmailController::class)->group(function () {
-        Route::get('CriticalEmail-delete/{id}','destroy')->name('CriticalEmail.delete');
+        Route::get('CriticalEmail-delete/{id}', 'destroy')->name('CriticalEmail.delete');
     });
 
     Route::post('/critical-email/bulk', [CriticalEmailController::class, 'bulkAction'])
-    ->name('criticalEmail.bulkAction');
+        ->name('criticalEmail.bulkAction');
 
     Route::controller(ConferenceManagementController::class)->group(function () {
         // Import conference users
@@ -616,7 +604,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::put('chapters/{chapter}/meetings/{meeting}', [ChapterMeetingController::class, 'update'])->name('chapters.meetings.update');
     Route::delete('chapters/{chapter}/meetings/{meeting}', [ChapterMeetingController::class, 'destroy'])->name('chapters.meetings.destroy');
     Route::post('/chapters/{chapter}/move-members', [ChapterController::class, 'moveMembers'])
-    ->name('chapters.move-members');
+        ->name('chapters.move-members');
     Route::controller(ChapterController::class)->group(function () {
         Route::get('newtoken/{id}', 'generateNewToken')->name('chapter.newtoken');
         Route::get('chapters/delete/{chapter}', 'destroy')->name('chapters.delete');
@@ -668,8 +656,8 @@ Route::middleware(['auth', 'SwitchUser'])->group(function(){
     Route::resource('alumni', AlumniController::class);
     Route::get('alumnis/delete/{id}', [AlumniController::class, 'destroy'])->name('alumni.delete');
     Route::resource('participants', AccountController::class)->except([
-        'create', 'store', 'destroy', 'index', 'show'
-	]);
+        'create', 'store', 'destroy', 'index', 'show',
+    ]);
 
     Route::resource('posts', PostController::class);
     Route::controller(PostController::class)->group(function () {
@@ -789,7 +777,6 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             Route::delete('/{need}', 'destroy')->name('destroy');
         });
 
-
         Route::controller(AwardController::class)->group(function () {
             Route::get('go-award-enties', 'goAwardEntries')->name('award.go');
             Route::get('etf-award-enties', 'etfAwardEntries')->name('award.etf');
@@ -825,7 +812,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
 
             // Member management
             Route::get('users', 'memberIndex')->name('users.index');
-            Route::post('all', 'allMemberUsers' )->name('all');
+            Route::post('all', 'allMemberUsers')->name('all');
             Route::post('users', 'memberStore')->name('users.store');
             Route::get('users/create', 'memberCreate')->name('users.create');
             Route::get('users/record-book', 'recordBookUpload')->name('users.record-book');
@@ -853,12 +840,11 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
 
             // Legacy delete (if still needed)
             // Route::get('deleteusers/{id}', 'delete')
-                // ->name('users.delete');
-
+            // ->name('users.delete');
 
             // Alumni Management
             Route::get('alumni', 'alumniIndex')->name('alumni.index');
-            Route::post('allalumni', 'allMemberalumni' )->name('alumni.all');
+            Route::post('allalumni', 'allMemberalumni')->name('alumni.all');
             Route::post('alumni', 'memberStore')->name('alumni.store');
             Route::get('alumni/create', 'memberCreate')->name('alumni.create');
             Route::get('alumni/{user}/edit', 'memberEdit')->name('alumni.edit');
@@ -891,14 +877,11 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
 // Reusable blog module routes.
 require base_path('app/Modules/Blog/routes.php');
 
-
-//Get signature Image
-Route::get('/protected-files/{file}', fn ($file) =>
-    app(FileUploadService::class)->serveProtectedFile($file)
+// Get signature Image
+Route::get('/protected-files/{file}', fn ($file) => app(FileUploadService::class)->serveProtectedFile($file)
 )->middleware('stakeholder')->name('protected.download');
 
-Route::get('/admin-protected-files/{file}', fn ($file) =>
-    app(FileUploadService::class)->serveProtectedFile($file)
+Route::get('/admin-protected-files/{file}', fn ($file) => app(FileUploadService::class)->serveProtectedFile($file)
 )->middleware('auth')->name('admin.protected.download');
 
 // Keep old blog links working after the public newsroom moved to /news.

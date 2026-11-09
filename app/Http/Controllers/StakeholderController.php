@@ -2,21 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Zone;
-use App\Models\Field;
 use App\Models\Chapter;
-use Illuminate\Http\File;
+use App\Models\Field;
 use App\Models\Stakeholder;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use App\Models\StakeholderRole;
+use App\Models\Zone;
 use App\Services\EmailService;
 use App\Services\FileUploadService;
-use App\Rules\UniqueStakeholderRole;
-use App\Http\Controllers\Controller;
-use App\Models\StakeholderRole;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class StakeholderController extends Controller
 {
@@ -28,7 +25,7 @@ class StakeholderController extends Controller
     public function index()
     {
         if (auth()->user()->role == 1) {
-			$query = Stakeholder::query()
+            $query = Stakeholder::query()
                 ->with(['role', 'designation', 'chapter', 'field', 'zone'])
                 ->orderBy('created_at', 'desc');
 
@@ -82,9 +79,9 @@ class StakeholderController extends Controller
                 'appraisal_evaluation' => Stakeholder::where('access_appraisal_evaluation', true)->count(),
             ];
 
-			return view('admin.stakeholders.index', compact('stakeholders', 'count', 'roles', 'zones', 'fields', 'stats'));
+            return view('admin.stakeholders.index', compact('stakeholders', 'count', 'roles', 'zones', 'fields', 'stats'));
 
-		}else{
+        } else {
             return abort(404);
         }
     }
@@ -104,7 +101,7 @@ class StakeholderController extends Controller
         $roles = StakeholderRole::where('status', 'active')->get();
         $portfolios = getCommunityPortfolios();
 
-        return view('admin.stakeholders.edit', compact('stakeholder', 'zones', 'fields', 'chapters', 'months', 'roles','portfolios'));
+        return view('admin.stakeholders.edit', compact('stakeholder', 'zones', 'fields', 'chapters', 'months', 'roles', 'portfolios'));
     }
 
     public function edit(Stakeholder $stakeholderpersonnel)
@@ -117,39 +114,38 @@ class StakeholderController extends Controller
         $roles = StakeholderRole::where('status', 'active')->get();
         $portfolios = getCommunityPortfolios();
 
-        return view('admin.stakeholders.edit', compact('stakeholder', 'fields', 'zones', 'chapters', 'months', 'roles','portfolios'));
+        return view('admin.stakeholders.edit', compact('stakeholder', 'fields', 'zones', 'chapters', 'months', 'roles', 'portfolios'));
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'       => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'email', 'max:255', 'unique:stakeholders,email'],
-            'phone'      => ['nullable', 'string', 'max:50'],
-            'password'   => ['nullable', 'string', 'min:8'],
-            'day'        => ['nullable', 'integer', 'between:1,31'],
-            'month'      => ['nullable', 'integer', 'between:1,12'],
-            'year'       => ['nullable', 'digits:4'],
-            'role_id'    => ['required', 'integer', 'exists:stakeholder_roles,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:stakeholders,email'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'password' => ['nullable', 'string', 'min:8'],
+            'day' => ['nullable', 'integer', 'between:1,31'],
+            'month' => ['nullable', 'integer', 'between:1,12'],
+            'year' => ['nullable', 'digits:4'],
+            'role_id' => ['required', 'integer', 'exists:stakeholder_roles,id'],
             'chapter_id' => ['nullable', 'integer', 'exists:chapters,id'],
-            'zone_id'    => ['nullable', 'integer', 'exists:zones,id'],
-            'field_id'   => ['nullable', 'integer', 'exists:fields,id'],
+            'zone_id' => ['nullable', 'integer', 'exists:zones,id'],
+            'field_id' => ['nullable', 'integer', 'exists:fields,id'],
             'designation_id' => ['nullable', 'integer', 'exists:stakeholder_designations,id'],
-            'portfolio'  => ['nullable', 'string', 'max:255'],
-            'signature'  => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
-            'status'     => ['required', 'in:active,inactive'],
-            'gender'     => ['nullable'],
+            'portfolio' => ['nullable', 'string', 'max:255'],
+            'signature' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'status' => ['required', 'in:active,inactive'],
+            'gender' => ['nullable'],
             'access_appraisal_system' => ['nullable', 'boolean'],
             'access_appraisal_evaluation' => ['nullable', 'boolean'],
         ]);
 
-        $stakeholder = new Stakeholder();
+        $stakeholder = new Stakeholder;
         $role = StakeholderRole::findOrFail($request->role_id);
 
         /*
@@ -163,9 +159,9 @@ class StakeholderController extends Controller
 
                 $stakeholder->fill([
                     'chapter_id' => $request->chapter_id,
-                    'zone_id'    => $chapter?->zone?->id,
-                    'field_id'   => $chapter?->field?->id,
-                    'portfolio'  => null,
+                    'zone_id' => $chapter?->zone?->id,
+                    'field_id' => $chapter?->field?->id,
+                    'portfolio' => null,
                 ]);
                 break;
 
@@ -173,28 +169,28 @@ class StakeholderController extends Controller
                 $zone = Zone::find($request->zone_id);
 
                 $stakeholder->fill([
-                    'zone_id'    => $zone?->id,
-                    'field_id'   => $zone?->field_id,
+                    'zone_id' => $zone?->id,
+                    'field_id' => $zone?->field_id,
                     'chapter_id' => null,
-                    'portfolio'  => null,
+                    'portfolio' => null,
                 ]);
                 break;
 
             case in_array($role->slug, ['field-pastor']):
                 $stakeholder->fill([
-                    'field_id'   => $request->field_id,
-                    'zone_id'    => null,
+                    'field_id' => $request->field_id,
+                    'zone_id' => null,
                     'chapter_id' => null,
-                    'portfolio'  => null,
+                    'portfolio' => null,
                 ]);
                 break;
 
             case $role->slug === 'portfolio':
                 $stakeholder->fill([
-                    'portfolio'  => $request->portfolio,
+                    'portfolio' => $request->portfolio,
                     'chapter_id' => null,
-                    'zone_id'    => null,
-                    'field_id'   => null,
+                    'zone_id' => null,
+                    'field_id' => null,
                 ]);
                 break;
         }
@@ -226,15 +222,15 @@ class StakeholderController extends Controller
         |--------------------------------------------------------------------------
         */
         $stakeholder->fill([
-            'name'           => $request->name,
-            'phone'          => $request->phone,
-            'email'          => $request->email,
-            'gender'         => $request->gender,
-            'day'            => $request->day,
-            'month'          => $request->month,
-            'year'           => $request->year,
-            'status'         => $request->status,
-            'role_id'        => $request->role_id,
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'gender' => $request->gender,
+            'day' => $request->day,
+            'month' => $request->month,
+            'year' => $request->year,
+            'status' => $request->status,
+            'role_id' => $request->role_id,
             'designation_id' => $request->designation_id,
             'access_appraisal_system' => $request->boolean('access_appraisal_system'),
             'access_appraisal_evaluation' => $request->boolean('access_appraisal_evaluation'),
@@ -251,21 +247,21 @@ class StakeholderController extends Controller
 
         // Validate input
         $request->validate([
-            'name'       => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'email', 'max:255', 'unique:stakeholders,email,' . $stakeholder->id],
-            'phone'      => ['nullable', 'string', 'max:50'],
-            'password'   => ['nullable', 'string', 'min:8'],
-            'day'        => ['nullable', 'integer', 'between:1,31'],
-            'month'      => ['nullable', 'integer', 'between:1,12'],
-            'year'       => ['nullable', 'digits:4'],
-            'role_id'    => ['nullable', 'integer'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:stakeholders,email,'.$stakeholder->id],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'password' => ['nullable', 'string', 'min:8'],
+            'day' => ['nullable', 'integer', 'between:1,31'],
+            'month' => ['nullable', 'integer', 'between:1,12'],
+            'year' => ['nullable', 'digits:4'],
+            'role_id' => ['nullable', 'integer'],
             'chapter_id' => ['nullable', 'integer', 'exists:chapters,id'],
-            'zone_id'    => ['nullable', 'integer', 'exists:zones,id'],
-            'field_id'   => ['nullable', 'integer', 'exists:fields,id'],
-            'portfolio'  => ['nullable', 'string', 'max:255'],
-            'gender'     => ['nullable'],
-            'signature'  => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
-            'status'     => ['required', 'in:active,inactive'],
+            'zone_id' => ['nullable', 'integer', 'exists:zones,id'],
+            'field_id' => ['nullable', 'integer', 'exists:fields,id'],
+            'portfolio' => ['nullable', 'string', 'max:255'],
+            'gender' => ['nullable'],
+            'signature' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'status' => ['required', 'in:active,inactive'],
             'access_appraisal_system' => ['nullable', 'boolean'],
             'access_appraisal_evaluation' => ['nullable', 'boolean'],
         ]);
@@ -279,37 +275,37 @@ class StakeholderController extends Controller
 
                 $stakeholder->fill([
                     'chapter_id' => $request->chapter_id,
-                    'portfolio'  => null,
-                    'zone_id'    => $chapter?->zone?->id,
-                    'field_id'   => $chapter?->field?->id,
+                    'portfolio' => null,
+                    'zone_id' => $chapter?->zone?->id,
+                    'field_id' => $chapter?->field?->id,
                 ]);
                 break;
 
             case in_array($role->slug, ['zonal-pastor']):
                 $zone = Zone::find($request->zone_id);
                 $stakeholder->fill([
-                    'zone_id'    => $zone?->id,
-                    'field_id'   => $zone?->field_id,
+                    'zone_id' => $zone?->id,
+                    'field_id' => $zone?->field_id,
                     'chapter_id' => null,
-                    'portfolio'  => null,
+                    'portfolio' => null,
                 ]);
                 break;
 
             case in_array($role->slug, ['field-pastor']):
                 $stakeholder->fill([
-                    'field_id'   => $request->field_id,
-                    'zone_id'    => null,
+                    'field_id' => $request->field_id,
+                    'zone_id' => null,
                     'chapter_id' => null,
-                    'portfolio'  => null,
+                    'portfolio' => null,
                 ]);
                 break;
 
             case $role === 'portfolio':
                 $stakeholder->fill([
-                    'portfolio'  => $request->portfolio,
+                    'portfolio' => $request->portfolio,
                     'chapter_id' => null,
-                    'field_id'   => null,
-                    'zone_id'    => null,
+                    'field_id' => null,
+                    'zone_id' => null,
                 ]);
                 break;
         }
@@ -317,7 +313,7 @@ class StakeholderController extends Controller
         // Password handling
         if ($request->filled('password')) {
             $stakeholder->password = Hash::make($request->password);
-        } elseif (!$stakeholder->password) {
+        } elseif (! $stakeholder->password) {
             $stakeholder->password = Hash::make('12345@GSF0101');
         }
 
@@ -338,25 +334,25 @@ class StakeholderController extends Controller
             );
         }
 
-        if($request->email != $stakeholder->email && !empty($stakeholder->chapter_id)){
+        if ($request->email != $stakeholder->email && ! empty($stakeholder->chapter_id)) {
             $stakeholder->chapter->update([
-                'email' => $request->email
+                'email' => $request->email,
             ]);
         }
 
         // Update general info
         $stakeholder->fill([
-            'name'  => $request->name,
+            'name' => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,
             'gender' => $request->gender,
             // 'role'  => $role,
-            'day'   => $request->day,
+            'day' => $request->day,
             'month' => $request->month,
-            'year'  => $request->year,
-            'status'  => $request->status,
-            'role_id'  => $request->role_id,
-            'designation_id'  => $request->designation_id,
+            'year' => $request->year,
+            'status' => $request->status,
+            'role_id' => $request->role_id,
+            'designation_id' => $request->designation_id,
             'access_appraisal_system' => $request->boolean('access_appraisal_system'),
             'access_appraisal_evaluation' => $request->boolean('access_appraisal_evaluation'),
         ])->save();
@@ -377,13 +373,11 @@ class StakeholderController extends Controller
      * @param  \App\Stakeholder  $stakeholder
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Stakeholder $id)
+    public function destroy(Stakeholder $stakeholderpersonnel): RedirectResponse
     {
-        // $this->deleteImage($id->signature);
-        // $this->deleteImage($id->avatar);
-        // $id->delete();
+        $stakeholderpersonnel->forceDelete();
 
-        return back()->with('message', 'Operation succesful!');
+        return back()->with('message', 'Stakeholder permanently deleted.');
     }
 
     public function bulkAction(Request $request)
@@ -393,7 +387,7 @@ class StakeholderController extends Controller
         }
 
         $data = $request->validate([
-            'bulk_action' => ['required', 'in:allow_appraisal_access,remove_appraisal_access,resend_credentials'],
+            'bulk_action' => ['required', 'in:allow_appraisal_access,remove_appraisal_access,resend_credentials,delete'],
             'selected_ids' => ['required', 'array', 'min:1'],
             'selected_ids.*' => ['integer', 'exists:stakeholders,id'],
         ]);
@@ -413,6 +407,10 @@ class StakeholderController extends Controller
                     'access_appraisal_system' => false,
                     'access_appraisal_evaluation' => false,
                 ]);
+            }
+        } elseif ($data['bulk_action'] === 'delete') {
+            foreach ($stakeholders as $stakeholder) {
+                $stakeholder->delete();
             }
         } elseif ($data['bulk_action'] === 'resend_credentials') {
             $resent = 0;
