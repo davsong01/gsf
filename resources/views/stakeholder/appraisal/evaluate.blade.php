@@ -4,6 +4,7 @@
 
 @section('content')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+@include('stakeholder.appraisal._modern_styles')
 
 <style>
     .appraisal-hero {
@@ -68,7 +69,7 @@
     }
 </style>
 
-<div class="content-body">
+<div class="content-body appraisal-modern">
     <div class="container-fluid">
         @php
             $isAdmin = $isAdmin ?? false;

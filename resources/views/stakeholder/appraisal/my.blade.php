@@ -4,6 +4,7 @@
 
 @section('content')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+@include('stakeholder.appraisal._modern_styles')
 
 @php
     $isPublished = ($appraisal->self_status ?? 'draft') === 'published';
@@ -120,7 +121,7 @@
     }
 </style>
 
-<div class="content-body">
+<div class="content-body appraisal-modern">
     <div class="container-fluid">
         <div class="appraisal-hero px-3 py-3 px-md-4 py-md-3 appraisal-topbar">
             <div class="position-relative d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
@@ -128,6 +129,7 @@
                     <small class="text-uppercase opacity-75 d-block mb-1">
                         {{ $formModeLabel ?? 'Self Appraisal' }}
                     </small>
+                    <h1 class="mb-2">{{ $pageTitle ?? 'Self Appraisal' }}</h1>
                     <p class="mt-1">
                         @if($isAdmin)
                             Review and update this stakeholder's self appraisal directly.

@@ -1,19 +1,21 @@
 <?php
+
 namespace App\Services;
 
-use App\Models\CriticalEmail;
 use App\Mail\NotificationEmail;
+use App\Models\CriticalEmail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class EmailService {
-    public static function getContent($type, $transaction=null, $extraData=null)
+class EmailService
+{
+    public static function getContent($type, $transaction = null, $extraData = null)
     {
         $subject = '';
         $content = '';
         $currency_symbol = currency_symbol();
 
-        if(!empty($transaction)){
+        if (! empty($transaction)) {
             $conferenceTheme = $transaction->edition->conference_theme ?? 'GSF National Conference';
             $user = $transaction->user ?? null;
             $fields = $transaction->allocationFields;
@@ -22,15 +24,15 @@ class EmailService {
             <strong>Name:</strong> {$transaction->name}<br>
             <strong>Email:</strong> {$transaction->email}<br>
             <strong>Phone:</strong> {$transaction->phone}<br>
-            <strong>Amount Paid:</strong> {$currency_symbol}" . number_format($transaction->amount_paid ?? $transaction->amount ?? 0) . "<br><br>
-            <strong>Service Charge:</strong> {$currency_symbol}" . number_format($transaction->provider_charge ?? 0) . "<br><br>
-            <strong>Total Amount Paid:</strong> {$currency_symbol}" . number_format($transaction->total_amount ?? (($transaction->amount_paid ?? 0) + ($transaction->provider_charge ?? 0))) . "<br><br>";
+            <strong>Amount Paid:</strong> {$currency_symbol}".number_format($transaction->amount_paid ?? $transaction->amount ?? 0)."<br><br>
+            <strong>Service Charge:</strong> {$currency_symbol}".number_format($transaction->provider_charge ?? 0)."<br><br>
+            <strong>Total Amount Paid:</strong> {$currency_symbol}".number_format($transaction->total_amount ?? (($transaction->amount_paid ?? 0) + ($transaction->provider_charge ?? 0))).'<br><br>';
 
             $allocationDetails = '';
-            if (!empty($transaction->hostel_id)) {
+            if (! empty($transaction->hostel_id)) {
                 $allocationDetails .= "<strong>Allocated Hostel:</strong> {$transaction->hostel->name}<br>Hostel Allocation Number: {$transaction->hostel_allocation_number}<br>";
             }
-            if (!empty($transaction->food_id)) {
+            if (! empty($transaction->food_id)) {
                 $allocationDetails .= "<br><strong>Allocated Service Point:</strong> {$transaction->food->name}<br>Service Point Allocation Number: {$transaction->service_point_allocation_number}<br><br>";
             }
 
@@ -38,7 +40,7 @@ class EmailService {
             <strong>Login ID:</strong> {$user->family_id}<br>
             <strong>Password:</strong> {$transaction->phone}<br><br>
             You can login and change your password for security reasons.<br><br>
-            <a style='color:white;text-decoration:none;background-color:#29166f;padding:7px;border-radius:5px;' href='" . route('login') . "'>Login</a><br><br>" : '';
+            <a style='color:white;text-decoration:none;background-color:#29166f;padding:7px;border-radius:5px;' href='".route('login')."'>Login</a><br><br>" : '';
         }
 
         switch ($type) {
@@ -60,7 +62,7 @@ class EmailService {
                 $prefix = match ($transaction->level) {
                     'Moderator', 'Participant' => "A participant has just registered for the {$conferenceTheme}.<br><br>",
                     'Alumni' => "An Alumni has just registered for the {$conferenceTheme}.<br><br>",
-                    default => "A new registration has been made.<br><br>",
+                    default => 'A new registration has been made.<br><br>',
                 };
 
                 $content = "
@@ -85,7 +87,7 @@ class EmailService {
                 $subject = 'Thank You for Your Donation';
                 $content = "
                 Dear {$transaction->name},<br><br>
-                Thank you for your donation of {$currency_symbol}" . number_format($transaction->amount ?? 0) . " towards {$conferenceTheme}.<br><br>
+                Thank you for your donation of {$currency_symbol}".number_format($transaction->amount ?? 0)." towards {$conferenceTheme}.<br><br>
                 Your support is deeply appreciated.<br><br>
                 <strong>Transaction ID:</strong> {$transaction->transid}<br><br>
                 Thanks.";
@@ -95,7 +97,7 @@ class EmailService {
                 $subject = 'Thank You for Supporting GSF';
                 $content = "
                 Dear {$transaction->name},<br><br>
-                Thank you for your generous contribution of {$currency_symbol}" . number_format($transaction->amount ?? 0) . " to GSF.<br><br>
+                Thank you for your generous contribution of {$currency_symbol}".number_format($transaction->amount ?? 0)." to GSF.<br><br>
                 God bless you abundantly.<br><br>
                 <strong>Transaction ID:</strong> {$transaction->transid}<br><br>
                 Thanks.";
@@ -113,7 +115,7 @@ class EmailService {
                 <strong>Transaction ID:</strong> {$transaction->transid}<br><br>
                 Thanks.";
                 break;
-            case 'conference_bulk_email';
+            case 'conference_bulk_email':
                 $subject = $extraData['subject'] ?? null;
                 $content = $extraData['content'] ?? null;
                 break;
@@ -133,7 +135,7 @@ class EmailService {
     {
         $type = $data['type'];
         $transaction = $data['transaction'] ?? null;
-        
+
         $emailContent = self::getContent($type, $transaction, $data);
 
         $subject = $data['subject'] ?? $emailContent['subject'];
@@ -141,7 +143,7 @@ class EmailService {
 
         $insert = [];
 
-        if (!empty($data['priority']) && $data['priority'] == 1) {
+        if (! empty($data['priority']) && $data['priority'] == 1) {
             $type = $data['type'];
 
             $subject = $data['subject'] ?? $emailContent['subject'];
@@ -152,7 +154,7 @@ class EmailService {
                 'type' => $type,
                 'conference_edition_id' => $transaction->conference_edition_id ?? null,
                 'subject' => $subject,
-                'attachments' => !empty($data['attachments']) ? json_encode($data['attachments']) : null,
+                'attachments' => ! empty($data['attachments']) ? json_encode($data['attachments']) : null,
                 'content' => $content,
                 'status' => 0,
                 'sent_at' => null,
@@ -172,7 +174,7 @@ class EmailService {
                 $record->update([
                     'status' => 1,
                     'sent_at' => now(),
-                    'errors' => NULL,
+                    'errors' => null,
                 ]);
             } else {
                 $record->update([
@@ -180,23 +182,38 @@ class EmailService {
                 ]);
             }
 
-
             return [
                 'status' => $res['status'] ?? false,
                 'record' => $record->fresh(),
-                'response'  => $res
+                'response' => $res,
             ];
         }
 
-        if(in_array($data['type'], ['conference_bulk_email'])){
-            $recipients = $data['recipients'] ?? null;
-            foreach($recipients as $recipient){
+        if (in_array($data['type'], ['conference_bulk_email'])) {
+            $recipients = $data['recipients'] ?? [$data['recipient'] ?? null];
+            if (is_string($recipients)) {
+                $recipients = [$recipients];
+            }
+
+            if (! is_iterable($recipients)) {
+                $recipients = [];
+            }
+
+            foreach ($recipients as $recipient) {
+                $recipientEmail = is_array($recipient)
+                    ? ($recipient['email'] ?? null)
+                    : (is_object($recipient) ? ($recipient->email ?? null) : $recipient);
+
+                if (! filled($recipientEmail)) {
+                    continue;
+                }
+
                 $insert[] = [
-                    'recipient' => $recipient['email'] ?? $recipient,
+                    'recipient' => $recipientEmail,
                     'type' => $type,
                     'conference_edition_id' => $transaction->conference_edition_id ?? null,
                     'subject' => $subject,
-                    'attachments' => !empty($data['attachments']) ? json_encode($data['attachments']) : null,
+                    'attachments' => ! empty($data['attachments']) ? json_encode($data['attachments']) : null,
                     'content' => $content,
                     'status' => 0,
                     'sent_at' => null,
@@ -205,9 +222,9 @@ class EmailService {
                     'updated_at' => now(),
                 ];
             }
-        } elseif (in_array($data['type'], ['report_email'])){
+        } elseif (in_array($data['type'], ['report_email'])) {
             $insert = $data['recipients'];
-        }else{
+        } else {
             $insert[] = [
                 'recipient' => $data['recipient'] ?? (
                     in_array($type, ['new_registration']) && $transaction
@@ -217,7 +234,7 @@ class EmailService {
                 'type' => $type,
                 'conference_edition_id' => $transaction->conference_edition_id ?? null,
                 'subject' => $subject,
-                'attachments' => !empty($data['attachments']) ? json_encode($data['attachments']) : null,
+                'attachments' => ! empty($data['attachments']) ? json_encode($data['attachments']) : null,
                 'content' => $content,
                 'status' => 0,
                 'sent_at' => null,
@@ -247,7 +264,6 @@ class EmailService {
         self::logEmail($emailData);
     }
 
-
     public static function sendEmail($data, $preview = false)
     {
         try {
@@ -255,22 +271,23 @@ class EmailService {
                 return (new NotificationEmail($data))->render();
             }
 
-            if(env('APP_ENV') == 'local'){
+            if (env('APP_ENV') == 'local') {
                 $data['recipient'] = 'davsong16@gmail.com';
             }
-            
+
             $message = Mail::to($data['recipient']);
-            if (!empty($data['reply_to'][0])) {
+            if (! empty($data['reply_to'][0])) {
                 $message->replyTo($data['reply_to'][0], $data['reply_to'][1] ?? null);
             }
             $message->send(new NotificationEmail($data));
 
             return [
                 'status' => true,
-                'message' => 'success'
+                'message' => 'success',
             ];
         } catch (\Exception $e) {
             Log::error($e->getMessage());
+
             return [
                 'status' => false,
                 'error' => $e->getMessage(),
