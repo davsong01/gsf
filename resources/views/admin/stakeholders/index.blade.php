@@ -504,13 +504,14 @@
                                                            href="{{ route('stakeholderpersonnel.edit', $stakeholder->id) }}">
                                                             <i class="bx bxs-edit me-1"></i> Edit
                                                         </a>
-                                                        <button type="submit"
-                                                                class="btn btn-outline-success btn-sm stakeholder-action-btn"
-                                                                formaction="{{ route('stakeholderpersonnel.resend-credentials', $stakeholder->id) }}"
-                                                                formmethod="POST"
-                                                                onclick="return confirm('Reset password and resend credentials to this stakeholder?');">
-                                                            <i class="fa fa-paper-plane me-1"></i> Resend
-                                                        </button>
+                                                        <form method="POST"
+                                                              action="{{ route('stakeholderpersonnel.resend-credentials', $stakeholder->id) }}"
+                                                              onsubmit="return confirm('Reset password and resend credentials to this stakeholder?');">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-outline-success btn-sm stakeholder-action-btn">
+                                                                <i class="fa fa-paper-plane me-1"></i> Resend
+                                                            </button>
+                                                        </form>
                                                         <a class="btn btn-outline-dark btn-sm stakeholder-action-btn"
                                                            onclick="return confirm('Login as this stakeholder?');"
                                                            href="{{ route('switchuser', ['id' => $stakeholder->id, 'type' => 'stakeholder']) }}">

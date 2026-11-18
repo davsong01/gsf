@@ -17,7 +17,7 @@
                     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div>
                             <h4 class="card-title mb-1">Form Structure Items</h4>
-                            <small class="text-muted">Manage both report and appraisal items from one list.</small>
+                            <small class="text-muted">Manage report, appraisal, and campaign items from one list.</small>
                         </div>
 
                         <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -26,6 +26,7 @@
                                     <option value="all" @selected($selectedModule === 'all')>All Modules</option>
                                     <option value="report" @selected($selectedModule === 'report')>Report</option>
                                     <option value="appraisal" @selected($selectedModule === 'appraisal')>Appraisal</option>
+                                    <option value="campagn" @selected($selectedModule === 'campagn')>Campaign</option>
                                 </select>
                             </form>
 
@@ -45,6 +46,7 @@
                                     <option value="all" @selected($selectedModule === 'all')>All Modules</option>
                                     <option value="report" @selected($selectedModule === 'report')>Report</option>
                                     <option value="appraisal" @selected($selectedModule === 'appraisal')>Appraisal</option>
+                                    <option value="campagn" @selected($selectedModule === 'campagn')>Campaign</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -194,6 +196,7 @@
                 <select id="questionModuleType" class="form-select">
                     <option value="report">Report</option>
                     <option value="appraisal">Appraisal</option>
+                    <option value="campagn">Campaign</option>
                 </select>
                 <small class="text-muted d-block mt-2">Choose which structure module this item belongs to.</small>
             </div>

@@ -14,14 +14,16 @@ class StakeholderReportQuestionController extends Controller
 {
     protected function moduleType(Request $request): string
     {
-        return $request->input('module_type', $request->query('module_type', 'report')) === 'appraisal'
-            ? 'appraisal'
+        $moduleType = $request->input('module_type', $request->query('module_type', 'report'));
+
+        return in_array($moduleType, ['report', 'appraisal', 'campagn'], true)
+            ? $moduleType
             : 'report';
     }
 
     protected function moduleFilter(Request $request): string
     {
-        return in_array($request->query('module_type'), ['report', 'appraisal'], true)
+        return in_array($request->query('module_type'), ['report', 'appraisal', 'campagn'], true)
             ? $request->query('module_type')
             : 'all';
     }
@@ -302,7 +304,7 @@ class StakeholderReportQuestionController extends Controller
             'width_class' => 'nullable|string|max:255',
             'status' => 'nullable|boolean',
             'options' => 'nullable|array',
-            'module_type' => 'nullable|string|in:report,appraisal',
+            'module_type' => 'nullable|string|in:report,appraisal,campagn',
         ];
 
         $validated = $request->validate($rules);
@@ -418,7 +420,7 @@ class StakeholderReportQuestionController extends Controller
             'action' => 'required|in:delete,activate,deactivate',
             'question_ids' => 'required|array|min:1',
             'question_ids.*' => 'integer|exists:stakeholder_report_questions,id',
-            'module_type' => 'nullable|in:all,report,appraisal',
+            'module_type' => 'nullable|in:all,report,appraisal,campagn',
         ]);
 
         $questions = StakeholderReportQuestion::whereIn('id', $validated['question_ids'])->get();

@@ -58,6 +58,7 @@
                                             <select name="module_type" id="module_type" class="form-control" required onchange="document.getElementById('module-type-switcher').submit();">
                                                 <option value="report" {{ $moduleType === 'report' ? 'selected' : '' }}>Report</option>
                                                 <option value="appraisal" {{ $moduleType === 'appraisal' ? 'selected' : '' }}>Appraisal</option>
+                                                <option value="campagn" {{ $moduleType === 'campagn' ? 'selected' : '' }}>Campaign</option>
                                             </select>
                                         </fieldset>
                                     </div>
@@ -348,7 +349,7 @@
                                     <div class="col-md-12">
                                         <fieldset class="form-group">
                                             <label class="mb-1">
-                                                {{ $moduleType === 'appraisal' ? 'Appraisal Permissions' : 'Report Permissions' }}
+                                                {{ $moduleType === 'appraisal' ? 'Appraisal Permissions' : ($moduleType === 'campagn' ? 'Campaign Permissions' : 'Report Permissions') }}
                                             </label>
                                             @php
                                                 $selectedPermissions = old(

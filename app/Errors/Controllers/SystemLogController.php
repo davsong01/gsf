@@ -3,6 +3,7 @@
 namespace App\Errors\Controllers;
 
 use App\Errors\Services\SystemLogService;
+use App\Errors\Models\SystemLog;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -12,12 +13,35 @@ class SystemLogController extends Controller
     {
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $logs = $this->logService->getRecentLogs(50);
-        $recurring = $this->logService->getRecurringErrors(20);
+        $level = strtoupper((string) $request->query('level', ''));
+        $search = trim((string) $request->query('q', ''));
+        $allowedLevels = ['ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'];
 
-        return view('admin.errors.system_logs.index', compact('logs', 'recurring'));
+        $logsQuery = SystemLog::query()->latest('logged_at');
+        if (in_array($level, $allowedLevels, true)) {
+            $logsQuery->where('level', $level);
+        } else {
+            $level = '';
+        }
+        if ($search !== '') {
+            $logsQuery->where(function ($query) use ($search) {
+                $query->where('message', 'like', '%' . $search . '%')
+                    ->orWhere('source', 'like', '%' . $search . '%');
+            });
+        }
+
+        $logs = $logsQuery->paginate(25)->withQueryString();
+        $recurring = $this->logService->getRecurringErrors(20);
+        $stats = [
+            'total' => SystemLog::count(),
+            'critical' => SystemLog::whereIn('level', ['CRITICAL', 'ALERT', 'EMERGENCY'])->count(),
+            'recurring' => $recurring->count(),
+            'latest' => SystemLog::latest('logged_at')->value('logged_at'),
+        ];
+
+        return view('admin.errors.system_logs.index', compact('logs', 'recurring', 'stats', 'level', 'search'));
     }
 
     public function recentLogs(Request $request)

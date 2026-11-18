@@ -163,6 +163,7 @@ class HomeController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email:rfc', 'max:255'],
             'subject' => ['required', 'string', 'max:160'],
+            'question' => ['required', 'string', 'max:255'],
             'message' => ['required', 'string', 'max:5000'],
         ]);
 
@@ -175,7 +176,7 @@ class HomeController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => null,
-            'message' => 'Subject: '.$data['subject']."\n\n".$data['message'],
+            'message' => 'Subject: '.$data['subject']."\nQuestion: ".$data['question']."\n\n".$data['message'],
         ]);
 
         if (blank($recipient)) {
@@ -190,7 +191,8 @@ class HomeController extends Controller
             'subject' => 'GSF website: '.$data['subject'],
             'content' => '<p><strong>Name:</strong> '.e($data['name']).'<br>'
                 .'<strong>Email:</strong> '.e($data['email']).'<br>'
-                .'<strong>Subject:</strong> '.e($data['subject']).'</p>'
+                .'<strong>Subject:</strong> '.e($data['subject']).'<br>'
+                .'<strong>Question:</strong> '.e($data['question']).'</p>'
                 .'<p>'.nl2br(e($data['message'])).'</p>',
         ]);
 

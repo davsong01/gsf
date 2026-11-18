@@ -194,6 +194,14 @@ if (!function_exists('rootPermissions')) {
                         'icon' => 'fa fa-clipboard',
                     ],
                     [
+                        'id' => 25,
+                        'slug' => 'campaigns.index',
+                        'name' => 'Campaigns',
+                        'icon' => 'fa fa-bullhorn',
+                        'route' => 'campaigns.index',
+                        'menu_order' => 4,
+                    ],
+                    [
                         'id' => 4,
                         'slug' => 'report-structure',
                         'name' => 'Form Structure',
@@ -455,6 +463,11 @@ if (!function_exists('flattenPermissionTree')) {
 if (!function_exists('menuNodeVisible')) {
     function menuNodeVisible(array $menu, array $userPermissions): bool
     {
+        if (($menu['slug'] ?? '') === 'campaigns.index'
+            && in_array('stakeholder.questions.index', $userPermissions, true)) {
+            return true;
+        }
+
         if (in_array($menu['slug'] ?? '', $userPermissions, true)) {
             return true;
         }

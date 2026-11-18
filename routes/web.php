@@ -54,6 +54,7 @@ use App\Http\Controllers\StakeholderLoginController;
 use App\Http\Controllers\StakeholderPaymentController;
 use App\Http\Controllers\StakeholderPermissionController;
 use App\Http\Controllers\StakeholderReportQuestionController;
+use App\Http\Controllers\StakeholderCampaignController;
 use App\Http\Controllers\StakeholderReportsController;
 use App\Http\Controllers\StakeholderReportSectionController;
 use App\Http\Controllers\StakeholderReportSubSectionController;
@@ -378,6 +379,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function () {
         Route::resource('questions', StakeholderReportQuestionController::class);
         Route::get('clone-question/{question}', [StakeholderReportQuestionController::class, 'cloneQuestion'])->name('questions.clone');
     });
+    Route::resource('campaigns', StakeholderCampaignController::class)->except(['show']);
 
     // Official
     Route::resource('nec', NecController::class);
