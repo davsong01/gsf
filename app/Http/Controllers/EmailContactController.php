@@ -138,6 +138,10 @@ class EmailContactController extends Controller
      */
     public function destroy(EmailContact $emailContact)
     {
-        //
+        abort_unless(in_array($emailContact->type, ['website', 'campus'], true), 404);
+
+        $emailContact->delete();
+
+        return back()->with('message', 'Enquiry deleted successfully.');
     }
 }

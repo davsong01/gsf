@@ -57,6 +57,11 @@
                             @error('open_until')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label" for="event_at">Event Date and Time</label>
+                            <input type="datetime-local" id="event_at" name="event_at" class="form-control" value="{{ old('event_at', $dateValue($campaign->event_at)) }}" required>
+                            @error('event_at')<small class="text-danger">{{ $message }}</small>@enderror
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label" for="status">Status</label>
                             <select id="status" name="status" class="form-select" required>
                                 <option value="draft" @selected(old('status', $campaign->status ?? 'draft') === 'draft')>Draft</option>

@@ -19,6 +19,64 @@ class StakeholderCampaignController extends Controller
         return view('admin.stakeholder-campaigns.index', compact('campaigns'));
     }
 
+    public function showPublic(string $slug)
+    {
+        $campaign = StakeholderCampaign::where('slug', $slug)->firstOrFail();
+        $questions = $campaign->questions()->where('status', 1)->get();
+        $isOpen = $campaign->status === 'active'
+            && now()->between($campaign->open_from, $campaign->open_until);
+
+        return view('campaigns.show', compact('campaign', 'questions', 'isOpen'));
+    }
+
+    public function submitPublic(Request $request, string $slug)
+    {
+        $campaign = StakeholderCampaign::where('slug', $slug)->firstOrFail();
+        abort_unless($campaign->status === 'active' && now()->between($campaign->open_from, $campaign->open_until), 404);
+        $questions = $campaign->questions()->where('status', 1)->get();
+        $rules = ['answers' => ['required', 'array']];
+
+        foreach ($questions as $question) {
+            $key = 'answers.' . $question->slug;
+            $required = (bool) $question->is_required ? 'required' : 'nullable';
+            $typeRules = match ($question->type) {
+                'number' => ['numeric'],
+                'date' => ['date'],
+                'file' => ['file', 'max:10240'],
+                'checkbox' => ['array'],
+                'select', 'radio', 'rating' => [Rule::in($this->questionOptionValues($question))],
+                default => ['string', 'max:10000'],
+            };
+            $rules[$key] = array_merge([$required], $typeRules);
+
+            if ($question->type === 'checkbox') {
+                $rules[$key . '.*'] = [Rule::in($this->questionOptionValues($question))];
+            }
+        }
+
+        $validated = Validator::make($request->all(), $rules)->validate();
+        $answers = [];
+        foreach ($questions as $question) {
+            $value = data_get($validated, 'answers.' . $question->slug);
+            if ($question->type === 'file' && $request->hasFile('answers.' . $question->slug)) {
+                $value = $request->file('answers.' . $question->slug)->store('campaign-responses');
+            }
+            $answers[$question->slug] = $value;
+        }
+
+        $campaign->responses()->create(['answers' => $answers, 'submitted_at' => now()]);
+
+        return redirect()->route('campaigns.public.show', $campaign->slug)
+            ->with('campaign_success', 'Your response has been submitted. Thank you.');
+    }
+
+    protected function questionOptionValues(StakeholderReportQuestion $question): array
+    {
+        return collect($question->options ?? [])->map(function ($option) {
+            return is_array($option) ? ($option['value'] ?? $option['label'] ?? null) : $option;
+        })->filter(fn ($value) => $value !== null)->values()->all();
+    }
+
     public function create()
     {
         $campaign = new StakeholderCampaign();
@@ -106,6 +164,7 @@ class StakeholderCampaignController extends Controller
             'instructions' => ['required', 'string'],
             'open_from' => ['required', 'date'],
             'open_until' => ['required', 'date', 'after:open_from'],
+            'event_at' => ['required', 'date'],
             'status' => ['required', 'in:draft,active,closed'],
             'question_ids' => ['required', 'array', 'min:1'],
             'question_ids.*' => [
@@ -116,7 +175,7 @@ class StakeholderCampaignController extends Controller
 
         return [
             'campaign' => collect($validated)->only([
-                'title', 'slug', 'description', 'instructions', 'open_from', 'open_until', 'status',
+                'title', 'slug', 'description', 'instructions', 'open_from', 'open_until', 'event_at', 'status',
             ])->all(),
             'question_ids' => array_values(array_unique($validated['question_ids'])),
         ];

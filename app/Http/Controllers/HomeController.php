@@ -145,30 +145,41 @@ class HomeController extends Controller
     public function contact()
     {
         $siteSettings = GeneralSetting::first();
+        $firstNumber = random_int(2, 9);
+        $secondNumber = random_int(1, 8);
+        session(['contact_security_answer' => (string) ($firstNumber + $secondNumber)]);
+        $securityQuestion = $firstNumber . ' + ' . $secondNumber;
 
-        return view('frontend.site.about.contact', compact('siteSettings'));
+        return view('frontend.site.about.contact', compact('siteSettings', 'securityQuestion'));
     }
 
     public function submitContact(Request $request)
     {
-        // Ignore likely spam submissions without attaching a validation error to
-        // a honeypot field that real visitors cannot see or correct.
-        if ($request->filled('website') || $request->filled('company_website')) {
-            return back()
-                ->withInput($request->except(['website', 'company_website']))
-                ->with('contact_error', 'We could not process this message. Please try again.');
-        }
-
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email:rfc', 'max:255'],
             'subject' => ['required', 'string', 'max:160'],
-            'question' => ['required', 'string', 'max:255'],
             'message' => ['required', 'string', 'max:5000'],
+            'security_answer' => ['required', 'integer'],
         ]);
+
+        $expectedAnswer = (string) session('contact_security_answer', '');
+        $providedAnswer = trim((string) $data['security_answer']);
+        if ($expectedAnswer === '' || ! hash_equals($expectedAnswer, $providedAnswer)) {
+            return back()->withErrors(['security_answer' => 'The answer is incorrect. Please try again.'])->withInput();
+        }
+        session()->forget('contact_security_answer');
 
         $siteSettings = GeneralSetting::first();
         $recipient = $siteSettings?->site_contact_email ?: $siteSettings?->official_email;
+        $contactIp = $request->ip() ?: 'Unavailable';
+        $contactMessage = "NEW WEBSITE CONTACT FORM ENQUIRY\n\n"
+            ."Source: GSF website contact form\n"
+            .'Name: '.$data['name']."\n"
+            .'Email: '.$data['email']."\n"
+            .'IP address: '.$contactIp."\n"
+            .'Subject: '.$data['subject']."\n\n"
+            ."Message:\n".$data['message'];
 
         EmailContact::create([
             'user_id' => null,
@@ -176,7 +187,7 @@ class HomeController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => null,
-            'message' => 'Subject: '.$data['subject']."\nQuestion: ".$data['question']."\n\n".$data['message'],
+            'message' => $contactMessage,
         ]);
 
         if (blank($recipient)) {
@@ -188,12 +199,16 @@ class HomeController extends Controller
             'priority' => 1,
             'recipient' => $recipient,
             'reply_to' => [$data['email'], $data['name']],
-            'subject' => 'GSF website: '.$data['subject'],
-            'content' => '<p><strong>Name:</strong> '.e($data['name']).'<br>'
-                .'<strong>Email:</strong> '.e($data['email']).'<br>'
-                .'<strong>Subject:</strong> '.e($data['subject']).'<br>'
-                .'<strong>Question:</strong> '.e($data['question']).'</p>'
-                .'<p>'.nl2br(e($data['message'])).'</p>',
+            'subject' => 'GSF contact form enquiry: '.$data['subject'],
+            'content' => '<h2>New website contact form enquiry</h2>'
+                .'<p>This message was submitted through the contact form on the GSF website.</p>'
+                .'<table role="presentation" cellpadding="6" cellspacing="0" style="border-collapse:collapse;margin:16px 0">'
+                .'<tr><td><strong>Name</strong></td><td>'.e($data['name']).'</td></tr>'
+                .'<tr><td><strong>Email</strong></td><td>'.e($data['email']).'</td></tr>'
+                .'<tr><td><strong>IP address</strong></td><td>'.e($contactIp).'</td></tr>'
+                .'<tr><td><strong>Subject</strong></td><td>'.e($data['subject']).'</td></tr>'
+                .'</table>'
+                .'<h3>Message</h3><div>'.nl2br(e($data['message'])).'</div>',
         ]);
 
         if (!($emailResult['status'] ?? false)) {

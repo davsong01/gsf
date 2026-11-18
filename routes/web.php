@@ -289,6 +289,8 @@ Route::get('/payment/verify/{reference}', [PaymentController::class, 'handleGate
 Route::any('/payment/webhook', [PaymentController::class, 'dumpWebhook']);
 Route::get('/payment/analyze-webhook', [PaymentController::class, 'analyze']);
 Route::get('/payment/donation-callback', [DonationController::class, 'handleDonationGatewayCallback']);
+Route::get('/campaign/{slug}', [StakeholderCampaignController::class, 'showPublic'])->name('campaigns.public.show');
+Route::post('/campaign/{slug}', [StakeholderCampaignController::class, 'submitPublic'])->middleware('throttle:5,1')->name('campaigns.public.submit');
 
 Route::middleware(['auth', 'SwitchUser'])->group(function () {
     Route::get('/account', [AccountController::class, 'index'])->name('account');
@@ -298,6 +300,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function () {
     Route::post('stakeholderpersonnel/bulk-action', [StakeholderController::class, 'bulkAction'])->name('stakeholderpersonnel.bulk-action');
     Route::post('stakeholderpersonnel/{stakeholderpersonnel}/resend-credentials', [StakeholderController::class, 'resendCredentials'])->name('stakeholderpersonnel.resend-credentials');
     Route::get('enquiries', [EmailContactController::class, 'index'])->name('enquiries.index');
+    Route::delete('enquiries/{emailContact}', [EmailContactController::class, 'destroy'])->name('enquiries.destroy');
     Route::resource('stakeholdersetting', StakeholderSettingController::class);
     Route::controller(AdminStakeholderAppraisalController::class)->prefix('stakeholder-appraisals')->name('stakeholderappraisals.')->group(function () {
         Route::get('/', 'index')->name('index');

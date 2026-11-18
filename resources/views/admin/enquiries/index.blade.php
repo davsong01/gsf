@@ -16,6 +16,7 @@
         </div>
         <div class="enquiries-count"><strong>{{ number_format($totalEnquiries) }}</strong><span>matching enquiries</span></div>
     </header>
+    @include('includes.alerts')
 
     <section class="enquiries-metrics" aria-label="Enquiry summary">
         <div class="enquiries-metric"><span>All enquiries</span><strong>{{ number_format($totalEnquiries) }}</strong><i class="fa fa-inbox" aria-hidden="true"></i></div>
@@ -43,7 +44,7 @@
         <div class="enquiries-panel__head"><div><h2 id="enquiry-list-title">Contact messages</h2><p>Showing {{ $enquiries->firstItem() ?? 0 }}–{{ $enquiries->lastItem() ?? 0 }} of {{ number_format($enquiries->total()) }} results.</p></div></div>
         <div class="enquiries-table-wrap">
             <table class="enquiries-table">
-                <thead><tr><th>Date</th><th>Enquiry</th><th>Chapter</th><th>Field / zone</th><th>Status</th><th>Message</th></tr></thead>
+                <thead><tr><th>Date</th><th>Enquiry</th><th>Chapter</th><th>Field / zone</th><th>Status</th><th>Message</th><th>Actions</th></tr></thead>
                 <tbody>
                     @forelse($enquiries as $enquiry)
                         <tr>
@@ -52,14 +53,56 @@
                             <td class="enquiries-place">{{ $enquiry->chapter?->name ?: 'National GSF' }}</td>
                             <td class="enquiries-place">{{ $enquiry->chapter?->field?->name ?? '—' }}<br><span class="text-muted">{{ $enquiry->chapter?->zone?->name ?? '—' }}</span></td>
                             <td><span class="enquiries-status {{ $enquiry->type === 'campus' ? 'enquiries-status--campus' : '' }}">{{ $enquiry->type === 'campus' ? 'Campus enquiry' : 'Website enquiry' }}</span></td>
-                            <td class="enquiries-message"><p>{{ str($enquiry->message)->limit(220) }}</p>@if(mb_strlen((string) $enquiry->message) > 220)<details><summary>Read full message</summary><p>{{ $enquiry->message }}</p></details>@endif</td>
+                            <td class="enquiries-message"><p>{{ str($enquiry->message)->limit(220) }}</p></td>
+                            <td class="enquiries-actions">
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#enquiryModal{{ $enquiry->id }}">
+                                    <i class="fa fa-eye" aria-hidden="true"></i> View
+                                </button>
+                                <form method="POST" action="{{ route('enquiries.destroy', $enquiry) }}" onsubmit="return confirm('Delete this enquiry? This cannot be undone.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Delete enquiry from {{ $enquiry->name ?: 'unknown sender' }}">
+                                        <i class="fa fa-trash-o" aria-hidden="true"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     @empty
-                        <tr><td class="enquiries-empty" colspan="6"><i class="fa fa-inbox" aria-hidden="true"></i>{{ $search || collect($filters)->filter()->isNotEmpty() ? 'No enquiries match these filters.' : 'No enquiries have been received yet.' }}</td></tr>
+                        <tr><td class="enquiries-empty" colspan="7"><i class="fa fa-inbox" aria-hidden="true"></i>{{ $search || collect($filters)->filter()->isNotEmpty() ? 'No enquiries match these filters.' : 'No enquiries have been received yet.' }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+        @foreach($enquiries as $enquiry)
+            <div class="modal fade enquiry-modal" id="enquiryModal{{ $enquiry->id }}" tabindex="-1" role="dialog" aria-labelledby="enquiryModalTitle{{ $enquiry->id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <span class="enquiries-eyebrow enquiries-eyebrow--modal">{{ $enquiry->type === 'campus' ? 'Campus enquiry' : 'Website enquiry' }}</span>
+                                <h5 class="modal-title" id="enquiryModalTitle{{ $enquiry->id }}">{{ $enquiry->name ?: 'Unknown sender' }}</h5>
+                            </div>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="enquiry-modal__meta">
+                                <div><span>Email</span><a href="mailto:{{ $enquiry->email }}">{{ $enquiry->email ?: 'Not provided' }}</a></div>
+                                @if($enquiry->phone)<div><span>Phone</span><a href="tel:{{ $enquiry->phone }}">{{ $enquiry->phone }}</a></div>@endif
+                                <div><span>Chapter</span><strong>{{ $enquiry->chapter?->name ?: 'National GSF' }}</strong></div>
+                                <div><span>Received</span><strong>{{ $enquiry->created_at?->format('d M Y, g:i A') }}</strong></div>
+                            </div>
+                            <div class="enquiry-modal__message">
+                                <span>Full enquiry</span>
+                                <p>{{ $enquiry->message ?: 'No message was provided.' }}</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light border" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
         @if($enquiries->hasPages())<div class="enquiries-pagination">{{ $enquiries->links() }}</div>@endif
     </section>
 </div>
