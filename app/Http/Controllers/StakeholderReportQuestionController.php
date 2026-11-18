@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\StakeholderPermission;
 use App\Models\StakeholderReportQuestion;
 use App\Models\StakeholderQuestionSection;
@@ -441,5 +442,59 @@ class StakeholderReportQuestionController extends Controller
         $redirect = ['module_type' => $validated['module_type'] ?? 'all'];
 
         return redirect()->route('stakeholder.questions.index', $redirect)->with('message', $message);
+    }
+
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'question_id' => ['required', 'integer', 'exists:stakeholder_report_questions,id'],
+            'target_id' => ['required', 'integer', 'different:question_id', 'exists:stakeholder_report_questions,id'],
+            'position' => ['required', 'in:before,after'],
+        ]);
+
+        $question = StakeholderReportQuestion::findOrFail($validated['question_id']);
+        $target = StakeholderReportQuestion::findOrFail($validated['target_id']);
+        $questionModule = $question->module_type ?? 'report';
+        $targetModule = $target->module_type ?? 'report';
+
+        abort_unless(
+            $questionModule === $targetModule
+                && $question->section_id === $target->section_id
+                && $question->sub_section_id === $target->sub_section_id,
+            422,
+            'Items can only be reordered within the same module and section.'
+        );
+
+        DB::transaction(function () use ($question, $questionModule, $validated) {
+            $siblings = StakeholderReportQuestion::query()
+                ->where('section_id', $question->section_id)
+                ->where('sub_section_id', $question->sub_section_id)
+                ->when(
+                    $questionModule === 'report',
+                    fn ($query) => $query->where(function ($query) {
+                        $query->where('module_type', 'report')->orWhereNull('module_type');
+                    }),
+                    fn ($query) => $query->where('module_type', $questionModule)
+                )
+                ->orderBy('order')
+                ->orderBy('id')
+                ->get()
+                ->all();
+
+            $ordered = collect($siblings)->reject(fn ($item) => $item->id === (int) $question->id)->values();
+            $targetIndex = $ordered->search(fn ($item) => $item->id === (int) $validated['target_id']);
+            abort_if($targetIndex === false, 422, 'The target item is not in this section.');
+
+            if ($validated['position'] === 'after') {
+                $targetIndex++;
+            }
+
+            $ordered->splice($targetIndex, 0, [$question]);
+            foreach ($ordered as $index => $item) {
+                $item->update(['order' => $index + 1]);
+            }
+        });
+
+        return response()->json(['message' => 'Question order saved.']);
     }
 }

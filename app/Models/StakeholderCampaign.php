@@ -12,6 +12,10 @@ class StakeholderCampaign extends Model
         'open_from' => 'datetime',
         'open_until' => 'datetime',
         'event_at' => 'datetime',
+        'enable_field_options' => 'boolean',
+        'enable_zone_options' => 'boolean',
+        'enable_chapter_option' => 'boolean',
+        'enable_designation_options' => 'boolean',
     ];
 
     public function questions()

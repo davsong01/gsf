@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\StakeholderCampaign;
+use App\Models\Chapter;
+use App\Models\Field;
+use App\Models\StakeholderDesignation;
 use App\Models\StakeholderReportQuestion;
+use App\Models\Zone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -14,21 +18,107 @@ class StakeholderCampaignController extends Controller
 {
     public function index()
     {
-        $campaigns = StakeholderCampaign::withCount('questions')->latest()->paginate(25);
+        $campaigns = StakeholderCampaign::withCount(['questions', 'responses'])->latest()->paginate(25);
 
         return view('admin.stakeholder-campaigns.index', compact('campaigns'));
+    }
+
+    public function responses(StakeholderCampaign $campaign)
+    {
+        $this->authorizeCampaignManagement();
+
+        $campaignQuestions = $campaign->questions()->get()->keyBy('slug');
+        $responses = $campaign->responses()
+            ->latest('submitted_at')
+            ->latest('id')
+            ->paginate(20);
+
+        return view('admin.stakeholder-campaigns.responses', compact('campaign', 'campaignQuestions', 'responses'));
+    }
+
+    public function exportResponses(StakeholderCampaign $campaign)
+    {
+        $this->authorizeCampaignManagement();
+
+        $questions = $campaign->questions()->get();
+        $responses = $campaign->responses()->orderBy('submitted_at')->orderBy('id')->get();
+        $filename = Str::slug($campaign->title ?: 'campaign') . '-responses.csv';
+        $headers = array_merge(
+            ['Submission ID', 'Submitted At', 'Field', 'Zone', 'Chapter', 'Designation'],
+            $questions->map(fn ($question) => $this->safeCsvCell($question->label))->all()
+        );
+
+        return response()->streamDownload(function () use ($questions, $responses, $headers) {
+            $output = fopen('php://output', 'w');
+            fwrite($output, "\xEF\xBB\xBF");
+            fputcsv($output, $headers);
+
+            foreach ($responses as $response) {
+                $answers = $response->answers ?? [];
+                $row = [
+                    $response->id,
+                    $response->submitted_at?->format('Y-m-d H:i:s') ?? $response->created_at?->format('Y-m-d H:i:s'),
+                    $this->safeCsvCell($answers['__field'] ?? ''),
+                    $this->safeCsvCell($answers['__zone'] ?? ''),
+                    $this->safeCsvCell($answers['__chapter'] ?? ''),
+                    $this->safeCsvCell($answers['__designation'] ?? ''),
+                ];
+
+                foreach ($questions as $question) {
+                    $value = $answers[$question->slug] ?? null;
+                    if (is_array($value)) {
+                        $value = implode(', ', array_map(
+                            fn ($item) => is_scalar($item) ? (string) $item : json_encode($item, JSON_UNESCAPED_UNICODE),
+                            $value
+                        ));
+                    }
+                    $row[] = $this->safeCsvCell($value);
+                }
+
+                fputcsv($output, $row);
+            }
+
+            fclose($output);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate',
+        ]);
+    }
+
+    protected function authorizeCampaignManagement(): void
+    {
+        $permissions = auth()->user()->permissions ?? [];
+        abort_unless(
+            (isAdmin()['status'] ?? false)
+                || in_array('campaigns.index', $permissions, true)
+                || in_array('stakeholder.questions.index', $permissions, true),
+            403
+        );
+    }
+
+    protected function safeCsvCell($value): string
+    {
+        $value = is_scalar($value) ? (string) $value : '';
+
+        return preg_match('/^[\s]*[=+\-@]/u', $value) ? "'" . $value : $value;
     }
 
     public function showPublic(string $slug)
     {
         $campaign = StakeholderCampaign::where('slug', $slug)->firstOrFail();
         $questions = $campaign->questions()->where('status', 1)->get();
+        $fields = $campaign->enable_field_options ? Field::orderBy('name')->get(['id', 'name']) : collect();
+        $zones = $campaign->enable_zone_options ? Zone::orderBy('name')->get(['id', 'name']) : collect();
+        $chapters = $campaign->enable_chapter_option ? Chapter::actualCampus()->orderBy('name')->get(['id', 'name']) : collect();
+        $designations = $campaign->enable_designation_options
+            ? StakeholderDesignation::where('status', 'active')->orderBy('order')->orderBy('name')->get(['id', 'name'])
+            : collect();
         $isOpen = $campaign->status === 'active'
             && now()->between($campaign->open_from, $campaign->open_until);
         $antiSpamNumbers = [random_int(1, 9), random_int(1, 9)];
         session()->put('campaign_antispam.' . $campaign->slug, array_sum($antiSpamNumbers));
 
-        return view('campaigns.show', compact('campaign', 'questions', 'isOpen', 'antiSpamNumbers'));
+        return view('campaigns.show', compact('campaign', 'questions', 'isOpen', 'antiSpamNumbers', 'fields', 'zones', 'chapters', 'designations'));
     }
 
     public function submitPublic(Request $request, string $slug)
@@ -60,6 +150,18 @@ class StakeholderCampaignController extends Controller
             }
         }
 
+        $optionDefinitions = [
+            'field_id' => ['enabled' => $campaign->enable_field_options, 'table' => 'fields', 'key' => '__field'],
+            'zone_id' => ['enabled' => $campaign->enable_zone_options, 'table' => 'zones', 'key' => '__zone'],
+            'chapter_id' => ['enabled' => $campaign->enable_chapter_option, 'table' => 'chapters', 'key' => '__chapter'],
+            'designation_id' => ['enabled' => $campaign->enable_designation_options, 'table' => 'stakeholder_designations', 'key' => '__designation'],
+        ];
+        foreach ($optionDefinitions as $input => $definition) {
+            if ($definition['enabled']) {
+                $rules['campaign_options.' . $input] = ['nullable', 'integer', Rule::exists($definition['table'], 'id')];
+            }
+        }
+
         $validated = Validator::make($request->all(), $rules)->validate();
         session()->forget('campaign_antispam.' . $campaign->slug);
         $answers = [];
@@ -69,6 +171,11 @@ class StakeholderCampaignController extends Controller
                 $value = $request->file('answers.' . $question->slug)->store('campaign-responses');
             }
             $answers[$question->slug] = $value;
+        }
+        foreach ($optionDefinitions as $input => $definition) {
+            if ($definition['enabled'] && $id = data_get($validated, 'campaign_options.' . $input)) {
+                $answers[$definition['key']] = DB::table($definition['table'])->where('id', $id)->value('name');
+            }
         }
 
         $campaign->responses()->create(['answers' => $answers, 'submitted_at' => now()]);
@@ -173,6 +280,10 @@ class StakeholderCampaignController extends Controller
             'open_until' => ['required', 'date', 'after:open_from'],
             'event_at' => ['required', 'date'],
             'status' => ['required', 'in:draft,active,closed'],
+            'enable_field_options' => ['sometimes', 'boolean'],
+            'enable_zone_options' => ['sometimes', 'boolean'],
+            'enable_chapter_option' => ['sometimes', 'boolean'],
+            'enable_designation_options' => ['sometimes', 'boolean'],
             'question_ids' => ['required', 'array', 'min:1'],
             'question_ids.*' => [
                 'integer',
@@ -183,6 +294,11 @@ class StakeholderCampaignController extends Controller
         return [
             'campaign' => collect($validated)->only([
                 'title', 'slug', 'description', 'instructions', 'open_from', 'open_until', 'event_at', 'status',
+            ])->merge([
+                'enable_field_options' => $request->boolean('enable_field_options'),
+                'enable_zone_options' => $request->boolean('enable_zone_options'),
+                'enable_chapter_option' => $request->boolean('enable_chapter_option'),
+                'enable_designation_options' => $request->boolean('enable_designation_options'),
             ])->all(),
             'question_ids' => array_values(array_unique($validated['question_ids'])),
         ];

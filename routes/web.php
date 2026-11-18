@@ -379,9 +379,12 @@ Route::middleware(['auth', 'SwitchUser'])->group(function () {
 
     Route::prefix('stakeholder')->as('stakeholder.')->group(function () {
         Route::post('questions/bulk-action', [StakeholderReportQuestionController::class, 'bulkAction'])->name('questions.bulk-action');
+        Route::post('questions/reorder', [StakeholderReportQuestionController::class, 'reorder'])->name('questions.reorder');
         Route::resource('questions', StakeholderReportQuestionController::class);
         Route::get('clone-question/{question}', [StakeholderReportQuestionController::class, 'cloneQuestion'])->name('questions.clone');
     });
+    Route::get('campaigns/{campaign}/responses/export', [StakeholderCampaignController::class, 'exportResponses'])->name('campaigns.responses.export');
+    Route::get('campaigns/{campaign}/responses', [StakeholderCampaignController::class, 'responses'])->name('campaigns.responses');
     Route::resource('campaigns', StakeholderCampaignController::class)->except(['show']);
 
     // Official
