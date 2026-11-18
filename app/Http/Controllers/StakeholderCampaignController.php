@@ -8,6 +8,7 @@ use App\Models\Field;
 use App\Models\StakeholderDesignation;
 use App\Models\StakeholderReportQuestion;
 use App\Models\Zone;
+use App\Services\ExcelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -42,47 +43,50 @@ class StakeholderCampaignController extends Controller
 
         $questions = $campaign->questions()->get();
         $responses = $campaign->responses()->orderBy('submitted_at')->orderBy('id')->get();
-        $filename = Str::slug($campaign->title ?: 'campaign') . '-responses.csv';
-        $headers = array_merge(
-            ['Submission ID', 'Submitted At', 'Field', 'Zone', 'Chapter', 'Designation'],
-            $questions->map(fn ($question) => $this->safeCsvCell($question->label))->all()
-        );
+        $baseHeaders = ['Submission ID', 'Submitted At', 'Field', 'Zone', 'Chapter', 'Designation'];
+        $headers = $baseHeaders;
+        $questionHeaders = [];
+        foreach ($questions as $index => $question) {
+            $label = trim((string) $question->label) ?: 'Question ' . ($index + 1);
+            $header = $label;
+            $suffix = 2;
+            while (in_array($header, $headers, true)) {
+                $header = $label . ' (' . $suffix++ . ')';
+            }
+            $headers[] = $header;
+            $questionHeaders[$question->slug] = $header;
+        }
 
-        return response()->streamDownload(function () use ($questions, $responses, $headers) {
-            $output = fopen('php://output', 'w');
-            fwrite($output, "\xEF\xBB\xBF");
-            fputcsv($output, $headers);
+        $rows = $responses->map(function ($response) use ($questions, $baseHeaders, $questionHeaders) {
+            $answers = $response->answers ?? [];
+            $row = array_combine($baseHeaders, [
+                $response->id,
+                $response->submitted_at?->format('Y-m-d H:i:s') ?? $response->created_at?->format('Y-m-d H:i:s'),
+                $this->safeExcelCell($answers['__field'] ?? ''),
+                $this->safeExcelCell($answers['__zone'] ?? ''),
+                $this->safeExcelCell($answers['__chapter'] ?? ''),
+                $this->safeExcelCell($answers['__designation'] ?? ''),
+            ]);
 
-            foreach ($responses as $response) {
-                $answers = $response->answers ?? [];
-                $row = [
-                    $response->id,
-                    $response->submitted_at?->format('Y-m-d H:i:s') ?? $response->created_at?->format('Y-m-d H:i:s'),
-                    $this->safeCsvCell($answers['__field'] ?? ''),
-                    $this->safeCsvCell($answers['__zone'] ?? ''),
-                    $this->safeCsvCell($answers['__chapter'] ?? ''),
-                    $this->safeCsvCell($answers['__designation'] ?? ''),
-                ];
-
-                foreach ($questions as $question) {
-                    $value = $answers[$question->slug] ?? null;
-                    if (is_array($value)) {
-                        $value = implode(', ', array_map(
-                            fn ($item) => is_scalar($item) ? (string) $item : json_encode($item, JSON_UNESCAPED_UNICODE),
-                            $value
-                        ));
-                    }
-                    $row[] = $this->safeCsvCell($value);
+            foreach ($questions as $question) {
+                $value = $answers[$question->slug] ?? null;
+                if (is_array($value)) {
+                    $value = implode(', ', array_map(
+                        fn ($item) => is_scalar($item) ? (string) $item : json_encode($item, JSON_UNESCAPED_UNICODE),
+                        $value
+                    ));
                 }
-
-                fputcsv($output, $row);
+                $row[$questionHeaders[$question->slug]] = $this->safeExcelCell($value);
             }
 
-            fclose($output);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Cache-Control' => 'no-store, no-cache, must-revalidate',
-        ]);
+            return $row;
+        })->all();
+
+        return ExcelService::download(
+            $rows,
+            $headers,
+            Str::slug($campaign->title ?: 'campaign') . '-responses.xlsx'
+        );
     }
 
     protected function authorizeCampaignManagement(): void
@@ -96,7 +100,7 @@ class StakeholderCampaignController extends Controller
         );
     }
 
-    protected function safeCsvCell($value): string
+    protected function safeExcelCell($value): string
     {
         $value = is_scalar($value) ? (string) $value : '';
 
@@ -108,8 +112,8 @@ class StakeholderCampaignController extends Controller
         $campaign = StakeholderCampaign::where('slug', $slug)->firstOrFail();
         $questions = $campaign->questions()->where('status', 1)->get();
         $fields = $campaign->enable_field_options ? Field::orderBy('name')->get(['id', 'name']) : collect();
-        $zones = $campaign->enable_zone_options ? Zone::orderBy('name')->get(['id', 'name']) : collect();
-        $chapters = $campaign->enable_chapter_option ? Chapter::actualCampus()->orderBy('name')->get(['id', 'name']) : collect();
+        $zones = $campaign->enable_zone_options ? Zone::orderBy('name')->get(['id', 'name', 'field_id']) : collect();
+        $chapters = $campaign->enable_chapter_option ? Chapter::actualCampus()->orderBy('name')->get(['id', 'name', 'zone_id', 'field_id']) : collect();
         $designations = $campaign->enable_designation_options
             ? StakeholderDesignation::where('status', 'active')->orderBy('order')->orderBy('name')->get(['id', 'name'])
             : collect();
@@ -119,6 +123,28 @@ class StakeholderCampaignController extends Controller
         session()->put('campaign_antispam.' . $campaign->slug, array_sum($antiSpamNumbers));
 
         return view('campaigns.show', compact('campaign', 'questions', 'isOpen', 'antiSpamNumbers', 'fields', 'zones', 'chapters', 'designations'));
+    }
+
+    public function publicDesignationStakeholderName(string $slug, StakeholderDesignation $designation)
+    {
+        $campaign = StakeholderCampaign::where('slug', $slug)->firstOrFail();
+        abort_unless(
+            $campaign->enable_designation_options
+                && $campaign->status === 'active'
+                && now()->between($campaign->open_from, $campaign->open_until)
+                && $designation->status === 'active',
+            404
+        );
+        $stakeholder = $designation->stakeholder()->first(['name', 'email', 'phone', 'field_id', 'zone_id', 'chapter_id']);
+
+        return response()->json([
+            'name' => $stakeholder?->name,
+            'email' => $stakeholder?->email,
+            'phone' => $stakeholder?->phone,
+            'field_id' => $stakeholder?->field_id,
+            'zone_id' => $stakeholder?->zone_id,
+            'chapter_id' => $stakeholder?->chapter_id,
+        ]);
     }
 
     public function submitPublic(Request $request, string $slug)
@@ -158,7 +184,19 @@ class StakeholderCampaignController extends Controller
         ];
         foreach ($optionDefinitions as $input => $definition) {
             if ($definition['enabled']) {
-                $rules['campaign_options.' . $input] = ['nullable', 'integer', Rule::exists($definition['table'], 'id')];
+                $existsRule = Rule::exists($definition['table'], 'id');
+
+                if ($input === 'zone_id' && $campaign->enable_field_options && $campaign->enable_zone_options) {
+                    $fieldId = data_get($request->all(), 'campaign_options.field_id');
+                    $existsRule->where('field_id', filled($fieldId) ? $fieldId : 0);
+                }
+
+                if ($input === 'chapter_id' && $campaign->enable_zone_options && $campaign->enable_chapter_option) {
+                    $zoneId = data_get($request->all(), 'campaign_options.zone_id');
+                    $existsRule->where('zone_id', filled($zoneId) ? $zoneId : 0);
+                }
+
+                $rules['campaign_options.' . $input] = ['nullable', 'integer', $existsRule];
             }
         }
 

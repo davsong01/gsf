@@ -27,13 +27,15 @@ class ExcelService
             return $formattedRow;
         });
 
-        return Excel::download(new class($collection) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings
+        return Excel::download(new class($collection, $headers) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings
         {
             private $collection;
+            private $headers;
 
-            public function __construct($collection)
+            public function __construct($collection, array $headers)
             {
                 $this->collection = $collection;
+                $this->headers = $headers;
             }
 
             public function collection()
@@ -43,7 +45,7 @@ class ExcelService
 
             public function headings(): array
             {
-                return $this->collection->isEmpty() ? [] : array_keys($this->collection->first());
+                return $this->headers;
             }
         }, $filename);
     }

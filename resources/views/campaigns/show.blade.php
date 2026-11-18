@@ -6,6 +6,7 @@
 @section('activeSection', 'events')
 
 @push('head')
+<link rel="stylesheet" href="{{ asset('app-assets/vendors/css/forms/select/select2.min.css') }}">
 <style>
     .campaign-public { padding: clamp(28px, 4vw, 48px) 0 64px; background: var(--cream); }
     .campaign-public__heading { position: relative; margin-bottom: 22px; padding: 24px clamp(22px, 4vw, 38px); overflow: hidden; border-radius: var(--radius-md); color: var(--white); background: linear-gradient(125deg, var(--forest-950), var(--forest-800) 75%, #3159a5); box-shadow: var(--shadow); }
@@ -34,6 +35,13 @@
     .campaign-question .required { color: #bd5144; }
     .campaign-control { display: block; width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: var(--paper); font: inherit; font-size: 14px; }
     .campaign-control:focus { border-color: var(--forest-700); outline: 3px solid rgba(17,119,173,.13); }
+    .campaign-card .select2-container { width:100%!important; }
+    .campaign-card .select2-container .select2-selection--single { display:flex; align-items:center; height:46px; border:1px solid var(--line); border-radius:9px; background:var(--paper); }
+    .campaign-card .select2-container .select2-selection--single .select2-selection__rendered { padding-left:12px; color:var(--ink); font:inherit; font-size:14px; line-height:1.4; }
+    .campaign-card .select2-container .select2-selection--single .select2-selection__arrow { top:10px; right:8px; }
+    .campaign-card .select2-container--focus .select2-selection--single,.campaign-card .select2-container--open .select2-selection--single { border-color:var(--forest-700); outline:3px solid rgba(17,119,173,.13); }
+    .campaign-card .select2-dropdown { border-color:var(--line); color:var(--ink); background:var(--paper); }
+    .campaign-card .select2-search__field { min-height:36px; padding:6px 9px; border:1px solid var(--line); border-radius:6px; }
     textarea.campaign-control { min-height: 112px; resize: vertical; }
     .campaign-option { display: flex; align-items: center; gap: 9px; margin: 0; color: var(--ink-soft); font-size: 13px; }
     .campaign-option input { accent-color: var(--forest-700); }
@@ -89,18 +97,27 @@
                     @csrf
                     <div class="campaign-questions-grid">
                     @foreach([
+                        ['enabled' => $campaign->enable_designation_options, 'key' => 'designation_id', 'label' => 'Designation/Portfolio', 'items' => $designations],
                         ['enabled' => $campaign->enable_field_options, 'key' => 'field_id', 'label' => 'Field', 'items' => $fields],
                         ['enabled' => $campaign->enable_zone_options, 'key' => 'zone_id', 'label' => 'Zone', 'items' => $zones],
                         ['enabled' => $campaign->enable_chapter_option, 'key' => 'chapter_id', 'label' => 'Chapter', 'items' => $chapters],
-                        ['enabled' => $campaign->enable_designation_options, 'key' => 'designation_id', 'label' => 'Designation', 'items' => $designations],
                     ] as $campaignOption)
                         @if($campaignOption['enabled'])
                             <div class="campaign-question campaign-question-item" style="--campaign-column-span: 6">
                                 <label for="campaign-option-{{ $campaignOption['key'] }}">{{ $campaignOption['label'] }}</label>
-                                <select id="campaign-option-{{ $campaignOption['key'] }}" class="campaign-control" name="campaign_options[{{ $campaignOption['key'] }}]">
+                                <select id="campaign-option-{{ $campaignOption['key'] }}"
+                                        class="campaign-control campaign-search-select"
+                                        name="campaign_options[{{ $campaignOption['key'] }}]"
+                                        data-campaign-option="{{ $campaignOption['key'] }}"
+                                        @if($campaignOption['key'] === 'designation_id') data-stakeholder-name-url="{{ route('campaigns.public.designation-name', ['slug' => $campaign->slug, 'designation' => '__designation__']) }}" @endif
+                                        @if($campaignOption['key'] === 'zone_id' && $campaign->enable_field_options) data-depends-on="field_id" disabled @endif
+                                        @if($campaignOption['key'] === 'chapter_id' && $campaign->enable_zone_options) data-depends-on="zone_id" disabled @endif>
                                     <option value="">Choose {{ strtolower($campaignOption['label']) }}</option>
                                     @foreach($campaignOption['items'] as $item)
-                                        <option value="{{ $item->id }}" @selected(old('campaign_options.'.$campaignOption['key']) == $item->id)>{{ $item->name }}</option>
+                                        <option value="{{ $item->id }}"
+                                                @if($campaignOption['key'] === 'zone_id') data-field-id="{{ $item->field_id }}" @endif
+                                                @if($campaignOption['key'] === 'chapter_id') data-zone-id="{{ $item->zone_id }}" @endif
+                                                @selected(old('campaign_options.'.$campaignOption['key']) == $item->id)>{{ $item->name }}</option>
                                     @endforeach
                                 </select>
                                 @error('campaign_options.'.$campaignOption['key'])<small class="campaign-error">{{ $message }}</small>@enderror
@@ -110,6 +127,11 @@
                     @foreach($questions as $question)
                         @php
                             $field = 'answers.' . $question->slug;
+                            $questionLabel = strtolower(trim($question->label));
+                            $questionSlug = strtolower((string) $question->slug);
+                            $isFullNameQuestion = $questionSlug === 'full-name' || $questionLabel === 'full name';
+                            $isEmailQuestion = str_contains($questionSlug, 'email') || str_contains($questionLabel, 'email');
+                            $isPhoneQuestion = str_contains($questionSlug, 'phone') || str_contains($questionSlug, 'mobile') || str_contains($questionLabel, 'phone') || str_contains($questionLabel, 'mobile');
                             $options = collect($question->options ?? [])->map(fn ($option) => is_array($option) ? ['value' => $option['value'] ?? $option['label'] ?? '', 'label' => $option['label'] ?? $option['value'] ?? ''] : ['value' => $option, 'label' => $option])->values();
                             $questionWidth = match ($question->width_class) {
                                 'col-md-2' => 2,
@@ -141,7 +163,7 @@
                                 @elseif($question->type === 'textarea' || in_array($question->type, ['dynamic_table', 'income_table'], true))
                                     <textarea id="campaign-question-{{ $question->id }}" class="campaign-control" name="answers[{{ $question->slug }}]" @if($question->is_required) required @endif>{{ old($field) }}</textarea>
                                 @else
-                                    <input id="campaign-question-{{ $question->id }}" class="campaign-control" type="{{ in_array($question->type, ['number', 'date', 'month', 'year'], true) ? ($question->type === 'year' ? 'number' : $question->type) : 'text' }}" name="answers[{{ $question->slug }}]" value="{{ old($field) }}" @if($question->is_required) required @endif>
+                                    <input id="campaign-question-{{ $question->id }}" class="campaign-control" type="{{ in_array($question->type, ['number', 'date', 'month', 'year'], true) ? ($question->type === 'year' ? 'number' : $question->type) : 'text' }}" name="answers[{{ $question->slug }}]" value="{{ old($field) }}" @if($isFullNameQuestion) data-campaign-stakeholder-field="name" @elseif($isEmailQuestion) data-campaign-stakeholder-field="email" @elseif($isPhoneQuestion) data-campaign-stakeholder-field="phone" @endif @if($question->is_required) required @endif>
                                 @endif
                             @endif
                             @error($field)<small class="campaign-error">{{ $message }}</small>@enderror
@@ -164,6 +186,8 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('app-assets/js/core/libraries/jquery.min.js') }}"></script>
+<script src="{{ asset('app-assets/vendors/js/forms/select/select2.full.min.js') }}"></script>
 <script>
     (function () {
         const countdown = document.getElementById('campaign-countdown');
@@ -200,5 +224,141 @@
         updateCountdown();
         window.setInterval(updateCountdown, 1000);
     })();
+</script>
+<script>
+    jQuery(function ($) {
+        const fieldSelect = document.querySelector('[data-campaign-option="field_id"]');
+        const zoneSelect = document.querySelector('[data-campaign-option="zone_id"]');
+        const chapterSelect = document.querySelector('[data-campaign-option="chapter_id"]');
+        const designationSelect = document.querySelector('[data-campaign-option="designation_id"]');
+        const zoneDependsOnField = zoneSelect?.dataset.dependsOn === 'field_id';
+        const chapterDependsOnZone = chapterSelect?.dataset.dependsOn === 'zone_id';
+
+        const readOptions = (select, parentKey) => select
+            ? Array.from(select.options).filter(option => option.value).map(option => ({
+                id: option.value,
+                name: option.textContent,
+                parentId: option.dataset[parentKey] || ''
+            }))
+            : [];
+        const zoneOptions = readOptions(zoneSelect, 'fieldId');
+        const chapterOptions = readOptions(chapterSelect, 'zoneId');
+
+        function initSearch(select) {
+            if (select && !$(select).hasClass('select2-hidden-accessible')) {
+                $(select).select2({
+                    width: '100%',
+                    minimumResultsForSearch: 0,
+                    allowClear: false,
+                    placeholder: function () { return $(this).find('option:first').text(); }
+                });
+            }
+        }
+
+        function replaceOptions(select, items, placeholder, selectedId, disabled) {
+            if (!select) return;
+            if ($(select).hasClass('select2-hidden-accessible')) $(select).select2('destroy');
+            select.replaceChildren(new Option(placeholder, ''));
+            items.forEach(item => select.add(new Option(item.name, item.id)));
+            select.value = items.some(item => String(item.id) === String(selectedId)) ? String(selectedId) : '';
+            select.disabled = disabled;
+            initSearch(select);
+        }
+
+        function updateChapters(zoneId, selectedChapterId = '') {
+            if (!chapterSelect || !chapterDependsOnZone) return;
+            const available = zoneId
+                ? chapterOptions.filter(option => String(option.parentId) === String(zoneId))
+                : [];
+            replaceOptions(chapterSelect, available, zoneId ? 'Choose chapter' : 'Choose zone first', selectedChapterId, !zoneId);
+        }
+
+        function updateZones(fieldId, selectedZoneId = '', selectedChapterId = '') {
+            if (!zoneSelect || !zoneDependsOnField) return;
+            const available = fieldId
+                ? zoneOptions.filter(option => String(option.parentId) === String(fieldId))
+                : [];
+            replaceOptions(zoneSelect, available, fieldId ? 'Choose zone' : 'Choose field first', selectedZoneId, !fieldId);
+            if (chapterDependsOnZone) updateChapters(zoneSelect.value, selectedChapterId);
+        }
+
+        document.querySelectorAll('.campaign-search-select').forEach(select => {
+            if (select !== zoneSelect && select !== chapterSelect) initSearch(select);
+        });
+
+        const initialZoneId = zoneSelect?.value || '';
+        const initialChapterId = chapterSelect?.value || '';
+        if (zoneDependsOnField) {
+            updateZones(fieldSelect?.value || '', initialZoneId, initialChapterId);
+            if (fieldSelect) {
+                $(fieldSelect).on('change', function () {
+                    updateZones($(this).val());
+                });
+            }
+        } else if (zoneSelect) {
+            initSearch(zoneSelect);
+            if (chapterDependsOnZone) updateChapters(zoneSelect.value, initialChapterId);
+        }
+
+        if (chapterDependsOnZone) {
+            if (zoneSelect) {
+                $(zoneSelect).on('change', function () {
+                    updateChapters($(this).val());
+                });
+            }
+        } else if (chapterSelect) {
+            initSearch(chapterSelect);
+        }
+
+        if (designationSelect) {
+            let designationLookup = 0;
+            const stakeholderNameUrl = designationSelect.dataset.stakeholderNameUrl;
+
+            function applyStakeholderDetails(details) {
+                const stakeholderInputs = {
+                    name: document.querySelector('[data-campaign-stakeholder-field="name"]'),
+                    email: document.querySelector('[data-campaign-stakeholder-field="email"]'),
+                    phone: document.querySelector('[data-campaign-stakeholder-field="phone"]')
+                };
+
+                Object.entries(stakeholderInputs).forEach(([key, input]) => {
+                    if (!input || !details[key]) return;
+                    input.value = details[key];
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+
+                const selectAssignedOption = (select, value) => {
+                    if (!select || !value) return;
+                    const optionExists = Array.from(select.options).some(option => String(option.value) === String(value));
+                    if (optionExists) $(select).val(String(value)).trigger('change');
+                };
+
+                selectAssignedOption(fieldSelect, details.field_id);
+                selectAssignedOption(zoneSelect, details.zone_id);
+                selectAssignedOption(chapterSelect, details.chapter_id);
+            }
+
+            $(designationSelect).on('change', async function () {
+                const designationId = $(this).val();
+                if (!designationId || !stakeholderNameUrl) return;
+
+                const lookupId = ++designationLookup;
+                const url = stakeholderNameUrl.replace('__designation__', encodeURIComponent(designationId));
+
+                try {
+                    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+                    if (!response.ok) return;
+                    const details = await response.json();
+                    if (lookupId !== designationLookup || String($(designationSelect).val()) !== String(designationId)) return;
+                    applyStakeholderDetails(details);
+                } catch (error) {
+                    console.error('Could not load the stakeholder assigned to this designation.', error);
+                }
+            });
+
+            if ($(designationSelect).val()) $(designationSelect).trigger('change');
+        }
+    });
 </script>
 @endpush

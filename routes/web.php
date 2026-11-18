@@ -290,6 +290,9 @@ Route::any('/payment/webhook', [PaymentController::class, 'dumpWebhook']);
 Route::get('/payment/analyze-webhook', [PaymentController::class, 'analyze']);
 Route::get('/payment/donation-callback', [DonationController::class, 'handleDonationGatewayCallback']);
 Route::get('/campaign/{slug}', [StakeholderCampaignController::class, 'showPublic'])->name('campaigns.public.show');
+Route::get('/campaign/{slug}/designation/{designation}/stakeholder-name', [StakeholderCampaignController::class, 'publicDesignationStakeholderName'])
+    ->middleware('throttle:30,1')
+    ->name('campaigns.public.designation-name');
 Route::post('/campaign/{slug}', [StakeholderCampaignController::class, 'submitPublic'])->middleware('throttle:5,1')->name('campaigns.public.submit');
 
 Route::middleware(['auth', 'SwitchUser'])->group(function () {
