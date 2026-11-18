@@ -29,7 +29,7 @@
                                 <tr>
                                     <td class="fw-semibold">{{ $campaign->title }}</td>
                                     <td>{{ $campaign->slug }}</td>
-                                    <td><code>{{ url('campaign/' . $campaign->slug) }}</code></td>
+                                    <td><a href="{{ route('campaigns.public.show', $campaign->slug) }}" target="_blank" rel="noopener"><code>{{ url('campaign/' . $campaign->slug) }}</code></a></td>
                                     <td><span class="badge {{ $campaign->status === 'active' ? 'bg-success' : ($campaign->status === 'closed' ? 'bg-secondary' : 'bg-warning text-dark') }}">{{ ucfirst($campaign->status) }}</span></td>
                                     <td>{{ $campaign->questions_count }}</td>
                                     <td>{{ $campaign->event_at?->format('M j, Y g:i A') ?? 'Not set' }}</td>

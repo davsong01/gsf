@@ -25,8 +25,10 @@ class StakeholderCampaignController extends Controller
         $questions = $campaign->questions()->where('status', 1)->get();
         $isOpen = $campaign->status === 'active'
             && now()->between($campaign->open_from, $campaign->open_until);
+        $antiSpamNumbers = [random_int(1, 9), random_int(1, 9)];
+        session()->put('campaign_antispam.' . $campaign->slug, array_sum($antiSpamNumbers));
 
-        return view('campaigns.show', compact('campaign', 'questions', 'isOpen'));
+        return view('campaigns.show', compact('campaign', 'questions', 'isOpen', 'antiSpamNumbers'));
     }
 
     public function submitPublic(Request $request, string $slug)
@@ -34,7 +36,11 @@ class StakeholderCampaignController extends Controller
         $campaign = StakeholderCampaign::where('slug', $slug)->firstOrFail();
         abort_unless($campaign->status === 'active' && now()->between($campaign->open_from, $campaign->open_until), 404);
         $questions = $campaign->questions()->where('status', 1)->get();
-        $rules = ['answers' => ['required', 'array']];
+        $expectedAntiSpamAnswer = session('campaign_antispam.' . $campaign->slug);
+        $rules = [
+            'answers' => ['required', 'array'],
+            'anti_spam' => ['required', 'integer', Rule::in($expectedAntiSpamAnswer === null ? [] : [$expectedAntiSpamAnswer])],
+        ];
 
         foreach ($questions as $question) {
             $key = 'answers.' . $question->slug;
@@ -55,6 +61,7 @@ class StakeholderCampaignController extends Controller
         }
 
         $validated = Validator::make($request->all(), $rules)->validate();
+        session()->forget('campaign_antispam.' . $campaign->slug);
         $answers = [];
         foreach ($questions as $question) {
             $value = data_get($validated, 'answers.' . $question->slug);

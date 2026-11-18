@@ -5,6 +5,17 @@
     .btn i{
         top: 0px !important;
     }
+    .email-log-preview { display:inline-block; max-width:360px; color:#53647a; font-size:12px; line-height:1.5; }
+    .email-log-modal .modal-content { overflow:hidden; border:0; border-radius:14px; }
+    .email-log-modal .modal-header,.email-log-modal .modal-footer { padding:15px 20px; border-color:#e8edf1; }
+    .email-log-modal__body { max-height:70vh; overflow:auto; padding:20px; }
+    .email-log-modal__meta { display:grid; gap:8px; }
+    .email-log-modal__meta div { display:grid; grid-template-columns:100px minmax(0,1fr); gap:10px; font-size:12px; }
+    .email-log-modal__meta span { color:#718096; font-weight:700; }
+    .email-log-modal__meta strong { color:#243b56; overflow-wrap:anywhere; }
+    .email-log-modal__content { color:#283b51; font-size:14px; line-height:1.65; overflow-wrap:anywhere; }
+    .email-log-modal__content table { max-width:100%; border-collapse:collapse; }
+    .email-log-modal__content td { padding:5px 9px 5px 0; vertical-align:top; }
 </style>
 @endsection
 
@@ -91,11 +102,12 @@
 
                                                     <td>{{ $email->recipient }}</td>
 
-                                                    <td>
-                                                        {!! mb_strimwidth($email->content, 0, 100, " ...") !!} <br>
-                                                        <a class="btn btn-info btn-sm" data-target="#emailModal{{ $email->id }}" data-toggle="modal">
+                                <td>
+                                    <span class="email-log-preview">{{ \Illuminate\Support\Str::limit(strip_tags($email->content), 150) }}</span><br>
+                                    <button type="button" class="btn btn-info btn-sm mt-1" data-target="#emailModal{{ $email->id }}" data-toggle="modal">
                                                             <i class="fa fa-eye"></i>
-                                                        </a>
+                                        View full email
+                                    </button>
                                                     </td>
 
                                                     <td><span style="color:red">{{ $email->errors }}</span></td>
@@ -114,24 +126,6 @@
                                                     </td>
                                                 </tr>
 
-                                                {{-- Modal --}}
-                                                <div class="modal fade" id="emailModal{{ $email->id }}" role="dialog">
-                                                    <div class="modal-dialog modal-md modal-dialog-scrollable">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                                                <h4 class="modal-title">Email Preview</h4>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                {!! $email->content !!}
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
                                                 @endforeach
                                             @endif
                                         </tbody>
@@ -139,6 +133,31 @@
                                 </div>
                             </form>
                             {{-- End Bulk Form --}}
+
+                            @foreach($emails as $email)
+                                <div class="modal fade email-log-modal" id="emailModal{{ $email->id }}" tabindex="-1" role="dialog" aria-labelledby="emailModalTitle{{ $email->id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h4 class="modal-title" id="emailModalTitle{{ $email->id }}">Email preview</h4>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                            </div>
+                                            <div class="modal-body email-log-modal__body">
+                                                <div class="email-log-modal__meta">
+                                                    <div><span>Subject</span><strong>{{ $email->subject }}</strong></div>
+                                                    <div><span>Recipient</span><strong>{{ $email->recipient }}</strong></div>
+                                                    <div><span>Type</span><strong>{{ $email->type }}</strong></div>
+                                                </div>
+                                                <hr>
+                                                <div class="email-log-modal__content">{!! $email->content !!}</div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-light border" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>

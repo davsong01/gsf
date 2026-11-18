@@ -30,7 +30,7 @@
 .enquiries-panel { margin-bottom:0; }
 .enquiries-search { min-width:min(100%,270px); }
 .enquiries-table-wrap { overflow:auto; }
-.enquiries-table { width:100%; min-width:1040px; margin:0; border-collapse:separate; border-spacing:0; }
+.enquiries-table { width:100%; min-width:1160px; margin:0; border-collapse:separate; border-spacing:0; }
 .enquiries-table th { position:sticky; top:0; z-index:1; padding:12px 13px; border-bottom:1px solid #e5eaed; color:#718196; background:#f6f8f9; font-size:9px; font-weight:850; letter-spacing:.08em; text-align:left; text-transform:uppercase; white-space:nowrap; }
 .enquiries-table td { padding:14px 13px; border-bottom:1px solid #edf0f2; color:#4e5e71; font-size:11px; line-height:1.5; vertical-align:top; }
 .enquiries-table tbody tr:hover td { background:#fffaf1; }
@@ -41,9 +41,22 @@
 .enquiries-place { min-width:170px; }
 .enquiries-message { min-width:300px; max-width:440px; }
 .enquiries-message p { margin:0; white-space:pre-line; overflow-wrap:anywhere; }
-.enquiries-message details { margin-top:7px; color:#377575; font-size:10px; font-weight:750; }
-.enquiries-message summary { cursor:pointer; }
-.enquiries-message details p { margin-top:7px; color:#52657a; font-weight:400; }
+.enquiries-actions { min-width:145px; }
+.enquiries-actions form { margin-top:6px; }
+.enquiries-actions .btn { min-width:92px; text-align:left; }
+.enquiry-modal .modal-content { overflow:hidden; border:0; border-radius:15px; box-shadow:0 22px 60px rgba(17,37,61,.22); }
+.enquiry-modal .modal-header { align-items:flex-start; padding:20px 23px; border-bottom:1px solid #e9eef1; }
+.enquiries-eyebrow--modal { margin:0 0 5px; color:#a78243; font-size:9px; }
+.enquiry-modal .modal-title { margin:0; color:#203a55; font-family:Georgia,serif; font-size:22px; }
+.enquiry-modal .modal-body { padding:22px 23px; }
+.enquiry-modal__meta { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; margin-bottom:20px; }
+.enquiry-modal__meta div { min-width:0; padding:11px 13px; border:1px solid #e8edf0; border-radius:9px; background:#f9fbfc; }
+.enquiry-modal__meta span,.enquiry-modal__meta strong,.enquiry-modal__meta a { display:block; overflow-wrap:anywhere; }
+.enquiry-modal__meta span,.enquiry-modal__message>span { margin-bottom:4px; color:#8190a0; font-size:9px; font-weight:850; letter-spacing:.08em; text-transform:uppercase; }
+.enquiry-modal__meta strong,.enquiry-modal__meta a { color:#314b66; font-size:11px; font-weight:650; }
+.enquiry-modal__message { padding:15px 16px; border:1px solid #e9e3d8; border-radius:10px; background:#fffdf9; }
+.enquiry-modal__message p { margin:8px 0 0; color:#3e5064; font-size:12px; line-height:1.7; white-space:pre-wrap; overflow-wrap:anywhere; }
+.enquiry-modal .modal-footer { padding:13px 23px; border-top:1px solid #e9eef1; }
 .enquiries-status { display:inline-flex; padding:5px 8px; border-radius:20px; color:#765723; background:#fff1d3; font-size:9px; font-weight:850; white-space:nowrap; }
 .enquiries-status--campus { color:#286a61; background:#e8f5ef; }
 .enquiries-empty { padding:44px 20px!important; color:#7c8998!important; text-align:center; }
@@ -54,3 +67,4 @@
 @media(max-width:1050px) { .enquiries-filter__body { grid-template-columns:repeat(3,minmax(0,1fr)); } .enquiries-field--search { grid-column:span 3; } }
 @media(max-width:700px) { .enquiries-hero { align-items:flex-start; flex-direction:column; } .enquiries-count { display:flex; align-items:center; gap:8px; } .enquiries-count strong { font-size:17px; } .enquiries-metrics { grid-template-columns:1fr; gap:8px; } .enquiries-filter__body { grid-template-columns:repeat(2,minmax(0,1fr)); padding:16px; } .enquiries-field--search { grid-column:span 2; } .enquiries-filter__head,.enquiries-panel__head { align-items:flex-start; flex-direction:column; padding:16px; } .enquiries-filter__actions { align-items:flex-start; flex-direction:column; padding:13px 16px; } }
 @media(max-width:430px) { .enquiries-filter__body { grid-template-columns:1fr; } .enquiries-field--search { grid-column:auto; } .enquiries-filter__buttons { width:100%; } .enquiries-filter__buttons .btn { flex:1; } }
+@media(max-width:520px) { .enquiry-modal__meta { grid-template-columns:1fr; } }
