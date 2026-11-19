@@ -52,7 +52,7 @@ jobs:
 
             mkdir -p ../app-assets
             cp -R public/app-assets/. ../app-assets/
-
+            
             php artisan db:seed --class="Database\Seeders\BackfillNecStakeholderAvatarsSeeder" --force
             php artisan optimize:clear
 

@@ -6,7 +6,7 @@
 @endsection
 
 @section('extra_styles')
-<link rel="stylesheet" href="{{ asset('assets/css/report-analytics.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/report-analytics.css') }}?v={{ filemtime(public_path('assets/css/report-analytics.css')) }}">
 @endsection
 
 @section('content')
