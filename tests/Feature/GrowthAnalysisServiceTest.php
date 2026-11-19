@@ -140,6 +140,40 @@ class GrowthAnalysisServiceTest extends TestCase
         $this->assertSame('2025', $yearly['series'][0]['previous_month']);
         $this->assertSame('2026', $yearly['series'][0]['latest_month']);
         $this->assertSame(11.67, $yearly['series'][0]['change']);
+
+        DB::table('stakeholder_reports')->insert([
+            'id' => 10, 'chapter_id' => 1, 'year' => 2026, 'month' => 4,
+            'edit_mode' => 0, 'school_not_in_session' => 0,
+        ]);
+        DB::table('stakeholder_report_answers')->insert([
+            'report_id' => 10, 'question_id' => 10, 'answer_value' => '0',
+        ]);
+        $withZero = $service->build(Request::create('/', 'GET', [
+            'level' => 'chapter', 'measure_id' => 10,
+            'from_month' => '2026-01', 'to_month' => '2026-04', 'entity_ids' => [1],
+        ]), $scope, $service->measures());
+        $this->assertSame([10.0, 30.0, 35.0, 0.0], $withZero['series'][0]['values']);
+        $this->assertSame(35.0, $withZero['series'][0]['previous']);
+        $this->assertSame('2026-03', $withZero['series'][0]['previous_month']);
+        $this->assertSame(0.0, $withZero['series'][0]['latest']);
+        $this->assertSame('2026-04', $withZero['series'][0]['latest_month']);
+        $this->assertSame(4, $withZero['series'][0]['reported_months']);
+        $this->assertSame('declining', $withZero['series'][0]['status']);
+
+        DB::table('stakeholder_reports')->insert([
+            'id' => 11, 'chapter_id' => 1, 'year' => 2026, 'month' => 5,
+            'edit_mode' => 0, 'school_not_in_session' => 1,
+        ]);
+        DB::table('stakeholder_report_answers')->insert([
+            'report_id' => 11, 'question_id' => 10, 'answer_value' => '999',
+        ]);
+        $afterSchoolBreak = $service->build(Request::create('/', 'GET', [
+            'level' => 'chapter', 'measure_id' => 10,
+            'from_month' => '2026-01', 'to_month' => '2026-05', 'entity_ids' => [1],
+        ]), $scope, $service->measures());
+        $this->assertSame([10.0, 30.0, 35.0, 0.0, null], $afterSchoolBreak['series'][0]['values']);
+        $this->assertSame('2026-04', $afterSchoolBreak['series'][0]['latest_month']);
+        $this->assertSame(0.0, $afterSchoolBreak['series'][0]['latest']);
     }
 
     public function test_overall_index_weights_questions_equally_and_ignores_out_of_session_reports(): void

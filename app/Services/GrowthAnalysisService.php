@@ -194,7 +194,8 @@ class GrowthAnalysisService
             'aggregation' => ($measure['kind'] === 'index'
                 ? 'Counts as a share of the highest value in the selected scope and period; ratings as a share of 5. Available question scores are equally averaged (0–100)'.($level === 'chapter' ? '' : '; then averaged across reporting in-session campuses')
                 : ($level === 'chapter' ? 'Campus value' : 'Average per reporting in-session campus'))
-                .($period === 'year' ? '; yearly points average valid monthly values' : ''),
+                .($period === 'year' ? '; yearly points average valid monthly values' : '')
+                .'; growth comparisons include submitted zero values and exclude missing or out-of-session reports',
             'entities' => $entities, 'selected_ids' => $selectedIds, 'series' => $series,
             'focus_id' => $focusId, 'focus_name' => collect($entities)->firstWhere('id', $focusId)['name'] ?? null,
             'aspects' => $aspects,

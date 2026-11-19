@@ -60,7 +60,7 @@
     </div>
 
     <section class="analytics-card growth-table-card" aria-labelledby="growth-table-title">
-        <div class="analytics-card__head"><div><h2 id="growth-table-title">Growth by campus</h2><p id="growthTableDescription">Click a row to inspect its measures. Change compares its latest two months with valid values in your selected range.</p></div><span id="growthRowCount" class="analytics-card__badge">—</span></div>
+        <div class="analytics-card__head"><div><h2 id="growth-table-title">Growth by campus</h2><p id="growthTableDescription">Change compares the latest two months with valid reports, including reported zero values.</p></div><span id="growthRowCount" class="analytics-card__badge">—</span></div>
         <div class="growth-table-scroll"><table class="growth-table"><thead><tr><th scope="col">Entity</th><th scope="col">Previous report</th><th scope="col">Latest report</th><th scope="col">Change</th><th scope="col">Change %</th><th id="growthCoverageHeading" scope="col">Months reported</th><th scope="col">Trend</th></tr></thead><tbody id="growthTableBody"></tbody></table></div>
     </section>
 
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('growthChartDescription').textContent = result.measure.label + ' · ' + result.months.length + (result.period === 'year' ? ' years · ' : ' months · ') + result.series.length + ' selected ' + (result.level === 'chapter' ? 'campuses' : result.level === 'zone' ? 'zones' : 'fields') + (result.period === 'year' ? ' · yearly average of reported months' : '');
         document.getElementById('growth-selector-title').textContent = (result.level === 'chapter' ? 'Campuses' : result.level === 'zone' ? 'Zones' : 'Fields') + ' on chart';
         document.getElementById('growth-table-title').textContent = 'Growth by ' + (result.level === 'chapter' ? 'campus' : result.level);
-        document.getElementById('growthTableDescription').textContent = 'Click a row to inspect its measures. Change compares its latest two ' + (result.period === 'year' ? 'years' : 'months') + ' with valid values in your selected range.';
+        document.getElementById('growthTableDescription').textContent = 'Click a row to inspect its measures. Change compares its latest two ' + (result.period === 'year' ? 'years' : 'months') + ' with valid reports, including reported zero values.';
         document.getElementById('growthMeasureBadge').textContent = result.measure.kind === 'index' ? 'Overall index / 100' : result.measure.kind === 'rating' ? 'Average rating / 5' : result.level === 'chapter' ? 'Reported count' : 'Average per campus';
         document.getElementById('growthMeasureHint').hidden = result.measure.kind !== 'index';
         document.getElementById('growthRowCount').textContent = result.series.length + ' shown';
