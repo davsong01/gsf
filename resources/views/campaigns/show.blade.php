@@ -97,7 +97,7 @@
                     @csrf
                     <div class="campaign-questions-grid">
                     @foreach([
-                        ['enabled' => $campaign->enable_designation_options, 'key' => 'designation_id', 'label' => 'Designation/Portfolio', 'items' => $designations],
+                        ['enabled' => $campaign->enable_designation_options, 'key' => 'designation_id', 'label' => 'Office', 'items' => $designations],
                         ['enabled' => $campaign->enable_field_options, 'key' => 'field_id', 'label' => 'Field', 'items' => $fields],
                         ['enabled' => $campaign->enable_zone_options, 'key' => 'zone_id', 'label' => 'Zone', 'items' => $zones],
                         ['enabled' => $campaign->enable_chapter_option, 'key' => 'chapter_id', 'label' => 'Chapter', 'items' => $chapters],
@@ -132,6 +132,7 @@
                             $isFullNameQuestion = $questionSlug === 'full-name' || $questionLabel === 'full name';
                             $isEmailQuestion = str_contains($questionSlug, 'email') || str_contains($questionLabel, 'email');
                             $isPhoneQuestion = str_contains($questionSlug, 'phone') || str_contains($questionSlug, 'mobile') || str_contains($questionLabel, 'phone') || str_contains($questionLabel, 'mobile');
+                            $isGenderQuestion = $questionSlug === 'gender' || $questionLabel === 'gender';
                             $options = collect($question->options ?? [])->map(fn ($option) => is_array($option) ? ['value' => $option['value'] ?? $option['label'] ?? '', 'label' => $option['label'] ?? $option['value'] ?? ''] : ['value' => $option, 'label' => $option])->values();
                             $questionWidth = match ($question->width_class) {
                                 'col-md-2' => 2,
@@ -154,7 +155,7 @@
                             @else
                                 <label for="campaign-question-{{ $question->id }}">{{ $question->label }} @if($question->is_required)<span class="required">*</span>@endif</label>
                                 @if(in_array($question->type, ['select', 'rating'], true))
-                                    <select id="campaign-question-{{ $question->id }}" class="campaign-control" name="answers[{{ $question->slug }}]" @if($question->is_required) required @endif>
+                                    <select id="campaign-question-{{ $question->id }}" class="campaign-control" name="answers[{{ $question->slug }}]" @if($isGenderQuestion) data-campaign-stakeholder-field="gender" @endif @if($question->is_required) required @endif>
                                         <option value="">Choose an option</option>
                                         @foreach($options as $option)<option value="{{ $option['value'] }}" @selected(old($field) == $option['value'])>{{ $option['label'] }}</option>@endforeach
                                     </select>
@@ -163,7 +164,7 @@
                                 @elseif($question->type === 'textarea' || in_array($question->type, ['dynamic_table', 'income_table'], true))
                                     <textarea id="campaign-question-{{ $question->id }}" class="campaign-control" name="answers[{{ $question->slug }}]" @if($question->is_required) required @endif>{{ old($field) }}</textarea>
                                 @else
-                                    <input id="campaign-question-{{ $question->id }}" class="campaign-control" type="{{ in_array($question->type, ['number', 'date', 'month', 'year'], true) ? ($question->type === 'year' ? 'number' : $question->type) : 'text' }}" name="answers[{{ $question->slug }}]" value="{{ old($field) }}" @if($isFullNameQuestion) data-campaign-stakeholder-field="name" @elseif($isEmailQuestion) data-campaign-stakeholder-field="email" @elseif($isPhoneQuestion) data-campaign-stakeholder-field="phone" @endif @if($question->is_required) required @endif>
+                                    <input id="campaign-question-{{ $question->id }}" class="campaign-control" type="{{ in_array($question->type, ['number', 'date', 'month', 'year', 'email', 'tel'], true) ? ($question->type === 'year' ? 'number' : $question->type) : 'text' }}" name="answers[{{ $question->slug }}]" value="{{ old($field) }}" @if($isFullNameQuestion) data-campaign-stakeholder-field="name" @elseif($isEmailQuestion) data-campaign-stakeholder-field="email" @elseif($isPhoneQuestion) data-campaign-stakeholder-field="phone" @endif @if($question->is_required) required @endif>
                                 @endif
                             @endif
                             @error($field)<small class="campaign-error">{{ $message }}</small>@enderror
@@ -318,11 +319,16 @@
                 const stakeholderInputs = {
                     name: document.querySelector('[data-campaign-stakeholder-field="name"]'),
                     email: document.querySelector('[data-campaign-stakeholder-field="email"]'),
-                    phone: document.querySelector('[data-campaign-stakeholder-field="phone"]')
+                    phone: document.querySelector('[data-campaign-stakeholder-field="phone"]'),
+                    gender: document.querySelector('[data-campaign-stakeholder-field="gender"]')
                 };
 
                 Object.entries(stakeholderInputs).forEach(([key, input]) => {
-                    if (!input || !details[key]) return;
+                    if (!input || (key !== 'gender' && !details[key])) return;
+                    if (key === 'gender' && !details[key]) {
+                        $(input).val('').trigger('change');
+                        return;
+                    }
                     input.value = details[key];
                     input.dispatchEvent(new Event('input', { bubbles: true }));
                     input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -330,13 +336,18 @@
 
                 const selectAssignedOption = (select, value) => {
                     if (!select || !value) return;
-                    const optionExists = Array.from(select.options).some(option => String(option.value) === String(value));
-                    if (optionExists) $(select).val(String(value)).trigger('change');
+                    const normalizedValue = String(value).trim().toLocaleLowerCase();
+                    const matchingOption = Array.from(select.options).find(option =>
+                        String(option.value).trim().toLocaleLowerCase() === normalizedValue
+                        || String(option.textContent).trim().toLocaleLowerCase() === normalizedValue
+                    );
+                    if (matchingOption) $(select).val(matchingOption.value).trigger('change');
                 };
 
                 selectAssignedOption(fieldSelect, details.field_id);
                 selectAssignedOption(zoneSelect, details.zone_id);
                 selectAssignedOption(chapterSelect, details.chapter_id);
+                selectAssignedOption(stakeholderInputs.gender, details.gender);
             }
 
             $(designationSelect).on('change', async function () {

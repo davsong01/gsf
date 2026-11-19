@@ -23,6 +23,7 @@ class Stakeholder extends Authenticatable
         'name',
         'phone',
         'email',
+        'gender',
         'field_id',
         'zone_id',
         'chapter_id',

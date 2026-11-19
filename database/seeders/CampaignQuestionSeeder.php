@@ -11,25 +11,26 @@ class CampaignQuestionSeeder extends Seeder
     {
         $questions = [
             ['label' => 'Full Name', 'type' => 'text', 'is_required' => true],
-            ['label' => 'Email Address', 'type' => 'text', 'is_required' => true],
-            ['label' => 'Phone Number', 'type' => 'text', 'is_required' => true],
-            ['label' => 'Fellowship or Organization', 'type' => 'text', 'is_required' => true],
-            ['label' => 'State or Region', 'type' => 'text', 'is_required' => true],
+            ['label' => 'Email', 'type' => 'email', 'is_required' => true],
+            ['label' => 'Phone', 'type' => 'text', 'is_required' => true],
             [
-                'label' => 'Area of Interest',
+                'label' => 'Gender',
                 'type' => 'select',
                 'is_required' => true,
-                'options' => ['Leadership', 'Community Outreach', 'Training', 'Worship and Media', 'Other'],
+                'options' => ['Male', 'Female'],
             ],
             [
-                'label' => 'How did you hear about this campaign?',
+                'label' => 'Day of Arrival',
                 'type' => 'select',
                 'is_required' => true,
-                'options' => ['Social Media', 'Church or Fellowship', 'Friend', 'Website', 'Other'],
+                'options' => ['Friday', 'Saturday'],
             ],
-            ['label' => 'What do you hope to gain from this campaign?', 'type' => 'textarea', 'is_required' => true],
-            ['label' => 'Relevant Experience', 'type' => 'textarea', 'is_required' => false],
-            ['label' => 'Additional Comments', 'type' => 'textarea', 'is_required' => false],
+            [
+                'label' => 'Coming with Family?',
+                'type' => 'select',
+                'is_required' => true,
+                'options' => ['Yes', 'No'],
+            ],
         ];
 
         foreach ($questions as $order => $question) {

@@ -135,12 +135,15 @@ class StakeholderCampaignController extends Controller
                 && $designation->status === 'active',
             404
         );
-        $stakeholder = $designation->stakeholder()->first(['name', 'email', 'phone', 'field_id', 'zone_id', 'chapter_id']);
+        $stakeholder = $designation->stakeholder()
+            ->with('user:id,email,gender')
+            ->first(['id', 'name', 'email', 'phone', 'gender', 'field_id', 'zone_id', 'chapter_id']);
 
         return response()->json([
             'name' => $stakeholder?->name,
             'email' => $stakeholder?->email,
             'phone' => $stakeholder?->phone,
+            'gender' => $stakeholder?->gender ?: $stakeholder?->user?->gender,
             'field_id' => $stakeholder?->field_id,
             'zone_id' => $stakeholder?->zone_id,
             'chapter_id' => $stakeholder?->chapter_id,
@@ -164,6 +167,7 @@ class StakeholderCampaignController extends Controller
             $typeRules = match ($question->type) {
                 'number' => ['numeric'],
                 'date' => ['date'],
+                'email' => ['email', 'max:255'],
                 'file' => ['file', 'max:10240'],
                 'checkbox' => ['array'],
                 'select', 'radio', 'rating' => [Rule::in($this->questionOptionValues($question))],
