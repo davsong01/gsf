@@ -170,11 +170,11 @@
                             @error($field)<small class="campaign-error">{{ $message }}</small>@enderror
                         </div>
                     @endforeach
-                    </div>
-                    <div class="campaign-question">
+                    <div class="campaign-question campaign-question-item" style="--campaign-column-span: 6">
                         <label for="campaign-anti-spam">Prove you are not a robot: what is {{ $antiSpamNumbers[0] }} + {{ $antiSpamNumbers[1] }}?</label>
                         <input id="campaign-anti-spam" class="campaign-control" type="number" name="anti_spam" inputmode="numeric" autocomplete="off" required>
                         @error('anti_spam')<small class="campaign-error">{{ $message }}</small>@enderror
+                    </div>
                     </div>
                     <button class="button button--blue campaign-submit" type="submit">Submit response <span aria-hidden="true">→</span></button>
                 </form>
