@@ -15,7 +15,7 @@ class GrowthAnalysisService
 {
     public function measures()
     {
-        return StakeholderReportQuestion::query()->isActive()->forModule('report')
+        $questions = StakeholderReportQuestion::query()->isActive()->forModule('report')
             ->where('is_quantifiable', true)
             ->whereIn('type', ['number', 'select'])
             ->orderBy('section_id')->orderBy('order')->get()
@@ -33,12 +33,20 @@ class GrowthAnalysisService
                 'kind' => $question->type === 'select' ? 'rating' : 'count',
                 'section_id' => $question->section_id,
             ])->all();
+
+        return array_merge([[
+            'id' => 0,
+            'label' => 'Overall growth index',
+            'kind' => 'index',
+            'section_id' => null,
+        ]], $questions);
     }
 
     public function build(Request $request, array $scope, array $measures): array
     {
         $validated = $request->validate([
             'level' => 'nullable|in:chapter,zone,field',
+            'period' => 'nullable|in:month,year',
             'measure_id' => 'nullable|integer',
             'from_month' => 'nullable|date_format:Y-m',
             'to_month' => 'nullable|date_format:Y-m',
@@ -50,13 +58,17 @@ class GrowthAnalysisService
         ]);
 
         $level = $validated['level'] ?? 'chapter';
+        $period = $validated['period'] ?? 'month';
         $from = Carbon::createFromFormat('Y-m-d', ($validated['from_month'] ?? now()->startOfYear()->format('Y-m')).'-01')->startOfMonth();
         $to = Carbon::createFromFormat('Y-m-d', ($validated['to_month'] ?? now()->format('Y-m')).'-01')->startOfMonth();
-        if ($to->lt($from) || $from->diffInMonths($to) > 35) {
-            throw ValidationException::withMessages(['to_month' => 'Choose an end month after the start month, within a 36-month range.']);
+        if ($to->lt($from) || $from->diffInMonths($to) > 119) {
+            throw ValidationException::withMessages(['to_month' => 'Choose an end month after the start month, within a 10-year range.']);
         }
         $months = [];
         for ($month = $from->copy(); $month->lte($to); $month->addMonth()) $months[] = $month->format('Y-m');
+        $periodKeys = $period === 'year'
+            ? array_values(array_unique(array_map(fn ($month) => substr($month, 0, 4), $months)))
+            : $months;
 
         $measure = collect($measures)->firstWhere('id', (int) ($validated['measure_id'] ?? ($measures[0]['id'] ?? 0)));
         if (! $measure) throw ValidationException::withMessages(['measure_id' => 'Choose an available growth measure.']);
@@ -83,18 +95,22 @@ class GrowthAnalysisService
         if (! in_array($focusId, $selectedIds, true)) $focusId = $selectedIds[0] ?? 0;
 
         $chapterMap = $chapters->keyBy('id');
-        $measureMap = collect($measures)->keyBy('id');
+        $measureMap = collect($measures)->filter(fn ($item) => $item['kind'] !== 'index')->keyBy('id');
         $entityForChapter = fn ($chapter) => $level === 'chapter' ? (int) $chapter->id : ($level === 'zone' ? (int) $chapter->zone_id : (int) $chapter->field_id);
         $selectedChapterIds = $chapters->filter(fn ($chapter) => in_array($entityForChapter($chapter), $selectedIds, true))->pluck('id');
         $focusChapterIds = $chapters->filter(fn ($chapter) => $entityForChapter($chapter) === $focusId)->pluck('id');
         $rows = DB::table('stakeholder_report_answers as a')
             ->join('stakeholder_reports as r', 'r.id', '=', 'a.report_id')
-            ->whereIn('r.chapter_id', $selectedChapterIds)
+            ->whereIn('r.chapter_id', $measure['kind'] === 'index' ? $chapters->pluck('id') : $selectedChapterIds)
             ->where('r.edit_mode', 0)
             ->where('r.school_not_in_session', 0)
             ->where(function ($query) use ($measure, $focusChapterIds, $measureMap) {
-                $query->where('a.question_id', $measure['id'])
-                    ->orWhere(fn ($q) => $q->whereIn('r.chapter_id', $focusChapterIds)->whereIn('a.question_id', $measureMap->keys()));
+                if ($measure['kind'] === 'index') {
+                    $query->whereIn('a.question_id', $measureMap->keys());
+                } else {
+                    $query->where('a.question_id', $measure['id'])
+                        ->orWhere(fn ($q) => $q->whereIn('r.chapter_id', $focusChapterIds)->whereIn('a.question_id', $measureMap->keys()));
+                }
             })
             ->where(function ($query) use ($from) {
                 $query->where('r.year', '>', $from->year)->orWhere(fn ($q) => $q->where('r.year', $from->year)->where('r.month', '>=', $from->month));
@@ -107,6 +123,8 @@ class GrowthAnalysisService
 
         $seen = [];
         $buckets = [];
+        $chapterValues = [];
+        $maximumByQuestion = [];
         foreach ($rows as $row) {
             $month = sprintf('%04d-%02d', $row->year, $row->month);
             $key = $row->chapter_id.':'.$month.':'.$row->question_id;
@@ -117,6 +135,12 @@ class GrowthAnalysisService
             if (! is_numeric($raw) || (float) $raw < 0) continue;
             $value = (float) $raw;
             if ($item['kind'] === 'rating' && ($value < 1 || $value > 5)) continue;
+            if ($measure['kind'] === 'index') {
+                $chapterValues[$row->chapter_id][$row->question_id][$month] = $value;
+                if ($item['kind'] === 'count') {
+                    $maximumByQuestion[$row->question_id] = max($maximumByQuestion[$row->question_id] ?? 0, $value);
+                }
+            }
             $chapter = $chapterMap->get($row->chapter_id);
             $entityId = $level === 'chapter' ? (int) $chapter->id : ($level === 'zone' ? (int) $chapter->zone_id : (int) $chapter->field_id);
             if (! in_array($entityId, $selectedIds, true)) continue;
@@ -124,23 +148,53 @@ class GrowthAnalysisService
             $buckets[$entityId][$row->question_id][$month]['count'] = ($buckets[$entityId][$row->question_id][$month]['count'] ?? 0) + 1;
         }
 
+        if ($measure['kind'] === 'index') {
+            foreach ($chapterValues as $chapterId => $answersByQuestion) {
+                $chapter = $chapterMap->get($chapterId);
+                $entityId = $entityForChapter($chapter);
+                if (! in_array($entityId, $selectedIds, true)) continue;
+                $scoresByMonth = [];
+                foreach ($answersByQuestion as $questionId => $answersByMonth) {
+                    $item = $measureMap->get((int) $questionId);
+                    $maximum = $item['kind'] === 'rating' ? 5 : ($maximumByQuestion[$questionId] ?? 0);
+                    foreach ($answersByMonth as $month => $value) {
+                        $scoresByMonth[$month]['sum'] = ($scoresByMonth[$month]['sum'] ?? 0) + ($maximum > 0 ? 100 * $value / $maximum : 0);
+                        $scoresByMonth[$month]['count'] = ($scoresByMonth[$month]['count'] ?? 0) + 1;
+                    }
+                }
+                foreach ($scoresByMonth as $month => $scores) {
+                    $campusIndex = $scores['sum'] / $scores['count'];
+                    $buckets[$entityId][0][$month]['sum'] = ($buckets[$entityId][0][$month]['sum'] ?? 0) + $campusIndex;
+                    $buckets[$entityId][0][$month]['count'] = ($buckets[$entityId][0][$month]['count'] ?? 0) + 1;
+                }
+            }
+        }
+
         $series = [];
         foreach ($selectedEntities as $entity) {
             $entityBuckets = $buckets[$entity['id']][$measure['id']] ?? [];
-            $values = $this->values($entityBuckets, $months, $measure['kind'], $level);
+            $monthlyValues = $this->values($entityBuckets, $months, $measure['kind'], $level);
+            $monthlyContributors = array_map(fn ($month) => $entityBuckets[$month]['count'] ?? 0, $months);
+            $yearly = $period === 'year' ? $this->yearlyValues($monthlyValues, $months, $periodKeys) : null;
+            $values = $yearly['values'] ?? $monthlyValues;
             $series[] = ['id' => $entity['id'], 'name' => $entity['name'], 'values' => $values,
-                'contributors' => array_map(fn ($month) => $entityBuckets[$month]['count'] ?? 0, $months)] + $this->growth($values);
+                'contributors' => $yearly['reported_months'] ?? $monthlyContributors] + $this->growth($values, $periodKeys);
         }
         $aspects = [];
         if ($focusId) {
             foreach ($measures as $item) {
-                $values = $this->values($buckets[$focusId][$item['id']] ?? [], $months, $item['kind'], $level);
-                $aspects[] = ['id' => $item['id'], 'name' => $item['label'], 'kind' => $item['kind']] + $this->growth($values);
+                if ($item['kind'] === 'index') continue;
+                $monthlyValues = $this->values($buckets[$focusId][$item['id']] ?? [], $months, $item['kind'], $level);
+                $values = $period === 'year' ? $this->yearlyValues($monthlyValues, $months, $periodKeys)['values'] : $monthlyValues;
+                $aspects[] = ['id' => $item['id'], 'name' => $item['label'], 'kind' => $item['kind']] + $this->growth($values, $periodKeys);
             }
         }
         return [
-            'level' => $level, 'measure' => $measure, 'months' => $months,
-            'aggregation' => $level === 'chapter' ? 'Campus value' : 'Average per reporting in-session campus',
+            'level' => $level, 'period' => $period, 'measure' => $measure, 'months' => $periodKeys,
+            'aggregation' => ($measure['kind'] === 'index'
+                ? 'Counts as a share of the highest value in the selected scope and period; ratings as a share of 5. Available question scores are equally averaged (0–100)'.($level === 'chapter' ? '' : '; then averaged across reporting in-session campuses')
+                : ($level === 'chapter' ? 'Campus value' : 'Average per reporting in-session campus'))
+                .($period === 'year' ? '; yearly points average valid monthly values' : ''),
             'entities' => $entities, 'selected_ids' => $selectedIds, 'series' => $series,
             'focus_id' => $focusId, 'focus_name' => collect($entities)->firstWhere('id', $focusId)['name'] ?? null,
             'aspects' => $aspects,
@@ -158,19 +212,42 @@ class GrowthAnalysisService
         return array_map(function ($month) use ($buckets, $kind, $level) {
             if (! isset($buckets[$month])) return null;
             $value = $kind === 'rating' || $level !== 'chapter' ? $buckets[$month]['sum'] / $buckets[$month]['count'] : $buckets[$month]['sum'];
-            return round($value, $kind === 'rating' || $level !== 'chapter' ? 2 : 0);
+            return round($value, $kind !== 'count' || $level !== 'chapter' ? 2 : 0);
         }, $months);
     }
 
-    private function growth(array $values): array
+    private function yearlyValues(array $monthlyValues, array $months, array $years): array
     {
-        $reported = array_values(array_filter($values, fn ($value) => $value !== null));
-        $first = $reported[0] ?? null;
-        $last = count($reported) > 1 ? end($reported) : null;
-        $change = $last === null ? null : round($last - $first, 2);
+        $values = [];
+        $reportedMonths = [];
+        foreach ($years as $year) {
+            $reported = [];
+            foreach ($months as $index => $month) {
+                if (substr($month, 0, 4) === $year && $monthlyValues[$index] !== null) {
+                    $reported[] = $monthlyValues[$index];
+                }
+            }
+            $reportedMonths[] = count($reported);
+            $values[] = $reported ? round(array_sum($reported) / count($reported), 2) : null;
+        }
+        return ['values' => $values, 'reported_months' => $reportedMonths];
+    }
+
+    private function growth(array $values, array $months): array
+    {
+        $reported = [];
+        foreach ($values as $index => $value) {
+            if ($value !== null) $reported[] = ['month' => $months[$index], 'value' => $value];
+        }
+        $latestPoint = $reported[count($reported) - 1] ?? null;
+        $previousPoint = $reported[count($reported) - 2] ?? null;
+        $previous = $previousPoint['value'] ?? null;
+        $latest = $latestPoint['value'] ?? null;
+        $change = $previous !== null && $latest !== null ? round($latest - $previous, 2) : null;
         return [
-            'first' => $first, 'latest' => $last ?? $first, 'change' => $change,
-            'percent' => $change !== null && $first > 0 ? round($change / $first * 100, 1) : null,
+            'previous' => $previous, 'previous_month' => $previousPoint['month'] ?? null,
+            'latest' => $latest, 'latest_month' => $latestPoint['month'] ?? null, 'change' => $change,
+            'percent' => $change !== null && $previous > 0 ? round($change / $previous * 100, 1) : null,
             'reported_months' => count($reported),
             'status' => $change === null ? 'insufficient' : ($change > 0 ? 'growing' : ($change < 0 ? 'declining' : 'stable')),
         ];

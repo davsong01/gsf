@@ -87,8 +87,18 @@
 .analytics-empty { padding: 42px 20px; color: #7a8999; text-align: center; font-size: 12px; }
 .analytics-empty i { display: block; margin-bottom: 9px; color: #c3ac83; font-size: 24px; }
 .growth-filter-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 15px; }
+.growth-level-control { grid-column: 1 / -1; }
+.growth-level-control__label { display: block; margin-bottom: 7px; color: #3c5268; font-size: 11px; font-weight: 800; }
+.growth-level-switch { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border: 1px solid #dce4e9; border-radius: 11px; background: #f5f8f9; }
+.growth-level-option { position: relative; margin: 0; cursor: pointer; }
+.growth-level-option input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.growth-level-option span { display: block; min-width: 100px; padding: 9px 15px; border-radius: 8px; color: #65788a; font-size: 11px; font-weight: 800; text-align: center; }
+.growth-level-option input:checked + span { color: #fff; background: #246f79; box-shadow: 0 3px 9px rgba(36, 111, 121, .19); }
+.growth-level-option input:focus-visible + span { outline: 2px solid #163e5c; outline-offset: 2px; }
 .growth-filter-grid .analytics-filter__field { grid-column: span 1; }
 .growth-filter-grid .growth-filter-grid__measure { grid-column: span 2; }
+.growth-filter-hint { display: block; margin-top: 5px; color: #718498; font-size: 10px; line-height: 1.4; }
+.growth-filter-hint[hidden] { display: none; }
 .growth-filter-grid [hidden] { display: none; }
 .growth-alert { margin-bottom: 15px; padding: 12px 15px; border: 1px solid #efcbc7; border-radius: 10px; color: #8e3e39; background: #fff5f3; font-size: 12px; }
 .growth-alert[hidden] { display: none; }
@@ -99,6 +109,11 @@
 .growth-stat--up { border-left-color: #33886e; } .growth-stat--down { border-left-color: #bd6259; } .growth-stat--flat { border-left-color: #c49545; }
 .growth-main { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 17px; margin-bottom: 18px; }
 .growth-chart-card { min-width: 0; }
+.growth-chart-actions { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.growth-period-switch { display: inline-flex; padding: 3px; border: 1px solid #dce4e9; border-radius: 9px; background: #f5f8f9; }
+.growth-period-switch button { min-width: 70px; padding: 7px 11px; border: 0; border-radius: 6px; color: #65788a; background: transparent; font-size: 11px; font-weight: 800; }
+.growth-period-switch button[aria-pressed="true"] { color: #fff; background: #246f79; }
+.growth-period-switch button:focus-visible { outline: 2px solid #163e5c; outline-offset: 2px; }
 .growth-chart-wrap { height: 440px; padding: 20px 20px 25px; }
 .growth-chart-note { margin: 0; padding: 0 21px 17px; color: #40596f; font-size: 12px; font-weight: 750; line-height: 1.5; text-align: center; }
 .growth-chart-note:empty { display: none; }

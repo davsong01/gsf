@@ -29,12 +29,17 @@ class GrowthAnalysisController extends Controller
             $result = $service->build($request, $scope, $measures);
             if ($request->query('format') === 'json') return response()->json($result);
 
-            $summaryHeaders = ['Entity', 'Measure', 'Calculation', 'First reported', 'Latest reported', 'Change', 'Change %', 'Months reported', 'Status'];
+            $unit = $result['period'] === 'year' ? 'year' : 'month';
+            $previousHeader = 'Previous '.$unit;
+            $latestHeader = 'Latest '.$unit;
+            $coverageHeader = ucfirst($unit).'s reported';
+            $summaryHeaders = ['Entity', 'Measure', 'Calculation', $previousHeader, 'Previous value', $latestHeader, 'Latest value', 'Change', 'Change %', $coverageHeader, 'Status'];
             $summaryRows = array_map(fn ($row) => [
                 'Entity' => $row['name'], 'Measure' => $result['measure']['label'], 'Calculation' => $result['aggregation'],
-                'First reported' => $row['first'], 'Latest reported' => $row['latest'],
+                $previousHeader => $row['previous_month'], 'Previous value' => $row['previous'],
+                $latestHeader => $row['latest_month'], 'Latest value' => $row['latest'],
                 'Change' => $row['change'], 'Change %' => $row['percent'],
-                'Months reported' => $row['reported_months'].' / '.count($result['months']),
+                $coverageHeader => $row['reported_months'].' / '.count($result['months']),
                 'Status' => ucfirst($row['status']),
             ], $result['series']);
             $monthlyHeaders = array_merge(['Entity', 'Measure', 'Calculation'], $result['months']);
@@ -49,18 +54,19 @@ class GrowthAnalysisController extends Controller
                 foreach ($result['months'] as $index => $month) $record[$month] = $row['contributors'][$index];
                 return $record;
             }, $result['series']);
-            $aspectHeaders = ['Entity', 'Aspect', 'Type', 'Calculation', 'First reported', 'Latest reported', 'Change', 'Change %', 'Months reported', 'Status'];
+            $aspectHeaders = ['Entity', 'Aspect', 'Type', 'Calculation', $previousHeader, 'Previous value', $latestHeader, 'Latest value', 'Change', 'Change %', $coverageHeader, 'Status'];
             $aspectRows = array_map(fn ($item) => [
                 'Entity' => $result['focus_name'], 'Aspect' => $item['name'], 'Type' => $item['kind'], 'Calculation' => $result['aggregation'],
-                'First reported' => $item['first'], 'Latest reported' => $item['latest'],
+                $previousHeader => $item['previous_month'], 'Previous value' => $item['previous'],
+                $latestHeader => $item['latest_month'], 'Latest value' => $item['latest'],
                 'Change' => $item['change'], 'Change %' => $item['percent'],
-                'Months reported' => $item['reported_months'].' / '.count($result['months']),
+                $coverageHeader => $item['reported_months'].' / '.count($result['months']),
                 'Status' => ucfirst($item['status']),
             ], $result['aspects']);
             return ExcelService::downloadMultipleSheetsWithHeaders([
                 'Growth summary' => ['headers' => $summaryHeaders, 'rows' => $summaryRows],
-                'Monthly values' => ['headers' => $monthlyHeaders, 'rows' => $monthlyRows],
-                'Contributing campuses' => ['headers' => $contributorHeaders, 'rows' => $contributorRows],
+                ucfirst($unit).'ly values' => ['headers' => $monthlyHeaders, 'rows' => $monthlyRows],
+                ($result['period'] === 'year' ? 'Reporting months' : 'Contributing campuses') => ['headers' => $contributorHeaders, 'rows' => $contributorRows],
                 'Aspects' => ['headers' => $aspectHeaders, 'rows' => $aspectRows],
             ], 'growth_analysis.xlsx');
         }
