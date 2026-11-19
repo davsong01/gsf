@@ -30,6 +30,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\FoodController;
+use App\Http\Controllers\GrowthAnalysisController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HostelController;
 use App\Http\Controllers\MaterialController;
@@ -371,6 +372,7 @@ Route::middleware(['auth', 'SwitchUser'])->group(function () {
 
     Route::get('fix-orphan-reports', [AdminReportsController::class, 'fixOrphanReport'])->name('report.fix.orphan');
     Route::get('report-analytics', [AdminReportsController::class, 'reportAnalyticsIndex'])->name('reports.analytics');
+    Route::get('report-analytics/growth', [GrowthAnalysisController::class, 'admin'])->name('reports.analytics.growth');
     Route::get('/ajax/sub-sections-by-sections', [AdminReportsController::class, 'getSubSectionsBySections'])->name('get.sub-sections');
 
     Route::any('report-analytics/{type}', [AdminReportsController::class, 'reportAnalyticsType'])->name('reports.analytics.type');
@@ -806,6 +808,7 @@ Route::prefix('stakeholders')->as('stakeholders.')->group(function () {
             // Route::get('reports/analysis', 'reportAnalysis')->name('reports.analysis');
 
             Route::get('report-analytics', [StakeholderReportsController::class, 'reportAnalyticsIndex'])->name('reports.analytics');
+            Route::get('report-analytics/growth', [GrowthAnalysisController::class, 'stakeholder'])->name('reports.analytics.growth');
             Route::any('report-analytics/{type}', [StakeholderReportsController::class, 'reportAnalyticsType'])->name('reports.analytics.type');
             Route::get('stakeholderreports/export', [StakeholderReportsController::class, 'export'])->name('report.export');
         });

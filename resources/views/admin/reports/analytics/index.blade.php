@@ -29,6 +29,13 @@
             <p>Track monthly submission status across chapters and see how reporting changes over time.</p>
             <span class="analytics-destination__foot">Explore compliance <i class="fa fa-arrow-right" aria-hidden="true"></i></span>
         </a>
+        <a class="analytics-destination analytics-destination--growth" href="{{ route($isAdmin ? 'reports.analytics.growth' : 'stakeholders.reports.analytics.growth') }}">
+            <span class="analytics-destination__icon"><i class="fa fa-area-chart" aria-hidden="true"></i></span>
+            <span class="analytics-destination__label">Fellowship progress</span>
+            <h3>Growth analysis</h3>
+            <p>Compare measurable progress across campuses, zones and fields, then see which areas are improving.</p>
+            <span class="analytics-destination__foot">Explore growth <i class="fa fa-arrow-right" aria-hidden="true"></i></span>
+        </a>
         @if($isAdmin)
             <a class="analytics-destination analytics-destination--teal" href="{{ route($analyticsRoute, 'section') }}">
                 <span class="analytics-destination__icon"><i class="fa fa-list-alt" aria-hidden="true"></i></span>
