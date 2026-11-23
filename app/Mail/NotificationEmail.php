@@ -128,7 +128,7 @@ class NotificationEmail extends Mailable
 
         if (
             isset($this->data['type']) &&
-            in_array($this->data['type'], ['forgot-password','otp','generic'])
+            in_array($this->data['type'], ['forgot-password','otp','generic','appraisal_reminder'])
         ) {
             $mail = $this->markdown('emails.generic')
                 ->subject($this->data['subject']);
