@@ -1210,9 +1210,15 @@ class AppraisalService
     {
         return Stakeholder::query()
             ->with('designation', 'role')
-            ->whereHas('designation', function ($query) {
-                $query->where('slug', 'general-secretary')
-                    ->orWhere('name', 'General Secretary');
+            ->where(function ($query) {
+                $query->whereHas('designation', function ($designationQuery) {
+                    $designationQuery->where('slug', 'general-secretary')
+                        ->orWhere('name', 'General Secretary');
+                })->orWhere(function ($secretariatQuery) {
+                    $secretariatQuery->whereHas('role', function ($roleQuery) {
+                        $roleQuery->where('slug', 'secretariat');
+                    })->where('access_appraisal_system', true);
+                });
             })
             ->get();
     }
@@ -1220,7 +1226,8 @@ class AppraisalService
     protected function isGeneralSecretary(Stakeholder $user): bool
     {
         return $user->designation?->slug === 'general-secretary'
-            || $user->designation?->name === 'General Secretary';
+            || $user->designation?->name === 'General Secretary'
+            || ($user->role?->slug === 'secretariat' && (bool) $user->access_appraisal_system);
     }
 
     protected function necMemberRoleIds(): array
