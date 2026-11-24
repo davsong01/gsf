@@ -227,6 +227,7 @@
                     <label for="campus-contact-email">Email address</label><input id="campus-contact-email" name="email" type="email" value="{{ old('email') }}" required>
                     <label for="campus-contact-phone">Phone number</label><input id="campus-contact-phone" name="phone" type="tel" value="{{ old('phone') }}" required>
                     <label for="campus-contact-message">Message</label><textarea id="campus-contact-message" name="message" rows="4" required>{{ old('message') }}</textarea>
+                    <label for="campus-contact-security-answer">Security question: What is {{ $securityQuestion }}?</label><input id="campus-contact-security-answer" name="security_answer" type="number" inputmode="numeric" autocomplete="off" value="{{ old('security_answer') }}" required @class(['is-invalid' => $errors->has('security_answer')]) @if($errors->has('security_answer'))aria-invalid="true" aria-describedby="campus-contact-security-answer-error"@endif>@error('security_answer')<small id="campus-contact-security-answer-error" class="campus-contact-feedback campus-contact-feedback--error">{{ $message }}</small>@enderror
                     <button type="submit">Send message <span aria-hidden="true">→</span></button>
                 </form>
             </div>

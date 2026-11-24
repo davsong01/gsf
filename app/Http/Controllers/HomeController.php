@@ -709,6 +709,11 @@ class HomeController extends Controller
             return view('frontend.conference.campusView', compact('chapter', 'token', 'realToken'));
         }
 
+        $firstNumber = random_int(2, 9);
+        $secondNumber = random_int(1, 8);
+        session(['campus_contact_security_answer_'.$chapter->id => (string) ($firstNumber + $secondNumber)]);
+        $securityQuestion = $firstNumber.' + '.$secondNumber;
+
         abort_if(strtolower(trim((string) $chapter->name)) === 'other', 404);
 
         $campusEvents = BlogPost::published()
@@ -763,7 +768,7 @@ class HomeController extends Controller
                 ->get();
         }
 
-        return view('frontend.site.directory.campus', compact('chapter', 'events', 'members', 'alumni', 'campusPosts', 'related'));
+        return view('frontend.site.directory.campus', compact('chapter', 'events', 'members', 'alumni', 'campusPosts', 'related', 'securityQuestion'));
     }
 
 
@@ -775,9 +780,16 @@ class HomeController extends Controller
             'email' => ['required', 'email:rfc', 'max:255'],
             'phone' => ['required', 'string', 'max:40'],
             'message' => ['required', 'string', 'max:5000'],
+            'security_answer' => ['required', 'integer'],
         ]);
 
         $chapter = Chapter::actualCampus()->findOrFail($data['chapter_id']);
+        $expectedAnswer = (string) session('campus_contact_security_answer_'.$chapter->id, '');
+        $providedAnswer = trim((string) $data['security_answer']);
+        if ($expectedAnswer === '' || ! hash_equals($expectedAnswer, $providedAnswer)) {
+            return back()->withErrors(['security_answer' => 'The answer is incorrect. Please try again.'])->withInput();
+        }
+        session()->forget('campus_contact_security_answer_'.$chapter->id);
 
         EmailContact::create([
             'user_id' => null,
