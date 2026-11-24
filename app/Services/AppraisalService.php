@@ -28,7 +28,7 @@ class AppraisalService
     {
         $permissionProfile = $this->appraisalPermissionProfile($user);
 
-        $hasAppraisalSystemAccess = (bool) ($user->access_appraisal_system ?? false);
+        $hasAppraisalSystemAccess = (bool) ($user->access_appraisal_system ?? false) || $this->isGeneralSecretary($user);
         $hasAppraisalEvaluationAccess = (bool) ($user->access_appraisal_evaluation ?? false);
         $isNationalPresident = $this->isNationalPresident($user);
 
@@ -59,6 +59,10 @@ class AppraisalService
 
     public function hasAppraisalPermission(Stakeholder $user, string $permission): bool
     {
+        if ($this->isGeneralSecretary($user) && $permission === 'nec-member-fill') {
+            return true;
+        }
+
         if ($this->isLegalMattersTarget($user)
             && in_array($permission, ['field-pastor-fill', 'field-pastor-evaluate'], true)) {
             return true;
@@ -298,6 +302,10 @@ class AppraisalService
             return 'national-president';
         }
 
+        if ($this->isGeneralSecretary($user)) {
+            return 'national-officer';
+        }
+
         if ($this->isLegalMattersTarget($user)) {
             return 'field-pastor';
         }
@@ -345,6 +353,8 @@ class AppraisalService
             $excludedDesignationSlugs = ['legal-matters'];
 
             return $this->necMembers()
+                ->concat($this->generalSecretaries())
+                ->unique('id')
                 ->reject(fn (Stakeholder $stakeholder) => in_array($stakeholder->role?->slug, $excludedRoles, true))
                 ->reject(fn (Stakeholder $stakeholder) => in_array($stakeholder->designation?->slug, $excludedDesignationSlugs, true))
                 ->reject(fn (Stakeholder $stakeholder) => $stakeholder->id === $user->id)
@@ -1196,6 +1206,23 @@ class AppraisalService
             ->get();
     }
 
+    protected function generalSecretaries(): Collection
+    {
+        return Stakeholder::query()
+            ->with('designation', 'role')
+            ->whereHas('designation', function ($query) {
+                $query->where('slug', 'general-secretary')
+                    ->orWhere('name', 'General Secretary');
+            })
+            ->get();
+    }
+
+    protected function isGeneralSecretary(Stakeholder $user): bool
+    {
+        return $user->designation?->slug === 'general-secretary'
+            || $user->designation?->name === 'General Secretary';
+    }
+
     protected function necMemberRoleIds(): array
     {
         return StakeholderRole::whereIn('slug', ['nec-member', 'nec'])->pluck('id')->all();
@@ -1230,6 +1257,13 @@ class AppraisalService
             return [
                 'fill' => ['national-president-fill'],
                 'evaluate' => ['nec-member-evaluate'],
+            ];
+        }
+
+        if ($this->isGeneralSecretary($user)) {
+            return [
+                'fill' => ['nec-member-fill'],
+                'evaluate' => [],
             ];
         }
 

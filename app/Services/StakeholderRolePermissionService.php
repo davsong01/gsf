@@ -50,6 +50,14 @@ class StakeholderRolePermissionService
                     $userAccessIds[] = $user->designation_id;
                 }
 
+                if ($user->designation?->slug === 'general-secretary'
+                    || $user->designation?->name === 'General Secretary') {
+                    $userAccessIds = array_merge(
+                        $userAccessIds,
+                        StakeholderRole::whereIn('slug', ['nec-member', 'nec'])->pluck('id')->all()
+                    );
+                }
+
                 $isLegalMatters = ($user->designation?->slug == 'legal-matters')
                     || ($user->designation_id
                         && \App\Models\StakeholderDesignation::whereKey($user->designation_id)
